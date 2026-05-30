@@ -6,6 +6,7 @@ import 'badge_details.dart'; // <--- Jetzt existiert die Datei!
 import '../models/badge.dart';
 import '../models/meetup.dart';     
 import '../models/user.dart'; 
+import '../widgets/nostr_avatar.dart';
 
 class RadarScreen extends StatefulWidget {
   final String cityName;
@@ -98,12 +99,10 @@ class _RadarScreenState extends State<RadarScreen> {
               color: cCard,
               child: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundColor: _getVerificationColor(), 
-                    child: Text(
-                      _currentUser.nickname.isNotEmpty ? _currentUser.nickname[0].toUpperCase() : "?",
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                    ),
+                  NostrAvatar(
+                    fallbackText: _currentUser.nickname,
+                    backgroundColor: _getVerificationColor(),
+                    radius: 20,
                   ),
                   const SizedBox(width: 15),
                   Expanded(
@@ -295,3 +294,5 @@ class _RadarScreenState extends State<RadarScreen> {
     return const Text("Identität verknüpfen...", style: TextStyle(color: Colors.white24, fontSize: 12, fontStyle: FontStyle.italic));
   }
 }
+
+

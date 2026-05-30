@@ -21,7 +21,8 @@
 
 import '../models/badge.dart';
 import 'admin_registry.dart';
-import 'secure_key_store.dart';
+import 'nostr_service.dart';
+import 'signing_service.dart';
 import 'trust_score_service.dart';
 
 class AdminVerification {
@@ -57,8 +58,9 @@ class AdminStatusVerifier {
   static Future<AdminVerification> verifyAdminStatus({
     required List<MeetupBadge> badges,
   }) async {
-    // --- CHECK 1: Hat der User überhaupt einen Nostr-Key? ---
-    final hasKey = await SecureKeyStore.hasKey();
+    // --- CHECK 1: Hat der User überhaupt eine Signier-Identität? ---
+    // (lokaler Key ODER Amber verbunden)
+    final hasKey = await SigningService.canSign();
     if (!hasKey) {
       return const AdminVerification(
         isAdmin: false,
@@ -87,7 +89,7 @@ class AdminStatusVerifier {
     }
 
     // --- CHECK 3: Seed-Admin in Registry ---
-    final npub = await SecureKeyStore.getNpub();
+    final npub = await NostrService.getNpub();
     if (npub != null && npub.isNotEmpty) {
       try {
         final result = await AdminRegistry.checkAdmin(npub);
@@ -125,3 +127,6 @@ class AdminStatusVerifier {
     return result.isAdmin;
   }
 }
+
+
+

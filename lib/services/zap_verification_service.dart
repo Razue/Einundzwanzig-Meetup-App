@@ -33,7 +33,7 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'relay_config.dart';
-import 'secure_key_store.dart';
+import 'nostr_service.dart';
 import 'dart:math';
 
 class ZapVerificationService {
@@ -330,7 +330,7 @@ class ZapVerificationService {
   }
 
   static Future<String?> _getMyPubkeyHex() async {
-    final npub = await SecureKeyStore.getNpub();
+    final npub = await NostrService.getNpub();
     if (npub == null || npub.isEmpty) return null;
     try {
       return Nip19.decodePubkey(npub);
@@ -439,3 +439,5 @@ class ZapStats {
     return 'Sehr aktiv';
   }
 }
+
+

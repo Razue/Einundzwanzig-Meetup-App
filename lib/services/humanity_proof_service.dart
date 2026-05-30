@@ -44,7 +44,7 @@ import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'relay_config.dart';
-import 'secure_key_store.dart';
+import 'nostr_service.dart';
 import 'app_logger.dart';
 import 'dart:math';
 
@@ -124,7 +124,7 @@ class HumanityProofService {
   // =============================================
 
   static Future<HumanityCheckResult> checkForZaps() async {
-    final npub = await SecureKeyStore.getNpub();
+    final npub = await NostrService.getNpub();
     if (npub == null || npub.isEmpty) {
       return HumanityCheckResult(
         found: false,
@@ -489,3 +489,5 @@ class HumanityCheckResult {
     required this.message,
   });
 }
+
+

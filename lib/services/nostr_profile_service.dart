@@ -22,10 +22,13 @@ class NostrProfileService {
   static Future<String?> fetchProfilePicture(String pubkeyHex) async {
     if (pubkeyHex.isEmpty) return null;
 
-    // Cache prüfen
+    // Cache prüfen (pubkey-spezifisch, damit ein Identitätswechsel
+    // — z.B. nsec → Amber mit anderem npub — nicht das alte Bild zeigt)
     final prefs = await SharedPreferences.getInstance();
-    final cached = prefs.getString(_cacheKey);
-    final cachedTime = prefs.getInt(_cacheTimeKey) ?? 0;
+    final cacheKey = '${_cacheKey}_$pubkeyHex';
+    final cacheTimeKey = '${_cacheTimeKey}_$pubkeyHex';
+    final cached = prefs.getString(cacheKey);
+    final cachedTime = prefs.getInt(cacheTimeKey) ?? 0;
     final now = DateTime.now().millisecondsSinceEpoch;
 
     if (cached != null && cached.isNotEmpty && (now - cachedTime) < _cacheDuration.inMilliseconds) {
@@ -38,9 +41,9 @@ class NostrProfileService {
       try {
         final picture = await _fetchFromRelay(relay, pubkeyHex);
         if (picture != null && picture.isNotEmpty) {
-          // Cache speichern
-          await prefs.setString(_cacheKey, picture);
-          await prefs.setInt(_cacheTimeKey, now);
+          // Cache speichern (pubkey-spezifisch)
+          await prefs.setString(cacheKey, picture);
+          await prefs.setInt(cacheTimeKey, now);
           return picture;
         }
       } catch (e) {
@@ -98,8 +101,14 @@ class NostrProfileService {
   /// Cache löschen (z.B. bei App-Reset)
   static Future<void> clearCache() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_cacheKey);
-    await prefs.remove(_cacheTimeKey);
+    // pubkey-spezifische Einträge (und evtl. alte globale) entfernen
+    for (final key in prefs.getKeys().toList()) {
+      if (key.startsWith(_cacheKey) || key.startsWith(_cacheTimeKey)) {
+        await prefs.remove(key);
+      }
+    }
     await prefs.remove(_localPicKey);
   }
 }
+
+

@@ -6,6 +6,7 @@ import '../services/meetup_service.dart';
 import '../services/nostr_service.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
+import '../widgets/nostr_avatar.dart';
 import 'app_shell.dart';
 import 'platform_proof_screen.dart';
 import 'humanity_proof_screen.dart';
@@ -516,10 +517,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     return Column(
       children: [
         const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: cGreen, width: 2), color: cGreen.withOpacity(0.1)),
-          child: const Icon(Icons.verified_user, size: 50, color: cGreen),
+        NostrAvatar(
+          fallbackText: _user!.nickname,
+          backgroundColor: cGreen,
+          radius: 44,
         ),
         const SizedBox(height: 10),
         const Text("VERIFIZIERT", style: TextStyle(color: cGreen, fontWeight: FontWeight.bold, fontSize: 18)),
