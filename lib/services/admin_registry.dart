@@ -699,13 +699,13 @@ class AdminRegistry {
     }
 
     final displayJson = jsonEncode({
-      'id': event.id,
-      'pubkey': event.pubkey,
-      'created_at': event.createdAt,
-      'kind': event.kind,
-      'tags': event.tags,
-      'content': event.content,
-      'sig': event.sig,
+      'id': signed.id,
+      'pubkey': signed.pubkey,
+      'created_at': signed.createdAt,
+      'kind': signed.kind,
+      'tags': signed.tags,
+      'content': signed.content,
+      'sig': signed.sig,
     });
 
     if (successCount == 0) {
