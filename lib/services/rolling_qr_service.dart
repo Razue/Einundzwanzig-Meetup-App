@@ -48,6 +48,7 @@ import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'nostr_service.dart';
+import 'signing_service.dart';
 import 'badge_security.dart';
 import 'secure_key_store.dart';
 import 'mempool.dart';
@@ -258,7 +259,7 @@ class RollingQRService {
 
     // 4. BASE-PAYLOAD EINMALIG SIGNIEREN
     Map<String, dynamic> basePayload;
-    final hasKey = await NostrService.hasKey();
+    final hasKey = await SigningService.canSign(); // lokal ODER Amber
     if (hasKey) {
       try {
         basePayload = await BadgeSecurity.signCompact(
@@ -526,3 +527,5 @@ class NonceValidation {
     required this.ageSeconds,
   });
 }
+
+

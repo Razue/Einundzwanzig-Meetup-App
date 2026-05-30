@@ -9,6 +9,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_logger.dart';
+import 'relay_config.dart';
 
 class NostrProfileService {
   static const Duration _timeout = Duration(seconds: 6);
@@ -35,19 +36,33 @@ class NostrProfileService {
       return cached;
     }
 
-    // Von Relays laden
-    final relays = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
-    for (final relay in relays) {
+    // Von Relays laden — die KONFIGURIERTEN Relays der App nutzen
+    // (inkl. nostr.einundzwanzig.space), nicht nur Standard-Relays.
+    List<String> relays;
+    try {
+      relays = await RelayConfig.getActiveRelays();
+      if (relays.isEmpty) relays = RelayConfig.defaultRelays;
+    } catch (_) {
+      relays = const [
+        'wss://relay.damus.io',
+        'wss://nos.lol',
+        'wss://relay.nostr.band',
+        'wss://nostr.einundzwanzig.space',
+      ];
+    }
+
+    // Parallel über alle Relays abfragen — das erste Treffer-Bild gewinnt.
+    final futures = relays.map((r) => _fetchFromRelay(r, pubkeyHex)).toList();
+    for (final f in futures) {
       try {
-        final picture = await _fetchFromRelay(relay, pubkeyHex);
+        final picture = await f;
         if (picture != null && picture.isNotEmpty) {
-          // Cache speichern (pubkey-spezifisch)
           await prefs.setString(cacheKey, picture);
           await prefs.setInt(cacheTimeKey, now);
           return picture;
         }
       } catch (e) {
-        AppLogger.debug('NostrProfile', 'Relay $relay fehlgeschlagen: $e');
+        AppLogger.debug('NostrProfile', 'Relay-Abfrage fehlgeschlagen: $e');
       }
     }
     return null;
