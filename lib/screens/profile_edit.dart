@@ -6,7 +6,6 @@ import '../services/meetup_service.dart';
 import '../services/nostr_service.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
-import 'identity_setup.dart';
 import 'app_shell.dart';
 import 'platform_proof_screen.dart';
 import 'humanity_proof_screen.dart';
@@ -138,9 +137,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
     try {
       final keys = await NostrService.generateKeyPair();
+      await SigningService.useLocalMode(); // lokaler Modus aktiv
 
       setState(() {
         _hasNostrKey = true;
+        _isAmber = false;
         _nostrNpub = keys['npub']!;
         _isGeneratingKey = false;
       });
@@ -159,6 +160,70 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   // --- NSEC IMPORTIEREN ---
+  // --- MIT AMBER VERBINDEN (NIP-55, nsec bleibt in Amber) ---
+  void _connectAmber() async {
+    setState(() => _isGeneratingKey = true);
+    try {
+      final result = await SigningService.connectAmber();
+      if (!mounted) return;
+      switch (result) {
+        case AmberConnectSuccess(:final npub):
+          setState(() {
+            _hasNostrKey = true;
+            _isAmber = true;
+            _nostrNpub = npub;
+            _isGeneratingKey = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Mit Amber verbunden! Dein nsec bleibt in Amber."),
+              backgroundColor: Colors.green,
+            ),
+          );
+        case AmberConnectMissing():
+          setState(() => _isGeneratingKey = false);
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: cCard,
+              title: const Text("Amber nicht gefunden",
+                  style: TextStyle(color: Colors.white)),
+              content: const Text(
+                "Amber ist ein separater Signer für Android, der deinen privaten "
+                "Schlüssel sicher verwahrt. Installiere Amber (z.B. über F-Droid "
+                "oder den Zapstore) und versuche es erneut.",
+                style: TextStyle(color: Colors.white70, height: 1.5),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("OK", style: TextStyle(color: cOrange)),
+                ),
+              ],
+            ),
+          );
+        case AmberConnectCancelled():
+          setState(() => _isGeneratingKey = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Verbindung in Amber abgebrochen.")),
+          );
+        case AmberConnectError(:final message):
+          setState(() => _isGeneratingKey = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Amber-Fehler: $message"),
+                backgroundColor: Colors.red),
+          );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isGeneratingKey = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Fehler: $e"), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   void _importNsec() {
     final nsecController = TextEditingController();
 
@@ -212,10 +277,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
               try {
                 final keys = await NostrService.importNsec(nsec);
+                await SigningService.useLocalMode(); // lokaler Modus aktiv
                 if (mounted) {
                   Navigator.pop(context);
                   setState(() {
                     _hasNostrKey = true;
+                    _isAmber = false;
                     _nostrNpub = keys['npub']!;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -386,20 +453,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         _user = newUser;
         _isLoading = false;
       });
-
-      if (!mounted) return;
-
-      // Falls noch KEINE Identität existiert (weder lokaler Key noch Amber),
-      // den 3-Wege-Screen zeigen: generieren / Amber / nsec importieren.
-      final hasIdentity = _hasNostrKey || await SigningService.canSign();
-      if (!hasIdentity) {
-        final ok = await Navigator.push<bool>(
-          context,
-          MaterialPageRoute(builder: (_) => const IdentitySetupScreen()),
-        );
-        if (!mounted) return;
-        if (ok != true) return; // Abbruch → im Profil bleiben
-      }
 
       if (!mounted) return;
 
@@ -707,6 +760,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cPurple,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // MIT AMBER VERBINDEN (empfohlen)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _isGeneratingKey ? null : _connectAmber,
+                      icon: const Icon(Icons.shield_outlined, size: 18),
+                      label: const Text("MIT AMBER VERBINDEN"),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cCyan,
+                        side: const BorderSide(color: cCyan),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),

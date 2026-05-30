@@ -3,8 +3,6 @@ import '../models/user.dart';
 import '../theme.dart';
 import 'profile_edit.dart';
 import 'app_shell.dart';  // NEU: Statt dashboard.dart
-import 'identity_setup.dart';
-import '../services/signing_service.dart';
 import '../services/backup_service.dart';
 
 class IntroScreen extends StatefulWidget {
@@ -89,24 +87,6 @@ class _IntroScreenState extends State<IntroScreen>
         setState(() => _isLoading = false);
         return;
       }
-    }
-
-    if (!mounted) return;
-
-    // Identität einrichten: generieren / Amber / nsec-Import.
-    // Niemand wird gezwungen, einen nsec einzugeben.
-    final hasIdentity = user.hasNostrKey || await SigningService.canSign();
-    if (!hasIdentity) {
-      final ok = await Navigator.push<bool>(
-        context,
-        MaterialPageRoute(builder: (_) => const IdentitySetupScreen()),
-      );
-      if (!mounted) return;
-      if (ok != true) {
-        setState(() => _isLoading = false);
-        return;
-      }
-      user = await UserProfile.load();
     }
 
     if (!mounted) return;
