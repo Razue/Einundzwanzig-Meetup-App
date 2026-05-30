@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/secure_key_store.dart';
 import '../services/admin_status_verifier.dart';
 import 'badge.dart';
+import '../services/signing_service.dart';
 
 class UserProfile {
   String nickname;
@@ -51,18 +52,26 @@ class UserProfile {
       }
     }
 
+    // Amber-Modus: kein lokaler nsec, aber eine gültige Identität.
+    // npub kommt dann vom SigningService (verbundener Amber-Schlüssel).
+    final bool amberMode = await SigningService.isAmber;
+    if (amberMode) {
+      final amberNpub = await SigningService.npub();
+      if (amberNpub != null && amberNpub.isNotEmpty) npub = amberNpub;
+    }
+
     return UserProfile(
       nickname: prefs.getString('nickname') ?? "Anon",
       fullName: prefs.getString('full_name') ?? "",
       telegramHandle: prefs.getString('telegram') ?? "",
       nostrNpub: npub,
       twitterHandle: prefs.getString('twitter') ?? "",
-      isNostrVerified: hasKey || (prefs.getBool('nostr_verified') ?? false),
+      isNostrVerified: hasKey || amberMode || (prefs.getBool('nostr_verified') ?? false),
       isAdminVerified: prefs.getBool('admin_verified') ?? false,
       // Cache-Wert laden — wird durch reVerifyAdmin() überschrieben
       isAdmin: prefs.getBool('is_admin') ?? false,
       homeMeetupId: prefs.getString('home_meetup') ?? "",
-      hasNostrKey: hasKey,
+      hasNostrKey: hasKey, // lokaler nsec vorhanden? (im Amber-Modus false)
       promotionSource: prefs.getString('promotion_source') ?? "",
     );
     // HINWEIS: _adminCryptoVerified bleibt false bis reVerifyAdmin() läuft
@@ -108,3 +117,5 @@ class UserProfile {
 
   bool get isVerified => isNostrVerified || isAdminVerified;
 }
+
+

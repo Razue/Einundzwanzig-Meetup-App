@@ -25,6 +25,7 @@ import 'package:nostr/nostr.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'secure_key_store.dart';
+import 'signing_service.dart';
 
 class NostrService {
 
@@ -111,7 +112,8 @@ class NostrService {
   // NPUB LADEN (ohne nsec preiszugeben)
   // =============================================
   static Future<String?> getNpub() async {
-    return await SecureKeyStore.getNpub();
+    // Modus-unabhängig: lokaler npub ODER verbundener Amber-npub
+    return await SigningService.npub();
   }
 
   // =============================================
@@ -119,22 +121,18 @@ class NostrService {
   // Erzeugt eine Schnorr-Signatur über beliebige Daten
   // =============================================
   static Future<String> sign(String data) async {
-    final privHex = await SecureKeyStore.getPrivHex();
-
-    if (privHex == null) {
-      throw Exception('Kein Nostr-Schlüssel vorhanden. Bitte erst Key generieren oder importieren.');
+    if (!await SigningService.canSign()) {
+      throw Exception('Kein Nostr-Schlüssel vorhanden. Bitte erst Key generieren, importieren oder Amber verbinden.');
     }
 
-    // Wir erstellen ein Nostr-Event und nutzen dessen Signatur
-    // Kind 21000 = Custom (Einundzwanzig Badge)
-    final event = Event.from(
+    // Signatur über den SigningService (lokal oder Amber)
+    final signed = await SigningService.signEvent(
       kind: 21000,
-      tags: [],
+      tags: const <List<String>>[],
       content: data,
-      privkey: privHex,
     );
 
-    return event.sig;
+    return signed.sig;
   }
 
   // =============================================
@@ -182,10 +180,8 @@ class NostrService {
     required String date,
     required int blockHeight,
   }) async {
-    final privHex = await SecureKeyStore.getPrivHex();
-    final npub = await SecureKeyStore.getNpub();
-
-    if (privHex == null || npub == null) {
+    final npub = await SigningService.npub();
+    if (npub == null || !await SigningService.canSign()) {
       throw Exception('Kein Nostr-Schlüssel vorhanden.');
     }
 
@@ -199,24 +195,23 @@ class NostrService {
       'timestamp': DateTime.now().millisecondsSinceEpoch,
     });
 
-    // Mit privatem Key signieren (Nostr Event)
-    final event = Event.from(
+    // Signatur über den SigningService (lokal oder Amber)
+    final signed = await SigningService.signEvent(
       kind: 21000, // Custom Kind für Einundzwanzig Badges
-      tags: [
+      tags: <List<String>>[
         ['meetup', meetupId],
         ['block', blockHeight.toString()],
       ],
       content: badgeData,
-      privkey: privHex,
     );
 
     return {
-      'event_id': event.id,
-      'pubkey': event.pubkey,
+      'event_id': signed.id,
+      'pubkey': signed.pubkey,
       'npub': npub,
-      'signature': event.sig,
+      'signature': signed.sig,
       'content': badgeData,
-      'created_at': event.createdAt,
+      'created_at': signed.createdAt,
     };
   }
 
@@ -274,3 +269,5 @@ class NostrService {
     await SecureKeyStore.deleteKeys();
   }
 }
+
+

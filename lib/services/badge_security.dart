@@ -1,5 +1,5 @@
 // ============================================
-// BADGE SECURITY v3.1 — KOMPAKT + WASSERDICHT
+// BADGE SECURITY v3.2 — KOMPAKT + WASSERDICHT
 // ============================================
 //
 // KOMPAKT-FORMAT (für NFC Tags — max 492B):
@@ -14,33 +14,36 @@
 //   3. Ablauf-Check: x > now() sonst "Tag abgelaufen"
 //
 // SICHERHEIT:
-//   - Private Keys werden über SecureKeyStore geladen
-//     (Android Keystore / iOS Keychain)
+//   - Signiert wird AUSSCHLIESSLICH über den SigningService.
+//     Lokaler Modus  → Event.from(privkey: ...) wie bisher.
+//     Amber-Modus    → NIP-55, der nsec verlässt Amber nie.
 //   - JSON-Content wird vor dem Signieren kanonisiert
 //     (alphabetisch sortierte Keys) → deterministische Hashes
 //   - Legacy v1 (shared secret) ist als UNSICHER markiert
 //
-// ÄNDERUNGEN v3.1:
+// ÄNDERUNGEN v3.2:
+//   - Signieren läuft über SigningService statt direkt
+//     über SecureKeyStore.getPrivHex() → Amber-fähig
+//   - npub wird modus-unabhängig über SigningService.npub()
+//     geladen (in Amber-Modus liefert SecureKeyStore null)
+//
+// ÄNDERUNGEN v3.1 (unverändert übernommen):
 //   - verifyCompact() nutzt WHITELIST statt Blacklist
 //   - verifyNostr() createdAt-Bug behoben
-//   - Legacy sign() Alias ENTFERNT
-//   - Pubkey-Längenvalidierung hinzugefügt
+//   - Pubkey-Längenvalidierung
 //
 // ============================================
 
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:nostr/nostr.dart';
-import 'secure_key_store.dart';
+import 'signing_service.dart';
 
 class BadgeSecurity {
   static const int badgeValidityHours = 6;
 
   // =============================================
   // PUBKEY VALIDIERUNG
-  // =============================================
-  // Schnorr-Pubkeys (BIP-340) sind 32 Bytes = 64 Hex-Zeichen
-  // Signaturen sind 64 Bytes = 128 Hex-Zeichen
   // =============================================
   static final RegExp _hexPattern = RegExp(r'^[0-9a-fA-F]+$');
 
@@ -54,7 +57,6 @@ class BadgeSecurity {
 
   // =============================================
   // JSON KANONISIERUNG
-  // Sortiert Keys alphabetisch → deterministischer Hash
   // =============================================
   static String canonicalJsonEncode(Map<String, dynamic> data) {
     final sortedKeys = data.keys.toList()..sort();
@@ -68,30 +70,14 @@ class BadgeSecurity {
   // =============================================
   // LEGACY v1 — DEAKTIVIERT (Security Audit 2026-02)
   // =============================================
-  //
-  // v1 nutzte ein Shared Secret im Source Code.
-  // Da der Code öffentlich ist, konnte JEDER gültige
-  // v1-Signaturen erstellen → komplettes Trust-System
-  // kompromittierbar.
-  //
-  // MASSNAHME: v1 ist VOLLSTÄNDIG DEAKTIVIERT.
-  // - signLegacy() gibt immer leeren String zurück
-  // - verifyLegacy() gibt immer false zurück
-  // - verify() lehnt v1 mit Hinweis auf v2-Upgrade ab
-  //
-  // Betroffene User müssen beim nächsten Meetup einen
-  // neuen v2-Tag (Schnorr-signiert) erhalten.
-  // =============================================
 
   /// @deprecated v1 Legacy signing ist deaktiviert. Gibt immer '' zurück.
   static String signLegacy(String meetupId, String timestamp, int blockHeight) {
-    // DEAKTIVIERT — Secret wurde entfernt (Security Audit C1)
     return '';
   }
 
   /// @deprecated v1 Legacy verification ist deaktiviert. Gibt immer false zurück.
   static bool verifyLegacy(Map<String, dynamic> data) {
-    // DEAKTIVIERT — v1 Badges werden nicht mehr akzeptiert (Security Audit C1)
     return false;
   }
 
@@ -104,10 +90,12 @@ class BadgeSecurity {
     required int blockHeight,
     int validityHours = 6,
   }) async {
-    final privHex = await SecureKeyStore.getPrivHex();
-    if (privHex == null) throw Exception('Kein Nostr-Schlüssel vorhanden.');
+    if (!await SigningService.canSign()) {
+      throw const SigningException('Kein Nostr-Schlüssel vorhanden.');
+    }
 
-    final int expiresAt = DateTime.now().millisecondsSinceEpoch ~/ 1000 + (validityHours * 3600);
+    final int expiresAt =
+        DateTime.now().millisecondsSinceEpoch ~/ 1000 + (validityHours * 3600);
 
     // Content der signiert wird (OHNE c, p, s)
     final Map<String, dynamic> content = {
@@ -120,40 +108,27 @@ class BadgeSecurity {
 
     // KANONISIERT: Alphabetisch sortierte Keys → deterministischer Hash
     final contentJson = canonicalJsonEncode(content);
-    final tags = [['t', 'badge'], ['m', meetupId]];
+    final tags = <List<String>>[
+      ['t', 'badge'],
+      ['m', meetupId]
+    ];
 
-    final event = Event.from(
+    final signed = await SigningService.signEvent(
       kind: 21000,
       tags: tags,
       content: contentJson,
-      privkey: privHex,
     );
 
     return {
       ...content,
-      'c': event.createdAt,
-      'p': event.pubkey,
-      's': event.sig,
+      'c': signed.createdAt,
+      'p': signed.pubkey,
+      's': signed.sig,
     };
   }
 
   // =============================================
-  // v2 KOMPAKT: Verifizierung
-  // =============================================
-  //
-  // ÄNDERUNG v3.1: WHITELIST statt Blacklist
-  //
-  // VORHER (unsicher):
-  //   Blacklist: {'c', 'p', 's', 'n', 'ts', 'd'}
-  //   → Unbekannte Felder werden automatisch in
-  //     den signierten Content aufgenommen
-  //   → Angreifer kann Felder injizieren
-  //
-  // JETZT (sicher):
-  //   Whitelist: {'v', 't', 'm', 'b', 'x'}
-  //   → NUR bekannte Content-Felder werden verwendet
-  //   → Unbekannte Felder werden ignoriert
-  //
+  // v2 KOMPAKT: Verifizierung (unverändert)
   // =============================================
 
   static VerifyResult verifyCompact(Map<String, dynamic> data) {
@@ -162,25 +137,21 @@ class BadgeSecurity {
       final String sig = data['s'] ?? '';
       final int createdAt = data['c'] ?? 0;
 
-      // Defensive Validierung
       if (pubkey.isEmpty || sig.isEmpty || createdAt == 0) {
         return VerifyResult(isValid: false, version: 2, adminNpub: '', adminPubkey: '',
           message: 'Fehlende Signatur-Daten');
       }
 
-      // Pubkey-Format validieren (32 Bytes Hex)
       if (!isValidPubkeyHex(pubkey)) {
         return VerifyResult(isValid: false, version: 2, adminNpub: '', adminPubkey: pubkey,
           message: 'Ungültiges Pubkey-Format (erwartet: 64 Hex-Zeichen)');
       }
 
-      // Signatur-Format validieren (64 Bytes Hex)
       if (!isValidSignatureHex(sig)) {
         return VerifyResult(isValid: false, version: 2, adminNpub: '', adminPubkey: pubkey,
           message: 'Ungültiges Signatur-Format (erwartet: 128 Hex-Zeichen)');
       }
 
-      // Ablauf prüfen
       final int expiresAt = data['x'] ?? 0;
       if (expiresAt > 0) {
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -190,11 +161,6 @@ class BadgeSecurity {
         }
       }
 
-      // =============================================
-      // WHITELIST: NUR diese Felder bilden den Content
-      // Alles andere (c, p, s, n, ts, d, ...) wird
-      // NICHT in den signierten Content aufgenommen.
-      // =============================================
       const _contentKeys = {'v', 't', 'm', 'b', 'x'};
       final Map<String, dynamic> content = {};
       for (final key in _contentKeys) {
@@ -207,7 +173,6 @@ class BadgeSecurity {
       final meetupId = data['m'] ?? '';
       final tags = [['t', 'badge'], ['m', meetupId.toString()]];
 
-      // Event-ID nachrechnen
       final serialized = jsonEncode([0, pubkey, createdAt, 21000, tags, contentJson]);
       final eventId = sha256.convert(utf8.encode(serialized)).toString();
 
@@ -240,9 +205,11 @@ class BadgeSecurity {
     String meetupCountry = '',
     required String tagType,
   }) async {
-    final privHex = await SecureKeyStore.getPrivHex();
-    final npub = await SecureKeyStore.getNpub();
-    if (privHex == null || npub == null) throw Exception('Kein Nostr-Schlüssel vorhanden.');
+    // npub modus-unabhängig laden (Amber: SecureKeyStore liefert null)
+    final npub = await SigningService.npub();
+    if (npub == null || npub.isEmpty || !await SigningService.canSign()) {
+      throw const SigningException('Kein Nostr-Schlüssel vorhanden.');
+    }
 
     final Map<String, dynamic> tagData = {
       'v': 2, 'type': tagType,
@@ -254,35 +221,25 @@ class BadgeSecurity {
     // KANONISIERT für Signierung
     final contentJson = canonicalJsonEncode(tagData);
 
-    final event = Event.from(
+    final signed = await SigningService.signEvent(
       kind: 21000,
-      tags: [['t', tagType.toLowerCase()], ['meetup', meetupId], ['block', blockHeight.toString()]],
+      tags: <List<String>>[
+        ['t', tagType.toLowerCase()],
+        ['meetup', meetupId],
+        ['block', blockHeight.toString()]
+      ],
       content: contentJson,
-      privkey: privHex,
     );
 
-    tagData['sig'] = event.sig;
-    tagData['sig_id'] = event.id;
-    tagData['admin_pubkey'] = event.pubkey;
-    // NEU: createdAt mitspeichern für korrekte Re-Verifikation
-    tagData['created_at'] = event.createdAt;
+    tagData['sig'] = signed.sig;
+    tagData['sig_id'] = signed.id;
+    tagData['admin_pubkey'] = signed.pubkey;
+    tagData['created_at'] = signed.createdAt;
     return tagData;
   }
 
   // =============================================
-  // verifyNostr() — FIX: createdAt korrekt laden
-  // =============================================
-  //
-  // VORHER (Bug):
-  //   createdAt = data['block_height'] is int
-  //     ? data['block_height']          ← FALSCH! block_height ≠ createdAt
-  //     : DateTime.now().milliseconds   ← FALSCH! Neuer Timestamp = falscher Hash
-  //
-  // JETZT (Fix):
-  //   createdAt wird aus dem gespeicherten 'created_at' Feld gelesen.
-  //   Falls nicht vorhanden (alte Tags), wird sig_id als Fallback
-  //   für die Event-Rekonstruktion verwendet.
-  //
+  // verifyNostr() (unverändert)
   // =============================================
   static bool verifyNostr(Map<String, dynamic> data) {
     try {
@@ -291,28 +248,12 @@ class BadgeSecurity {
       final String eventId = data['sig_id'] ?? '';
 
       if (adminPubkey.isEmpty || signature.isEmpty || eventId.isEmpty) return false;
-
-      // Pubkey-Format validieren
       if (!isValidPubkeyHex(adminPubkey)) return false;
 
-      // createdAt: Aus dem gespeicherten Feld lesen
-      // Fallback-Kette: created_at → (kein Fallback auf block_height!)
       final int createdAt;
       if (data.containsKey('created_at') && data['created_at'] is int) {
         createdAt = data['created_at'] as int;
       } else {
-        // Für Legacy-Tags ohne created_at:
-        // Wir können die Signatur nicht korrekt re-verifizieren,
-        // da der Original-Timestamp fehlt.
-        // Die Event-ID wurde aber bereits beim Signieren berechnet,
-        // also prüfen wir über die gespeicherte Event-ID.
-        //
-        // HINWEIS: event.isValid() prüft intern:
-        //   sha256([0, pubkey, createdAt, kind, tags, content]) == eventId
-        // Ohne korrekten createdAt wird das immer fehlschlagen.
-        // Daher: Wir versuchen den createdAt aus dem Event-Context
-        // abzuleiten. Wenn das nicht geht → Verifikation schlägt fehl.
-        // Das ist das korrekte Verhalten (fail-secure).
         return false;
       }
 
@@ -323,7 +264,6 @@ class BadgeSecurity {
       contentData.remove('_verified_by');
       contentData.remove('created_at');
 
-      // KANONISIERT für konsistente Verifikation
       final content = canonicalJsonEncode(contentData);
       final meetupId = data['meetup_id'] ?? '';
       final blockHeight = data['block_height'] ?? 0;
@@ -343,11 +283,10 @@ class BadgeSecurity {
   }
 
   // =============================================
-  // UNIFIED VERIFY: Kompakt + Legacy
+  // UNIFIED VERIFY: Kompakt + Legacy (unverändert)
   // =============================================
 
   static VerifyResult verify(Map<String, dynamic> data) {
-    // Kompakt-Format? (hat 'p' und 's' statt 'admin_pubkey' und 'sig')
     if (data.containsKey('p') && data.containsKey('s') && !data.containsKey('sig')) {
       return verifyCompact(data);
     }
@@ -364,15 +303,13 @@ class BadgeSecurity {
         message: isValid ? 'Schnorr-Signatur gültig (Legacy-Format)' : 'Signatur ungültig!');
     }
 
-    // v1 Legacy: IMMER ablehnen (Security Audit C1)
-    // Secret war öffentlich → v1 Badges sind nicht vertrauenswürdig
     return VerifyResult(isValid: false, version: 1, adminNpub: '', adminPubkey: '',
       message: 'Legacy-Badges (v1) werden nicht mehr akzeptiert. '
                'Bitte Organisator um neuen v2-Tag (Schnorr-signiert).');
   }
 
   // =============================================
-  // COMPACT FORMAT: Normalisierung
+  // COMPACT FORMAT: Normalisierung (unverändert)
   // =============================================
 
   static Map<String, dynamic> normalize(Map<String, dynamic> data) {
@@ -386,7 +323,6 @@ class BadgeSecurity {
     else if (t is String) normalized['type'] = t;
     else normalized['type'] = data['type'] ?? 'BADGE';
 
-    // Meetup-ID: "aschaffenburg-de" → id + country
     final m = data['m'] as String? ?? '';
     if (m.contains('-')) {
       final parts = m.split('-');
@@ -433,7 +369,6 @@ class BadgeSecurity {
     if (data['qr_interval'] != null) normalized['qr_interval'] = data['qr_interval'];
     if (data['delivery'] != null) normalized['delivery'] = data['delivery'];
 
-    // Kompakte Rolling-QR-Felder
     if (data['n'] != null) normalized['qr_nonce'] = data['n'];
     if (data['ts'] != null) normalized['qr_time_step'] = data['ts'];
     if (data['d'] != null) normalized['delivery'] = data['d'] == 'qr' ? 'rolling_qr' : data['d'];
@@ -442,7 +377,7 @@ class BadgeSecurity {
   }
 
   // =============================================
-  // ABLAUF-CHECK
+  // ABLAUF-CHECK (unverändert)
   // =============================================
 
   static bool isExpired(Map<String, dynamic> data) {
@@ -471,14 +406,22 @@ class BadgeSecurity {
   // =============================================
 
   static Future<QRSignResult> signQRv3(String jsonData) async {
-    final privHex = await SecureKeyStore.getPrivHex();
-    if (privHex == null) {
-      // Kein Private Key → QR-Signierung nicht möglich (Security Audit C1)
-      // Legacy-Fallback wurde entfernt da v1 Secret kompromittiert
+    if (!await SigningService.canSign()) {
+      // Kein Schlüssel → QR-Signierung nicht möglich (Security Audit C1)
       return QRSignResult(signature: '', eventId: '', createdAt: 0, pubkeyHex: '', isNostr: false);
     }
-    final event = Event.from(kind: 21001, tags: [], content: jsonData, privkey: privHex);
-    return QRSignResult(signature: event.sig, eventId: event.id, createdAt: event.createdAt, pubkeyHex: event.pubkey, isNostr: true);
+    final signed = await SigningService.signEvent(
+      kind: 21001,
+      tags: const <List<String>>[],
+      content: jsonData,
+    );
+    return QRSignResult(
+      signature: signed.sig,
+      eventId: signed.id,
+      createdAt: signed.createdAt,
+      pubkeyHex: signed.pubkey,
+      isNostr: true,
+    );
   }
 
   static Future<String> signQR(String jsonData) async {
@@ -493,7 +436,6 @@ class BadgeSecurity {
     if (pubkeyHex.isEmpty || signature.isEmpty || eventId.isEmpty) {
       return QRVerifyResult(isValid: false, version: 0, signerNpub: '', message: 'Fehlende Signatur-Daten');
     }
-    // Defensive Validierung
     if (!isValidPubkeyHex(pubkeyHex)) {
       return QRVerifyResult(isValid: false, version: 0, signerNpub: '', message: 'Ungültiges Pubkey-Format');
     }
@@ -514,30 +456,14 @@ class BadgeSecurity {
 
   /// @deprecated v1 QR Legacy verification ist deaktiviert (Security Audit C1).
   static QRVerifyResult verifyQRLegacy({required String jsonData, required String signature, String? pubkeyHex}) {
-    // DEAKTIVIERT — v1 Badges werden nicht mehr akzeptiert
     return QRVerifyResult(isValid: false, version: 1, signerNpub: '',
       message: 'Legacy-QR (v1) wird nicht mehr akzeptiert. '
                'Bitte Organisator um neuen v2-Tag.');
   }
-
-  // =============================================
-  // LEGACY sign() ALIAS — ENTFERNT in v3.1
-  // =============================================
-  //
-  // VORHER:
-  //   static String sign(...) => signLegacy(...)
-  //
-  // Das war gefährlich, weil sign() wie eine sichere
-  // Methode aussieht, aber nur Legacy-HMAC nutzt.
-  //
-  // Wenn Code noch `BadgeSecurity.sign()` aufruft,
-  // muss er explizit `signLegacy()` verwenden —
-  // und sieht dann im Code sofort, dass es unsicher ist.
-  // =============================================
 }
 
 // =============================================
-// RESULT KLASSEN
+// RESULT KLASSEN (unverändert)
 // =============================================
 
 class VerifyResult {

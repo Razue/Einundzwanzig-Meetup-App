@@ -14,6 +14,7 @@ import '../models/badge.dart';
 import 'admin_registry.dart';
 import 'nostr_service.dart';
 import 'secure_key_store.dart';
+import 'signing_service.dart';
 import 'platform_proof_service.dart'; // NEU
 import 'humanity_proof_service.dart'; // NEU
 import 'dart:typed_data';
@@ -205,6 +206,11 @@ class BackupService {
       final nsec = await SecureKeyStore.getNsec();
       final npub = await SecureKeyStore.getNpub();
       final privHex = await SecureKeyStore.getPrivHex();
+      // Signing-Modus + (im Amber-Fall) der verbundene npub.
+      // WICHTIG: Im Amber-Modus wird KEIN nsec exportiert — der
+      // private Schlüssel bleibt ausschließlich in Amber.
+      final bool isAmber = await SigningService.isAmber;
+      final String? activeNpub = await SigningService.npub();
       final adminList = await AdminRegistry.getAdminList();
       final myVouches = await AdminRegistry.getMyVouches();
 
@@ -245,10 +251,11 @@ class BackupService {
           'delivery': b.delivery,
         }).toList(),
         'nostr': {
-          'nsec': nsec ?? '',
-          'npub': npub ?? '',
-          'priv_hex': privHex ?? '',
-          'has_key': nsec != null,
+          'nsec': isAmber ? '' : (nsec ?? ''),
+          'npub': activeNpub ?? npub ?? '',
+          'priv_hex': isAmber ? '' : (privHex ?? ''),
+          'has_key': !isAmber && nsec != null,
+          'signing_mode': isAmber ? 'amber' : 'local',
         },
         'admin_registry': adminList.map((a) => a.toJson()).toList(),
         'my_vouches': myVouches.map((a) => a.toJson()).toList(),
@@ -473,11 +480,25 @@ class BackupService {
                 npub: npub,
                 privHex: privHex,
               );
+              await SigningService.useLocalMode();
 
               user.nostrNpub = npub;
               user.isNostrVerified = true;
               user.hasNostrKey = true;
               await user.save();
+            }
+          } else if ((nostrData['signing_mode'] ?? 'local') == 'amber') {
+            // Amber-Modus: kein nsec im Backup — nur den npub
+            // wiederherstellen. Der User signiert weiter über Amber.
+            final amberNpub = nostrData['npub'] ?? '';
+            if (amberNpub.isNotEmpty) {
+              try {
+                await SigningService.restoreAmber(amberNpub);
+                user.nostrNpub = amberNpub;
+                user.isNostrVerified = true;
+                user.hasNostrKey = false; // kein lokaler Key
+                await user.save();
+              } catch (_) {/* ungültiger npub im Backup → ignorieren */}
             }
           }
         }
@@ -648,3 +669,5 @@ class BackupService {
     }
   }
 }
+
+

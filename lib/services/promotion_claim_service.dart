@@ -37,6 +37,7 @@ import 'dart:math';
 import 'package:nostr/nostr.dart';
 import '../models/badge.dart';
 import 'secure_key_store.dart';
+import 'signing_service.dart';
 import 'nostr_service.dart';
 import 'badge_security.dart';
 import 'admin_registry.dart';
@@ -75,9 +76,8 @@ class PromotionClaimService {
     required List<MeetupBadge> badges,
     required String meetupName,
   }) async {
-    final privHex = await SecureKeyStore.getPrivHex();
-    final npub = await SecureKeyStore.getNpub();
-    if (privHex == null || npub == null) return false;
+    final npub = await SigningService.npub();
+    if (npub == null || !await SigningService.canSign()) return false;
 
     // Nur Badges mit kryptographischem Beweis
     final verifiedBadges = badges.where((b) => b.hasCryptoProof).toList();
@@ -113,15 +113,14 @@ class PromotionClaimService {
       'claimed_at': DateTime.now().millisecondsSinceEpoch ~/ 1000,
     });
 
-    // Signiertes Nostr Event erstellen
-    final event = Event.from(
+    // Signiertes Nostr Event erstellen (lokal oder via Amber)
+    final signed = await SigningService.signEvent(
       kind: _claimKind,
-      tags: [
+      tags: <List<String>>[
         ['d', _claimDTag],
         ['meetup', meetupName],
       ],
       content: claimContent,
-      privkey: privHex,
     );
 
     // An Relays publishen
@@ -129,13 +128,13 @@ class PromotionClaimService {
     final eventJson = jsonEncode([
       'EVENT',
       {
-        'id': event.id,
-        'pubkey': event.pubkey,
-        'created_at': event.createdAt,
-        'kind': event.kind,
-        'tags': event.tags,
-        'content': event.content,
-        'sig': event.sig,
+        'id': signed.id,
+        'pubkey': signed.pubkey,
+        'created_at': signed.createdAt,
+        'kind': signed.kind,
+        'tags': signed.tags,
+        'content': signed.content,
+        'sig': signed.sig,
       }
     ]);
 
@@ -470,3 +469,5 @@ class VerifiedClaim {
     required this.claimedAt,
   });
 }
+
+

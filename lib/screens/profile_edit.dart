@@ -4,7 +4,9 @@ import '../models/user.dart';
 import '../models/meetup.dart';
 import '../services/meetup_service.dart';
 import '../services/nostr_service.dart';
+import '../services/signing_service.dart';
 import '../theme.dart';
+import 'identity_setup.dart';
 import 'app_shell.dart';
 import 'platform_proof_screen.dart';
 import 'humanity_proof_screen.dart';
@@ -32,6 +34,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   // Nostr Key State
   bool _hasNostrKey = false;
+  bool _isAmber = false; // Identität über Amber (kein lokaler nsec)
   String _nostrNpub = "";
   bool _isGeneratingKey = false;
 
@@ -52,6 +55,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
     final hasKey = await NostrService.hasKey();
     final npub = await NostrService.getNpub();
+    final isAmber = await SigningService.isAmber;
 
     // Identity Layer Status
     int proofCount = 0;
@@ -71,7 +75,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         _nicknameController.text = user.nickname;
         _selectedHomeMeetup = user.homeMeetupId;
 
-        _hasNostrKey = hasKey;
+        _isAmber = isAmber;
+        // Im Amber-Modus gibt es keinen lokalen nsec, aber eine gültige
+        // Identität → als "Schlüssel aktiv" anzeigen (npub vorhanden).
+        _hasNostrKey = hasKey || isAmber;
         _nostrNpub = npub ?? user.nostrNpub;
 
         _platformProofCount = proofCount;
@@ -382,7 +389,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
       if (!mounted) return;
 
-      // Direkt zum Dashboard — kein Review-Screen mehr nötig
+      // Falls noch KEINE Identität existiert (weder lokaler Key noch Amber),
+      // den 3-Wege-Screen zeigen: generieren / Amber / nsec importieren.
+      final hasIdentity = _hasNostrKey || await SigningService.canSign();
+      if (!hasIdentity) {
+        final ok = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(builder: (_) => const IdentitySetupScreen()),
+        );
+        if (!mounted) return;
+        if (ok != true) return; // Abbruch → im Profil bleiben
+      }
+
+      if (!mounted) return;
+
+      // Zum Dashboard
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const AppShell()),
@@ -632,6 +653,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                         ),
                       ),
+                      if (!_isAmber) ...[
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
@@ -645,6 +667,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                         ),
                       ),
+                      ],
                     ],
                   ),
                 ],
@@ -953,3 +976,5 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
     );
   }
 }
+
+

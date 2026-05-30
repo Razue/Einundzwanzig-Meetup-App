@@ -38,6 +38,7 @@ import 'app_logger.dart';
 import 'nostr_service.dart';
 import 'relay_config.dart';
 import 'secure_key_store.dart';
+import 'signing_service.dart';
 
 // =============================================
 // DATENMODELLE
@@ -637,8 +638,7 @@ class VouchingService {
     required String targetNpub,
     required String reason,
   }) async {
-    final privHex = await SecureKeyStore.getPrivHex();
-    if (privHex == null) throw Exception('Kein Nostr-Key vorhanden.');
+    if (!await SigningService.canSign()) throw Exception('Kein Nostr-Key vorhanden.');
     if (!NostrService.isValidNpub(targetNpub)) {
       throw Exception('Ungültiger npub.');
     }
@@ -658,26 +658,25 @@ class VouchingService {
       'reported_at': DateTime.now().toIso8601String(),
     });
 
-    final event = Event.from(
+    final signed = await SigningService.signEvent(
       kind: _distrustKind,
-      tags: [
+      tags: <List<String>>[
         ['d', _distrustDTag],
         ['p', Nip19.decodePubkey(targetNpub)],
       ],
       content: content,
-      privkey: privHex,
     );
 
     final eventJson = jsonEncode([
       'EVENT',
       {
-        'id': event.id,
-        'pubkey': event.pubkey,
-        'created_at': event.createdAt,
-        'kind': event.kind,
-        'tags': event.tags,
-        'content': event.content,
-        'sig': event.sig,
+        'id': signed.id,
+        'pubkey': signed.pubkey,
+        'created_at': signed.createdAt,
+        'kind': signed.kind,
+        'tags': signed.tags,
+        'content': signed.content,
+        'sig': signed.sig,
       }
     ]);
 
@@ -786,3 +785,6 @@ class VouchingService {
     );
   }
 }
+
+
+

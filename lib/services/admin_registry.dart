@@ -27,6 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'nostr_service.dart';
 import 'secure_key_store.dart';
+import 'signing_service.dart';
 import 'app_logger.dart';
 
 class AdminEntry {
@@ -627,9 +628,7 @@ class AdminRegistry {
   // =============================================
   /// Publiziert MEINE persönlichen Bürgschaften (nicht den Netzwerk-Cache!)
   static Future<String> createAndPublishAdminListEvent() async {
-    final privHex = await SecureKeyStore.getPrivHex();
-
-    if (privHex == null) {
+    if (!await SigningService.canSign()) {
       throw Exception('Kein Nostr-Key vorhanden.');
     }
 
@@ -640,25 +639,24 @@ class AdminRegistry {
       'updated_at': DateTime.now().toIso8601String(),
     });
 
-    final event = Event.from(
+    final signed = await SigningService.signEvent(
       kind: _eventKind,
-      tags: [
+      tags: <List<String>>[
         ['d', _eventDTag],
       ],
       content: content,
-      privkey: privHex,
     );
 
     final eventJson = jsonEncode([
       'EVENT',
       {
-        'id': event.id,
-        'pubkey': event.pubkey,
-        'created_at': event.createdAt,
-        'kind': event.kind,
-        'tags': event.tags,
-        'content': event.content,
-        'sig': event.sig,
+        'id': signed.id,
+        'pubkey': signed.pubkey,
+        'created_at': signed.createdAt,
+        'kind': signed.kind,
+        'tags': signed.tags,
+        'content': signed.content,
+        'sig': signed.sig,
       }
     ]);
 
@@ -718,9 +716,7 @@ class AdminRegistry {
   }
 
   static Future<String> createAdminListEvent() async {
-    final privHex = await SecureKeyStore.getPrivHex();
-
-    if (privHex == null) {
+    if (!await SigningService.canSign()) {
       throw Exception('Kein Nostr-Key vorhanden.');
     }
 
@@ -731,21 +727,20 @@ class AdminRegistry {
       'updated_at': DateTime.now().toIso8601String(),
     });
 
-    final event = Event.from(
+    final signed = await SigningService.signEvent(
       kind: _eventKind,
-      tags: [['d', _eventDTag]],
+      tags: <List<String>>[['d', _eventDTag]],
       content: content,
-      privkey: privHex,
     );
 
     return jsonEncode({
-      'id': event.id,
-      'pubkey': event.pubkey,
-      'created_at': event.createdAt,
-      'kind': event.kind,
-      'tags': event.tags,
-      'content': event.content,
-      'sig': event.sig,
+      'id': signed.id,
+      'pubkey': signed.pubkey,
+      'created_at': signed.createdAt,
+      'kind': signed.kind,
+      'tags': signed.tags,
+      'content': signed.content,
+      'sig': signed.sig,
     });
   }
 
@@ -776,3 +771,6 @@ class AdminRegistry {
     return -1; // Fehler
   }
 }
+
+
+

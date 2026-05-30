@@ -34,6 +34,7 @@ import '../models/user.dart';
 import 'badge_security.dart';
 import 'relay_config.dart';
 import 'secure_key_store.dart';
+import 'signing_service.dart';
 import 'social_graph_service.dart';
 import 'zap_verification_service.dart';
 import 'humanity_proof_service.dart';
@@ -72,9 +73,8 @@ class ReputationPublisher {
     bool force = false,
   }) async {
     try {
-      // Privaten Schlüssel laden
-      final privHex = await SecureKeyStore.getPrivHex();
-      if (privHex == null || privHex.isEmpty) {
+      // Signaturfähigkeit prüfen (lokaler Key ODER Amber verbunden)
+      if (!await SigningService.canSign()) {
         return PublishResult(
           success: false,
           relayCount: 0,
@@ -134,20 +134,19 @@ class ReputationPublisher {
         humanityProof: humanityProof,
       );
 
-      // Nostr-Event signieren
-      final event = Event.from(
+      // Nostr-Event signieren (lokal oder via Amber)
+      final signed = await SigningService.signEvent(
         kind: _eventKind,
-        tags: [
+        tags: <List<String>>[
           ['d', _eventDTag],
           ['v', _protocolVersion.toString()],
           ['client', 'einundzwanzig-meetup-app'],
         ],
         content: jsonEncode(content),
-        privkey: privHex,
       );
 
       // An Relays senden
-      final relayCount = await _publishToRelays(event);
+      final relayCount = await _publishToRelays(signed);
 
       // Letzten Publish-Status speichern
       await _savePublishStatus(badges);
@@ -155,7 +154,7 @@ class ReputationPublisher {
       return PublishResult(
         success: relayCount > 0,
         relayCount: relayCount,
-        eventId: event.id,
+        eventId: signed.id,
         message: relayCount > 0
             ? 'Reputation auf $relayCount Relays aktualisiert'
             : 'Konnte an keinen Relay senden',
@@ -311,7 +310,7 @@ class ReputationPublisher {
   // =============================================
   // AN RELAYS SENDEN
   // =============================================
-  static Future<int> _publishToRelays(Event event) async {
+  static Future<int> _publishToRelays(SignedEvent event) async {
     final relays = await RelayConfig.getActiveRelays();
     if (relays.isEmpty) return 0;
 
@@ -719,3 +718,5 @@ class PlatformProof {
     );
   }
 }
+
+

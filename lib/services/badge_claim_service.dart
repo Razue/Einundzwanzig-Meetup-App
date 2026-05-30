@@ -22,7 +22,7 @@ import 'package:crypto/crypto.dart';
 import '../models/badge.dart';
 import 'nostr_service.dart';
 import 'badge_security.dart';
-import 'secure_key_store.dart';
+import 'signing_service.dart';
 
 // Nostr Event und Nip19 Imports (aus dem nostr package)
 // Diese sind bereits in der App vorhanden über badge_security.dart
@@ -78,8 +78,7 @@ class BadgeClaimService {
     required int blockHeight,      // Block Height des Badges
   }) async {
     try {
-      final privHex = await SecureKeyStore.getPrivHex();
-      if (privHex == null || privHex.isEmpty) {
+      if (!await SigningService.canSign()) {
         return ClaimResult(
           success: false,
           message: 'Kein Schlüssel vorhanden — Claim nicht möglich',
@@ -102,23 +101,22 @@ class BadgeClaimService {
       // Kanonisiert für deterministischen Hash
       final contentJson = BadgeSecurity.canonicalJsonEncode(claimContent);
 
-      // Nostr-Event erstellen und signieren
-      final event = Event.from(
+      // Nostr-Event erstellen und signieren (lokal oder via Amber)
+      final signed = await SigningService.signEvent(
         kind: 21002,  // Badge-Claim Event Kind
-        tags: [
+        tags: <List<String>>[
           ['t', 'badge_claim'],
           ['p', orgPubkey],      // Referenz zum Organisator
           ['block', blockHeight.toString()],
         ],
         content: contentJson,
-        privkey: privHex,
       );
 
       return ClaimResult(
         success: true,
-        claimSig: event.sig,
-        claimEventId: event.id,
-        claimPubkey: event.pubkey,
+        claimSig: signed.sig,
+        claimEventId: signed.id,
+        claimPubkey: signed.pubkey,
         claimTimestamp: now,
         message: 'Badge gebunden ✓',
       );
@@ -285,3 +283,5 @@ class BadgeClaimService {
     return await claimUnboundBadges(badges);
   }
 }
+
+

@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'badge_security.dart';
 import 'reputation_publisher.dart';
 import 'secure_key_store.dart';
+import 'signing_service.dart';
 
 class PlatformProofService {
   // Nostr Event Kind für Platform Proofs (intern)
@@ -82,9 +83,8 @@ class PlatformProofService {
     String? customPlatformName,
   }) async {
     try {
-      final privHex = await SecureKeyStore.getPrivHex();
-      final npub = await SecureKeyStore.getNpub();
-      if (privHex == null || npub == null || privHex.isEmpty) {
+      final npub = await SigningService.npub();
+      if (npub == null || !await SigningService.canSign()) {
         return ProofCreateResult(
           success: false,
           message: 'Kein Schlüssel vorhanden',
@@ -117,26 +117,25 @@ class PlatformProofService {
 
       final contentJson = BadgeSecurity.canonicalJsonEncode(proofContent);
 
-      // Nostr-Event signieren
-      final event = Event.from(
+      // Nostr-Event signieren (lokal oder via Amber)
+      final signed = await SigningService.signEvent(
         kind: _proofKind,
-        tags: [
+        tags: <List<String>>[
           ['t', 'platform_proof'],
           ['platform', platform],
           ['username', trimmedUsername],
         ],
         content: contentJson,
-        privkey: privHex,
       );
 
       // Verify-String zusammenbauen
-      final verifyString = '21rep::$npub::$platform::$trimmedUsername::sig=${event.sig}';
+      final verifyString = '21rep::$npub::$platform::$trimmedUsername::sig=${signed.sig}';
 
       // Proof lokal speichern
       final proof = PlatformProof(
         platform: platform,
         username: trimmedUsername,
-        proofSig: event.sig,
+        proofSig: signed.sig,
         createdAt: now,
       );
       await _saveProof(proof);
@@ -506,3 +505,5 @@ class ProofVerifyResult {
     required this.message,
   });
 }
+
+

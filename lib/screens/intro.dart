@@ -3,9 +3,9 @@ import '../models/user.dart';
 import '../theme.dart';
 import 'profile_edit.dart';
 import 'app_shell.dart';  // NEU: Statt dashboard.dart
-import '../services/nostr_service.dart';
+import 'identity_setup.dart';
+import '../services/signing_service.dart';
 import '../services/backup_service.dart';
-import '../services/app_logger.dart';
 
 class IntroScreen extends StatefulWidget {
   const IntroScreen({super.key});
@@ -93,19 +93,20 @@ class _IntroScreenState extends State<IntroScreen>
 
     if (!mounted) return;
 
-    if (!user.hasNostrKey) {
-      try {
-        final keys = await NostrService.generateKeyPair();
-        if (keys['npub'] != null) {
-          user.nostrNpub = keys['npub']!;
-          user.hasNostrKey = true;
-          user.isNostrVerified = true;
-          await user.save();
-          AppLogger.debug('Intro', 'Nostr-Key erstellt: ${NostrService.shortenNpub(keys['npub']!)}');
-        }
-      } catch (e) {
-        AppLogger.debug('Intro', 'Nostr-Key-Erstellung fehlgeschlagen: $e');
+    // Identität einrichten: generieren / Amber / nsec-Import.
+    // Niemand wird gezwungen, einen nsec einzugeben.
+    final hasIdentity = user.hasNostrKey || await SigningService.canSign();
+    if (!hasIdentity) {
+      final ok = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(builder: (_) => const IdentitySetupScreen()),
+      );
+      if (!mounted) return;
+      if (ok != true) {
+        setState(() => _isLoading = false);
+        return;
       }
+      user = await UserProfile.load();
     }
 
     if (!mounted) return;
@@ -284,3 +285,5 @@ class _IntroScreenState extends State<IntroScreen>
     );
   }
 }
+
+
