@@ -26,6 +26,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final TextEditingController _nicknameController = TextEditingController();
 
   String _selectedHomeMeetup = "";
+  bool _homeMeetupMissing = false; // Pflichtfeld-Markierung Home-Meetup
   List<Meetup> _allMeetups = [];
 
   UserProfile? _user;
@@ -423,6 +424,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           onSelect: (cityName) {
             setState(() {
               _selectedHomeMeetup = cityName;
+              _homeMeetupMissing = false; // Markierung weg sobald gewählt
             });
           },
         );
@@ -432,38 +434,60 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   // --- SPEICHERN ---
   Future<void> _saveProfile() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+    final formOk = _formKey.currentState?.validate() ?? false;
+    final homeMeetupOk = _selectedHomeMeetup.trim().isNotEmpty;
 
-      final newUser = UserProfile(
-        nickname: _nicknameController.text.trim(),
-        fullName: _user?.fullName ?? '', // Behalten falls vorhanden
-        homeMeetupId: _selectedHomeMeetup,
-        nostrNpub: _nostrNpub,
-        telegramHandle: _user?.telegramHandle ?? '', // Behalten falls vorhanden
-        twitterHandle: _user?.twitterHandle ?? '',   // Behalten falls vorhanden
-        isAdminVerified: false,
-        isAdmin: _user?.isAdmin ?? false,
-        isNostrVerified: _hasNostrKey,
-        hasNostrKey: _hasNostrKey,
-      );
+    // Home-Meetup-Markierung aktualisieren
+    setState(() => _homeMeetupMissing = !homeMeetupOk);
 
-      await newUser.save();
-
-      setState(() {
-        _user = newUser;
-        _isLoading = false;
-      });
-
-      if (!mounted) return;
-
-      // Zum Dashboard
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const AppShell()),
-        (route) => false,
-      );
+    if (!formOk || !homeMeetupOk) {
+      // Klarer Hinweis statt stillem Nichts-Passieren
+      final missing = <String>[];
+      if (!formOk) missing.add("Nickname");
+      if (!homeMeetupOk) missing.add("Home-Meetup");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: cRed,
+            content: Text(
+              "Bitte ausfüllen: ${missing.join(' und ')}",
+            ),
+          ),
+        );
+      }
+      return;
     }
+
+    setState(() => _isLoading = true);
+
+    final newUser = UserProfile(
+      nickname: _nicknameController.text.trim(),
+      fullName: _user?.fullName ?? '', // Behalten falls vorhanden
+      homeMeetupId: _selectedHomeMeetup,
+      nostrNpub: _nostrNpub,
+      telegramHandle: _user?.telegramHandle ?? '', // Behalten falls vorhanden
+      twitterHandle: _user?.twitterHandle ?? '',   // Behalten falls vorhanden
+      isAdminVerified: false,
+      isAdmin: _user?.isAdmin ?? false,
+      isNostrVerified: _hasNostrKey,
+      hasNostrKey: _hasNostrKey,
+    );
+
+    await newUser.save();
+
+    setState(() {
+      _user = newUser;
+      _isLoading = false;
+    });
+
+    if (!mounted) return;
+
+    // Zum Dashboard
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const AppShell()),
+      (route) => false,
+    );
   }
 
   void _unlockEditMode() {
@@ -619,13 +643,24 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           const SizedBox(height: 12),
 
           InkWell(
-            onTap: _showMeetupPicker,
+            onTap: () {
+              _showMeetupPicker();
+              if (_homeMeetupMissing) setState(() => _homeMeetupMissing = false);
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-              decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(12), border: Border.all(color: cBorder)),
+              decoration: BoxDecoration(
+                color: cCard,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _homeMeetupMissing ? cRed : cBorder,
+                  width: _homeMeetupMissing ? 1.5 : 1,
+                ),
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.home, color: cOrange),
+                  Icon(Icons.home,
+                      color: _homeMeetupMissing ? cRed : cOrange),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -638,6 +673,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ),
             ),
           ),
+          if (_homeMeetupMissing)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 12),
+              child: Text(
+                "Pflichtfeld — bitte wähle dein Home-Meetup",
+                style: TextStyle(color: cRed, fontSize: 12),
+              ),
+            ),
 
           const SizedBox(height: 30),
 
@@ -909,7 +952,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         fillColor: cCard,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      validator: required ? (v) => v!.isEmpty ? "Pflichtfeld" : null : null,
+      validator: required
+          ? (v) {
+              final t = (v ?? '').trim();
+              if (t.isEmpty) return "Pflichtfeld — bitte ausfüllen";
+              if (t.toLowerCase() == 'anon') {
+                return "Bitte wähle einen eigenen Nickname (nicht 'Anon')";
+              }
+              if (t.length < 2) return "Mindestens 2 Zeichen";
+              return null;
+            }
+          : null,
     );
   }
 
