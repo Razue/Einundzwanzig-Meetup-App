@@ -599,6 +599,73 @@ class AdminRegistry {
     await _saveMyVouches(list);
   }
 
+  // =============================================
+  // WIEDERHERSTELLUNG & NOTAUSGANG
+  // =============================================
+  // Problem: Meine Bürgschaften liegen lokal (_myVouchesKey). Geht der
+  // lokale Speicher verloren (Neuinstallation, Gerätewechsel) OHNE Backup,
+  // kann ich meine bereits publizierten Bürgschaften nicht mehr auflösen —
+  // sie leben aber auf den Relays weiter.
+  //
+  // Lösung: Die Relays SIND die Quelle der Wahrheit. Mein eigenes Event
+  // (Kind 30078, #d=einundzwanzig-admins, author=mein pubkey) ist signiert
+  // und eindeutig abrufbar. Damit kann ich meine Liste jederzeit
+  // wiederherstellen — ganz ohne Backup.
+
+  /// Liest MEINE zuletzt publizierte Bürgschafts-Liste von den Relays
+  /// zurück und überschreibt den lokalen Cache damit.
+  /// Gibt die Anzahl wiederhergestellter Bürgschaften zurück (-1 = Fehler).
+  static Future<int> recoverMyVouchesFromRelays() async {
+    final myNpub = await NostrService.getNpub();
+    if (myNpub == null || myNpub.isEmpty) return -1;
+
+    String myHex;
+    try {
+      myHex = Nip19.decodePubkey(myNpub);
+    } catch (_) {
+      return -1;
+    }
+
+    // Nur nach MEINEM eigenen Event fragen (author = ich).
+    for (final relayUrl in _relays) {
+      try {
+        final result = await _fetchFromSingleRelay(relayUrl, [myHex]);
+        if (result != null) {
+          // Schutz: Eine LEERE Antwort kann zweierlei bedeuten —
+          //  (a) ich habe nie publiziert, oder
+          //  (b) ich habe bewusst alles widerrufen.
+          // In beiden Fällen darf ein evtl. vorhandener, noch nicht
+          // publizierter lokaler Stand NICHT stillschweigend gelöscht
+          // werden. Nur überschreiben, wenn das Relay tatsächlich
+          // Bürgschaften liefert.
+          if (result.admins.isNotEmpty) {
+            await _saveMyVouches(result.admins);
+            return result.admins.length;
+          }
+          // Relay hat geantwortet, aber kein/leeres Event → nichts ändern.
+          return 0;
+        }
+      } catch (e) {
+        AppLogger.debug('AdminRegistry', 'Recover von $relayUrl fehlgeschlagen: $e');
+      }
+    }
+    return -1; // kein Relay hat geantwortet
+  }
+
+  /// NOTAUSGANG: Widerruft ALLE meine Bürgschaften, indem eine LEERE Liste
+  /// publiziert wird. Das überschreibt mein altes Event auf den Relays mit
+  /// "ich bürge für niemanden" — funktioniert auch dann, wenn lokal nichts
+  /// mehr vorhanden ist.
+  static Future<String> revokeAllVouches() async {
+    if (!await SigningService.canSign()) {
+      throw Exception('Kein Nostr-Key vorhanden.');
+    }
+    // Lokale Liste leeren
+    await _saveMyVouches([]);
+    // Leeres Event publishen (überschreibt das alte Replaceable Event)
+    return await createAndPublishAdminListEvent();
+  }
+
   /// Legacy: addAdmin → Netzwerk-Cache (für promotion_claim_service, backup_service)
   /// ACHTUNG: NICHT für persönliches Bürgen verwenden! Dafür → addVouch()
   static Future<void> addAdmin(AdminEntry admin) async {

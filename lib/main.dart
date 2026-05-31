@@ -9,15 +9,24 @@ import 'services/promotion_claim_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  // Immersiver Vollbild-Modus: blendet die Android-Navigationsleiste aus.
+  // Ab Android 15/16 erzwingt das System Edge-to-Edge und ignoriert
+  // systemNavigationBarColor — daher hier immersiveSticky, damit die
+  // Leiste verschwindet und nur bei einem Wisch vom Rand kurz erscheint.
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.immersiveSticky,
+    overlays: [SystemUiOverlay.top], // Statusleiste oben bleibt sichtbar
+  );
+
   // Status Bar transparent für besseren Gradient-Look
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
-    systemNavigationBarColor: cDark,
+    systemNavigationBarColor: Colors.transparent,
     systemNavigationBarIconBrightness: Brightness.light,
   ));
-  
+
   runApp(const MyApp());
 }
 
@@ -144,3 +153,5 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
+

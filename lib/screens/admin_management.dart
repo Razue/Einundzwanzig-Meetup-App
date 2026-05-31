@@ -29,6 +29,21 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   void initState() {
     super.initState();
     _loadAdmins();
+    _autoSyncMyVouches(); // beim Öffnen meine Bürgschaften mit Relays abgleichen
+  }
+
+  /// Gleicht beim Öffnen still meine publizierte Bürgschafts-Liste mit den
+  /// Relays ab, damit die lokale Liste nie veraltet (und nach Neuinstallation
+  /// automatisch zurückkommt).
+  Future<void> _autoSyncMyVouches() async {
+    try {
+      final count = await AdminRegistry.recoverMyVouchesFromRelays();
+      if (count >= 0 && mounted) {
+        await _loadAdmins();
+      }
+    } catch (_) {
+      // Stilles Scheitern — manueller Button bleibt als Fallback
+    }
   }
 
   Future<void> _loadAdmins() async {
@@ -274,6 +289,85 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
     }
   }
 
+  // --- MEINE BÜRGSCHAFTEN VON RELAYS WIEDERHERSTELLEN ---
+  void _recoverMyVouches() async {
+    setState(() {
+      _isRefreshing = true;
+      _statusMessage = 'Stelle meine Bürgschaften von Nostr wieder her...';
+    });
+    try {
+      final count = await AdminRegistry.recoverMyVouchesFromRelays();
+      if (count >= 0) {
+        await _loadAdmins();
+        setState(() {
+          _isRefreshing = false;
+          _statusMessage = count == 0
+              ? '✅ Keine publizierten Bürgschaften auf den Relays gefunden'
+              : '✅ $count Bürgschaft${count == 1 ? "" : "en"} wiederhergestellt';
+        });
+      } else {
+        setState(() {
+          _isRefreshing = false;
+          _statusMessage = '⚠️ Kein Relay erreichbar — später erneut versuchen';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isRefreshing = false;
+        _statusMessage = '❌ Wiederherstellung fehlgeschlagen: $e';
+      });
+    }
+  }
+
+  // --- NOTAUSGANG: ALLE BÜRGSCHAFTEN WIDERRUFEN ---
+  void _revokeAllVouches() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: cCard,
+        title: const Text("ALLE BÜRGSCHAFTEN WIDERRUFEN?",
+            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+        content: const Text(
+          "Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE "
+          "deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr "
+          "sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine "
+          "alten Bürgschaften nicht mehr auflösen kannst.",
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() {
+                _isPublishing = true;
+                _statusMessage = 'Widerrufe alle Bürgschaften...';
+              });
+              try {
+                await AdminRegistry.revokeAllVouches();
+                await _loadAdmins();
+                setState(() {
+                  _isPublishing = false;
+                  _statusMessage = '✅ Alle Bürgschaften wurden im Netzwerk widerrufen';
+                });
+              } catch (e) {
+                setState(() {
+                  _isPublishing = false;
+                  _statusMessage = '❌ Widerruf fehlgeschlagen: $e';
+                });
+              }
+            },
+            child: const Text("ALLE WIDERRUFEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -387,6 +481,45 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       ? "Publiziere eine leere Liste um alle Delegationen\nim Netzwerk zu widerrufen."
                       : "Das Netzwerk erfährt erst von deinen neuen Co-Admins,\nwenn du deine Signatur auf Nostr veröffentlichst.",
                   style: const TextStyle(color: Colors.grey, fontSize: 11, height: 1.4),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+
+                // WIEDERHERSTELLEN + NOTAUSGANG
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isRefreshing ? null : _recoverMyVouches,
+                        icon: const Icon(Icons.cloud_download_outlined, size: 18),
+                        label: const Text("WIEDERHERSTELLEN", style: TextStyle(fontSize: 11)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: cCyan,
+                          side: const BorderSide(color: cCyan),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isPublishing ? null : _revokeAllVouches,
+                        icon: const Icon(Icons.block, size: 18),
+                        label: const Text("ALLE WIDERRUFEN", style: TextStyle(fontSize: 11)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt "
+                  "deine Liste nach einer Neuinstallation zurück.",
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 10, height: 1.4),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -522,3 +655,5 @@ class _NpubScannerScreenState extends State<_NpubScannerScreen> {
     );
   }
 }
+
+
