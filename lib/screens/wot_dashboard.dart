@@ -2,12 +2,13 @@
 // WEB OF TRUST DASHBOARD
 // ============================================
 //
-// Übersichtliche Gesamtoberfläche für alles Administrative:
-//
 //   Tab 1: NETZWERK  — Gesundheitsstatus, alle Admins, Konsens-Meter
 //   Tab 2: BÜRGEN    — Eigene Vouching-Liste verwalten
 //   Tab 3: MELDUNGEN — Distrust-Reports einsehen + erstellen
 //
+// ÄNDERUNG: Wiederherstellung der eigenen Bürgschaften von den Relays
+//   - Auto-Sync beim Öffnen (_loadAll) und beim manuellen Refresh
+//   - Buttons "WIEDERHERSTELLEN" + "ALLE WIDERRUFEN" im BÜRGEN-Tab
 // ============================================
 
 import 'package:flutter/material.dart';
@@ -30,7 +31,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // State
   NetworkConsensus? _consensus;
   List<AdminEntry> _myVouches = [];
   bool _isLoading = true;
@@ -44,7 +44,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
-      if (mounted) setState(() {}); // FAB aktualisieren
+      if (mounted) setState(() {});
     });
     _loadAll();
   }
@@ -60,13 +60,19 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
 
     try {
       _myNpub = await NostrService.getNpub();
+
+      // AUTO-SYNC: zuerst meine publizierte Bürgschafts-Liste von den
+      // Relays zurücklesen (überschreibt lokal NICHT, wenn Relay leer ist).
+      // So kommen nach Neuinstallation/Backup-Wechsel die Bürgschaften zurück.
+      try {
+        await AdminRegistry.recoverMyVouchesFromRelays();
+      } catch (_) {/* still — lokaler Stand bleibt */}
+
       _myVouches = await AdminRegistry.getMyVouches();
 
-      // Konsens parallel laden
       try {
         _consensus = await VouchingService.calculateConsensus();
       } catch (e) {
-        // Offline-Fallback: Lokale Daten zeigen
         _consensus = null;
       }
     } catch (e) {
@@ -79,6 +85,10 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
   Future<void> _refresh() async {
     setState(() => _isRefreshing = true);
     try {
+      // Auch beim manuellen Refresh meine Liste von den Relays abgleichen
+      try {
+        await AdminRegistry.recoverMyVouchesFromRelays();
+      } catch (_) {}
       _consensus = await VouchingService.calculateConsensus(forceRefresh: true);
       _myVouches = await AdminRegistry.getMyVouches();
       _statusMessage = '';
@@ -86,6 +96,91 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       _statusMessage = 'Sync fehlgeschlagen: $e';
     }
     if (mounted) setState(() => _isRefreshing = false);
+  }
+
+  // =============================================
+  // WIEDERHERSTELLEN / NOTAUSGANG
+  // =============================================
+
+  Future<void> _recoverMyVouches() async {
+    setState(() => _isRefreshing = true);
+    try {
+      final count = await AdminRegistry.recoverMyVouchesFromRelays();
+      _myVouches = await AdminRegistry.getMyVouches();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(count < 0
+                ? 'Kein Relay erreichbar — später erneut versuchen.'
+                : count == 0
+                    ? 'Keine publizierten Bürgschaften auf den Relays gefunden.'
+                    : '$count Bürgschaft${count == 1 ? "" : "en"} von Nostr wiederhergestellt.'),
+            backgroundColor: count > 0 ? Colors.green : Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Wiederherstellung fehlgeschlagen: $e'),
+              backgroundColor: Colors.red),
+        );
+      }
+    }
+    if (mounted) setState(() => _isRefreshing = false);
+  }
+
+  void _revokeAllVouches() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: cCard,
+        title: const Text('ALLE BÜRGSCHAFTEN WIDERRUFEN?',
+            style: TextStyle(color: cRed, fontWeight: FontWeight.w700, fontSize: 15)),
+        content: const Text(
+          'Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE '
+          'deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr '
+          'sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine '
+          'alten Bürgschaften nicht mehr auflösen kannst.',
+          style: TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ABBRECHEN', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: cRed),
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _isPublishing = true);
+              try {
+                await AdminRegistry.revokeAllVouches();
+                _myVouches = await AdminRegistry.getMyVouches();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Alle Bürgschaften wurden im Netzwerk widerrufen.'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Widerruf fehlgeschlagen: $e'),
+                        backgroundColor: Colors.red),
+                  );
+                }
+              }
+              if (mounted) setState(() => _isPublishing = false);
+            },
+            child: const Text('ALLE WIDERRUFEN',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -155,24 +250,16 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Netzwerk-Status-Header
           _buildNetworkHealthCard(consensus),
           const SizedBox(height: 16),
-
-          // Schwellenwerte-Info
           if (consensus != null) ...[
             _buildThresholdsCard(consensus),
             const SizedBox(height: 16),
           ],
-
-          // Mein Status
           _buildMyStatusCard(consensus),
           const SizedBox(height: 24),
-
-          // Admin-Liste
           _buildSectionHeader('AKTIVE ORGANISATOREN', Icons.verified_user),
           const SizedBox(height: 12),
-
           if (consensus == null)
             _buildEmptyState(
               icon: Icons.cloud_off,
@@ -188,8 +275,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           else
             ...consensus.effectiveAdmins.map((admin) =>
                 _buildAdminCard(admin, consensus)),
-
-          // Suspendierte (wenn vorhanden)
           if (consensus != null && consensus.suspendedAdmins.isNotEmpty) ...[
             const SizedBox(height: 24),
             _buildSectionHeader('SUSPENDIERT', Icons.block, color: cRed),
@@ -197,7 +282,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             ...consensus.suspendedAdmins.map((admin) =>
                 _buildAdminCard(admin, consensus, suspended: true)),
           ],
-
           const SizedBox(height: 40),
         ],
       ),
@@ -210,7 +294,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     final isSunset = consensus?.isSunset ?? false;
     final suspendedCount = consensus?.suspendedAdmins.length ?? 0;
 
-    // Gesundheits-Score: 0.0 - 1.0
     double health = 0.0;
     if (consensus != null && effectiveCount > 0) {
       health = (effectiveCount / (effectiveCount + suspendedCount + 1)).clamp(0.0, 1.0);
@@ -268,8 +351,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             ],
           ),
           const SizedBox(height: 20),
-
-          // Statistik-Reihe
           Row(
             children: [
               _buildStatBox(effectiveCount.toString(), 'Aktive', Colors.green),
@@ -280,8 +361,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                   suspendedCount > 0 ? cRed : cTextTertiary),
             ],
           ),
-
-          // Gesundheitsbalken
           const SizedBox(height: 16),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
@@ -508,12 +587,10 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               Text(admin.meetup, style: TextStyle(color: cOrange.withOpacity(0.8),
                   fontSize: 11, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            // Vouches-Balken
             _buildVouchBar(admin.vouchCount, consensus.minVouches, suspended),
           ],
         ),
         children: [
-          // Erweiterte Details
           _buildDetailRow(Icons.how_to_vote, 'Bürgen',
               '${admin.vouchCount} / ${consensus.minVouches} benötigt'),
           if (admin.distrustCount > 0)
@@ -522,7 +599,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 color: cRed),
           _buildDetailRow(Icons.fingerprint, 'npub',
               NostrService.shortenNpub(admin.npub, chars: 12)),
-
           if (admin.vouchers.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text('BÜRGEN:', style: TextStyle(color: cTextTertiary, fontSize: 9,
@@ -595,17 +671,15 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
   }
 
   // =============================================
-  // TAB 2: BÜRGEN (Meine Vouching-Liste)
+  // TAB 2: BÜRGEN
   // =============================================
 
   Widget _buildVouchingTab() {
-    // Wer bürgt für MICH? (aus Konsens-Daten)
     final myStatus = _consensus?.allAdmins
         .where((a) => a.npub == _myNpub)
         .firstOrNull;
     final myVouchers = myStatus?.vouchers ?? [];
 
-    // Liability: Bürge ich für problematische npubs?
     final suspendedNpubs = _myVouches.where((v) {
       final status = _consensus?.allAdmins
           .where((a) => a.npub == v.npub).firstOrNull;
@@ -621,7 +695,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Erklärungs-Header
         _buildInfoCard(
           icon: Icons.shield,
           color: cPurple,
@@ -632,7 +705,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         ),
         const SizedBox(height: 16),
 
-        // Liability-Warnung
         if (suspendedNpubs.isNotEmpty)
           _buildLiabilityWarning(
             icon: Icons.error,
@@ -654,11 +726,48 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 'Noch nicht suspendiert, aber du solltest aufpassen.',
           ),
 
-        // Publish-Button
         _buildPublishButton(),
+        const SizedBox(height: 12),
+
+        // WIEDERHERSTELLEN + NOTAUSGANG
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _isRefreshing ? null : _recoverMyVouches,
+                icon: const Icon(Icons.cloud_download_outlined, size: 18),
+                label: const Text('WIEDERHERSTELLEN', style: TextStyle(fontSize: 11)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: cCyan,
+                  side: const BorderSide(color: cCyan),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _isPublishing ? null : _revokeAllVouches,
+                icon: const Icon(Icons.block, size: 18),
+                label: const Text('ALLE WIDERRUFEN', style: TextStyle(fontSize: 11)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: cRed,
+                  side: const BorderSide(color: cRed),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen" holt '
+          'deine Liste nach einer Neuinstallation oder einem Backup-Wechsel zurück.',
+          style: TextStyle(color: cTextTertiary, fontSize: 10, height: 1.4),
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 24),
 
-        // FÜR WEN DU BÜRGST
         _buildSectionHeader('FÜR WEN DU BÜRGST', Icons.how_to_vote),
         const SizedBox(height: 12),
 
@@ -673,7 +782,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
 
         const SizedBox(height: 24),
 
-        // WER BÜRGT FÜR DICH
         _buildSectionHeader('WER BÜRGT FÜR DICH', Icons.verified_user, color: cCyan),
         const SizedBox(height: 12),
 
@@ -729,8 +837,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
   }
 
   Widget _buildVoucherEntry(String voucherNpub) {
-    final isMe = voucherNpub == _myNpub;
-    // Finde Name/Meetup aus Konsens-Daten
     final voucherStatus = _consensus?.allAdmins
         .where((a) => a.npub == voucherNpub).firstOrNull;
 
@@ -803,7 +909,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
   }
 
   Widget _buildVouchEntry(AdminEntry admin) {
-    // Prüfe ob dieser npub Probleme hat
     final status = _consensus?.allAdmins
         .where((a) => a.npub == admin.npub).firstOrNull;
     final isSuspended = status?.isSuspended ?? false;
@@ -882,7 +987,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
   }
 
   // =============================================
-  // TAB 3: MELDUNGEN (Distrust-Reports)
+  // TAB 3: MELDUNGEN
   // =============================================
 
   Widget _buildDistrustTab() {
@@ -893,7 +998,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Erklärungs-Header
         _buildInfoCard(
           icon: Icons.shield_outlined,
           color: Colors.orange,
@@ -904,8 +1008,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               'Niemand hat allein Macht über andere.',
         ),
         const SizedBox(height: 16),
-
-        // Melden-Button
         SizedBox(
           width: double.infinity,
           height: 48,
@@ -922,12 +1024,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ),
         ),
         const SizedBox(height: 24),
-
-        // Aktive Meldungen
         _buildSectionHeader('AKTIVE WARNUNGEN', Icons.warning_amber,
             color: distrusts.isNotEmpty ? Colors.orange : cTextTertiary),
         const SizedBox(height: 12),
-
         if (distrusts.isEmpty)
           _buildEmptyState(
             icon: Icons.check_circle_outline,
@@ -937,7 +1036,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           )
         else
           ...distrusts.map(_buildDistrustEntry),
-
         const SizedBox(height: 40),
       ],
     );
@@ -985,7 +1083,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 6),
-            // Distrust-Balken
             Row(
               children: [
                 Expanded(
@@ -1021,7 +1118,6 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ],
         ),
         children: [
-          // Details der einzelnen Reports
           for (final report in admin.distrusts) ...[
             Container(
               margin: const EdgeInsets.only(bottom: 6),
@@ -1388,7 +1484,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             backgroundColor: Colors.orange,
           ),
         );
-        _refresh(); // Netzwerk-Daten neu laden
+        _refresh();
       }
     } catch (e) {
       if (mounted) {
@@ -1485,7 +1581,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
 }
 
 // ============================================
-// HELPER: NPUB QR SCANNER (wiederverwendbar)
+// HELPER: NPUB QR SCANNER
 // ============================================
 
 class _NpubScannerScreen extends StatefulWidget {
