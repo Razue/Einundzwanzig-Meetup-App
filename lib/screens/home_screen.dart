@@ -55,6 +55,7 @@ import '../services/nip05_service.dart';
 import '../services/app_logger.dart';
 import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
+import '../l10n/app_localizations.dart';
 
 // ============================================================
 // TILE DEFINITION — Jede Kachel hat ID, Span (1-3), Builder
@@ -270,8 +271,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
   Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
-  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text("Du bist jetzt ORGANISATOR!"), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.isAdmin = false; _user.isAdminVerified = false; _user.promotionSource = ''; }); } }
-  void _resetApp() async { bool c = await showDialog(context: context, builder: (ctx) => AlertDialog(title: const Text("App zurücksetzen?"), content: const Text("Alle Badges und dein Profil werden gelöscht."), actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Abbruch")), TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("LÖSCHEN", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)))])) ?? false; if (!c) return; final p = await SharedPreferences.getInstance(); await p.clear(); myBadges.clear(); await MeetupBadge.saveBadges([]); try { await SecureKeyStore.deleteKeys(); } catch (_) {} await NostrProfileService.clearCache(); if (mounted) Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false); }
+  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.isAdmin = false; _user.isAdminVerified = false; _user.promotionSource = ''; }); } }
+  void _resetApp() async { bool c = await showDialog(context: context, builder: (ctx) => AlertDialog(title: Text(AppLocalizations.of(context).resetTitle), content: Text(AppLocalizations.of(context).resetBody), actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context).resetCancel)), TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context).resetConfirm, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)))])) ?? false; if (!c) return; final p = await SharedPreferences.getInstance(); await p.clear(); myBadges.clear(); await MeetupBadge.saveBadges([]); try { await SecureKeyStore.deleteKeys(); } catch (_) {} await NostrProfileService.clearCache(); if (mounted) Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false); }
   void _scanAnyMeetup() async { final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0); await Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupVerificationScreen(meetup: d))); _loadBadges(); _calculateTrustScore(); }
   void _selectHomeMeetup() async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen())); _loadUser(); _loadNextHomeMeetup(); }
   Future<void> _openUrl(String url) async { final uri = Uri.parse(url); if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Konnte $url nicht öffnen"))); } }
@@ -472,11 +473,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           const SizedBox(height: 12),
         Text((score?.totalScore ?? 0.0).toStringAsFixed(1), style: TextStyle(color: cText, fontSize: 38, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)),
         const SizedBox(height: 4),
-        const Text('Trust Score', style: TextStyle(color: cText, fontSize: 12)),
+        Text(AppLocalizations.of(context).tileTrustScore, style: const TextStyle(color: cText, fontSize: 12)),
         if (score != null && !score.meetsPromotionThreshold) ...[const SizedBox(height: 12),
           ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: score.promotionProgress, backgroundColor: Colors.white.withOpacity(0.06), valueColor: AlwaysStoppedAnimation(_levelColor.withOpacity(0.6)), minHeight: 4))],
         if (score != null && score.meetsPromotionThreshold) ...[const SizedBox(height: 10),
-          Row(children: [Icon(Icons.verified_rounded, color: Colors.green.shade400, size: 14), const SizedBox(width: 4), Text('Organisator', style: TextStyle(color: Colors.green.shade400, fontSize: 11, fontWeight: FontWeight.w600))])],
+          Row(children: [Icon(Icons.verified_rounded, color: Colors.green.shade400, size: 14), const SizedBox(width: 4), Text(AppLocalizations.of(context).tileOrganizer, style: TextStyle(color: Colors.green.shade400, fontSize: 11, fontWeight: FontWeight.w600))])],
         ])));
   }
 
@@ -522,12 +523,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: cOrange.withOpacity(0.14)),
               child: const Icon(Icons.add_location_rounded, color: cOrange, size: 28)),
             const SizedBox(width: 16),
-            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('HOME MEETUP', style: TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
-              SizedBox(height: 5),
-              Text('Wähle deinen Stammtisch', style: TextStyle(color: cText, fontSize: 17, fontWeight: FontWeight.w800)),
-              SizedBox(height: 3),
-              Text('Dein regelmäßiges Meetup auswählen', style: TextStyle(color: cTextTertiary, fontSize: 11)),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+              const SizedBox(height: 5),
+              Text(AppLocalizations.of(context).homeMeetupChoose, style: const TextStyle(color: cText, fontSize: 17, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 3),
+              Text(AppLocalizations.of(context).homeMeetupChooseSub, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
             ])),
             const Icon(Icons.chevron_right_rounded, color: cOrange, size: 24),
           ]),
@@ -553,7 +554,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(children: [
             Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: cOrange.withOpacity(0.22), borderRadius: BorderRadius.circular(6)),
-              child: const Text('HOME MEETUP', style: TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
+              child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
             const Spacer(),
             if (bh > 0) Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -561,7 +562,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Row(children: [
                 const Icon(Icons.military_tech_rounded, color: cOrange, size: 11),
                 const SizedBox(width: 4),
-                Text('$bh Badges', style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w700)),
+                Text(AppLocalizations.of(context).homeMeetupBadges(bh), style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w700)),
               ])),
           ]),
 
@@ -598,7 +599,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 15),
               const SizedBox(width: 7),
               Text(
-                days == 0 ? 'Heute!' : days == 1 ? 'Morgen' : 'in ${days} Tagen',
+                days == 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
                 style: TextStyle(
                   color: days == 0 ? cOrange : days <= 3 ? cOrange.withOpacity(0.8) : cTextSecondary,
                   fontSize: 14, fontWeight: FontWeight.w800)),
@@ -609,10 +610,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ]);
           })
           else if (_user.homeMeetupId.isNotEmpty)
-            const Row(children: [
-              Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 15),
-              SizedBox(width: 7),
-              Text('Kein Termin geplant', style: TextStyle(color: cTextTertiary, fontSize: 13)),
+            Row(children: [
+              const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 15),
+              const SizedBox(width: 7),
+              Text(AppLocalizations.of(context).homeMeetupNoDate, style: const TextStyle(color: cTextTertiary, fontSize: 13)),
             ]),
 
           const SizedBox(height: 14),
@@ -627,7 +628,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 height: 40,
                 decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(10),
                   boxShadow: [BoxShadow(color: cOrange.withOpacity(0.25), blurRadius: 10, offset: const Offset(0, 3))]),
-                child: const Center(child: Text('EVENTS', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.8)))),
+                child: Center(child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.8)))),
             )),
             const SizedBox(width: 8),
             if (_homeMeetup != null) GestureDetector(
@@ -648,11 +649,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
-  Widget _buildReputationTile() => _tile(accentColor: Colors.amber, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), const Text('Reputation', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? 'QR teilen' : 'Prüfen', style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildCommunityTile() => _tile(accentColor: cCyan, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityPortalScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), const Text('Community', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), const Text('Portal', style: TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildEventsTile() => _tile(accentColor: cTextTertiary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.event_rounded, color: cTextSecondary, size: 22), const SizedBox(height: 12), const Text('Events', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), const Text('Kalender', style: TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), const Text('Shoutout', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), const Text('Senden', style: TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), const Text('Podcast', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), const Text('Anhören', style: TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildReputationTile() => _tile(accentColor: Colors.amber, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileReputation, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? AppLocalizations.of(context).tileReputationShare : AppLocalizations.of(context).tileReputationCheck, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildCommunityTile() => _tile(accentColor: cCyan, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityPortalScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildEventsTile() => _tile(accentColor: cTextTertiary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.event_rounded, color: cTextSecondary, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileEvents, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileEventsCalendar, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildNostrTile() => _tile(
     accentColor: cNostr,
     opacity: 0.07,
@@ -669,9 +670,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
         const SizedBox(height: 12),
-        const Text('Nostr', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+        Text(AppLocalizations.of(context).tileNostr, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
         const SizedBox(height: 3),
-        const Text('Community', style: TextStyle(color: cTextTertiary, fontSize: 12)),
+        Text(AppLocalizations.of(context).tileNostrCommunity, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
       ]),
       if (_nostrHasNew) Positioned(
         top: 0, right: 0,
@@ -682,7 +683,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     ]),
   );
-  Widget _buildOrganisatorTile() => _tile(accentColor: cOrange, onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())); _checkActiveSession(); }, child: Row(children: [Icon(Icons.admin_panel_settings_rounded, color: _justPromoted ? cGreen : cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('Organisator', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(_justPromoted ? 'Neu via Trust Score' : 'Admin-Panel', style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
+  Widget _buildOrganisatorTile() => _tile(accentColor: cOrange, onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())); _checkActiveSession(); }, child: Row(children: [Icon(Icons.admin_panel_settings_rounded, color: _justPromoted ? cGreen : cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileOrganizer, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(_justPromoted ? AppLocalizations.of(context).tileOrganizerNew : AppLocalizations.of(context).tileOrganizerPanel, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
 
   Widget _buildWotDashboardTile() => _tile(
     accentColor: cOrange,
@@ -691,9 +692,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       const Icon(Icons.account_tree_rounded, color: cTextSecondary, size: 22),
       const SizedBox(width: 12),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const Text('WoT', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+        Text(AppLocalizations.of(context).tileWot, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
         const SizedBox(height: 3),
-        const Text('Web of Trust', style: TextStyle(color: cTextTertiary, fontSize: 12)),
+        Text(AppLocalizations.of(context).tileWotSubtitle, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
       ])),
       const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ]),
@@ -703,8 +704,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const RollingQRScreen())); _checkActiveSession(); },
     child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cGreen.withOpacity(0.25), width: 0.5)),
     child: Row(children: [Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withOpacity(0.5 + _pulseController.value * 0.5), boxShadow: [BoxShadow(color: Colors.green.withOpacity(0.3 * _pulseController.value), blurRadius: 8)])),
-      const SizedBox(width: 14), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: Text('LIVE', style: TextStyle(color: Colors.green.shade300, fontSize: 9, fontWeight: FontWeight.w800))),
-      const SizedBox(width: 10), Expanded(child: Text(_activeSession!.meetupName.isNotEmpty ? _activeSession!.meetupName : 'Meetup aktiv', style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
+      const SizedBox(width: 14), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: Text(AppLocalizations.of(context).statusLive, style: TextStyle(color: Colors.green.shade300, fontSize: 9, fontWeight: FontWeight.w800))),
+      const SizedBox(width: 10), Expanded(child: Text(_activeSession!.meetupName.isNotEmpty ? _activeSession!.meetupName : AppLocalizations.of(context).statusMeetupActive, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
       const SizedBox(width: 8), Text(_sessionTimeLeft, style: TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: fontMono)), const SizedBox(width: 8), Icon(Icons.arrow_forward_ios_rounded, color: Colors.green.withOpacity(0.4), size: 14)]))));
 
   Widget _buildDeviceWarning() => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withOpacity(0.3), width: 0.5)),
@@ -737,51 +738,96 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(builder: (ctx, ss) => Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 40), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
-        _sG("DATENSICHERUNG"), _sT(Icons.upload_rounded, Colors.blue, "Backup erstellen", "Sichere deinen Account", () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
-        const SizedBox(height: 16), _sG("SPRACHE"),
+        _sG(AppLocalizations.of(context).settingsSectionBackup), _sT(Icons.upload_rounded, Colors.blue, AppLocalizations.of(context).settingsBackup, AppLocalizations.of(context).settingsBackupSub, () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionLanguage),
         ValueListenableBuilder<Locale?>(
           valueListenable: LocaleController.locale,
-          builder: (_, current, __) => Column(children: [
-            _langRow("System", null, current, ss, ctx),
-            ...LocaleController.supported.map((loc) =>
-              _langRow(LocaleController.displayName(loc), loc, current, ss, ctx)),
-          ]),
+          builder: (_, current, __) => ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: cOrange.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.language_rounded, color: cOrange, size: 20)),
+            title: Text(AppLocalizations.of(context).settingsLanguageTitle, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
+            subtitle: Text('${_flagFor(current)}  ${LocaleController.displayName(current)}',
+              style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+            trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 18),
+            onTap: () => _showLanguagePopup(ctx),
+          ),
         ),
-        const SizedBox(height: 16), _sG("NOSTR-NETZWERK"), _sT(Icons.hub_rounded, cCyan, "Nostr-Relays", "Relays konfigurieren", () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
-        const SizedBox(height: 16), _sG("BEDIENUNG"),
+        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionNostr), _sT(Icons.hub_rounded, cCyan, AppLocalizations.of(context).settingsRelays, AppLocalizations.of(context).settingsRelaysSub, () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionControl),
         ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: cOrange.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.vibration_rounded, color: cOrange, size: 20)),
-          title: const Text('Vibrationsfeedback', style: TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
-          subtitle: Text(haptic ? 'Aktiv' : 'Deaktiviert', style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+          title: Text(AppLocalizations.of(context).settingsHaptic, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
+          subtitle: Text(haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
           trailing: Switch(value: haptic, activeColor: cOrange, onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
           contentPadding: const EdgeInsets.symmetric(horizontal: 4)),
-        const SizedBox(height: 16), _sG("ACCOUNT"), _sT(Icons.delete_forever_rounded, Colors.red, "App zurücksetzen", "Löscht Profil und Badges", () { Navigator.pop(ctx); _resetApp(); }),
+        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionAccount), _sT(Icons.delete_forever_rounded, Colors.red, AppLocalizations.of(context).settingsReset, AppLocalizations.of(context).settingsResetSub, () { Navigator.pop(ctx); _resetApp(); }),
       ]))));
   }
 
   Widget _sG(String t) => Padding(padding: const EdgeInsets.only(bottom: 10, left: 4), child: Text(t, style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)));
 
-  // Sprach-Auswahlzeile fürs Einstellungs-Sheet
-  Widget _langRow(String label, Locale? value, Locale? current,
-      void Function(void Function()) ss, BuildContext ctx) {
+  // Flaggen-Emoji je Sprache (System = Globus)
+  String _flagFor(Locale? loc) {
+    switch (loc?.languageCode) {
+      case 'de': return '🇩🇪';
+      case 'en': return '🇬🇧';
+      case 'es': return '🇪🇸';
+      default: return '🌐';
+    }
+  }
+
+  // Popup-Dialog mit Sprachauswahl (Flagge + Name)
+  void _showLanguagePopup(BuildContext sheetCtx) {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => ValueListenableBuilder<Locale?>(
+        valueListenable: LocaleController.locale,
+        builder: (_, current, __) => Dialog(
+          backgroundColor: cCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+              child: Row(children: [
+                const Icon(Icons.language_rounded, color: cOrange, size: 20),
+                const SizedBox(width: 10),
+                Text(AppLocalizations.of(context).settingsLanguageChoose, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+              ]),
+            ),
+            const Divider(color: cBorder, height: 1),
+            _langOption('🌐', 'System', null, current, dialogCtx),
+            _langOption('🇩🇪', 'Deutsch', const Locale('de'), current, dialogCtx),
+            _langOption('🇬🇧', 'English', const Locale('en'), current, dialogCtx),
+            _langOption('🇪🇸', 'Español', const Locale('es'), current, dialogCtx),
+            const SizedBox(height: 8),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _langOption(String flag, String label, Locale? value, Locale? current, BuildContext dialogCtx) {
     final selected = current?.languageCode == value?.languageCode;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: cOrange.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(10)),
-        child: const Icon(Icons.language_rounded, color: cOrange, size: 20)),
-      title: Text(label, style: const TextStyle(
-        color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
-      trailing: selected
-        ? const Icon(Icons.check_circle_rounded, color: cOrange, size: 20)
-        : const Icon(Icons.radio_button_unchecked_rounded,
-            color: cTextTertiary, size: 20),
+    return InkWell(
       onTap: () async {
         await LocaleController.setLocale(value);
-        ss(() {}); // Sheet neu zeichnen → Häkchen springt um
+        if (dialogCtx.mounted) Navigator.pop(dialogCtx);
       },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        color: selected ? cOrange.withOpacity(0.08) : Colors.transparent,
+        child: Row(children: [
+          Text(flag, style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 16),
+          Expanded(child: Text(label, style: TextStyle(
+            color: selected ? cOrange : cText,
+            fontSize: 15,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500))),
+          if (selected) const Icon(Icons.check_circle_rounded, color: cOrange, size: 20),
+        ]),
+      ),
     );
   }
 

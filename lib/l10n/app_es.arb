@@ -1,13 +1,10 @@
 {
   "@@locale": "es",
-
   "appTitle": "Einundzwanzig Meetup",
-
   "navHome": "Inicio",
   "navWallet": "Cartera",
   "navEvents": "Eventos",
   "navProfile": "Perfil",
-
   "actionSave": "Guardar",
   "actionCancel": "Cancelar",
   "actionConfirm": "Confirmar",
@@ -18,11 +15,9 @@
   "actionRetry": "Reintentar",
   "actionOk": "OK",
   "actionUnderstood": "Entendido",
-
   "settingsTitle": "Ajustes",
   "settingsLanguage": "Idioma",
   "settingsLanguageSystem": "Sistema",
-
   "trustScore": "Puntuación de confianza",
   "reputation": "Reputación",
   "reputationShareQr": "Compartir QR",
@@ -30,12 +25,10 @@
   "communityPortal": "Portal",
   "homeMeetup": "Meetup principal",
   "shoutout": "Mención",
-
   "joinCommunity": "Unirse a la comunidad",
   "identityVerified": "Verificado",
   "verifiedByAdmin": "Verificado por admin",
   "nostrVerified": "Verificado en Nostr",
-
   "profileNickname": "Apodo",
   "profileChooseHomeMeetup": "Elige tu meetup principal",
   "profileYourIdentity": "Tu identidad",
@@ -44,16 +37,82 @@
   "requiredField": "Campo obligatorio — complétalo",
   "requiredHomeMeetup": "Campo obligatorio — elige tu meetup principal",
   "fillRequired": "Completa: {fields}",
-
   "identityGenerateKey": "Crear una clave nueva",
   "identityConnectAmber": "Conectar con Amber",
   "identityImportNsec": "Importar nsec existente",
   "amberConnected": "¡Conectado con Amber! Tu nsec permanece en Amber.",
   "amberNotFound": "Amber no encontrado",
   "amberCancelled": "Conexión cancelada en Amber.",
-
   "walletTitle": "Cartera de insignias",
   "badgesCount": "{count, plural, =0{Sin insignias} =1{1 insignia} other{{count} insignias}}",
-
-  "eventInDays": "en {days, plural, =0{hoy} =1{1 día} other{{days} días}}"
+  "eventInDays": "en {days, plural, =0{hoy} =1{1 día} other{{days} días}}",
+  "tileTrustScore": "Trust Score",
+  "tileReputation": "Reputación",
+  "tileReputationShare": "Compartir QR",
+  "tileReputationCheck": "Verificar",
+  "tileCommunity": "Comunidad",
+  "tileCommunityPortal": "Portal",
+  "tileEvents": "Eventos",
+  "tileEventsCalendar": "Calendario",
+  "tileShoutout": "Shoutout",
+  "tileShoutoutSend": "Enviar",
+  "tilePodcast": "Podcast",
+  "tilePodcastListen": "Escuchar",
+  "tileNostr": "Nostr",
+  "tileNostrCommunity": "Comunidad",
+  "tileOrganizer": "Organizador",
+  "tileOrganizerPanel": "Panel de admin",
+  "tileOrganizerNew": "Nuevo vía Trust Score",
+  "tileWot": "WoT",
+  "tileWotSubtitle": "Web of Trust",
+  "homeMeetupLabel": "MEETUP PRINCIPAL",
+  "homeMeetupChoose": "Elige tu meetup",
+  "homeMeetupChooseSub": "Selecciona tu meetup habitual",
+  "homeMeetupBadges": "{count} insignias",
+  "@homeMeetupBadges": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMeetupToday": "¡Hoy!",
+  "homeMeetupTomorrow": "Mañana",
+  "homeMeetupInDays": "en {days} días",
+  "@homeMeetupInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMeetupNoDate": "Sin fecha programada",
+  "homeMeetupNextEvent": "Próximo meetup",
+  "homeMeetupNoneSoon": "Sin fecha a la vista.\n¡Hora de cambiarlo!",
+  "homeMeetupSelectFirst": "¡Elige primero el\nmeetup principal!",
+  "btnEvents": "EVENTOS",
+  "statusLive": "EN VIVO",
+  "statusMeetupActive": "Meetup activo",
+  "loading": "Cargando...",
+  "organizerPromoted": "¡Ahora eres ORGANIZADOR!",
+  "resetTitle": "¿Restablecer la app?",
+  "resetBody": "Se eliminarán todas las insignias y tu perfil.",
+  "resetCancel": "Cancelar",
+  "resetConfirm": "ELIMINAR",
+  "settingsSectionBackup": "COPIA DE SEGURIDAD",
+  "settingsSectionLanguage": "IDIOMA",
+  "settingsSectionNostr": "RED NOSTR",
+  "settingsSectionControl": "CONTROLES",
+  "settingsSectionAccount": "CUENTA",
+  "settingsBackup": "Crear copia de seguridad",
+  "settingsBackupSub": "Protege tu cuenta",
+  "settingsLanguageTitle": "Idioma",
+  "settingsLanguageChoose": "Elegir idioma",
+  "settingsRelays": "Relays Nostr",
+  "settingsRelaysSub": "Configurar relays",
+  "settingsHaptic": "Vibración",
+  "settingsHapticOn": "Activado",
+  "settingsHapticOff": "Desactivado",
+  "settingsReset": "Restablecer la app",
+  "settingsResetSub": "Elimina perfil e insignias"
 }

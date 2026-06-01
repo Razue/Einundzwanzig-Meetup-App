@@ -375,6 +375,336 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'in {days, plural, =0{heute} =1{1 Tag} other{{days} Tagen}}'**
   String eventInDays(int days);
+
+  /// No description provided for @tileTrustScore.
+  ///
+  /// In de, this message translates to:
+  /// **'Trust Score'**
+  String get tileTrustScore;
+
+  /// No description provided for @tileReputation.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation'**
+  String get tileReputation;
+
+  /// No description provided for @tileReputationShare.
+  ///
+  /// In de, this message translates to:
+  /// **'QR teilen'**
+  String get tileReputationShare;
+
+  /// No description provided for @tileReputationCheck.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfen'**
+  String get tileReputationCheck;
+
+  /// No description provided for @tileCommunity.
+  ///
+  /// In de, this message translates to:
+  /// **'Community'**
+  String get tileCommunity;
+
+  /// No description provided for @tileCommunityPortal.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal'**
+  String get tileCommunityPortal;
+
+  /// No description provided for @tileEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Events'**
+  String get tileEvents;
+
+  /// No description provided for @tileEventsCalendar.
+  ///
+  /// In de, this message translates to:
+  /// **'Kalender'**
+  String get tileEventsCalendar;
+
+  /// No description provided for @tileShoutout.
+  ///
+  /// In de, this message translates to:
+  /// **'Shoutout'**
+  String get tileShoutout;
+
+  /// No description provided for @tileShoutoutSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Senden'**
+  String get tileShoutoutSend;
+
+  /// No description provided for @tilePodcast.
+  ///
+  /// In de, this message translates to:
+  /// **'Podcast'**
+  String get tilePodcast;
+
+  /// No description provided for @tilePodcastListen.
+  ///
+  /// In de, this message translates to:
+  /// **'Anhören'**
+  String get tilePodcastListen;
+
+  /// No description provided for @tileNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr'**
+  String get tileNostr;
+
+  /// No description provided for @tileNostrCommunity.
+  ///
+  /// In de, this message translates to:
+  /// **'Community'**
+  String get tileNostrCommunity;
+
+  /// No description provided for @tileOrganizer.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator'**
+  String get tileOrganizer;
+
+  /// No description provided for @tileOrganizerPanel.
+  ///
+  /// In de, this message translates to:
+  /// **'Admin-Panel'**
+  String get tileOrganizerPanel;
+
+  /// No description provided for @tileOrganizerNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu via Trust Score'**
+  String get tileOrganizerNew;
+
+  /// No description provided for @tileWot.
+  ///
+  /// In de, this message translates to:
+  /// **'WoT'**
+  String get tileWot;
+
+  /// No description provided for @tileWotSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Web of Trust'**
+  String get tileWotSubtitle;
+
+  /// No description provided for @homeMeetupLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'HOME MEETUP'**
+  String get homeMeetupLabel;
+
+  /// No description provided for @homeMeetupChoose.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle deinen Stammtisch'**
+  String get homeMeetupChoose;
+
+  /// No description provided for @homeMeetupChooseSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein regelmäßiges Meetup auswählen'**
+  String get homeMeetupChooseSub;
+
+  /// No description provided for @homeMeetupBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badges'**
+  String homeMeetupBadges(int count);
+
+  /// No description provided for @homeMeetupToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute!'**
+  String get homeMeetupToday;
+
+  /// No description provided for @homeMeetupTomorrow.
+  ///
+  /// In de, this message translates to:
+  /// **'Morgen'**
+  String get homeMeetupTomorrow;
+
+  /// No description provided for @homeMeetupInDays.
+  ///
+  /// In de, this message translates to:
+  /// **'in {days} Tagen'**
+  String homeMeetupInDays(int days);
+
+  /// No description provided for @homeMeetupNoDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Termin geplant'**
+  String get homeMeetupNoDate;
+
+  /// No description provided for @homeMeetupNextEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächstes Meetup'**
+  String get homeMeetupNextEvent;
+
+  /// No description provided for @homeMeetupNoneSoon.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Termin in Sicht.\nWird Zeit, das zu ändern!'**
+  String get homeMeetupNoneSoon;
+
+  /// No description provided for @homeMeetupSelectFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Erst Home Meetup\nwählen!'**
+  String get homeMeetupSelectFirst;
+
+  /// No description provided for @btnEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'EVENTS'**
+  String get btnEvents;
+
+  /// No description provided for @statusLive.
+  ///
+  /// In de, this message translates to:
+  /// **'LIVE'**
+  String get statusLive;
+
+  /// No description provided for @statusMeetupActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup aktiv'**
+  String get statusMeetupActive;
+
+  /// No description provided for @loading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade...'**
+  String get loading;
+
+  /// No description provided for @organizerPromoted.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist jetzt ORGANISATOR!'**
+  String get organizerPromoted;
+
+  /// No description provided for @resetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'App zurücksetzen?'**
+  String get resetTitle;
+
+  /// No description provided for @resetBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Badges und dein Profil werden gelöscht.'**
+  String get resetBody;
+
+  /// No description provided for @resetCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbruch'**
+  String get resetCancel;
+
+  /// No description provided for @resetConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'LÖSCHEN'**
+  String get resetConfirm;
+
+  /// No description provided for @settingsSectionBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'DATENSICHERUNG'**
+  String get settingsSectionBackup;
+
+  /// No description provided for @settingsSectionLanguage.
+  ///
+  /// In de, this message translates to:
+  /// **'SPRACHE'**
+  String get settingsSectionLanguage;
+
+  /// No description provided for @settingsSectionNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'NOSTR-NETZWERK'**
+  String get settingsSectionNostr;
+
+  /// No description provided for @settingsSectionControl.
+  ///
+  /// In de, this message translates to:
+  /// **'BEDIENUNG'**
+  String get settingsSectionControl;
+
+  /// No description provided for @settingsSectionAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'ACCOUNT'**
+  String get settingsSectionAccount;
+
+  /// No description provided for @settingsBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup erstellen'**
+  String get settingsBackup;
+
+  /// No description provided for @settingsBackupSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichere deinen Account'**
+  String get settingsBackupSub;
+
+  /// No description provided for @settingsLanguageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get settingsLanguageTitle;
+
+  /// No description provided for @settingsLanguageChoose.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache wählen'**
+  String get settingsLanguageChoose;
+
+  /// No description provided for @settingsRelays.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr-Relays'**
+  String get settingsRelays;
+
+  /// No description provided for @settingsRelaysSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Relays konfigurieren'**
+  String get settingsRelaysSub;
+
+  /// No description provided for @settingsHaptic.
+  ///
+  /// In de, this message translates to:
+  /// **'Vibrationsfeedback'**
+  String get settingsHaptic;
+
+  /// No description provided for @settingsHapticOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiv'**
+  String get settingsHapticOn;
+
+  /// No description provided for @settingsHapticOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Deaktiviert'**
+  String get settingsHapticOff;
+
+  /// No description provided for @settingsReset.
+  ///
+  /// In de, this message translates to:
+  /// **'App zurücksetzen'**
+  String get settingsReset;
+
+  /// No description provided for @settingsResetSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Löscht Profil und Badges'**
+  String get settingsResetSub;
 }
 
 class _AppLocalizationsDelegate

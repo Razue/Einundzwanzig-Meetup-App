@@ -167,4 +167,173 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return 'en $_temp0';
   }
+
+  @override
+  String get tileTrustScore => 'Trust Score';
+
+  @override
+  String get tileReputation => 'Reputación';
+
+  @override
+  String get tileReputationShare => 'Compartir QR';
+
+  @override
+  String get tileReputationCheck => 'Verificar';
+
+  @override
+  String get tileCommunity => 'Comunidad';
+
+  @override
+  String get tileCommunityPortal => 'Portal';
+
+  @override
+  String get tileEvents => 'Eventos';
+
+  @override
+  String get tileEventsCalendar => 'Calendario';
+
+  @override
+  String get tileShoutout => 'Shoutout';
+
+  @override
+  String get tileShoutoutSend => 'Enviar';
+
+  @override
+  String get tilePodcast => 'Podcast';
+
+  @override
+  String get tilePodcastListen => 'Escuchar';
+
+  @override
+  String get tileNostr => 'Nostr';
+
+  @override
+  String get tileNostrCommunity => 'Comunidad';
+
+  @override
+  String get tileOrganizer => 'Organizador';
+
+  @override
+  String get tileOrganizerPanel => 'Panel de admin';
+
+  @override
+  String get tileOrganizerNew => 'Nuevo vía Trust Score';
+
+  @override
+  String get tileWot => 'WoT';
+
+  @override
+  String get tileWotSubtitle => 'Web of Trust';
+
+  @override
+  String get homeMeetupLabel => 'MEETUP PRINCIPAL';
+
+  @override
+  String get homeMeetupChoose => 'Elige tu meetup';
+
+  @override
+  String get homeMeetupChooseSub => 'Selecciona tu meetup habitual';
+
+  @override
+  String homeMeetupBadges(int count) {
+    return '$count insignias';
+  }
+
+  @override
+  String get homeMeetupToday => '¡Hoy!';
+
+  @override
+  String get homeMeetupTomorrow => 'Mañana';
+
+  @override
+  String homeMeetupInDays(int days) {
+    return 'en $days días';
+  }
+
+  @override
+  String get homeMeetupNoDate => 'Sin fecha programada';
+
+  @override
+  String get homeMeetupNextEvent => 'Próximo meetup';
+
+  @override
+  String get homeMeetupNoneSoon => 'Sin fecha a la vista.\n¡Hora de cambiarlo!';
+
+  @override
+  String get homeMeetupSelectFirst => '¡Elige primero el\nmeetup principal!';
+
+  @override
+  String get btnEvents => 'EVENTOS';
+
+  @override
+  String get statusLive => 'EN VIVO';
+
+  @override
+  String get statusMeetupActive => 'Meetup activo';
+
+  @override
+  String get loading => 'Cargando...';
+
+  @override
+  String get organizerPromoted => '¡Ahora eres ORGANIZADOR!';
+
+  @override
+  String get resetTitle => '¿Restablecer la app?';
+
+  @override
+  String get resetBody => 'Se eliminarán todas las insignias y tu perfil.';
+
+  @override
+  String get resetCancel => 'Cancelar';
+
+  @override
+  String get resetConfirm => 'ELIMINAR';
+
+  @override
+  String get settingsSectionBackup => 'COPIA DE SEGURIDAD';
+
+  @override
+  String get settingsSectionLanguage => 'IDIOMA';
+
+  @override
+  String get settingsSectionNostr => 'RED NOSTR';
+
+  @override
+  String get settingsSectionControl => 'CONTROLES';
+
+  @override
+  String get settingsSectionAccount => 'CUENTA';
+
+  @override
+  String get settingsBackup => 'Crear copia de seguridad';
+
+  @override
+  String get settingsBackupSub => 'Protege tu cuenta';
+
+  @override
+  String get settingsLanguageTitle => 'Idioma';
+
+  @override
+  String get settingsLanguageChoose => 'Elegir idioma';
+
+  @override
+  String get settingsRelays => 'Relays Nostr';
+
+  @override
+  String get settingsRelaysSub => 'Configurar relays';
+
+  @override
+  String get settingsHaptic => 'Vibración';
+
+  @override
+  String get settingsHapticOn => 'Activado';
+
+  @override
+  String get settingsHapticOff => 'Desactivado';
+
+  @override
+  String get settingsReset => 'Restablecer la app';
+
+  @override
+  String get settingsResetSub => 'Elimina perfil e insignias';
 }

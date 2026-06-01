@@ -1,13 +1,10 @@
 {
   "@@locale": "en",
-
   "appTitle": "Einundzwanzig Meetup",
-
   "navHome": "Home",
   "navWallet": "Wallet",
   "navEvents": "Events",
   "navProfile": "Profile",
-
   "actionSave": "Save",
   "actionCancel": "Cancel",
   "actionConfirm": "Confirm",
@@ -18,11 +15,9 @@
   "actionRetry": "Try again",
   "actionOk": "OK",
   "actionUnderstood": "Got it",
-
   "settingsTitle": "Settings",
   "settingsLanguage": "Language",
   "settingsLanguageSystem": "System",
-
   "trustScore": "Trust Score",
   "reputation": "Reputation",
   "reputationShareQr": "Share QR",
@@ -30,12 +25,10 @@
   "communityPortal": "Portal",
   "homeMeetup": "Home Meetup",
   "shoutout": "Shoutout",
-
   "joinCommunity": "Join the community",
   "identityVerified": "Verified",
   "verifiedByAdmin": "Verified by admin",
   "nostrVerified": "Nostr verified",
-
   "profileNickname": "Nickname",
   "profileChooseHomeMeetup": "Choose your home meetup",
   "profileYourIdentity": "Your identity",
@@ -44,16 +37,82 @@
   "requiredField": "Required — please fill in",
   "requiredHomeMeetup": "Required — please choose your home meetup",
   "fillRequired": "Please fill in: {fields}",
-
   "identityGenerateKey": "Create a new key",
   "identityConnectAmber": "Connect with Amber",
   "identityImportNsec": "Import existing nsec",
   "amberConnected": "Connected with Amber! Your nsec stays in Amber.",
   "amberNotFound": "Amber not found",
   "amberCancelled": "Connection cancelled in Amber.",
-
   "walletTitle": "Badge Wallet",
   "badgesCount": "{count, plural, =0{No badges} =1{1 badge} other{{count} badges}}",
-
-  "eventInDays": "in {days, plural, =0{today} =1{1 day} other{{days} days}}"
+  "eventInDays": "in {days, plural, =0{today} =1{1 day} other{{days} days}}",
+  "tileTrustScore": "Trust Score",
+  "tileReputation": "Reputation",
+  "tileReputationShare": "Share QR",
+  "tileReputationCheck": "Check",
+  "tileCommunity": "Community",
+  "tileCommunityPortal": "Portal",
+  "tileEvents": "Events",
+  "tileEventsCalendar": "Calendar",
+  "tileShoutout": "Shoutout",
+  "tileShoutoutSend": "Send",
+  "tilePodcast": "Podcast",
+  "tilePodcastListen": "Listen",
+  "tileNostr": "Nostr",
+  "tileNostrCommunity": "Community",
+  "tileOrganizer": "Organizer",
+  "tileOrganizerPanel": "Admin panel",
+  "tileOrganizerNew": "New via Trust Score",
+  "tileWot": "WoT",
+  "tileWotSubtitle": "Web of Trust",
+  "homeMeetupLabel": "HOME MEETUP",
+  "homeMeetupChoose": "Choose your meetup",
+  "homeMeetupChooseSub": "Select your regular meetup",
+  "homeMeetupBadges": "{count} badges",
+  "@homeMeetupBadges": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMeetupToday": "Today!",
+  "homeMeetupTomorrow": "Tomorrow",
+  "homeMeetupInDays": "in {days} days",
+  "@homeMeetupInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "homeMeetupNoDate": "No date scheduled",
+  "homeMeetupNextEvent": "Next meetup",
+  "homeMeetupNoneSoon": "No date in sight.\nTime to change that!",
+  "homeMeetupSelectFirst": "Choose home meetup\nfirst!",
+  "btnEvents": "EVENTS",
+  "statusLive": "LIVE",
+  "statusMeetupActive": "Meetup active",
+  "loading": "Loading...",
+  "organizerPromoted": "You are now an ORGANIZER!",
+  "resetTitle": "Reset app?",
+  "resetBody": "All badges and your profile will be deleted.",
+  "resetCancel": "Cancel",
+  "resetConfirm": "DELETE",
+  "settingsSectionBackup": "BACKUP",
+  "settingsSectionLanguage": "LANGUAGE",
+  "settingsSectionNostr": "NOSTR NETWORK",
+  "settingsSectionControl": "CONTROLS",
+  "settingsSectionAccount": "ACCOUNT",
+  "settingsBackup": "Create backup",
+  "settingsBackupSub": "Secure your account",
+  "settingsLanguageTitle": "Language",
+  "settingsLanguageChoose": "Choose language",
+  "settingsRelays": "Nostr relays",
+  "settingsRelaysSub": "Configure relays",
+  "settingsHaptic": "Haptic feedback",
+  "settingsHapticOn": "On",
+  "settingsHapticOff": "Off",
+  "settingsReset": "Reset app",
+  "settingsResetSub": "Deletes profile and badges"
 }
