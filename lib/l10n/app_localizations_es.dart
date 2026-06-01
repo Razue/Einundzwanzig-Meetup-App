@@ -515,4 +515,159 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get badgeRollingQr => 'Código QR rotativo';
+
+  @override
+  String get levelNew => 'NUEVO';
+
+  @override
+  String get levelStarter => 'INICIAL';
+
+  @override
+  String get levelActive => 'ACTIVO';
+
+  @override
+  String get levelEstablished => 'ESTABLECIDO';
+
+  @override
+  String get levelVeteran => 'VETERANO';
+
+  @override
+  String get reputationTitle => 'REPUTACIÓN';
+
+  @override
+  String get reputationNoBadges => 'AÚN SIN INSIGNIAS';
+
+  @override
+  String get reputationNoProofs => 'Aún sin pruebas criptográficas';
+
+  @override
+  String get reputationBuildHint1 =>
+      'Visita un meetup y escanea una insignia para ';
+
+  @override
+  String get reputationBuildHint2 => 'construir tu reputación.';
+
+  @override
+  String get reputationScanQr => 'ESCANEAR CÓDIGO QR';
+
+  @override
+  String get reputationShareImage => 'COMPARTIR QR COMO IMAGEN';
+
+  @override
+  String get reputationUpdateRelays => 'ACTUALIZAR EN RELAYS';
+
+  @override
+  String get reputationPublishing => 'PUBLICANDO...';
+
+  @override
+  String get reputationBadges => 'Insignias';
+
+  @override
+  String get reputationMeetups => 'Meetups';
+
+  @override
+  String get reputationSigners => 'Firmantes';
+
+  @override
+  String get reputationBound => 'Vinculado';
+
+  @override
+  String get reputationSchnorrSigned => 'Firmado Schnorr';
+
+  @override
+  String get reputationSignedNoId => 'Firmado (sin identidad)';
+
+  @override
+  String get reputationNoIdentity =>
+      'Sin identidad vinculada. Añade Telegram o Nostr en tu perfil.';
+
+  @override
+  String get reputationCheck => 'Verificar reputación';
+
+  @override
+  String get reputationVerified => 'Mi reputación de meetup verificada';
+
+  @override
+  String get reputationCodeFrom => 'Código de reputación de';
+
+  @override
+  String get portalDiscover => 'DESCUBRIR';
+
+  @override
+  String get portalQuickAccess => 'ACCESO RÁPIDO';
+
+  @override
+  String get portalPodcastMedia => 'PODCAST Y MEDIOS';
+
+  @override
+  String get portalSocialNetworks => 'REDES SOCIALES';
+
+  @override
+  String get portalAssociation => 'ASOCIACIÓN';
+
+  @override
+  String get portalProfile => 'Tu perfil e insignias';
+
+  @override
+  String get portalMeetupMap => 'Mapa de meetups';
+
+  @override
+  String get portalMeetupMapSub => 'Meetups cerca de ti';
+
+  @override
+  String get portalBeginnerPath => 'El Camino (principiantes)';
+
+  @override
+  String get portalShoutoutSend => 'Enviar shoutout';
+
+  @override
+  String get portalMembership => 'Hazte miembro';
+
+  @override
+  String get portalSoundboard => 'Soundboard';
+
+  @override
+  String get portalClipsSounds => 'Clips y sonidos';
+
+  @override
+  String get portalInterviews => 'Entrevistas';
+
+  @override
+  String get portalMediaArticles => 'Medios y artículos';
+
+  @override
+  String get portalMerch => 'Merch y productos Bitcoin';
+
+  @override
+  String get portalShop => 'Tienda';
+
+  @override
+  String get portalDonate => 'Donar';
+
+  @override
+  String get portalContact => 'Contacto';
+
+  @override
+  String get portalPrivacy => 'Privacidad';
+
+  @override
+  String get portalStatutes => 'Estatutos (PDF)';
+
+  @override
+  String get portalAboutAssoc => 'Sobre la asociación';
+
+  @override
+  String get portalOpen => 'Abrir portal';
+
+  @override
+  String get portalTagline => 'para bitcoiners alcistas.';
+
+  @override
+  String get portalInfotainment => 'Infotainment toximalista';
+
+  @override
+  String get portalPodcast => 'Podcast';
+
+  @override
+  String get portalProfile2 => 'Portal';
 }

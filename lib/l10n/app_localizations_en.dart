@@ -514,4 +514,158 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get badgeRollingQr => 'Rolling QR code';
+
+  @override
+  String get levelNew => 'NEW';
+
+  @override
+  String get levelStarter => 'STARTER';
+
+  @override
+  String get levelActive => 'ACTIVE';
+
+  @override
+  String get levelEstablished => 'ESTABLISHED';
+
+  @override
+  String get levelVeteran => 'VETERAN';
+
+  @override
+  String get reputationTitle => 'REPUTATION';
+
+  @override
+  String get reputationNoBadges => 'NO BADGES YET';
+
+  @override
+  String get reputationNoProofs => 'No cryptographic proofs yet';
+
+  @override
+  String get reputationBuildHint1 => 'Visit a meetup and scan a badge to ';
+
+  @override
+  String get reputationBuildHint2 => 'build your reputation.';
+
+  @override
+  String get reputationScanQr => 'SCAN QR CODE';
+
+  @override
+  String get reputationShareImage => 'SHARE QR AS IMAGE';
+
+  @override
+  String get reputationUpdateRelays => 'UPDATE ON RELAYS';
+
+  @override
+  String get reputationPublishing => 'PUBLISHING...';
+
+  @override
+  String get reputationBadges => 'Badges';
+
+  @override
+  String get reputationMeetups => 'Meetups';
+
+  @override
+  String get reputationSigners => 'Signers';
+
+  @override
+  String get reputationBound => 'Bound';
+
+  @override
+  String get reputationSchnorrSigned => 'Schnorr-signed';
+
+  @override
+  String get reputationSignedNoId => 'Signed (no identity)';
+
+  @override
+  String get reputationNoIdentity =>
+      'No identity linked. Add Telegram or Nostr in your profile.';
+
+  @override
+  String get reputationCheck => 'Check reputation';
+
+  @override
+  String get reputationVerified => 'My verified meetup reputation';
+
+  @override
+  String get reputationCodeFrom => 'Reputation code from';
+
+  @override
+  String get portalDiscover => 'DISCOVER';
+
+  @override
+  String get portalQuickAccess => 'QUICK ACCESS';
+
+  @override
+  String get portalPodcastMedia => 'PODCAST & MEDIA';
+
+  @override
+  String get portalSocialNetworks => 'SOCIAL NETWORKS';
+
+  @override
+  String get portalAssociation => 'ASSOCIATION';
+
+  @override
+  String get portalProfile => 'Your profile & badges';
+
+  @override
+  String get portalMeetupMap => 'Meetup map';
+
+  @override
+  String get portalMeetupMapSub => 'Meetups near you';
+
+  @override
+  String get portalBeginnerPath => 'The Path (beginners)';
+
+  @override
+  String get portalShoutoutSend => 'Send shoutout';
+
+  @override
+  String get portalMembership => 'Become a member';
+
+  @override
+  String get portalSoundboard => 'Soundboard';
+
+  @override
+  String get portalClipsSounds => 'Clips & sounds';
+
+  @override
+  String get portalInterviews => 'Interviews';
+
+  @override
+  String get portalMediaArticles => 'Media & articles';
+
+  @override
+  String get portalMerch => 'Merch & Bitcoin products';
+
+  @override
+  String get portalShop => 'Shop';
+
+  @override
+  String get portalDonate => 'Donate';
+
+  @override
+  String get portalContact => 'Contact';
+
+  @override
+  String get portalPrivacy => 'Privacy';
+
+  @override
+  String get portalStatutes => 'Statutes (PDF)';
+
+  @override
+  String get portalAboutAssoc => 'About the association';
+
+  @override
+  String get portalOpen => 'Open portal';
+
+  @override
+  String get portalTagline => 'for bullish Bitcoiners.';
+
+  @override
+  String get portalInfotainment => 'Toxic-maximalist infotainment';
+
+  @override
+  String get portalPodcast => 'Podcast';
+
+  @override
+  String get portalProfile2 => 'Portal';
 }

@@ -1059,6 +1059,312 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Rolling QR-Code'**
   String get badgeRollingQr;
+
+  /// No description provided for @levelNew.
+  ///
+  /// In de, this message translates to:
+  /// **'NEU'**
+  String get levelNew;
+
+  /// No description provided for @levelStarter.
+  ///
+  /// In de, this message translates to:
+  /// **'STARTER'**
+  String get levelStarter;
+
+  /// No description provided for @levelActive.
+  ///
+  /// In de, this message translates to:
+  /// **'AKTIV'**
+  String get levelActive;
+
+  /// No description provided for @levelEstablished.
+  ///
+  /// In de, this message translates to:
+  /// **'ETABLIERT'**
+  String get levelEstablished;
+
+  /// No description provided for @levelVeteran.
+  ///
+  /// In de, this message translates to:
+  /// **'VETERAN'**
+  String get levelVeteran;
+
+  /// No description provided for @reputationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'REPUTATION'**
+  String get reputationTitle;
+
+  /// No description provided for @reputationNoBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'NOCH KEINE BADGES'**
+  String get reputationNoBadges;
+
+  /// No description provided for @reputationNoProofs.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine kryptographischen Beweise'**
+  String get reputationNoProofs;
+
+  /// No description provided for @reputationBuildHint1.
+  ///
+  /// In de, this message translates to:
+  /// **'Besuche ein Meetup und scanne einen Badge um '**
+  String get reputationBuildHint1;
+
+  /// No description provided for @reputationBuildHint2.
+  ///
+  /// In de, this message translates to:
+  /// **'deine Reputation aufzubauen.'**
+  String get reputationBuildHint2;
+
+  /// No description provided for @reputationScanQr.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-CODE SCANNEN'**
+  String get reputationScanQr;
+
+  /// No description provided for @reputationShareImage.
+  ///
+  /// In de, this message translates to:
+  /// **'QR ALS BILD TEILEN'**
+  String get reputationShareImage;
+
+  /// No description provided for @reputationUpdateRelays.
+  ///
+  /// In de, this message translates to:
+  /// **'AUF RELAYS AKTUALISIEREN'**
+  String get reputationUpdateRelays;
+
+  /// No description provided for @reputationPublishing.
+  ///
+  /// In de, this message translates to:
+  /// **'PUBLIZIERE...'**
+  String get reputationPublishing;
+
+  /// No description provided for @reputationBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges'**
+  String get reputationBadges;
+
+  /// No description provided for @reputationMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get reputationMeetups;
+
+  /// No description provided for @reputationSigners.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer'**
+  String get reputationSigners;
+
+  /// No description provided for @reputationBound.
+  ///
+  /// In de, this message translates to:
+  /// **'Gebunden'**
+  String get reputationBound;
+
+  /// No description provided for @reputationSchnorrSigned.
+  ///
+  /// In de, this message translates to:
+  /// **'Schnorr-signiert'**
+  String get reputationSchnorrSigned;
+
+  /// No description provided for @reputationSignedNoId.
+  ///
+  /// In de, this message translates to:
+  /// **'Signiert (ohne Identität)'**
+  String get reputationSignedNoId;
+
+  /// No description provided for @reputationNoIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Identität verknüpft. Ergänze Telegram oder Nostr in deinem Profil.'**
+  String get reputationNoIdentity;
+
+  /// No description provided for @reputationCheck.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation prüfen'**
+  String get reputationCheck;
+
+  /// No description provided for @reputationVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine verifizierte Meetup-Reputation'**
+  String get reputationVerified;
+
+  /// No description provided for @reputationCodeFrom.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputationscode von'**
+  String get reputationCodeFrom;
+
+  /// No description provided for @portalDiscover.
+  ///
+  /// In de, this message translates to:
+  /// **'ENTDECKEN'**
+  String get portalDiscover;
+
+  /// No description provided for @portalQuickAccess.
+  ///
+  /// In de, this message translates to:
+  /// **'SCHNELLZUGRIFF'**
+  String get portalQuickAccess;
+
+  /// No description provided for @portalPodcastMedia.
+  ///
+  /// In de, this message translates to:
+  /// **'PODCAST & MEDIA'**
+  String get portalPodcastMedia;
+
+  /// No description provided for @portalSocialNetworks.
+  ///
+  /// In de, this message translates to:
+  /// **'SOZIALE NETZWERKE'**
+  String get portalSocialNetworks;
+
+  /// No description provided for @portalAssociation.
+  ///
+  /// In de, this message translates to:
+  /// **'VEREIN'**
+  String get portalAssociation;
+
+  /// No description provided for @portalProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Profil & Badges'**
+  String get portalProfile;
+
+  /// No description provided for @portalMeetupMap.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup-Karte'**
+  String get portalMeetupMap;
+
+  /// No description provided for @portalMeetupMapSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Treffen in deiner Nähe'**
+  String get portalMeetupMapSub;
+
+  /// No description provided for @portalBeginnerPath.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Weg (Einsteiger)'**
+  String get portalBeginnerPath;
+
+  /// No description provided for @portalShoutoutSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Shoutout senden'**
+  String get portalShoutoutSend;
+
+  /// No description provided for @portalMembership.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglied werden'**
+  String get portalMembership;
+
+  /// No description provided for @portalSoundboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Soundboard'**
+  String get portalSoundboard;
+
+  /// No description provided for @portalClipsSounds.
+  ///
+  /// In de, this message translates to:
+  /// **'Clips & Sounds'**
+  String get portalClipsSounds;
+
+  /// No description provided for @portalInterviews.
+  ///
+  /// In de, this message translates to:
+  /// **'Interviews'**
+  String get portalInterviews;
+
+  /// No description provided for @portalMediaArticles.
+  ///
+  /// In de, this message translates to:
+  /// **'Media & Artikel'**
+  String get portalMediaArticles;
+
+  /// No description provided for @portalMerch.
+  ///
+  /// In de, this message translates to:
+  /// **'Merch & Bitcoin-Produkte'**
+  String get portalMerch;
+
+  /// No description provided for @portalShop.
+  ///
+  /// In de, this message translates to:
+  /// **'Shop'**
+  String get portalShop;
+
+  /// No description provided for @portalDonate.
+  ///
+  /// In de, this message translates to:
+  /// **'Spenden'**
+  String get portalDonate;
+
+  /// No description provided for @portalContact.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontakt'**
+  String get portalContact;
+
+  /// No description provided for @portalPrivacy.
+  ///
+  /// In de, this message translates to:
+  /// **'Datenschutz'**
+  String get portalPrivacy;
+
+  /// No description provided for @portalStatutes.
+  ///
+  /// In de, this message translates to:
+  /// **'Satzung (PDF)'**
+  String get portalStatutes;
+
+  /// No description provided for @portalAboutAssoc.
+  ///
+  /// In de, this message translates to:
+  /// **'Über den Verein'**
+  String get portalAboutAssoc;
+
+  /// No description provided for @portalOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal öffnen'**
+  String get portalOpen;
+
+  /// No description provided for @portalTagline.
+  ///
+  /// In de, this message translates to:
+  /// **'für bullishe Bitcoiner.'**
+  String get portalTagline;
+
+  /// No description provided for @portalInfotainment.
+  ///
+  /// In de, this message translates to:
+  /// **'Toximalistisches Infotainment'**
+  String get portalInfotainment;
+
+  /// No description provided for @portalPodcast.
+  ///
+  /// In de, this message translates to:
+  /// **'Podcast'**
+  String get portalPodcast;
+
+  /// No description provided for @portalProfile2.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal'**
+  String get portalProfile2;
 }
 
 class _AppLocalizationsDelegate
