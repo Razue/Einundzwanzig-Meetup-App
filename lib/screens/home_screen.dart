@@ -56,6 +56,7 @@ import '../services/app_logger.dart';
 import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/level_labels.dart';
 
 // ============================================================
 // TILE DEFINITION — Jede Kachel hat ID, Span (1-3), Builder
@@ -395,7 +396,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(color: cTileBorder, borderRadius: BorderRadius.circular(4)),
-            child: Text(_trustScore!.level, style: TextStyle(color: _levelColor, fontSize: 10, fontWeight: FontWeight.w700)),
+            child: Text(localizedLevel(context, _trustScore!.level), style: TextStyle(color: _levelColor, fontSize: 10, fontWeight: FontWeight.w700)),
           ),
         ],
       ])),
@@ -469,7 +470,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Row(children: [Icon(_levelIcon, color: _levelColor, size: 14), const SizedBox(width: 6),
-            Text(score?.level ?? 'NEU', style: TextStyle(color: _levelColor, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))]),
+            Text(score?.level == null ? AppLocalizations.of(context).levelNew : localizedLevel(context, score!.level), style: TextStyle(color: _levelColor, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))]),
           const SizedBox(height: 12),
         Text((score?.totalScore ?? 0.0).toStringAsFixed(1), style: TextStyle(color: cText, fontSize: 38, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)),
         const SizedBox(height: 4),

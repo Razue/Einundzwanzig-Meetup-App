@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
 import 'badge_details.dart';
@@ -174,8 +175,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
       await Clipboard.setData(ClipboardData(text: summary));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Reputation in Zwischenablage kopiert'),
+          SnackBar(
+              content: Text(AppLocalizations.of(context).walletReputationCopied),
               backgroundColor: cOrange),
         );
       }
@@ -201,8 +202,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
       await Clipboard.setData(ClipboardData(text: json));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('JSON-Daten in Zwischenablage kopiert'),
+          SnackBar(
+              content: Text(AppLocalizations.of(context).walletJsonCopied),
               backgroundColor: cOrange),
         );
       }
@@ -218,18 +219,18 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("REPUTATION TEILEN",
-                style: TextStyle(
+            Text(AppLocalizations.of(context).walletShareReputation,
+                style: const TextStyle(
                     color: cOrange,
                     fontSize: 16,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.share, color: cCyan),
-              title: const Text("Als Text teilen",
-                  style: TextStyle(color: Colors.white)),
-              subtitle: const Text("Lesbar für alle (wird im Web kopiert)",
-                  style: TextStyle(color: cTextSecondary, fontSize: 12)),
+              title: Text(AppLocalizations.of(context).walletShareText,
+                  style: const TextStyle(color: Colors.white)),
+              subtitle: Text(AppLocalizations.of(context).walletShareTextSub,
+                  style: const TextStyle(color: cTextSecondary, fontSize: 12)),
               onTap: () {
                 Navigator.pop(context);
                 _shareAllBadges();
@@ -237,10 +238,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             ),
             ListTile(
               leading: const Icon(Icons.qr_code_2, color: cOrange),
-              title: const Text("QR-Code anzeigen",
-                  style: TextStyle(color: Colors.white)),
-              subtitle: const Text("Zum Scannen vor Ort",
-                  style: TextStyle(color: cTextSecondary, fontSize: 12)),
+              title: Text(AppLocalizations.of(context).walletShowQr,
+                  style: const TextStyle(color: Colors.white)),
+              subtitle: Text(AppLocalizations.of(context).walletShowQrSub,
+                  style: const TextStyle(color: cTextSecondary, fontSize: 12)),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context,
@@ -249,10 +250,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             ),
             ListTile(
               leading: const Icon(Icons.code, color: cPurple),
-              title: const Text("Als JSON exportieren",
-                  style: TextStyle(color: Colors.white)),
-              subtitle: const Text("Signierter Export mit Schnorr-Beweis",
-                  style: TextStyle(color: cTextSecondary, fontSize: 12)),
+              title: Text(AppLocalizations.of(context).walletExportJson,
+                  style: const TextStyle(color: Colors.white)),
+              subtitle: Text(AppLocalizations.of(context).walletExportJsonSub,
+                  style: const TextStyle(color: cTextSecondary, fontSize: 12)),
               onTap: () {
                 Navigator.pop(context);
                 _shareReputationJSON();
@@ -262,7 +263,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             TextButton(
               onPressed: () => Navigator.pop(context),
               child:
-                  const Text("Abbrechen", style: TextStyle(color: Colors.grey)),
+                  Text(AppLocalizations.of(context).cancel, style: const TextStyle(color: Colors.grey)),
             ),
           ],
         ),
@@ -300,7 +301,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           if (myBadges.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.share),
-              tooltip: 'Reputation teilen',
+              tooltip: AppLocalizations.of(context).walletShareTitle,
               onPressed: _showShareOptions,
             ),
         ],
@@ -337,18 +338,18 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           Icon(Icons.collections_bookmark_outlined,
               size: 100, color: Colors.grey.withOpacity(0.3)),
           const SizedBox(height: 20),
-          Text("Noch keine Badges gesammelt",
+          Text(AppLocalizations.of(context).walletNoBadges,
               style: Theme.of(context)
                   .textTheme
                   .titleLarge
                   ?.copyWith(color: cTextSecondary)),
           const SizedBox(height: 10),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
-              "Besuche Meetups und scanne NFC-Tags um Badges zu sammeln!",
+              AppLocalizations.of(context).walletNoBadgesSub,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ),
         ],
@@ -594,3 +595,5 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
     );
   }
 }
+
+

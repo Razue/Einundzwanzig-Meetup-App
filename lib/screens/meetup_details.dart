@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/meetup.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/meetup_calendar_service.dart';
 import '../models/calendar_event.dart';
 
@@ -45,7 +46,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Konnte Link nicht öffnen')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).errorOpenLink)));
       }
     }
   }
@@ -91,7 +92,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                 const SizedBox(height: 20),
                 const Divider(color: Colors.white12),
                 const SizedBox(height: 16),
-                const Text("BESCHREIBUNG", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                Text(AppLocalizations.of(context).sectionDescription, style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
                 const SizedBox(height: 12),
                 Text(event.description, style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.6)),
               ],
@@ -154,7 +155,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                   Row(children: const [
                     Icon(Icons.calendar_month, color: cCyan, size: 20),
                     SizedBox(width: 10),
-                    Text("TERMINE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
+                    Text(AppLocalizations.of(context).sectionDates, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
                   ]),
                   const SizedBox(height: 16),
                   _isLoading 
@@ -165,7 +166,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                     : _meetupEvents.isEmpty
                         ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Text("Aktuell keine Termine im Kalender.", style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
+                            child: Text(AppLocalizations.of(context).meetupNoDatesCal, style: TextStyle(color: Colors.grey.shade500, fontSize: 14)),
                           )
                         : Column(
                             children: _meetupEvents.map((event) => Material(
@@ -230,7 +231,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                   Row(children: const [
                     Icon(Icons.link, color: cOrange, size: 20),
                     SizedBox(width: 10),
-                    Text("LINKS", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
+                    Text(AppLocalizations.of(context).sectionLinks, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
                   ]),
                   const SizedBox(height: 16),
                   
@@ -286,7 +287,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                   Row(children: const [
                     Icon(Icons.location_on, color: Colors.redAccent, size: 20),
                     SizedBox(width: 10),
-                    Text("STANDORT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
+                    Text(AppLocalizations.of(context).sectionLocation, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
                   ]),
                   const SizedBox(height: 16),
                   Row(
@@ -301,7 +302,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                           "https://www.google.com/maps/search/?api=1&query=${widget.meetup.lat},${widget.meetup.lng}",
                         ),
                         icon: const Icon(Icons.directions, size: 18),
-                        label: const Text("Route"),
+                        label: Text(AppLocalizations.of(context).meetupRoute),
                         style: TextButton.styleFrom(foregroundColor: cCyan),
                       ),
                     ],
@@ -355,3 +356,5 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
     );
   }
 }
+
+

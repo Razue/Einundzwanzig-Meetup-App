@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/meetup_calendar_service.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 class CalendarScreen extends StatefulWidget {
   // Wir erlauben einen optionalen Suchbegriff beim Start (z.B. vom Dashboard kommend)
@@ -94,7 +95,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ],
                 ),
                 const Divider(color: Colors.white24, height: 40),
-                const Text("BESCHREIBUNG", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                Text(AppLocalizations.of(context).sectionDescription, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
                 Text(event.description, style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.5)),
               ],
@@ -110,7 +111,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       backgroundColor: cDark, // Dunkler Hintergrund
       appBar: AppBar(
-        title: const Text("MEETUP TERMINE"),
+        title: Text(AppLocalizations.of(context).calendarTitle),
         backgroundColor: cDark,
         elevation: 0,
       ),
@@ -124,7 +125,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               onChanged: (value) => _filterEvents(),
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: "Suche (z.B. München, Bitcoin...)",
+                hintText: AppLocalizations.of(context).calendarSearch,
                 hintStyle: TextStyle(color: Colors.grey.shade600),
                 prefixIcon: const Icon(Icons.search, color: cOrange),
                 filled: true,
@@ -140,7 +141,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator(color: cOrange))
                 : _filteredEvents.isEmpty
-                    ? Center(child: Text("Keine Termine gefunden.", style: TextStyle(color: Colors.grey.shade600)))
+                    ? Center(child: Text(AppLocalizations.of(context).calendarNoEvents, style: TextStyle(color: Colors.grey.shade600)))
                     : ListView.builder(
                         itemCount: _filteredEvents.length,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -225,3 +226,5 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 }
+
+

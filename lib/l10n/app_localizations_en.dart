@@ -335,4 +335,183 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsResetSub => 'Deletes profile and badges';
+
+  @override
+  String get introTagline => 'YOUR BITCOIN COMMUNITY';
+
+  @override
+  String get introJoin => 'JOIN COMMUNITY';
+
+  @override
+  String get introLoadBackup => 'LOAD BACKUP';
+
+  @override
+  String get introSetIdentity => 'Please set up your identity first.';
+
+  @override
+  String get navWalletTab => 'Wallet';
+
+  @override
+  String get navProfileTab => 'Profile';
+
+  @override
+  String get scanBadge => 'Scan badge';
+
+  @override
+  String get scanBadgeSub => 'QR code or NFC tag from the meetup';
+
+  @override
+  String get scanReputation => 'Check reputation';
+
+  @override
+  String get scanReputationSub => 'Verify another person\'s Trust Score';
+
+  @override
+  String get calendarTitle => 'MEETUP EVENTS';
+
+  @override
+  String get calendarSearch => 'Search (e.g. Munich, Bitcoin...)';
+
+  @override
+  String get calendarNoEvents => 'No events found.';
+
+  @override
+  String get sectionDescription => 'DESCRIPTION';
+
+  @override
+  String get sectionLocation => 'LOCATION';
+
+  @override
+  String get sectionDates => 'DATES';
+
+  @override
+  String get sectionLinks => 'LINKS';
+
+  @override
+  String get meetupRoute => 'Route';
+
+  @override
+  String get meetupNoDatesCal => 'No dates in the calendar right now.';
+
+  @override
+  String get errorOpenLink => 'Couldn\'t open link';
+
+  @override
+  String get walletNoBadges => 'No badges collected yet';
+
+  @override
+  String get walletNoBadgesSub =>
+      'Visit meetups and scan NFC tags to collect badges!';
+
+  @override
+  String get walletShareReputation => 'SHARE REPUTATION';
+
+  @override
+  String get walletShowQr => 'Show QR code';
+
+  @override
+  String get walletShowQrSub => 'For scanning on site';
+
+  @override
+  String get walletExportJson => 'Export as JSON';
+
+  @override
+  String get walletExportJsonSub => 'Signed export with Schnorr proof';
+
+  @override
+  String get walletShareText => 'Share as text';
+
+  @override
+  String get walletShareTextSub => 'Readable by anyone (copied on the web)';
+
+  @override
+  String get walletShareTitle => 'Share reputation';
+
+  @override
+  String get walletJsonCopied => 'JSON data copied to clipboard';
+
+  @override
+  String get walletReputationCopied => 'Reputation copied to clipboard';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get badgeDetailsTitle => 'Badge details';
+
+  @override
+  String get badgeShare => 'Share badge';
+
+  @override
+  String get badgeShareCaps => 'SHARE BADGE';
+
+  @override
+  String get badgeClose => 'CLOSE';
+
+  @override
+  String get badgeProofTitle => 'Cryptographic proof';
+
+  @override
+  String get badgeProofOfAttendance => 'PROOF OF ATTENDANCE';
+
+  @override
+  String get badgeProofDesc =>
+      'This badge cryptographically confirms you were physically present.';
+
+  @override
+  String get badgeMeetup => 'Meetup';
+
+  @override
+  String get badgeMeetupDate => 'Meetup date';
+
+  @override
+  String get badgeMeetupId => 'Meetup ID';
+
+  @override
+  String get badgeOrganizerNpub => 'Organizer (npub)';
+
+  @override
+  String get badgeSignatureType => 'Signature type';
+
+  @override
+  String get badgeTransmission => 'Transmission';
+
+  @override
+  String get badgeTimestamp => 'Timestamp';
+
+  @override
+  String get badgeScanTime => 'Scan time';
+
+  @override
+  String get badgeVerificationHash => 'VERIFICATION HASH';
+
+  @override
+  String get badgeClaimBinding => 'Claim binding';
+
+  @override
+  String get badgeBound => 'Bound ✓';
+
+  @override
+  String get badgeNotBound => 'Not bound';
+
+  @override
+  String get badgeClaimedLater => 'Claimed later';
+
+  @override
+  String get badgeNote => 'Note';
+
+  @override
+  String get badgeNoSignature => 'No signature';
+
+  @override
+  String get badgeHashCopied => 'Hash copied';
+
+  @override
+  String get badgeInfoCopied => 'Badge info copied to clipboard';
+
+  @override
+  String get badgeNfcTag => 'NFC tag';
+
+  @override
+  String get badgeRollingQr => 'Rolling QR code';
 }

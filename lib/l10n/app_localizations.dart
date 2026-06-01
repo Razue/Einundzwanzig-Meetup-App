@@ -705,6 +705,360 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Löscht Profil und Badges'**
   String get settingsResetSub;
+
+  /// No description provided for @introTagline.
+  ///
+  /// In de, this message translates to:
+  /// **'DEINE BITCOIN COMMUNITY'**
+  String get introTagline;
+
+  /// No description provided for @introJoin.
+  ///
+  /// In de, this message translates to:
+  /// **'COMMUNITY BETRETEN'**
+  String get introJoin;
+
+  /// No description provided for @introLoadBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'BACKUP LADEN'**
+  String get introLoadBackup;
+
+  /// No description provided for @introSetIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte lege zuerst deine Identität fest.'**
+  String get introSetIdentity;
+
+  /// No description provided for @navWalletTab.
+  ///
+  /// In de, this message translates to:
+  /// **'Wallet'**
+  String get navWalletTab;
+
+  /// No description provided for @navProfileTab.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil'**
+  String get navProfileTab;
+
+  /// No description provided for @scanBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge scannen'**
+  String get scanBadge;
+
+  /// No description provided for @scanBadgeSub.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code oder NFC-Tag vom Meetup'**
+  String get scanBadgeSub;
+
+  /// No description provided for @scanReputation.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation prüfen'**
+  String get scanReputation;
+
+  /// No description provided for @scanReputationSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Trust Score einer anderen Person verifizieren'**
+  String get scanReputationSub;
+
+  /// No description provided for @calendarTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP TERMINE'**
+  String get calendarTitle;
+
+  /// No description provided for @calendarSearch.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche (z.B. München, Bitcoin...)'**
+  String get calendarSearch;
+
+  /// No description provided for @calendarNoEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Termine gefunden.'**
+  String get calendarNoEvents;
+
+  /// No description provided for @sectionDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'BESCHREIBUNG'**
+  String get sectionDescription;
+
+  /// No description provided for @sectionLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'STANDORT'**
+  String get sectionLocation;
+
+  /// No description provided for @sectionDates.
+  ///
+  /// In de, this message translates to:
+  /// **'TERMINE'**
+  String get sectionDates;
+
+  /// No description provided for @sectionLinks.
+  ///
+  /// In de, this message translates to:
+  /// **'LINKS'**
+  String get sectionLinks;
+
+  /// No description provided for @meetupRoute.
+  ///
+  /// In de, this message translates to:
+  /// **'Route'**
+  String get meetupRoute;
+
+  /// No description provided for @meetupNoDatesCal.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktuell keine Termine im Kalender.'**
+  String get meetupNoDatesCal;
+
+  /// No description provided for @errorOpenLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Konnte Link nicht öffnen'**
+  String get errorOpenLink;
+
+  /// No description provided for @walletNoBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Badges gesammelt'**
+  String get walletNoBadges;
+
+  /// No description provided for @walletNoBadgesSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Besuche Meetups und scanne NFC-Tags um Badges zu sammeln!'**
+  String get walletNoBadgesSub;
+
+  /// No description provided for @walletShareReputation.
+  ///
+  /// In de, this message translates to:
+  /// **'REPUTATION TEILEN'**
+  String get walletShareReputation;
+
+  /// No description provided for @walletShowQr.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code anzeigen'**
+  String get walletShowQr;
+
+  /// No description provided for @walletShowQrSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Scannen vor Ort'**
+  String get walletShowQrSub;
+
+  /// No description provided for @walletExportJson.
+  ///
+  /// In de, this message translates to:
+  /// **'Als JSON exportieren'**
+  String get walletExportJson;
+
+  /// No description provided for @walletExportJsonSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Signierter Export mit Schnorr-Beweis'**
+  String get walletExportJsonSub;
+
+  /// No description provided for @walletShareText.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Text teilen'**
+  String get walletShareText;
+
+  /// No description provided for @walletShareTextSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Lesbar für alle (wird im Web kopiert)'**
+  String get walletShareTextSub;
+
+  /// No description provided for @walletShareTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation teilen'**
+  String get walletShareTitle;
+
+  /// No description provided for @walletJsonCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'JSON-Daten in Zwischenablage kopiert'**
+  String get walletJsonCopied;
+
+  /// No description provided for @walletReputationCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation in Zwischenablage kopiert'**
+  String get walletReputationCopied;
+
+  /// No description provided for @cancel.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get cancel;
+
+  /// No description provided for @badgeDetailsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge-Details'**
+  String get badgeDetailsTitle;
+
+  /// No description provided for @badgeShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge teilen'**
+  String get badgeShare;
+
+  /// No description provided for @badgeShareCaps.
+  ///
+  /// In de, this message translates to:
+  /// **'BADGE TEILEN'**
+  String get badgeShareCaps;
+
+  /// No description provided for @badgeClose.
+  ///
+  /// In de, this message translates to:
+  /// **'SCHLIESSEN'**
+  String get badgeClose;
+
+  /// No description provided for @badgeProofTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kryptographischer Beweis'**
+  String get badgeProofTitle;
+
+  /// No description provided for @badgeProofOfAttendance.
+  ///
+  /// In de, this message translates to:
+  /// **'PROOF OF ATTENDANCE'**
+  String get badgeProofOfAttendance;
+
+  /// No description provided for @badgeProofDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Badge bestätigt kryptografisch, dass du physisch vor Ort warst.'**
+  String get badgeProofDesc;
+
+  /// No description provided for @badgeMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup'**
+  String get badgeMeetup;
+
+  /// No description provided for @badgeMeetupDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup-Datum'**
+  String get badgeMeetupDate;
+
+  /// No description provided for @badgeMeetupId.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup-ID'**
+  String get badgeMeetupId;
+
+  /// No description provided for @badgeOrganizerNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator (npub)'**
+  String get badgeOrganizerNpub;
+
+  /// No description provided for @badgeSignatureType.
+  ///
+  /// In de, this message translates to:
+  /// **'Signaturtyp'**
+  String get badgeSignatureType;
+
+  /// No description provided for @badgeTransmission.
+  ///
+  /// In de, this message translates to:
+  /// **'Übertragungsweg'**
+  String get badgeTransmission;
+
+  /// No description provided for @badgeTimestamp.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeitstempel'**
+  String get badgeTimestamp;
+
+  /// No description provided for @badgeScanTime.
+  ///
+  /// In de, this message translates to:
+  /// **'Scan-Zeitpunkt'**
+  String get badgeScanTime;
+
+  /// No description provided for @badgeVerificationHash.
+  ///
+  /// In de, this message translates to:
+  /// **'VERIFIKATIONS-HASH'**
+  String get badgeVerificationHash;
+
+  /// No description provided for @badgeClaimBinding.
+  ///
+  /// In de, this message translates to:
+  /// **'Claim-Binding'**
+  String get badgeClaimBinding;
+
+  /// No description provided for @badgeBound.
+  ///
+  /// In de, this message translates to:
+  /// **'Gebunden ✓'**
+  String get badgeBound;
+
+  /// No description provided for @badgeNotBound.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht gebunden'**
+  String get badgeNotBound;
+
+  /// No description provided for @badgeClaimedLater.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachträglich geclaimed'**
+  String get badgeClaimedLater;
+
+  /// No description provided for @badgeNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinweis'**
+  String get badgeNote;
+
+  /// No description provided for @badgeNoSignature.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Signatur'**
+  String get badgeNoSignature;
+
+  /// No description provided for @badgeHashCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Hash kopiert'**
+  String get badgeHashCopied;
+
+  /// No description provided for @badgeInfoCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge-Info in Zwischenablage kopiert'**
+  String get badgeInfoCopied;
+
+  /// No description provided for @badgeNfcTag.
+  ///
+  /// In de, this message translates to:
+  /// **'NFC-Tag'**
+  String get badgeNfcTag;
+
+  /// No description provided for @badgeRollingQr.
+  ///
+  /// In de, this message translates to:
+  /// **'Rolling QR-Code'**
+  String get badgeRollingQr;
 }
 
 class _AppLocalizationsDelegate

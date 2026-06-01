@@ -336,4 +336,183 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsResetSub => 'Elimina perfil e insignias';
+
+  @override
+  String get introTagline => 'TU COMUNIDAD BITCOIN';
+
+  @override
+  String get introJoin => 'UNIRSE A LA COMUNIDAD';
+
+  @override
+  String get introLoadBackup => 'CARGAR COPIA';
+
+  @override
+  String get introSetIdentity => 'Primero configura tu identidad.';
+
+  @override
+  String get navWalletTab => 'Cartera';
+
+  @override
+  String get navProfileTab => 'Perfil';
+
+  @override
+  String get scanBadge => 'Escanear insignia';
+
+  @override
+  String get scanBadgeSub => 'Código QR o etiqueta NFC del meetup';
+
+  @override
+  String get scanReputation => 'Verificar reputación';
+
+  @override
+  String get scanReputationSub => 'Verificar el Trust Score de otra persona';
+
+  @override
+  String get calendarTitle => 'EVENTOS MEETUP';
+
+  @override
+  String get calendarSearch => 'Buscar (p.ej. Múnich, Bitcoin...)';
+
+  @override
+  String get calendarNoEvents => 'No se encontraron eventos.';
+
+  @override
+  String get sectionDescription => 'DESCRIPCIÓN';
+
+  @override
+  String get sectionLocation => 'UBICACIÓN';
+
+  @override
+  String get sectionDates => 'FECHAS';
+
+  @override
+  String get sectionLinks => 'ENLACES';
+
+  @override
+  String get meetupRoute => 'Ruta';
+
+  @override
+  String get meetupNoDatesCal => 'Sin fechas en el calendario ahora.';
+
+  @override
+  String get errorOpenLink => 'No se pudo abrir el enlace';
+
+  @override
+  String get walletNoBadges => 'Aún no hay insignias';
+
+  @override
+  String get walletNoBadgesSub =>
+      '¡Visita meetups y escanea etiquetas NFC para coleccionar insignias!';
+
+  @override
+  String get walletShareReputation => 'COMPARTIR REPUTACIÓN';
+
+  @override
+  String get walletShowQr => 'Mostrar código QR';
+
+  @override
+  String get walletShowQrSub => 'Para escanear in situ';
+
+  @override
+  String get walletExportJson => 'Exportar como JSON';
+
+  @override
+  String get walletExportJsonSub => 'Exportación firmada con prueba Schnorr';
+
+  @override
+  String get walletShareText => 'Compartir como texto';
+
+  @override
+  String get walletShareTextSub => 'Legible para todos (se copia en la web)';
+
+  @override
+  String get walletShareTitle => 'Compartir reputación';
+
+  @override
+  String get walletJsonCopied => 'Datos JSON copiados al portapapeles';
+
+  @override
+  String get walletReputationCopied => 'Reputación copiada al portapapeles';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
+  String get badgeDetailsTitle => 'Detalles de la insignia';
+
+  @override
+  String get badgeShare => 'Compartir insignia';
+
+  @override
+  String get badgeShareCaps => 'COMPARTIR INSIGNIA';
+
+  @override
+  String get badgeClose => 'CERRAR';
+
+  @override
+  String get badgeProofTitle => 'Prueba criptográfica';
+
+  @override
+  String get badgeProofOfAttendance => 'PROOF OF ATTENDANCE';
+
+  @override
+  String get badgeProofDesc =>
+      'Esta insignia confirma criptográficamente que estuviste presente.';
+
+  @override
+  String get badgeMeetup => 'Meetup';
+
+  @override
+  String get badgeMeetupDate => 'Fecha del meetup';
+
+  @override
+  String get badgeMeetupId => 'ID del meetup';
+
+  @override
+  String get badgeOrganizerNpub => 'Organizador (npub)';
+
+  @override
+  String get badgeSignatureType => 'Tipo de firma';
+
+  @override
+  String get badgeTransmission => 'Transmisión';
+
+  @override
+  String get badgeTimestamp => 'Marca de tiempo';
+
+  @override
+  String get badgeScanTime => 'Hora del escaneo';
+
+  @override
+  String get badgeVerificationHash => 'HASH DE VERIFICACIÓN';
+
+  @override
+  String get badgeClaimBinding => 'Vinculación del claim';
+
+  @override
+  String get badgeBound => 'Vinculado ✓';
+
+  @override
+  String get badgeNotBound => 'No vinculado';
+
+  @override
+  String get badgeClaimedLater => 'Reclamado después';
+
+  @override
+  String get badgeNote => 'Nota';
+
+  @override
+  String get badgeNoSignature => 'Sin firma';
+
+  @override
+  String get badgeHashCopied => 'Hash copiado';
+
+  @override
+  String get badgeInfoCopied => 'Info de insignia copiada';
+
+  @override
+  String get badgeNfcTag => 'Etiqueta NFC';
+
+  @override
+  String get badgeRollingQr => 'Código QR rotativo';
 }

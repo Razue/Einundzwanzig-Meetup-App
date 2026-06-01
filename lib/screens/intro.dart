@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
+import '../services/locale_controller.dart';
 import 'profile_edit.dart';
 import 'app_shell.dart';  // NEU: Statt dashboard.dart
 import '../services/backup_service.dart';
@@ -71,10 +73,10 @@ class _IntroScreenState extends State<IntroScreen>
 
     if (user.nickname == "Anon" && !user.isVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Bitte lege zuerst deine Identität fest."),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).introSetIdentity),
           backgroundColor: cOrange,
-          duration: Duration(seconds: 3),
+          duration: const Duration(seconds: 3),
         ),
       );
       await Navigator.push(
@@ -129,6 +131,35 @@ class _IntroScreenState extends State<IntroScreen>
             ),
           ),
 
+          // Sprachauswahl oben rechts
+          Positioned(
+            top: 0, right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12, top: 4),
+                child: ValueListenableBuilder<Locale?>(
+                  valueListenable: LocaleController.locale,
+                  builder: (_, current, __) => GestureDetector(
+                    onTap: _showLanguagePopup,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: cCard,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: cTileBorder, width: 0.5),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Text(_flagFor(current), style: const TextStyle(fontSize: 16)),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.expand_more_rounded, color: cTextSecondary, size: 16),
+                      ]),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -159,7 +190,7 @@ class _IntroScreenState extends State<IntroScreen>
                   child: Column(
                     children: [
                       Text(
-                        "DEINE BITCOIN COMMUNITY",
+                        AppLocalizations.of(context).introTagline,
                         style: TextStyle(
                           fontSize: 12,
                           letterSpacing: 3.5,
@@ -226,9 +257,9 @@ class _IntroScreenState extends State<IntroScreen>
                                           strokeWidth: 2.5,
                                         ),
                                       )
-                                    : const Text(
-                                        "COMMUNITY BETRETEN",
-                                        style: TextStyle(
+                                    : Text(
+                                        AppLocalizations.of(context).introJoin,
+                                        style: const TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w800,
                                           letterSpacing: 1,
@@ -243,7 +274,7 @@ class _IntroScreenState extends State<IntroScreen>
                             icon: Icon(Icons.restore_rounded,
                                 color: cOrange.withOpacity(0.7), size: 18),
                             label: Text(
-                              "BACKUP LADEN",
+                              AppLocalizations.of(context).introLoadBackup,
                               style: TextStyle(
                                 color: cOrange.withOpacity(0.7),
                                 fontWeight: FontWeight.w700,
@@ -261,6 +292,70 @@ class _IntroScreenState extends State<IntroScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Flaggen-Emoji je Sprache (System = Globus)
+  String _flagFor(Locale? loc) {
+    switch (loc?.languageCode) {
+      case 'de': return '🇩🇪';
+      case 'en': return '🇬🇧';
+      case 'es': return '🇪🇸';
+      default: return '🌐';
+    }
+  }
+
+  // Popup-Dialog mit Sprachauswahl (Flagge + Name)
+  void _showLanguagePopup() {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => ValueListenableBuilder<Locale?>(
+        valueListenable: LocaleController.locale,
+        builder: (_, current, __) => Dialog(
+          backgroundColor: cCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+              child: Row(children: [
+                const Icon(Icons.language_rounded, color: cOrange, size: 20),
+                const SizedBox(width: 10),
+                Text(AppLocalizations.of(context).settingsLanguageChoose,
+                    style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+              ]),
+            ),
+            const Divider(color: cBorder, height: 1),
+            _langOption('🌐', 'System', null, current, dialogCtx),
+            _langOption('🇩🇪', 'Deutsch', const Locale('de'), current, dialogCtx),
+            _langOption('🇬🇧', 'English', const Locale('en'), current, dialogCtx),
+            _langOption('🇪🇸', 'Español', const Locale('es'), current, dialogCtx),
+            const SizedBox(height: 8),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _langOption(String flag, String label, Locale? value, Locale? current, BuildContext dialogCtx) {
+    final selected = current?.languageCode == value?.languageCode;
+    return InkWell(
+      onTap: () async {
+        await LocaleController.setLocale(value);
+        if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        color: selected ? cOrange.withOpacity(0.08) : Colors.transparent,
+        child: Row(children: [
+          Text(flag, style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 16),
+          Expanded(child: Text(label, style: TextStyle(
+            color: selected ? cOrange : cText,
+            fontSize: 15,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500))),
+          if (selected) const Icon(Icons.check_circle_rounded, color: cOrange, size: 20),
+        ]),
       ),
     );
   }

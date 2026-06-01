@@ -336,4 +336,184 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsResetSub => 'Löscht Profil und Badges';
+
+  @override
+  String get introTagline => 'DEINE BITCOIN COMMUNITY';
+
+  @override
+  String get introJoin => 'COMMUNITY BETRETEN';
+
+  @override
+  String get introLoadBackup => 'BACKUP LADEN';
+
+  @override
+  String get introSetIdentity => 'Bitte lege zuerst deine Identität fest.';
+
+  @override
+  String get navWalletTab => 'Wallet';
+
+  @override
+  String get navProfileTab => 'Profil';
+
+  @override
+  String get scanBadge => 'Badge scannen';
+
+  @override
+  String get scanBadgeSub => 'QR-Code oder NFC-Tag vom Meetup';
+
+  @override
+  String get scanReputation => 'Reputation prüfen';
+
+  @override
+  String get scanReputationSub =>
+      'Trust Score einer anderen Person verifizieren';
+
+  @override
+  String get calendarTitle => 'MEETUP TERMINE';
+
+  @override
+  String get calendarSearch => 'Suche (z.B. München, Bitcoin...)';
+
+  @override
+  String get calendarNoEvents => 'Keine Termine gefunden.';
+
+  @override
+  String get sectionDescription => 'BESCHREIBUNG';
+
+  @override
+  String get sectionLocation => 'STANDORT';
+
+  @override
+  String get sectionDates => 'TERMINE';
+
+  @override
+  String get sectionLinks => 'LINKS';
+
+  @override
+  String get meetupRoute => 'Route';
+
+  @override
+  String get meetupNoDatesCal => 'Aktuell keine Termine im Kalender.';
+
+  @override
+  String get errorOpenLink => 'Konnte Link nicht öffnen';
+
+  @override
+  String get walletNoBadges => 'Noch keine Badges gesammelt';
+
+  @override
+  String get walletNoBadgesSub =>
+      'Besuche Meetups und scanne NFC-Tags um Badges zu sammeln!';
+
+  @override
+  String get walletShareReputation => 'REPUTATION TEILEN';
+
+  @override
+  String get walletShowQr => 'QR-Code anzeigen';
+
+  @override
+  String get walletShowQrSub => 'Zum Scannen vor Ort';
+
+  @override
+  String get walletExportJson => 'Als JSON exportieren';
+
+  @override
+  String get walletExportJsonSub => 'Signierter Export mit Schnorr-Beweis';
+
+  @override
+  String get walletShareText => 'Als Text teilen';
+
+  @override
+  String get walletShareTextSub => 'Lesbar für alle (wird im Web kopiert)';
+
+  @override
+  String get walletShareTitle => 'Reputation teilen';
+
+  @override
+  String get walletJsonCopied => 'JSON-Daten in Zwischenablage kopiert';
+
+  @override
+  String get walletReputationCopied => 'Reputation in Zwischenablage kopiert';
+
+  @override
+  String get cancel => 'Abbrechen';
+
+  @override
+  String get badgeDetailsTitle => 'Badge-Details';
+
+  @override
+  String get badgeShare => 'Badge teilen';
+
+  @override
+  String get badgeShareCaps => 'BADGE TEILEN';
+
+  @override
+  String get badgeClose => 'SCHLIESSEN';
+
+  @override
+  String get badgeProofTitle => 'Kryptographischer Beweis';
+
+  @override
+  String get badgeProofOfAttendance => 'PROOF OF ATTENDANCE';
+
+  @override
+  String get badgeProofDesc =>
+      'Dieses Badge bestätigt kryptografisch, dass du physisch vor Ort warst.';
+
+  @override
+  String get badgeMeetup => 'Meetup';
+
+  @override
+  String get badgeMeetupDate => 'Meetup-Datum';
+
+  @override
+  String get badgeMeetupId => 'Meetup-ID';
+
+  @override
+  String get badgeOrganizerNpub => 'Organisator (npub)';
+
+  @override
+  String get badgeSignatureType => 'Signaturtyp';
+
+  @override
+  String get badgeTransmission => 'Übertragungsweg';
+
+  @override
+  String get badgeTimestamp => 'Zeitstempel';
+
+  @override
+  String get badgeScanTime => 'Scan-Zeitpunkt';
+
+  @override
+  String get badgeVerificationHash => 'VERIFIKATIONS-HASH';
+
+  @override
+  String get badgeClaimBinding => 'Claim-Binding';
+
+  @override
+  String get badgeBound => 'Gebunden ✓';
+
+  @override
+  String get badgeNotBound => 'Nicht gebunden';
+
+  @override
+  String get badgeClaimedLater => 'Nachträglich geclaimed';
+
+  @override
+  String get badgeNote => 'Hinweis';
+
+  @override
+  String get badgeNoSignature => 'Keine Signatur';
+
+  @override
+  String get badgeHashCopied => 'Hash kopiert';
+
+  @override
+  String get badgeInfoCopied => 'Badge-Info in Zwischenablage kopiert';
+
+  @override
+  String get badgeNfcTag => 'NFC-Tag';
+
+  @override
+  String get badgeRollingQr => 'Rolling QR-Code';
 }

@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
 import '../services/badge_security.dart';
@@ -184,6 +185,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   // QR ALS BILD TEILEN
   // =============================================
   Future<void> _shareQRImage() async {
+    final shareText = AppLocalizations.of(context).reputationVerified;
     try {
       // Fix: Beim ersten Aufruf kann der RenderRepaintBoundary noch nicht
       // vollständig gerendert sein. Wir warten auf den nächsten Frame.
@@ -208,7 +210,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       await Share.shareXFiles(
         [XFile(file.path)],
         subject: 'Einundzwanzig Reputation',
-        text: 'Meine verifizierte Meetup-Reputation',
+        text: shareText,
       );
     } catch (e) {
       if (mounted) {
@@ -282,11 +284,11 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text("REPUTATION"),
+        title: Text(AppLocalizations.of(context).reputationTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner, color: cTextSecondary),
-            tooltip: 'Reputation prüfen',
+            tooltip: AppLocalizations.of(context).reputationCheck,
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SecureQRScanner()),
@@ -297,35 +299,35 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cOrange))
           : myBadges.isEmpty
-              ? _buildNoBadgesView()
+              ? _buildNoBadgesView(context)
               : SingleChildScrollView(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   // Warnung wenn keine Identität
                   if (!_hasIdentity)
-                    _buildWarningBanner(),
+                    _buildWarningBanner(context),
 
                   // QR Code (mit RepaintBoundary für Screenshot)
                   RepaintBoundary(
                     key: _qrRepaintKey,
-                    child: _buildQRCard(),
+                    child: _buildQRCard(context),
                   ),
 
                   const SizedBox(height: 20),
 
                   // Stats
-                  _buildStatsRow(),
+                  _buildStatsRow(context),
 
                   const SizedBox(height: 20),
 
                   // Badge-Proof Status (erweitert)
-                  _buildProofStatus(),
+                  _buildProofStatus(context),
 
                   const SizedBox(height: 24),
 
                   // Action Buttons (erweitert)
-                  _buildActions(),
+                  _buildActions(context),
 
                   const SizedBox(height: 40),
                 ],
@@ -334,7 +336,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     );
   }
 
-  Widget _buildNoBadgesView() {
+  Widget _buildNoBadgesView(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -350,14 +352,14 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
             child: const Icon(Icons.workspace_premium, color: cOrange, size: 40),
           ),
           const SizedBox(height: 24),
-          const Text(
-            "NOCH KEINE BADGES",
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 1),
+          Text(
+            AppLocalizations.of(context).reputationNoBadges,
+            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 1),
           ),
           const SizedBox(height: 12),
           Text(
-            "Besuche ein Meetup und scanne einen Badge um "
-            "deine Reputation aufzubauen.",
+            AppLocalizations.of(context).reputationBuildHint1 +
+            AppLocalizations.of(context).reputationBuildHint2,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade500, fontSize: 14, height: 1.5),
           ),
@@ -373,7 +375,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
                 MaterialPageRoute(builder: (context) => const SecureQRScanner()),
               ),
               icon: const Icon(Icons.qr_code_scanner),
-              label: const Text("QR-CODE SCANNEN"),
+              label: Text(AppLocalizations.of(context).reputationScanQr),
               style: ElevatedButton.styleFrom(
                 backgroundColor: cOrange.withOpacity(0.12),
                 foregroundColor: cOrange,
@@ -385,7 +387,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     );
   }
 
-  Widget _buildWarningBanner() {
+  Widget _buildWarningBanner(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
@@ -399,7 +401,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
           Icon(Icons.warning_amber_rounded, color: Colors.red.shade400, size: 24),
           const SizedBox(width: 12),
           Expanded(child: Text(
-            "Keine Identität verknüpft. Ergänze Telegram oder Nostr in deinem Profil.",
+            AppLocalizations.of(context).reputationNoIdentity,
             style: TextStyle(color: Colors.red.shade300, fontSize: 12, height: 1.4),
           )),
         ]),
@@ -463,7 +465,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     );
   }
 
-  Widget _buildQRCard() {
+  Widget _buildQRCard(BuildContext context) {
     // Nickname bestimmen
     final nickname = _user.nickname.isNotEmpty ? _user.nickname : 'Anon';
 
@@ -479,7 +481,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
         // NEU: Nickname oben auf der Karte
         // =============================================
         Text(
-          'Reputationscode von',
+          AppLocalizations.of(context).reputationCodeFrom,
           style: TextStyle(
             color: Colors.grey.shade500,
             fontSize: 12,
@@ -519,7 +521,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
             ),
             const SizedBox(width: 6),
             Text(
-              _hasIdentity ? "Schnorr-signiert" : "Signiert (ohne Identität)",
+              _hasIdentity ? AppLocalizations.of(context).reputationSchnorrSigned : AppLocalizations.of(context).reputationSignedNoId,
               style: TextStyle(
                 color: _hasIdentity ? Colors.green.shade700 : Colors.grey,
                 fontSize: 12,
@@ -533,16 +535,16 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   }
 
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(BuildContext context) {
     final score = _trustScore;
     return Row(children: [
-      _buildStat(Icons.military_tech, "${myBadges.length}", "Badges", cOrange),
+      _buildStat(Icons.military_tech, "${myBadges.length}", AppLocalizations.of(context).reputationBadges, cOrange),
       const SizedBox(width: 10),
-      _buildStat(Icons.location_on, "${score?.uniqueMeetups ?? 0}", "Meetups", cCyan),
+      _buildStat(Icons.location_on, "${score?.uniqueMeetups ?? 0}", AppLocalizations.of(context).reputationMeetups, cCyan),
       const SizedBox(width: 10),
-      _buildStat(Icons.people_outline, "${score?.uniqueSigners ?? 0}", "Signer", cPurple),
+      _buildStat(Icons.people_outline, "${score?.uniqueSigners ?? 0}", AppLocalizations.of(context).reputationSigners, cPurple),
       const SizedBox(width: 10),
-      _buildStat(Icons.link, "$_boundBadgeCount", "Gebunden", Colors.green),
+      _buildStat(Icons.link, "$_boundBadgeCount", AppLocalizations.of(context).reputationBound, Colors.green),
     ]);
   }
 
@@ -566,7 +568,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     );
   }
 
-  Widget _buildProofStatus() {
+  Widget _buildProofStatus(BuildContext context) {
     final total = myBadges.length;
     final verified = _verifiedBadgeCount;
     final bound = _boundBadgeCount;
@@ -598,7 +600,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     } else {
       c = Colors.grey;
       icon = Icons.info_outline;
-      text = "Noch keine kryptographischen Beweise";
+      text = AppLocalizations.of(context).reputationNoProofs;
     }
 
     return Container(
@@ -637,7 +639,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   // ACTION BUTTONS (erweitert)
   // =============================================
 
-  Widget _buildActions() {
+  Widget _buildActions(BuildContext context) {
     return Column(children: [
       // Primär: QR als Bild teilen
       SizedBox(
@@ -646,7 +648,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
         child: ElevatedButton.icon(
           onPressed: _shareQRImage,
           icon: const Icon(Icons.share, size: 20),
-          label: const Text("QR ALS BILD TEILEN"),
+          label: Text(AppLocalizations.of(context).reputationShareImage),
           style: ElevatedButton.styleFrom(
             backgroundColor: cOrange,
             foregroundColor: Colors.black,
@@ -668,7 +670,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
               : const Icon(Icons.cloud_upload, size: 20),
-          label: Text(_isPublishing ? "PUBLIZIERE..." : "AUF RELAYS AKTUALISIEREN"),
+          label: Text(_isPublishing ? AppLocalizations.of(context).reputationPublishing : AppLocalizations.of(context).reputationUpdateRelays),
           style: ElevatedButton.styleFrom(
             backgroundColor: cCyan.withOpacity(0.15),
             foregroundColor: cCyan,
@@ -733,3 +735,5 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     );
   }
 }
+
+

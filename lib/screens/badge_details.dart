@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
 
@@ -41,18 +42,18 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
     return '${npub.substring(0, 12)}…${npub.substring(npub.length - 8)}';
   }
 
-  String get _deliveryLabel {
+  String _deliveryLabelOf(BuildContext context) {
     switch (b.delivery) {
-      case 'rolling_qr': return 'Rolling QR-Code';
-      case 'nfc':        return 'NFC-Tag';
+      case 'rolling_qr': return AppLocalizations.of(context).badgeRollingQr;
+      case 'nfc':        return AppLocalizations.of(context).badgeNfcTag;
       default:           return b.delivery;
     }
   }
 
-  String get _sigLabel {
+  String _sigLabelOf(BuildContext context) {
     if (b.sigVersion == 2) return 'Schnorr (Nostr v2) ✓';
     if (b.sigVersion == 1) return 'HMAC (Legacy v1)';
-    return 'Keine Signatur';
+    return AppLocalizations.of(context).badgeNoSignature;
   }
 
   Color get _sigColor {
@@ -72,8 +73,8 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
 $reputationText
 
 Block: ${b.blockHeight > 0 ? _formatBlock(b.blockHeight) : 'unbekannt'}
-Delivery: $_deliveryLabel
-Signatur: $_sigLabel
+Delivery: ${_deliveryLabelOf(context)}
+Signatur: ${_sigLabelOf(context)}
 Hash: $hash
 ${user.nostrNpub.isNotEmpty ? 'Npub: ${user.nostrNpub.substring(0, 20)}...' : ''}
 
@@ -90,8 +91,8 @@ Verifizierbar über die Einundzwanzig Meetup App
       await Clipboard.setData(ClipboardData(text: shareText));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Badge-Info in Zwischenablage kopiert'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).badgeInfoCopied),
             backgroundColor: cOrange,
           ),
         );
@@ -108,7 +109,7 @@ Verifizierbar über die Einundzwanzig Meetup App
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
-            tooltip: 'Badge teilen',
+            tooltip: AppLocalizations.of(context).badgeShare,
             onPressed: _shareBadge,
           ),
         ],
@@ -119,24 +120,24 @@ Verifizierbar über die Einundzwanzig Meetup App
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ── HERO BADGE ──────────────────────────────
-            _heroCard(),
+            _heroCard(context),
 
             const SizedBox(height: 20),
 
             // ── ZEITSTEMPEL / BLOCK ──────────────────────
             _sectionCard(
-              title: 'Zeitstempel',
+              title: AppLocalizations.of(context).badgeTimestamp,
               icon: Icons.access_time_rounded,
               color: cOrange,
               rows: [
-                _row('Meetup-Datum',
+                _row(AppLocalizations.of(context).badgeMeetupDate,
                     '${b.date.day.toString().padLeft(2, '0')}.${b.date.month.toString().padLeft(2, '0')}.${b.date.year}'),
                 _row('₿ Blockhöhe beim Scan',
                     b.blockHeight > 0 ? _formatBlock(b.blockHeight) : 'unbekannt',
                     mono: true,
                     valueColor: b.blockHeight > 0 ? cOrange : cTextTertiary),
                 if (b.claimTimestamp > 0)
-                  _row('Scan-Zeitpunkt', _formatTimestamp(b.claimTimestamp)),
+                  _row(AppLocalizations.of(context).badgeScanTime, _formatTimestamp(b.claimTimestamp)),
               ],
             ),
 
@@ -144,13 +145,13 @@ Verifizierbar über die Einundzwanzig Meetup App
 
             // ── BADGE-DETAILS ────────────────────────────
             _sectionCard(
-              title: 'Badge-Details',
+              title: AppLocalizations.of(context).badgeDetailsTitle,
               icon: Icons.badge_rounded,
               color: cCyan,
               rows: [
-                _row('Meetup', b.meetupName),
-                _row('Übertragungsweg', _deliveryLabel),
-                _row('Meetup-ID', b.meetupEventId.isNotEmpty ? b.meetupEventId : '—'),
+                _row(AppLocalizations.of(context).badgeMeetup, b.meetupName),
+                _row(AppLocalizations.of(context).badgeTransmission, _deliveryLabelOf(context)),
+                _row(AppLocalizations.of(context).badgeMeetupId, b.meetupEventId.isNotEmpty ? b.meetupEventId : '—'),
               ],
             ),
 
@@ -158,30 +159,30 @@ Verifizierbar über die Einundzwanzig Meetup App
 
             // ── KRYPTOGRAPHISCHER BEWEIS ─────────────────
             _sectionCard(
-              title: 'Kryptographischer Beweis',
+              title: AppLocalizations.of(context).badgeProofTitle,
               icon: Icons.security_rounded,
               color: cGreen,
               rows: [
-                _row('Signaturtyp', _sigLabel, valueColor: _sigColor),
-                _row('Organisator (npub)',
+                _row(AppLocalizations.of(context).badgeSignatureType, _sigLabelOf(context), valueColor: _sigColor),
+                _row(AppLocalizations.of(context).badgeOrganizerNpub,
                     _shortNpub(b.signerNpub),
                     mono: true),
                 if (b.sigId.isNotEmpty)
                   _row('Nostr Event-ID',
                       '${b.sigId.substring(0, 12)}…${b.sigId.substring(b.sigId.length - 8)}',
                       mono: true),
-                _row('Claim-Binding',
-                    b.isClaimed ? 'Gebunden ✓' : 'Nicht gebunden',
+                _row(AppLocalizations.of(context).badgeClaimBinding,
+                    b.isClaimed ? AppLocalizations.of(context).badgeBound : AppLocalizations.of(context).badgeNotBound,
                     valueColor: b.isClaimed ? cGreen : cRed),
                 if (b.isRetroactive)
-                  _row('Hinweis', 'Nachträglich geclaimed', valueColor: cOrange),
+                  _row(AppLocalizations.of(context).badgeNote, AppLocalizations.of(context).badgeClaimedLater, valueColor: cOrange),
               ],
             ),
 
             const SizedBox(height: 12),
 
             // ── VERIFIKATIONS-HASH ───────────────────────
-            _hashCard(),
+            _hashCard(context),
 
             const SizedBox(height: 24),
 
@@ -189,7 +190,7 @@ Verifizierbar über die Einundzwanzig Meetup App
             ElevatedButton.icon(
               onPressed: _shareBadge,
               icon: const Icon(Icons.share),
-              label: const Text('BADGE TEILEN'),
+              label: Text(AppLocalizations.of(context).badgeShareCaps),
               style: ElevatedButton.styleFrom(
                 backgroundColor: cOrange,
                 foregroundColor: Colors.black,
@@ -202,8 +203,8 @@ Verifizierbar über die Einundzwanzig Meetup App
             TextButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const Icon(Icons.close, color: cTextSecondary),
-              label: const Text('SCHLIESSEN',
-                  style: TextStyle(color: cTextSecondary)),
+              label: Text(AppLocalizations.of(context).badgeClose,
+                  style: const TextStyle(color: cTextSecondary)),
             ),
           ],
         ),
@@ -213,7 +214,7 @@ Verifizierbar über die Einundzwanzig Meetup App
 
   // ── WIDGETS ───────────────────────────────────────────────────
 
-  Widget _heroCard() {
+  Widget _heroCard(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
@@ -271,16 +272,16 @@ Verifizierbar über die Einundzwanzig Meetup App
           const SizedBox(height: 16),
           const Divider(color: cBorder),
           const SizedBox(height: 12),
-          const Text(
-            'PROOF OF ATTENDANCE',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).badgeProofOfAttendance,
+            style: const TextStyle(
                 color: cOrange, fontWeight: FontWeight.bold, letterSpacing: 1.5),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Dieses Badge bestätigt kryptografisch, dass du physisch vor Ort warst.',
+          Text(
+            AppLocalizations.of(context).badgeProofDesc,
             textAlign: TextAlign.center,
-            style: TextStyle(color: cTextSecondary, fontSize: 12),
+            style: const TextStyle(color: cTextSecondary, fontSize: 12),
           ),
         ],
       ),
@@ -357,15 +358,15 @@ Verifizierbar über die Einundzwanzig Meetup App
     );
   }
 
-  Widget _hashCard() {
+  Widget _hashCard(BuildContext context) {
     final hash = b.getVerificationHash();
     return GestureDetector(
       onTap: () async {
         await Clipboard.setData(ClipboardData(text: hash));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Hash kopiert'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context).badgeHashCopied),
               backgroundColor: cCard,
               duration: Duration(seconds: 2),
             ),
@@ -386,9 +387,9 @@ Verifizierbar über die Einundzwanzig Meetup App
               children: [
                 const Icon(Icons.fingerprint, size: 14, color: cPurple),
                 const SizedBox(width: 8),
-                const Text(
-                  'VERIFIKATIONS-HASH',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).badgeVerificationHash,
+                  style: const TextStyle(
                       color: cPurple,
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
@@ -414,3 +415,6 @@ Verifizierbar über die Einundzwanzig Meetup App
     );
   }
 }
+
+
+

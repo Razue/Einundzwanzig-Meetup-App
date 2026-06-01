@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 class CommunityPortalScreen extends StatelessWidget {
   const CommunityPortalScreen({super.key});
@@ -21,7 +22,7 @@ class CommunityPortalScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Konnte $url nicht öffnen"),
+            content: Text("${AppLocalizations.of(context).errorOpenLink}: $url"),
             backgroundColor: cRed,
           ),
         );
@@ -50,7 +51,7 @@ class CommunityPortalScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.open_in_new_rounded, color: cTextSecondary, size: 18),
-                tooltip: 'Portal öffnen',
+                tooltip: AppLocalizations.of(context).portalOpen,
                 onPressed: () => _openUrl(context, _portalBase),
               ),
             ],
@@ -66,35 +67,35 @@ class CommunityPortalScreen extends StatelessWidget {
               delegate: SliverChildListDelegate([
 
                 // ── SCHNELLZUGRIFF ──
-                _buildSectionTitle('SCHNELLZUGRIFF'),
+                _buildSectionTitle(AppLocalizations.of(context).portalQuickAccess),
                 const SizedBox(height: 10),
                 _buildQuickActions(context),
 
                 const SizedBox(height: 28),
 
                 // ── ENTDECKEN ──
-                _buildSectionTitle('ENTDECKEN'),
+                _buildSectionTitle(AppLocalizations.of(context).portalDiscover),
                 const SizedBox(height: 10),
                 _buildDiscoverGrid(context),
 
                 const SizedBox(height: 28),
 
                 // ── VEREIN ──
-                _buildSectionTitle('VEREIN'),
+                _buildSectionTitle(AppLocalizations.of(context).portalAssociation),
                 const SizedBox(height: 10),
                 _buildVereinSection(context),
 
                 const SizedBox(height: 28),
 
                 // ── PODCAST & MEDIA ──
-                _buildSectionTitle('PODCAST & MEDIA'),
+                _buildSectionTitle(AppLocalizations.of(context).portalPodcastMedia),
                 const SizedBox(height: 10),
                 _buildMediaSection(context),
 
                 const SizedBox(height: 28),
 
                 // ── SOZIALE NETZWERKE ──
-                _buildSectionTitle('SOZIALE NETZWERKE'),
+                _buildSectionTitle(AppLocalizations.of(context).portalSocialNetworks),
                 const SizedBox(height: 10),
                 _buildSocialSection(context),
 
@@ -178,10 +179,10 @@ class CommunityPortalScreen extends StatelessWidget {
   // ─────────────────────────────────────────
   Widget _buildDiscoverGrid(BuildContext context) {
     final items = [
-      _GridItem(Icons.map_outlined,         'Meetup-Karte',   'Treffen in deiner Nähe',   cOrange,  '$_webBase/meetups/'),
-      _GridItem(Icons.store_outlined,       'Shop',           'Merch & Bitcoin-Produkte', cCyan,    '$_webBase/shops/'),
-      _GridItem(Icons.hub_outlined,         'Portal',         'Dein Profil & Badges',     cPurple,  '$_portalBase/'),
-      _GridItem(Icons.record_voice_over_rounded, 'Soundboard','Clips & Sounds',           cOrange,  '$_webBase/soundboard/'),
+      _GridItem(Icons.map_outlined,         AppLocalizations.of(context).portalMeetupMap,   AppLocalizations.of(context).portalMeetupMapSub,   cOrange,  '$_webBase/meetups/'),
+      _GridItem(Icons.store_outlined,       AppLocalizations.of(context).portalShop,           AppLocalizations.of(context).portalMerch, cCyan,    '$_webBase/shops/'),
+      _GridItem(Icons.hub_outlined,         AppLocalizations.of(context).portalProfile2,         AppLocalizations.of(context).portalProfile,     cPurple,  '$_portalBase/'),
+      _GridItem(Icons.record_voice_over_rounded, AppLocalizations.of(context).portalSoundboard,AppLocalizations.of(context).portalClipsSounds,           cOrange,  '$_webBase/soundboard/'),
     ];
 
     return GridView.builder(
@@ -229,11 +230,11 @@ class CommunityPortalScreen extends StatelessWidget {
   // ─────────────────────────────────────────
   Widget _buildVereinSection(BuildContext context) {
     return _buildLinkList(context, [
-      _LinkItem('Über den Verein',     '$_webBase/verein/'),
-      _LinkItem('Mitglied werden',     'https://verein.einundzwanzig.space/'),
-      _LinkItem('Satzung (PDF)',       '$_webBase/files/Statuten_v1.3.pdf'),
-      _LinkItem('Kontakt',             '$_webBase/kontakt/'),
-      _LinkItem('Datenschutz',         '$_webBase/datenschutz/'),
+      _LinkItem(AppLocalizations.of(context).portalAboutAssoc,     '$_webBase/verein/'),
+      _LinkItem(AppLocalizations.of(context).portalMembership,     'https://verein.einundzwanzig.space/'),
+      _LinkItem(AppLocalizations.of(context).portalStatutes,       '$_webBase/files/Statuten_v1.3.pdf'),
+      _LinkItem(AppLocalizations.of(context).portalContact,             '$_webBase/kontakt/'),
+      _LinkItem(AppLocalizations.of(context).portalPrivacy,         '$_webBase/datenschutz/'),
     ]);
   }
 
@@ -242,11 +243,11 @@ class CommunityPortalScreen extends StatelessWidget {
   // ─────────────────────────────────────────
   Widget _buildMediaSection(BuildContext context) {
     return _buildLinkList(context, [
-      _LinkItem('Podcast',             '$_webBase/podcast/'),
-      _LinkItem('Der Weg (Einsteiger)','$_webBase/podcast/der-weg/'),
-      _LinkItem('Interviews',          '$_webBase/podcast/interviews/'),
+      _LinkItem(AppLocalizations.of(context).portalPodcast,             '$_webBase/podcast/'),
+      _LinkItem(AppLocalizations.of(context).portalBeginnerPath,'$_webBase/podcast/der-weg/'),
+      _LinkItem(AppLocalizations.of(context).portalInterviews,          '$_webBase/podcast/interviews/'),
       _LinkItem('YouTube',             'https://www.youtube.com/c/EinundzwanzigPodcast'),
-      _LinkItem('Media & Artikel',     '$_webBase/media/'),
+      _LinkItem(AppLocalizations.of(context).portalMediaArticles,     '$_webBase/media/'),
       _LinkItem('Soundcloud',          'https://soundcloud.com/einundzwanzig_beats'),
     ]);
   }
@@ -259,7 +260,7 @@ class CommunityPortalScreen extends StatelessWidget {
       _LinkItem('Nostr',       'https://njump.me/npub1qv02xpsc3lhxxx5x7xswf88w3u7kykft9ea7t78tz7ywxf7mxs9qrxujnc'),
       _LinkItem('X / Twitter', 'https://x.com/_einundzwanzig_'),
       _LinkItem('Instagram',   'https://www.instagram.com/einundzwanzig_podcast'),
-      _LinkItem('Shoutout senden', 'https://shoutout.einundzwanzig.space'),
+      _LinkItem(AppLocalizations.of(context).portalShoutoutSend, 'https://shoutout.einundzwanzig.space'),
     ]);
   }
 
@@ -317,10 +318,10 @@ class CommunityPortalScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Text('Toximalistisches Infotainment',
+        Text(AppLocalizations.of(context).portalInfotainment,
           style: TextStyle(color: Colors.grey.shade700, fontSize: 11,
             fontStyle: FontStyle.italic, letterSpacing: 0.3)),
-        Text('für bullishe Bitcoiner.',
+        Text(AppLocalizations.of(context).portalTagline,
           style: TextStyle(color: Colors.grey.shade700, fontSize: 11,
             fontStyle: FontStyle.italic, letterSpacing: 0.3)),
         const SizedBox(height: 10),
@@ -363,3 +364,6 @@ class _LinkItem {
   final String url;
   _LinkItem(this.label, this.url);
 }
+
+
+

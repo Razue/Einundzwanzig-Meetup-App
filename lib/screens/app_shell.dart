@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'badge_wallet.dart';
 import 'calendar_screen.dart';
@@ -99,11 +100,11 @@ class _AppShellState extends State<AppShell> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
-                        _navItem(1, Icons.style_rounded, Icons.style_outlined, 'Wallet'),
+                        _navItem(0, Icons.home_rounded, Icons.home_outlined, AppLocalizations.of(context).navHome),
+                        _navItem(1, Icons.style_rounded, Icons.style_outlined, AppLocalizations.of(context).navWalletTab),
                         const SizedBox(width: 60),
-                        _navItem(3, Icons.event_rounded, Icons.event_outlined, 'Events'),
-                        _navItem(4, Icons.person_rounded, Icons.person_outline_rounded, 'Profil'),
+                        _navItem(3, Icons.event_rounded, Icons.event_outlined, AppLocalizations.of(context).navEvents),
+                        _navItem(4, Icons.person_rounded, Icons.person_outline_rounded, AppLocalizations.of(context).navProfileTab),
                       ],
                     ),
                   ),
@@ -173,8 +174,8 @@ class _ScanSheet extends StatelessWidget {
         _ScanOption(
           icon: Icons.qr_code_rounded,
           iconColor: cOrange,
-          title: 'Badge scannen',
-          subtitle: 'QR-Code oder NFC-Tag vom Meetup',
+          title: AppLocalizations.of(context).scanBadge,
+          subtitle: AppLocalizations.of(context).scanBadgeSub,
           onTap: onBadge,
         ),
         const SizedBox(height: 8),
@@ -183,8 +184,8 @@ class _ScanSheet extends StatelessWidget {
         _ScanOption(
           icon: Icons.workspace_premium_rounded,
           iconColor: Colors.amber,
-          title: 'Reputation prüfen',
-          subtitle: 'Trust Score einer anderen Person verifizieren',
+          title: AppLocalizations.of(context).scanReputation,
+          subtitle: AppLocalizations.of(context).scanReputationSub,
           onTap: onReputation,
         ),
 
@@ -231,3 +232,6 @@ class _ScanOption extends StatelessWidget {
     );
   }
 }
+
+
+
