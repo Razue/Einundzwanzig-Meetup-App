@@ -1,0 +1,69 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "Einundzwanzig Meetup",
+  "@appTitle": {},
+
+  "navHome": "Home",
+  "navWallet": "Wallet",
+  "navEvents": "Events",
+  "navProfile": "Profil",
+
+  "actionSave": "Speichern",
+  "actionCancel": "Abbrechen",
+  "actionConfirm": "Bestätigen",
+  "actionDelete": "Löschen",
+  "actionContinue": "Weiter",
+  "actionBack": "Zurück",
+  "actionClose": "Schließen",
+  "actionRetry": "Erneut versuchen",
+  "actionOk": "OK",
+  "actionUnderstood": "Verstanden",
+
+  "settingsTitle": "Einstellungen",
+  "settingsLanguage": "Sprache",
+  "settingsLanguageSystem": "System",
+
+  "trustScore": "Trust Score",
+  "reputation": "Reputation",
+  "reputationShareQr": "QR teilen",
+  "community": "Community",
+  "communityPortal": "Portal",
+  "homeMeetup": "Home Meetup",
+  "shoutout": "Shoutout",
+
+  "joinCommunity": "Community betreten",
+  "identityVerified": "Verifiziert",
+  "verifiedByAdmin": "Verifiziert durch Admin",
+  "nostrVerified": "Nostr verifiziert",
+
+  "profileNickname": "Nickname",
+  "profileChooseHomeMeetup": "Wähle dein Home-Meetup",
+  "profileYourIdentity": "Deine Identität",
+  "profileNostrKey": "Nostr Schlüssel",
+  "profileKeyActive": "Schlüssel aktiv",
+  "requiredField": "Pflichtfeld — bitte ausfüllen",
+  "requiredHomeMeetup": "Pflichtfeld — bitte wähle dein Home-Meetup",
+  "fillRequired": "Bitte ausfüllen: {fields}",
+  "@fillRequired": {
+    "placeholders": { "fields": { "type": "String" } }
+  },
+
+  "identityGenerateKey": "Neuen Schlüssel erstellen",
+  "identityConnectAmber": "Mit Amber verbinden",
+  "identityImportNsec": "Bestehenden nsec importieren",
+  "amberConnected": "Mit Amber verbunden! Dein nsec bleibt in Amber.",
+  "amberNotFound": "Amber nicht gefunden",
+  "amberCancelled": "Verbindung in Amber abgebrochen.",
+
+  "walletTitle": "Badge Wallet",
+  "badgesCount": "{count, plural, =0{Keine Badges} =1{1 Badge} other{{count} Badges}}",
+  "@badgesCount": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "eventInDays": "in {days, plural, =0{heute} =1{1 Tag} other{{days} Tagen}}",
+  "@eventInDays": {
+    "placeholders": { "days": { "type": "int" } }
+  }
+}

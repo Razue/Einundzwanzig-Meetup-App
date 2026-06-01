@@ -1,0 +1,59 @@
+{
+  "@@locale": "es",
+
+  "appTitle": "Einundzwanzig Meetup",
+
+  "navHome": "Inicio",
+  "navWallet": "Cartera",
+  "navEvents": "Eventos",
+  "navProfile": "Perfil",
+
+  "actionSave": "Guardar",
+  "actionCancel": "Cancelar",
+  "actionConfirm": "Confirmar",
+  "actionDelete": "Eliminar",
+  "actionContinue": "Continuar",
+  "actionBack": "Atrás",
+  "actionClose": "Cerrar",
+  "actionRetry": "Reintentar",
+  "actionOk": "OK",
+  "actionUnderstood": "Entendido",
+
+  "settingsTitle": "Ajustes",
+  "settingsLanguage": "Idioma",
+  "settingsLanguageSystem": "Sistema",
+
+  "trustScore": "Puntuación de confianza",
+  "reputation": "Reputación",
+  "reputationShareQr": "Compartir QR",
+  "community": "Comunidad",
+  "communityPortal": "Portal",
+  "homeMeetup": "Meetup principal",
+  "shoutout": "Mención",
+
+  "joinCommunity": "Unirse a la comunidad",
+  "identityVerified": "Verificado",
+  "verifiedByAdmin": "Verificado por admin",
+  "nostrVerified": "Verificado en Nostr",
+
+  "profileNickname": "Apodo",
+  "profileChooseHomeMeetup": "Elige tu meetup principal",
+  "profileYourIdentity": "Tu identidad",
+  "profileNostrKey": "Clave Nostr",
+  "profileKeyActive": "Clave activa",
+  "requiredField": "Campo obligatorio — complétalo",
+  "requiredHomeMeetup": "Campo obligatorio — elige tu meetup principal",
+  "fillRequired": "Completa: {fields}",
+
+  "identityGenerateKey": "Crear una clave nueva",
+  "identityConnectAmber": "Conectar con Amber",
+  "identityImportNsec": "Importar nsec existente",
+  "amberConnected": "¡Conectado con Amber! Tu nsec permanece en Amber.",
+  "amberNotFound": "Amber no encontrado",
+  "amberCancelled": "Conexión cancelada en Amber.",
+
+  "walletTitle": "Cartera de insignias",
+  "badgesCount": "{count, plural, =0{Sin insignias} =1{1 insignia} other{{count} insignias}}",
+
+  "eventInDays": "en {days, plural, =0{hoy} =1{1 día} other{{days} días}}"
+}

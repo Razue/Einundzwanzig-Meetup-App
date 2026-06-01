@@ -1,0 +1,59 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Einundzwanzig Meetup",
+
+  "navHome": "Home",
+  "navWallet": "Wallet",
+  "navEvents": "Events",
+  "navProfile": "Profile",
+
+  "actionSave": "Save",
+  "actionCancel": "Cancel",
+  "actionConfirm": "Confirm",
+  "actionDelete": "Delete",
+  "actionContinue": "Continue",
+  "actionBack": "Back",
+  "actionClose": "Close",
+  "actionRetry": "Try again",
+  "actionOk": "OK",
+  "actionUnderstood": "Got it",
+
+  "settingsTitle": "Settings",
+  "settingsLanguage": "Language",
+  "settingsLanguageSystem": "System",
+
+  "trustScore": "Trust Score",
+  "reputation": "Reputation",
+  "reputationShareQr": "Share QR",
+  "community": "Community",
+  "communityPortal": "Portal",
+  "homeMeetup": "Home Meetup",
+  "shoutout": "Shoutout",
+
+  "joinCommunity": "Join the community",
+  "identityVerified": "Verified",
+  "verifiedByAdmin": "Verified by admin",
+  "nostrVerified": "Nostr verified",
+
+  "profileNickname": "Nickname",
+  "profileChooseHomeMeetup": "Choose your home meetup",
+  "profileYourIdentity": "Your identity",
+  "profileNostrKey": "Nostr key",
+  "profileKeyActive": "Key active",
+  "requiredField": "Required — please fill in",
+  "requiredHomeMeetup": "Required — please choose your home meetup",
+  "fillRequired": "Please fill in: {fields}",
+
+  "identityGenerateKey": "Create a new key",
+  "identityConnectAmber": "Connect with Amber",
+  "identityImportNsec": "Import existing nsec",
+  "amberConnected": "Connected with Amber! Your nsec stays in Amber.",
+  "amberNotFound": "Amber not found",
+  "amberCancelled": "Connection cancelled in Amber.",
+
+  "walletTitle": "Badge Wallet",
+  "badgesCount": "{count, plural, =0{No badges} =1{1 badge} other{{count} badges}}",
+
+  "eventInDays": "in {days, plural, =0{today} =1{1 day} other{{days} days}}"
+}

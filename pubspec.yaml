@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:      # ← neu
+    sdk: flutter              # ← neu
 
   # UI
   cupertino_icons: ^1.0.8
@@ -42,7 +44,7 @@ dependencies:
   share_plus: ^10.1.4
   file_picker: ^8.0.0
   path_provider: ^2.1.2
-  intl: ^0.19.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +55,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true              # ← neu (aktiviert die Übersetzungs-Generierung)
   assets:
     - assets/images/logo.png
     - assets/images/einundzwanzig_logo.svg

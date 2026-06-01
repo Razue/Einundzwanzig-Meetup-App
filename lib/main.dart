@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 import 'theme.dart';
 import 'screens/intro.dart';
 import 'screens/app_shell.dart';
 import 'models/user.dart';
 import 'services/secure_key_store.dart';
 import 'services/promotion_claim_service.dart';
+import 'services/locale_controller.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Gespeicherte Sprache laden, bevor die App startet
+  await LocaleController.load();
 
   // Immersiver Vollbild-Modus: blendet die Android-Navigationsleiste aus.
   // Ab Android 15/16 erzwingt das System Edge-to-Edge und ignoriert
@@ -35,24 +41,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Einundzwanzig Meetup',
-      debugShowCheckedModeBanner: false,
-      theme: appTheme,
-      builder: (context, child) {
-        return Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 420),
-            decoration: BoxDecoration(
-              border: Border.symmetric(
-                vertical: BorderSide(color: cBorder, width: 0.5),
+    return ValueListenableBuilder<Locale?>(
+      valueListenable: LocaleController.locale,
+      builder: (context, locale, _) {
+        return MaterialApp(
+          title: 'Einundzwanzig Meetup',
+          debugShowCheckedModeBanner: false,
+          theme: appTheme,
+          locale: locale, // null = Systemsprache
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          builder: (context, child) {
+            return Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 420),
+                decoration: BoxDecoration(
+                  border: Border.symmetric(
+                    vertical: BorderSide(color: cBorder, width: 0.5),
+                  ),
+                ),
+                child: child,
               ),
-            ),
-            child: child,
-          ),
+            );
+          },
+          home: const SplashScreen(),
         );
       },
-      home: const SplashScreen(),
     );
   }
 }
@@ -153,5 +167,3 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
-
-
