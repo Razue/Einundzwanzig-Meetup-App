@@ -6,6 +6,7 @@
 // - Reduced radius (kTileRadius = 14)
 // - Subtler mirror gradients
 // - All business logic 1:1 from dashboard.dart
+// - NEU: Sprachauswahl (de/en/es/System) im Einstellungs-Sheet
 // ============================================================
 
 import 'package:flutter/material.dart';
@@ -53,6 +54,7 @@ import '../services/humanity_proof_service.dart';
 import '../services/nip05_service.dart';
 import '../services/app_logger.dart';
 import '../services/device_integrity_service.dart';
+import '../services/locale_controller.dart';
 
 // ============================================================
 // TILE DEFINITION — Jede Kachel hat ID, Span (1-3), Builder
@@ -736,6 +738,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (ctx) => StatefulBuilder(builder: (ctx, ss) => Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 40), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
         _sG("DATENSICHERUNG"), _sT(Icons.upload_rounded, Colors.blue, "Backup erstellen", "Sichere deinen Account", () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+        const SizedBox(height: 16), _sG("SPRACHE"),
+        ValueListenableBuilder<Locale?>(
+          valueListenable: LocaleController.locale,
+          builder: (_, current, __) => Column(children: [
+            _langRow("System", null, current, ss, ctx),
+            ...LocaleController.supported.map((loc) =>
+              _langRow(LocaleController.displayName(loc), loc, current, ss, ctx)),
+          ]),
+        ),
         const SizedBox(height: 16), _sG("NOSTR-NETZWERK"), _sT(Icons.hub_rounded, cCyan, "Nostr-Relays", "Relays konfigurieren", () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
         const SizedBox(height: 16), _sG("BEDIENUNG"),
         ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: cOrange.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.vibration_rounded, color: cOrange, size: 20)),
@@ -748,6 +759,32 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _sG(String t) => Padding(padding: const EdgeInsets.only(bottom: 10, left: 4), child: Text(t, style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)));
+
+  // Sprach-Auswahlzeile fürs Einstellungs-Sheet
+  Widget _langRow(String label, Locale? value, Locale? current,
+      void Function(void Function()) ss, BuildContext ctx) {
+    final selected = current?.languageCode == value?.languageCode;
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: cOrange.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(10)),
+        child: const Icon(Icons.language_rounded, color: cOrange, size: 20)),
+      title: Text(label, style: const TextStyle(
+        color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
+      trailing: selected
+        ? const Icon(Icons.check_circle_rounded, color: cOrange, size: 20)
+        : const Icon(Icons.radio_button_unchecked_rounded,
+            color: cTextTertiary, size: 20),
+      onTap: () async {
+        await LocaleController.setLocale(value);
+        ss(() {}); // Sheet neu zeichnen → Häkchen springt um
+      },
+    );
+  }
+
   Widget _sT(IconData i, Color c, String t, String s, VoidCallback onTap) => ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(i, color: c, size: 20)), title: Text(t, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)), subtitle: Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)), onTap: onTap, contentPadding: const EdgeInsets.symmetric(horizontal: 4));
 
   void _showScoreInfoSheet() {
