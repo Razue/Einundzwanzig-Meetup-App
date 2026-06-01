@@ -6,6 +6,7 @@ import '../services/meetup_service.dart';
 import '../services/nostr_service.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/nostr_avatar.dart';
 import 'app_shell.dart';
 import 'platform_proof_screen.dart';
@@ -78,7 +79,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
         _isAmber = isAmber;
         // Im Amber-Modus gibt es keinen lokalen nsec, aber eine gültige
-        // Identität → als "Schlüssel aktiv" anzeigen (npub vorhanden).
+        // Identität → als AppLocalizations.of(context).profileKeyActive anzeigen (npub vorhanden).
         _hasNostrKey = hasKey || isAmber;
         _nostrNpub = npub ?? user.nostrNpub;
 
@@ -113,21 +114,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("NOSTR KEY ERSTELLEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: const Text(
-          "Es wird ein neues Schlüsselpaar erstellt. Dein privater Schlüssel (nsec) wird sicher auf deinem Gerät gespeichert.\n\n"
-          "Wichtig: Sichere deinen nsec! Wenn du dein Gerät verlierst, ist dein Key weg.",
-          style: TextStyle(color: Colors.white70, height: 1.5),
+        title: Text(AppLocalizations.of(context).profileCreateKey, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          AppLocalizations.of(context).profileNewKeypairDesc +
+          AppLocalizations.of(context).profileBackupNsec,
+          style: const TextStyle(color: Colors.white70, height: 1.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).dialogCancel, style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cOrange),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("ERSTELLEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context).dialogCreate, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -155,7 +156,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       setState(() => _isGeneratingKey = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Fehler: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).errorGeneric(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
@@ -177,8 +178,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             _isGeneratingKey = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Mit Amber verbunden! Dein nsec bleibt in Amber."),
+            SnackBar(
+              content: Text(AppLocalizations.of(context).profileAmberConnected),
               backgroundColor: Colors.green,
             ),
           );
@@ -188,13 +189,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             context: context,
             builder: (ctx) => AlertDialog(
               backgroundColor: cCard,
-              title: const Text("Amber nicht gefunden",
+              title: Text(AppLocalizations.of(context).profileAmberNotFound,
                   style: TextStyle(color: Colors.white)),
-              content: const Text(
-                "Amber ist ein separater Signer für Android, der deinen privaten "
-                "Schlüssel sicher verwahrt. Installiere Amber (z.B. über F-Droid "
-                "oder den Zapstore) und versuche es erneut.",
-                style: TextStyle(color: Colors.white70, height: 1.5),
+              content: Text(
+                AppLocalizations.of(context).profileAmberDesc +
+                AppLocalizations.of(context).profileAmberInstall +
+                AppLocalizations.of(context).profileAmberRetry,
+                style: const TextStyle(color: Colors.white70, height: 1.5),
               ),
               actions: [
                 TextButton(
@@ -207,12 +208,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         case AmberConnectCancelled():
           setState(() => _isGeneratingKey = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Verbindung in Amber abgebrochen.")),
+            SnackBar(content: Text(AppLocalizations.of(context).profileAmberAborted)),
           );
         case AmberConnectError(:final message):
           setState(() => _isGeneratingKey = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Amber-Fehler: $message"),
+            SnackBar(content: Text(AppLocalizations.of(context).errorAmber(message)),
                 backgroundColor: Colors.red),
           );
       }
@@ -220,7 +221,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       if (mounted) {
         setState(() => _isGeneratingKey = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Fehler: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).errorGeneric(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
@@ -233,13 +234,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("NSEC IMPORTIEREN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context).profileImportNsecShort, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              "Gib deinen privaten Nostr-Schlüssel ein (beginnt mit nsec1...):",
-              style: TextStyle(color: Colors.white70, fontSize: 13),
+            Text(
+              AppLocalizations.of(context).profileEnterNsec,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -260,16 +261,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              "Dein nsec verlässt niemals dein Gerät.",
-              style: TextStyle(color: Colors.orange, fontSize: 11),
+            Text(
+              AppLocalizations.of(context).profileNsecNeverLeaves,
+              style: const TextStyle(color: Colors.orange, fontSize: 11),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).dialogCancel, style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cOrange),
@@ -288,8 +289,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     _nostrNpub = keys['npub']!;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Key importiert!"),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context).profileKeyImported),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -302,7 +303,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 }
               }
             },
-            child: const Text("IMPORTIEREN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context).profileImport, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -320,17 +321,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           children: const [
             Icon(Icons.warning_amber, color: Colors.orange, size: 24),
             SizedBox(width: 8),
-            Text("SICHERE DEINEN KEY!", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(AppLocalizations.of(context).profileSecureKey, style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              "Dies ist dein privater Schlüssel. Speichere ihn an einem sicheren Ort! "
-              "Wer diesen Key hat, HAT deine Identität.",
-              style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+            Text(
+              AppLocalizations.of(context).profileSaveKeyDesc +
+              AppLocalizations.of(context).profileWhoHasKey,
+              style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 16),
             Container(
@@ -351,9 +352,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              "Dieser Key wird NICHT nochmal angezeigt!",
-              style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
+            Text(
+              AppLocalizations.of(context).profileKeyNotShownAgain,
+              style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -361,17 +362,17 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(backgroundColor: cOrange),
             icon: const Icon(Icons.copy, color: Colors.white, size: 18),
-            label: const Text("KOPIEREN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            label: Text(AppLocalizations.of(context).profileCopy, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: nsec));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("nsec kopiert! Jetzt sicher abspeichern."), backgroundColor: cOrange),
+                SnackBar(content: Text(AppLocalizations.of(context).profileNsecCopied), backgroundColor: cOrange),
               );
             },
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("ICH HAB IHN GESICHERT", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context).profileKeySecured, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -387,20 +388,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("NSEC ANZEIGEN?", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: const Text(
-          "Dein privater Schlüssel wird angezeigt. Stelle sicher, dass niemand auf deinen Bildschirm schaut!",
-          style: TextStyle(color: Colors.white70),
+        title: Text(AppLocalizations.of(context).profileShowNsecQ, style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        content: Text(
+          AppLocalizations.of(context).profileShowNsecWarn,
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).dialogCancel, style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("ANZEIGEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context).profileShow, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -443,15 +444,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (!formOk || !homeMeetupOk) {
       // Klarer Hinweis statt stillem Nichts-Passieren
       final missing = <String>[];
-      if (!formOk) missing.add("Nickname");
-      if (!homeMeetupOk) missing.add("Home-Meetup");
+      if (!formOk) missing.add(AppLocalizations.of(context).profileNickname);
+      if (!homeMeetupOk) missing.add(AppLocalizations.of(context).profileHomeMeetupDash);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: cRed,
-            content: Text(
-              "Bitte ausfüllen: ${missing.join(' und ')}",
-            ),
+            content: Text(AppLocalizations.of(context).profileFillIn(missing.join(' und '))),
           ),
         );
       }
@@ -495,20 +494,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("Achtung!", style: TextStyle(color: Colors.white)),
-        content: const Text(
-          "Wenn du bearbeitest, verlierst du deinen 'Verifiziert'-Status und musst neu freigeschaltet werden.",
-          style: TextStyle(color: Colors.white70),
+        title: Text(AppLocalizations.of(context).profileWarning, style: TextStyle(color: Colors.white)),
+        content: Text(
+          AppLocalizations.of(context).profileEditWarnDesc,
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Abbrechen")),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context).dialogCancelMixed)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cRed),
             onPressed: () {
               Navigator.pop(context);
               setState(() => _isEditing = true);
             },
-            child: const Text("Bearbeiten", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context).profileEdit, style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -524,7 +523,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: Text(_isEditing ? "PROFIL BEARBEITEN" : "DEIN PROFIL"),
+        title: Text(_isEditing ? AppLocalizations.of(context).profileEditTitle : AppLocalizations.of(context).profileTitle),
         backgroundColor: cDark,
       ),
       body: SingleChildScrollView(
@@ -547,24 +546,24 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           radius: 44,
         ),
         const SizedBox(height: 10),
-        const Text("VERIFIZIERT", style: TextStyle(color: cGreen, fontWeight: FontWeight.bold, fontSize: 18)),
+        Text(AppLocalizations.of(context).profileVerified, style: TextStyle(color: cGreen, fontWeight: FontWeight.bold, fontSize: 18)),
         const SizedBox(height: 30),
-        _buildInfoTile("Nickname", _user!.nickname, Icons.person),
-        _buildInfoTile("Home Meetup", _user!.homeMeetupId.isEmpty ? "-" : _user!.homeMeetupId, Icons.home),
+        _buildInfoTile(AppLocalizations.of(context).profileNickname, _user!.nickname, Icons.person),
+        _buildInfoTile(AppLocalizations.of(context).profileHomeMeetup, _user!.homeMeetupId.isEmpty ? "-" : _user!.homeMeetupId, Icons.home),
         if (_hasNostrKey)
           _buildInfoTile("Nostr", NostrService.shortenNpub(_nostrNpub), Icons.key),
         const SizedBox(height: 24),
 
         // Identity Layer — auch in read-only verfügbar
-        const Text("IDENTITÄT STÄRKEN", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+        Text(AppLocalizations.of(context).profileStrengthen, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
         const SizedBox(height: 12),
 
         _buildIdentityAction(
           icon: Icons.link,
-          title: "Plattformen verknüpfen",
+          title: AppLocalizations.of(context).profileLinkPlatforms,
           subtitle: _platformProofCount > 0
               ? "$_platformProofCount Plattform${_platformProofCount > 1 ? 'en' : ''} aktiv"
-              : "Telegram, X, Kleinanzeigen",
+              : AppLocalizations.of(context).profilePlatformsSub,
           color: Colors.green,
           done: _platformProofCount > 0,
           onTap: () async {
@@ -579,10 +578,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
         _buildIdentityAction(
           icon: Icons.bolt,
-          title: "Proof of Humanity",
+          title: AppLocalizations.of(context).profileProofHumanity,
           subtitle: _humanityVerified
-              ? "Lightning-Beweis aktiv"
-              : "Einmal gezappt? Jetzt prüfen",
+              ? AppLocalizations.of(context).profileLightningActive
+              : AppLocalizations.of(context).profileZapCheck,
           color: Colors.amber,
           done: _humanityVerified,
           onTap: () async {
@@ -598,7 +597,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(foregroundColor: cRed, side: const BorderSide(color: cRed)),
           icon: const Icon(Icons.edit),
-          label: const Text("BEARBEITEN (Status verlieren)"),
+          label: Text(AppLocalizations.of(context).profileEditLoseStatus),
           onPressed: _unlockEditMode,
         ),
       ],
@@ -631,15 +630,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // --- IDENTITÄT ---
-          const Text("DEINE IDENTITÄT", style: TextStyle(color: cOrange, fontWeight: FontWeight.bold)),
+          Text(AppLocalizations.of(context).profileIdentity, style: TextStyle(color: cOrange, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(
-            "Wähle einen Nickname und dein Home-Meetup.",
+            AppLocalizations.of(context).profileIntro,
             style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
           ),
           const SizedBox(height: 14),
 
-          _buildTextField(_nicknameController, "Nickname", Icons.person, required: true),
+          _buildTextField(_nicknameController, AppLocalizations.of(context).profileNickname, Icons.person, required: true),
           const SizedBox(height: 12),
 
           InkWell(
@@ -664,7 +663,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _selectedHomeMeetup.isEmpty ? "Wähle dein Home-Meetup" : _selectedHomeMeetup,
+                      _selectedHomeMeetup.isEmpty ? AppLocalizations.of(context).profileChooseMeetup : _selectedHomeMeetup,
                       style: TextStyle(color: _selectedHomeMeetup.isEmpty ? Colors.grey : Colors.white, fontSize: 16),
                     ),
                   ),
@@ -677,7 +676,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 6, left: 12),
               child: Text(
-                "Pflichtfeld — bitte wähle dein Home-Meetup",
+                AppLocalizations.of(context).profileMeetupReq,
                 style: TextStyle(color: cRed, fontSize: 12),
               ),
             ),
@@ -687,10 +686,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           // =============================================
           // NOSTR IDENTITÄT
           // =============================================
-          const Text("NOSTR SCHLÜSSEL", style: TextStyle(color: cPurple, fontWeight: FontWeight.bold)),
+          Text(AppLocalizations.of(context).profileNostrKey, style: TextStyle(color: cPurple, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(
-            "Dein kryptografischer Schlüssel — damit werden Badges signiert und deine Reputation verifiziert.",
+            AppLocalizations.of(context).profileKeyDesc,
             style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
           ),
           const SizedBox(height: 12),
@@ -712,7 +711,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     children: const [
                       Icon(Icons.check_circle, color: Colors.green, size: 18),
                       SizedBox(width: 8),
-                      Text("SCHLÜSSEL AKTIV", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text(AppLocalizations.of(context).profileKeyActiveCaps, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -738,7 +737,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: _nostrNpub));
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("npub kopiert!"), backgroundColor: cOrange, duration: Duration(seconds: 1)),
+                              SnackBar(content: Text(AppLocalizations.of(context).profileNpubCopied), backgroundColor: cOrange, duration: const Duration(seconds: 1)),
                             );
                           },
                           icon: const Icon(Icons.copy, size: 16),
@@ -784,9 +783,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 children: [
                   const Icon(Icons.key_off, color: Colors.grey, size: 32),
                   const SizedBox(height: 8),
-                  const Text(
-                    "Noch kein Nostr-Key vorhanden",
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  Text(
+                    AppLocalizations.of(context).profileNoKey,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
                   ),
                   const SizedBox(height: 16),
 
@@ -799,7 +798,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                           : const Icon(Icons.add_circle_outline, color: Colors.white),
                       label: Text(
-                        _isGeneratingKey ? "WIRD ERSTELLT..." : "NEUEN KEY ERSTELLEN",
+                        _isGeneratingKey ? AppLocalizations.of(context).profileCreating : AppLocalizations.of(context).profileCreateNewKey,
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -816,7 +815,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _isGeneratingKey ? null : _connectAmber,
                       icon: const Icon(Icons.shield_outlined, size: 18),
-                      label: const Text("MIT AMBER VERBINDEN"),
+                      label: Text(AppLocalizations.of(context).profileConnectAmber),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: cCyan,
                         side: const BorderSide(color: cCyan),
@@ -832,7 +831,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _importNsec,
                       icon: const Icon(Icons.download, size: 18),
-                      label: const Text("BESTEHENDEN NSEC IMPORTIEREN"),
+                      label: Text(AppLocalizations.of(context).profileImportNsec),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: cOrange,
                         side: const BorderSide(color: cOrange),
@@ -842,9 +841,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ),
 
                   const SizedBox(height: 12),
-                  const Text(
-                    "Du brauchst kein Nostr-Konto. Die App erstellt dir einen Schlüssel — das dauert eine Sekunde.",
-                    style: TextStyle(color: Colors.grey, fontSize: 11, height: 1.4),
+                  Text(
+                    AppLocalizations.of(context).profileNoNostrNeeded,
+                    style: const TextStyle(color: Colors.grey, fontSize: 11, height: 1.4),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -857,10 +856,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           // =============================================
           // IDENTITÄT STÄRKEN
           // =============================================
-          const Text("IDENTITÄT STÄRKEN", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+          Text(AppLocalizations.of(context).profileStrengthen, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(
-            "Verknüpfe Plattformen und beweise deine Menschlichkeit um deinen Trust Score zu erhöhen.",
+            AppLocalizations.of(context).profileStrengthenDesc,
             style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
           ),
           const SizedBox(height: 14),
@@ -868,10 +867,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           // Plattformen verknüpfen
           _buildIdentityAction(
             icon: Icons.link,
-            title: "Plattformen verknüpfen",
+            title: AppLocalizations.of(context).profileLinkPlatforms,
             subtitle: _platformProofCount > 0
                 ? "$_platformProofCount Plattform${_platformProofCount > 1 ? 'en' : ''} aktiv"
-                : "Telegram, X, Kleinanzeigen",
+                : AppLocalizations.of(context).profilePlatformsSub,
             color: Colors.green,
             done: _platformProofCount > 0,
             onTap: () async {
@@ -898,10 +897,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           // Proof of Humanity
           _buildIdentityAction(
             icon: Icons.bolt,
-            title: "Proof of Humanity",
+            title: AppLocalizations.of(context).profileProofHumanity,
             subtitle: _humanityVerified
-                ? "Lightning-Beweis aktiv"
-                : "Einmal gezappt? Jetzt prüfen",
+                ? AppLocalizations.of(context).profileLightningActive
+                : AppLocalizations.of(context).profileZapCheck,
             color: Colors.amber,
             done: _humanityVerified,
             onTap: () async {
@@ -932,7 +931,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             height: 50,
             child: ElevatedButton(
               onPressed: _saveProfile,
-              child: const Text("PROFIL SPEICHERN"),
+              child: Text(AppLocalizations.of(context).profileSave),
             ),
           ),
           const SizedBox(height: 100),
@@ -955,11 +954,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       validator: required
           ? (v) {
               final t = (v ?? '').trim();
-              if (t.isEmpty) return "Pflichtfeld — bitte ausfüllen";
+              if (t.isEmpty) return AppLocalizations.of(context).profileNicknameReq;
               if (t.toLowerCase() == 'anon') {
-                return "Bitte wähle einen eigenen Nickname (nicht 'Anon')";
+                return AppLocalizations.of(context).profileNicknameAnon;
               }
-              if (t.length < 2) return "Mindestens 2 Zeichen";
+              if (t.length < 2) return AppLocalizations.of(context).profileNicknameMin;
               return null;
             }
           : null,
@@ -1068,9 +1067,9 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
                 controller: _searchCtrl,
                 autofocus: true,
                 style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: "Stadt suchen...",
-                  prefixIcon: Icon(Icons.search, color: cOrange),
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context).profileSearchCity,
+                  prefixIcon: const Icon(Icons.search, color: cOrange),
                   filled: true,
                   fillColor: cDark,
                 ),

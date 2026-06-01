@@ -105,7 +105,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileYourIdentity => 'Deine Identität';
 
   @override
-  String get profileNostrKey => 'Nostr Schlüssel';
+  String get profileNostrKey => 'NOSTR SCHLÜSSEL';
 
   @override
   String get profileKeyActive => 'Schlüssel aktiv';
@@ -671,4 +671,219 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get portalProfile2 => 'Portal';
+
+  @override
+  String get profileTitle => 'DEIN PROFIL';
+
+  @override
+  String get profileEditTitle => 'PROFIL BEARBEITEN';
+
+  @override
+  String get profileSave => 'PROFIL SPEICHERN';
+
+  @override
+  String get profileIntro => 'Wähle einen Nickname und dein Home-Meetup.';
+
+  @override
+  String get profileNicknameMin => 'Mindestens 2 Zeichen';
+
+  @override
+  String get profileNicknameReq => 'Pflichtfeld — bitte ausfüllen';
+
+  @override
+  String get profileNicknameAnon =>
+      'Bitte wähle einen eigenen Nickname (nicht \'Anon\')';
+
+  @override
+  String get profileHomeMeetup => 'Home Meetup';
+
+  @override
+  String get profileHomeMeetupDash => 'Home-Meetup';
+
+  @override
+  String get profileChooseMeetup => 'Wähle dein Home-Meetup';
+
+  @override
+  String get profileMeetupReq => 'Pflichtfeld — bitte wähle dein Home-Meetup';
+
+  @override
+  String get profileSearchCity => 'Stadt suchen...';
+
+  @override
+  String get profileIdentity => 'DEINE IDENTITÄT';
+
+  @override
+  String get profileStrengthen => 'IDENTITÄT STÄRKEN';
+
+  @override
+  String get profileStrengthenDesc =>
+      'Verknüpfe Plattformen und beweise deine Menschlichkeit um deinen Trust Score zu erhöhen.';
+
+  @override
+  String get profileLinkPlatforms => 'Plattformen verknüpfen';
+
+  @override
+  String get profilePlatformsSub => 'Telegram, X, Kleinanzeigen';
+
+  @override
+  String get profileProofHumanity => 'Proof of Humanity';
+
+  @override
+  String get profileZapCheck => 'Einmal gezappt? Jetzt prüfen';
+
+  @override
+  String get profileLightningActive => 'Lightning-Beweis aktiv';
+
+  @override
+  String get profileVerified => 'VERIFIZIERT';
+
+  @override
+  String get profileNostrKeyShort => 'Nostr';
+
+  @override
+  String get profileNoKey => 'Noch kein Nostr-Key vorhanden';
+
+  @override
+  String get profileKeyActiveCaps => 'SCHLÜSSEL AKTIV';
+
+  @override
+  String get profileCreateKey => 'NOSTR KEY ERSTELLEN';
+
+  @override
+  String get profileCreateNewKey => 'NEUEN KEY ERSTELLEN';
+
+  @override
+  String get profileCreating => 'WIRD ERSTELLT...';
+
+  @override
+  String get profileNoNostrNeeded =>
+      'Du brauchst kein Nostr-Konto. Die App erstellt dir einen Schlüssel — das dauert eine Sekunde.';
+
+  @override
+  String get profileKeyDesc =>
+      'Dein kryptografischer Schlüssel — damit werden Badges signiert und deine Reputation verifiziert.';
+
+  @override
+  String get profileConnectAmber => 'MIT AMBER VERBINDEN';
+
+  @override
+  String get profileAmberDesc =>
+      'Amber ist ein separater Signer für Android, der deinen privaten ';
+
+  @override
+  String get profileAmberConnected =>
+      'Mit Amber verbunden! Dein nsec bleibt in Amber.';
+
+  @override
+  String get profileAmberNotFound => 'Amber nicht gefunden';
+
+  @override
+  String get profileAmberInstall =>
+      'Schlüssel sicher verwahrt. Installiere Amber (z.B. über F-Droid ';
+
+  @override
+  String get profileAmberRetry => 'oder den Zapstore) und versuche es erneut.';
+
+  @override
+  String get profileAmberAborted => 'Verbindung in Amber abgebrochen.';
+
+  @override
+  String get profileImportNsec => 'BESTEHENDEN NSEC IMPORTIEREN';
+
+  @override
+  String get profileImportNsecShort => 'NSEC IMPORTIEREN';
+
+  @override
+  String get profileImport => 'IMPORTIEREN';
+
+  @override
+  String get profileEnterNsec =>
+      'Gib deinen privaten Nostr-Schlüssel ein (beginnt mit nsec1...):';
+
+  @override
+  String get profileKeyImported => 'Key importiert!';
+
+  @override
+  String get profileShowNsecQ => 'NSEC ANZEIGEN?';
+
+  @override
+  String get profileShowNsecWarn =>
+      'Dein privater Schlüssel wird angezeigt. Stelle sicher, dass niemand auf deinen Bildschirm schaut!';
+
+  @override
+  String get profileShow => 'ANZEIGEN';
+
+  @override
+  String get profileCopy => 'KOPIEREN';
+
+  @override
+  String get profileSecureKey => 'SICHERE DEINEN KEY!';
+
+  @override
+  String get profileSaveKeyDesc =>
+      'Dies ist dein privater Schlüssel. Speichere ihn an einem sicheren Ort! ';
+
+  @override
+  String get profileKeyNotShownAgain =>
+      'Dieser Key wird NICHT nochmal angezeigt!';
+
+  @override
+  String get profileKeySecured => 'ICH HAB IHN GESICHERT';
+
+  @override
+  String get profileNpubCopied => 'npub kopiert!';
+
+  @override
+  String get profileNsecCopied => 'nsec kopiert! Jetzt sicher abspeichern.';
+
+  @override
+  String get profileNsecNeverLeaves => 'Dein nsec verlässt niemals dein Gerät.';
+
+  @override
+  String get profileWhoHasKey => 'Wer diesen Key hat, HAT deine Identität.';
+
+  @override
+  String get profileBackupNsec =>
+      'Wichtig: Sichere deinen nsec! Wenn du dein Gerät verlierst, ist dein Key weg.';
+
+  @override
+  String get profileNewKeypairDesc =>
+      'Es wird ein neues Schlüsselpaar erstellt. Dein privater Schlüssel (nsec) wird sicher auf deinem Gerät gespeichert.\n\n';
+
+  @override
+  String get profileEdit => 'Bearbeiten';
+
+  @override
+  String get profileEditLoseStatus => 'BEARBEITEN (Status verlieren)';
+
+  @override
+  String get profileWarning => 'Achtung!';
+
+  @override
+  String get profileEditWarnDesc =>
+      'Wenn du bearbeitest, verlierst du deinen \'Verifiziert\'-Status und musst neu freigeschaltet werden.';
+
+  @override
+  String get dialogCancel => 'ABBRECHEN';
+
+  @override
+  String get dialogCancelMixed => 'Abbrechen';
+
+  @override
+  String get dialogCreate => 'ERSTELLEN';
+
+  @override
+  String errorGeneric(String msg) {
+    return 'Fehler: $msg';
+  }
+
+  @override
+  String errorAmber(String msg) {
+    return 'Amber-Fehler: $msg';
+  }
+
+  @override
+  String profileFillIn(Object fields) {
+    return 'Bitte ausfüllen: $fields';
+  }
 }

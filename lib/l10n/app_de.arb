@@ -33,7 +33,7 @@
   "profileNickname": "Nickname",
   "profileChooseHomeMeetup": "Wähle dein Home-Meetup",
   "profileYourIdentity": "Deine Identität",
-  "profileNostrKey": "Nostr Schlüssel",
+  "profileNostrKey": "NOSTR SCHLÜSSEL",
   "profileKeyActive": "Schlüssel aktiv",
   "requiredField": "Pflichtfeld — bitte ausfüllen",
   "requiredHomeMeetup": "Pflichtfeld — bitte wähle dein Home-Meetup",
@@ -246,5 +246,91 @@
   "portalTagline": "für bullishe Bitcoiner.",
   "portalInfotainment": "Toximalistisches Infotainment",
   "portalPodcast": "Podcast",
-  "portalProfile2": "Portal"
+  "portalProfile2": "Portal",
+  "profileTitle": "DEIN PROFIL",
+  "profileEditTitle": "PROFIL BEARBEITEN",
+  "profileSave": "PROFIL SPEICHERN",
+  "profileIntro": "Wähle einen Nickname und dein Home-Meetup.",
+  "profileNicknameMin": "Mindestens 2 Zeichen",
+  "profileNicknameReq": "Pflichtfeld — bitte ausfüllen",
+  "profileNicknameAnon": "Bitte wähle einen eigenen Nickname (nicht 'Anon')",
+  "profileHomeMeetup": "Home Meetup",
+  "profileHomeMeetupDash": "Home-Meetup",
+  "profileChooseMeetup": "Wähle dein Home-Meetup",
+  "profileMeetupReq": "Pflichtfeld — bitte wähle dein Home-Meetup",
+  "profileSearchCity": "Stadt suchen...",
+  "profileIdentity": "DEINE IDENTITÄT",
+  "profileStrengthen": "IDENTITÄT STÄRKEN",
+  "profileStrengthenDesc": "Verknüpfe Plattformen und beweise deine Menschlichkeit um deinen Trust Score zu erhöhen.",
+  "profileLinkPlatforms": "Plattformen verknüpfen",
+  "profilePlatformsSub": "Telegram, X, Kleinanzeigen",
+  "profileProofHumanity": "Proof of Humanity",
+  "profileZapCheck": "Einmal gezappt? Jetzt prüfen",
+  "profileLightningActive": "Lightning-Beweis aktiv",
+  "profileVerified": "VERIFIZIERT",
+  "profileNostrKeyShort": "Nostr",
+  "profileNoKey": "Noch kein Nostr-Key vorhanden",
+  "profileKeyActiveCaps": "SCHLÜSSEL AKTIV",
+  "profileCreateKey": "NOSTR KEY ERSTELLEN",
+  "profileCreateNewKey": "NEUEN KEY ERSTELLEN",
+  "profileCreating": "WIRD ERSTELLT...",
+  "profileNoNostrNeeded": "Du brauchst kein Nostr-Konto. Die App erstellt dir einen Schlüssel — das dauert eine Sekunde.",
+  "profileKeyDesc": "Dein kryptografischer Schlüssel — damit werden Badges signiert und deine Reputation verifiziert.",
+  "profileConnectAmber": "MIT AMBER VERBINDEN",
+  "profileAmberDesc": "Amber ist ein separater Signer für Android, der deinen privaten ",
+  "profileAmberConnected": "Mit Amber verbunden! Dein nsec bleibt in Amber.",
+  "profileAmberNotFound": "Amber nicht gefunden",
+  "profileAmberInstall": "Schlüssel sicher verwahrt. Installiere Amber (z.B. über F-Droid ",
+  "profileAmberRetry": "oder den Zapstore) und versuche es erneut.",
+  "profileAmberAborted": "Verbindung in Amber abgebrochen.",
+  "profileImportNsec": "BESTEHENDEN NSEC IMPORTIEREN",
+  "profileImportNsecShort": "NSEC IMPORTIEREN",
+  "profileImport": "IMPORTIEREN",
+  "profileEnterNsec": "Gib deinen privaten Nostr-Schlüssel ein (beginnt mit nsec1...):",
+  "profileKeyImported": "Key importiert!",
+  "profileShowNsecQ": "NSEC ANZEIGEN?",
+  "profileShowNsecWarn": "Dein privater Schlüssel wird angezeigt. Stelle sicher, dass niemand auf deinen Bildschirm schaut!",
+  "profileShow": "ANZEIGEN",
+  "profileCopy": "KOPIEREN",
+  "profileSecureKey": "SICHERE DEINEN KEY!",
+  "profileSaveKeyDesc": "Dies ist dein privater Schlüssel. Speichere ihn an einem sicheren Ort! ",
+  "profileKeyNotShownAgain": "Dieser Key wird NICHT nochmal angezeigt!",
+  "profileKeySecured": "ICH HAB IHN GESICHERT",
+  "profileNpubCopied": "npub kopiert!",
+  "profileNsecCopied": "nsec kopiert! Jetzt sicher abspeichern.",
+  "profileNsecNeverLeaves": "Dein nsec verlässt niemals dein Gerät.",
+  "profileWhoHasKey": "Wer diesen Key hat, HAT deine Identität.",
+  "profileBackupNsec": "Wichtig: Sichere deinen nsec! Wenn du dein Gerät verlierst, ist dein Key weg.",
+  "profileNewKeypairDesc": "Es wird ein neues Schlüsselpaar erstellt. Dein privater Schlüssel (nsec) wird sicher auf deinem Gerät gespeichert.\n\n",
+  "profileEdit": "Bearbeiten",
+  "profileEditLoseStatus": "BEARBEITEN (Status verlieren)",
+  "profileWarning": "Achtung!",
+  "profileEditWarnDesc": "Wenn du bearbeitest, verlierst du deinen 'Verifiziert'-Status und musst neu freigeschaltet werden.",
+  "dialogCancel": "ABBRECHEN",
+  "dialogCancelMixed": "Abbrechen",
+  "dialogCreate": "ERSTELLEN",
+  "errorGeneric": "Fehler: {msg}",
+  "@errorGeneric": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAmber": "Amber-Fehler: {msg}",
+  "@errorAmber": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "profileFillIn": "Bitte ausfüllen: {fields}",
+  "@profileFillIn": {
+    "placeholders": {
+      "fields": {
+        "type": "Object"
+      }
+    }
+  }
 }

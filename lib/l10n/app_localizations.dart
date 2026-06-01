@@ -295,7 +295,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileNostrKey.
   ///
   /// In de, this message translates to:
-  /// **'Nostr Schlüssel'**
+  /// **'NOSTR SCHLÜSSEL'**
   String get profileNostrKey;
 
   /// No description provided for @profileKeyActive.
@@ -1365,6 +1365,396 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Portal'**
   String get portalProfile2;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'DEIN PROFIL'**
+  String get profileTitle;
+
+  /// No description provided for @profileEditTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'PROFIL BEARBEITEN'**
+  String get profileEditTitle;
+
+  /// No description provided for @profileSave.
+  ///
+  /// In de, this message translates to:
+  /// **'PROFIL SPEICHERN'**
+  String get profileSave;
+
+  /// No description provided for @profileIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle einen Nickname und dein Home-Meetup.'**
+  String get profileIntro;
+
+  /// No description provided for @profileNicknameMin.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 2 Zeichen'**
+  String get profileNicknameMin;
+
+  /// No description provided for @profileNicknameReq.
+  ///
+  /// In de, this message translates to:
+  /// **'Pflichtfeld — bitte ausfüllen'**
+  String get profileNicknameReq;
+
+  /// No description provided for @profileNicknameAnon.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte wähle einen eigenen Nickname (nicht \'Anon\')'**
+  String get profileNicknameAnon;
+
+  /// No description provided for @profileHomeMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Home Meetup'**
+  String get profileHomeMeetup;
+
+  /// No description provided for @profileHomeMeetupDash.
+  ///
+  /// In de, this message translates to:
+  /// **'Home-Meetup'**
+  String get profileHomeMeetupDash;
+
+  /// No description provided for @profileChooseMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle dein Home-Meetup'**
+  String get profileChooseMeetup;
+
+  /// No description provided for @profileMeetupReq.
+  ///
+  /// In de, this message translates to:
+  /// **'Pflichtfeld — bitte wähle dein Home-Meetup'**
+  String get profileMeetupReq;
+
+  /// No description provided for @profileSearchCity.
+  ///
+  /// In de, this message translates to:
+  /// **'Stadt suchen...'**
+  String get profileSearchCity;
+
+  /// No description provided for @profileIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'DEINE IDENTITÄT'**
+  String get profileIdentity;
+
+  /// No description provided for @profileStrengthen.
+  ///
+  /// In de, this message translates to:
+  /// **'IDENTITÄT STÄRKEN'**
+  String get profileStrengthen;
+
+  /// No description provided for @profileStrengthenDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpfe Plattformen und beweise deine Menschlichkeit um deinen Trust Score zu erhöhen.'**
+  String get profileStrengthenDesc;
+
+  /// No description provided for @profileLinkPlatforms.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattformen verknüpfen'**
+  String get profileLinkPlatforms;
+
+  /// No description provided for @profilePlatformsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Telegram, X, Kleinanzeigen'**
+  String get profilePlatformsSub;
+
+  /// No description provided for @profileProofHumanity.
+  ///
+  /// In de, this message translates to:
+  /// **'Proof of Humanity'**
+  String get profileProofHumanity;
+
+  /// No description provided for @profileZapCheck.
+  ///
+  /// In de, this message translates to:
+  /// **'Einmal gezappt? Jetzt prüfen'**
+  String get profileZapCheck;
+
+  /// No description provided for @profileLightningActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Lightning-Beweis aktiv'**
+  String get profileLightningActive;
+
+  /// No description provided for @profileVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'VERIFIZIERT'**
+  String get profileVerified;
+
+  /// No description provided for @profileNostrKeyShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr'**
+  String get profileNostrKeyShort;
+
+  /// No description provided for @profileNoKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch kein Nostr-Key vorhanden'**
+  String get profileNoKey;
+
+  /// No description provided for @profileKeyActiveCaps.
+  ///
+  /// In de, this message translates to:
+  /// **'SCHLÜSSEL AKTIV'**
+  String get profileKeyActiveCaps;
+
+  /// No description provided for @profileCreateKey.
+  ///
+  /// In de, this message translates to:
+  /// **'NOSTR KEY ERSTELLEN'**
+  String get profileCreateKey;
+
+  /// No description provided for @profileCreateNewKey.
+  ///
+  /// In de, this message translates to:
+  /// **'NEUEN KEY ERSTELLEN'**
+  String get profileCreateNewKey;
+
+  /// No description provided for @profileCreating.
+  ///
+  /// In de, this message translates to:
+  /// **'WIRD ERSTELLT...'**
+  String get profileCreating;
+
+  /// No description provided for @profileNoNostrNeeded.
+  ///
+  /// In de, this message translates to:
+  /// **'Du brauchst kein Nostr-Konto. Die App erstellt dir einen Schlüssel — das dauert eine Sekunde.'**
+  String get profileNoNostrNeeded;
+
+  /// No description provided for @profileKeyDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein kryptografischer Schlüssel — damit werden Badges signiert und deine Reputation verifiziert.'**
+  String get profileKeyDesc;
+
+  /// No description provided for @profileConnectAmber.
+  ///
+  /// In de, this message translates to:
+  /// **'MIT AMBER VERBINDEN'**
+  String get profileConnectAmber;
+
+  /// No description provided for @profileAmberDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Amber ist ein separater Signer für Android, der deinen privaten '**
+  String get profileAmberDesc;
+
+  /// No description provided for @profileAmberConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Amber verbunden! Dein nsec bleibt in Amber.'**
+  String get profileAmberConnected;
+
+  /// No description provided for @profileAmberNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Amber nicht gefunden'**
+  String get profileAmberNotFound;
+
+  /// No description provided for @profileAmberInstall.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel sicher verwahrt. Installiere Amber (z.B. über F-Droid '**
+  String get profileAmberInstall;
+
+  /// No description provided for @profileAmberRetry.
+  ///
+  /// In de, this message translates to:
+  /// **'oder den Zapstore) und versuche es erneut.'**
+  String get profileAmberRetry;
+
+  /// No description provided for @profileAmberAborted.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung in Amber abgebrochen.'**
+  String get profileAmberAborted;
+
+  /// No description provided for @profileImportNsec.
+  ///
+  /// In de, this message translates to:
+  /// **'BESTEHENDEN NSEC IMPORTIEREN'**
+  String get profileImportNsec;
+
+  /// No description provided for @profileImportNsecShort.
+  ///
+  /// In de, this message translates to:
+  /// **'NSEC IMPORTIEREN'**
+  String get profileImportNsecShort;
+
+  /// No description provided for @profileImport.
+  ///
+  /// In de, this message translates to:
+  /// **'IMPORTIEREN'**
+  String get profileImport;
+
+  /// No description provided for @profileEnterNsec.
+  ///
+  /// In de, this message translates to:
+  /// **'Gib deinen privaten Nostr-Schlüssel ein (beginnt mit nsec1...):'**
+  String get profileEnterNsec;
+
+  /// No description provided for @profileKeyImported.
+  ///
+  /// In de, this message translates to:
+  /// **'Key importiert!'**
+  String get profileKeyImported;
+
+  /// No description provided for @profileShowNsecQ.
+  ///
+  /// In de, this message translates to:
+  /// **'NSEC ANZEIGEN?'**
+  String get profileShowNsecQ;
+
+  /// No description provided for @profileShowNsecWarn.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein privater Schlüssel wird angezeigt. Stelle sicher, dass niemand auf deinen Bildschirm schaut!'**
+  String get profileShowNsecWarn;
+
+  /// No description provided for @profileShow.
+  ///
+  /// In de, this message translates to:
+  /// **'ANZEIGEN'**
+  String get profileShow;
+
+  /// No description provided for @profileCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'KOPIEREN'**
+  String get profileCopy;
+
+  /// No description provided for @profileSecureKey.
+  ///
+  /// In de, this message translates to:
+  /// **'SICHERE DEINEN KEY!'**
+  String get profileSecureKey;
+
+  /// No description provided for @profileSaveKeyDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Dies ist dein privater Schlüssel. Speichere ihn an einem sicheren Ort! '**
+  String get profileSaveKeyDesc;
+
+  /// No description provided for @profileKeyNotShownAgain.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Key wird NICHT nochmal angezeigt!'**
+  String get profileKeyNotShownAgain;
+
+  /// No description provided for @profileKeySecured.
+  ///
+  /// In de, this message translates to:
+  /// **'ICH HAB IHN GESICHERT'**
+  String get profileKeySecured;
+
+  /// No description provided for @profileNpubCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'npub kopiert!'**
+  String get profileNpubCopied;
+
+  /// No description provided for @profileNsecCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'nsec kopiert! Jetzt sicher abspeichern.'**
+  String get profileNsecCopied;
+
+  /// No description provided for @profileNsecNeverLeaves.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein nsec verlässt niemals dein Gerät.'**
+  String get profileNsecNeverLeaves;
+
+  /// No description provided for @profileWhoHasKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer diesen Key hat, HAT deine Identität.'**
+  String get profileWhoHasKey;
+
+  /// No description provided for @profileBackupNsec.
+  ///
+  /// In de, this message translates to:
+  /// **'Wichtig: Sichere deinen nsec! Wenn du dein Gerät verlierst, ist dein Key weg.'**
+  String get profileBackupNsec;
+
+  /// No description provided for @profileNewKeypairDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Es wird ein neues Schlüsselpaar erstellt. Dein privater Schlüssel (nsec) wird sicher auf deinem Gerät gespeichert.\n\n'**
+  String get profileNewKeypairDesc;
+
+  /// No description provided for @profileEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Bearbeiten'**
+  String get profileEdit;
+
+  /// No description provided for @profileEditLoseStatus.
+  ///
+  /// In de, this message translates to:
+  /// **'BEARBEITEN (Status verlieren)'**
+  String get profileEditLoseStatus;
+
+  /// No description provided for @profileWarning.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung!'**
+  String get profileWarning;
+
+  /// No description provided for @profileEditWarnDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn du bearbeitest, verlierst du deinen \'Verifiziert\'-Status und musst neu freigeschaltet werden.'**
+  String get profileEditWarnDesc;
+
+  /// No description provided for @dialogCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'ABBRECHEN'**
+  String get dialogCancel;
+
+  /// No description provided for @dialogCancelMixed.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get dialogCancelMixed;
+
+  /// No description provided for @dialogCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'ERSTELLEN'**
+  String get dialogCreate;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler: {msg}'**
+  String errorGeneric(String msg);
+
+  /// No description provided for @errorAmber.
+  ///
+  /// In de, this message translates to:
+  /// **'Amber-Fehler: {msg}'**
+  String errorAmber(String msg);
+
+  /// No description provided for @profileFillIn.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte ausfüllen: {fields}'**
+  String profileFillIn(Object fields);
 }
 
 class _AppLocalizationsDelegate

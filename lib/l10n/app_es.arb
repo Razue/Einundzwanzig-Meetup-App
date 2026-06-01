@@ -32,7 +32,7 @@
   "profileNickname": "Apodo",
   "profileChooseHomeMeetup": "Elige tu meetup principal",
   "profileYourIdentity": "Tu identidad",
-  "profileNostrKey": "Clave Nostr",
+  "profileNostrKey": "CLAVE NOSTR",
   "profileKeyActive": "Clave activa",
   "requiredField": "Campo obligatorio — complétalo",
   "requiredHomeMeetup": "Campo obligatorio — elige tu meetup principal",
@@ -224,5 +224,91 @@
   "portalTagline": "para bitcoiners alcistas.",
   "portalInfotainment": "Infotainment toximalista",
   "portalPodcast": "Podcast",
-  "portalProfile2": "Portal"
+  "portalProfile2": "Portal",
+  "profileTitle": "TU PERFIL",
+  "profileEditTitle": "EDITAR PERFIL",
+  "profileSave": "GUARDAR PERFIL",
+  "profileIntro": "Elige un apodo y tu meetup principal.",
+  "profileNicknameMin": "Mínimo 2 caracteres",
+  "profileNicknameReq": "Campo obligatorio — complétalo",
+  "profileNicknameAnon": "Elige tu propio apodo (no 'Anon')",
+  "profileHomeMeetup": "Meetup principal",
+  "profileHomeMeetupDash": "Meetup principal",
+  "profileChooseMeetup": "Elige tu meetup principal",
+  "profileMeetupReq": "Obligatorio — elige tu meetup principal",
+  "profileSearchCity": "Buscar ciudad...",
+  "profileIdentity": "TU IDENTIDAD",
+  "profileStrengthen": "REFORZAR IDENTIDAD",
+  "profileStrengthenDesc": "Vincula plataformas y demuestra tu humanidad para subir tu Trust Score.",
+  "profileLinkPlatforms": "Vincular plataformas",
+  "profilePlatformsSub": "Telegram, X, anuncios",
+  "profileProofHumanity": "Proof of Humanity",
+  "profileZapCheck": "¿Has hecho un zap? Verifícalo",
+  "profileLightningActive": "Prueba Lightning activa",
+  "profileVerified": "VERIFICADO",
+  "profileNostrKeyShort": "Nostr",
+  "profileNoKey": "Aún sin clave Nostr",
+  "profileKeyActiveCaps": "CLAVE ACTIVA",
+  "profileCreateKey": "CREAR CLAVE NOSTR",
+  "profileCreateNewKey": "CREAR NUEVA CLAVE",
+  "profileCreating": "CREANDO...",
+  "profileNoNostrNeeded": "No necesitas cuenta Nostr. La app crea una clave por ti — toma un segundo.",
+  "profileKeyDesc": "Tu clave criptográfica — firma insignias y verifica tu reputación.",
+  "profileConnectAmber": "CONECTAR CON AMBER",
+  "profileAmberDesc": "Amber es un firmante aparte para Android que mantiene tu clave privada ",
+  "profileAmberConnected": "¡Conectado con Amber! Tu nsec permanece en Amber.",
+  "profileAmberNotFound": "Amber no encontrado",
+  "profileAmberInstall": "Clave guardada de forma segura. Instala Amber (p.ej. vía F-Droid ",
+  "profileAmberRetry": "o el Zapstore) e inténtalo de nuevo.",
+  "profileAmberAborted": "Conexión cancelada en Amber.",
+  "profileImportNsec": "IMPORTAR NSEC EXISTENTE",
+  "profileImportNsecShort": "IMPORTAR NSEC",
+  "profileImport": "IMPORTAR",
+  "profileEnterNsec": "Introduce tu clave privada Nostr (empieza con nsec1...):",
+  "profileKeyImported": "¡Clave importada!",
+  "profileShowNsecQ": "¿MOSTRAR NSEC?",
+  "profileShowNsecWarn": "Se mostrará tu clave privada. ¡Asegúrate de que nadie mire tu pantalla!",
+  "profileShow": "MOSTRAR",
+  "profileCopy": "COPIAR",
+  "profileSecureKey": "¡PROTEGE TU CLAVE!",
+  "profileSaveKeyDesc": "Esta es tu clave privada. ¡Guárdala en un lugar seguro! ",
+  "profileKeyNotShownAgain": "¡Esta clave NO se mostrará de nuevo!",
+  "profileKeySecured": "LA HE GUARDADO",
+  "profileNpubCopied": "¡npub copiado!",
+  "profileNsecCopied": "¡nsec copiado! Guárdalo de forma segura.",
+  "profileNsecNeverLeaves": "Tu nsec nunca sale de tu dispositivo.",
+  "profileWhoHasKey": "Quien tenga esta clave TIENE tu identidad.",
+  "profileBackupNsec": "Importante: ¡haz copia de tu nsec! Si pierdes el dispositivo, pierdes la clave.",
+  "profileNewKeypairDesc": "Se creará un nuevo par de claves. Tu clave privada (nsec) se guarda de forma segura en tu dispositivo.\n\n",
+  "profileEdit": "Editar",
+  "profileEditLoseStatus": "EDITAR (perder estado)",
+  "profileWarning": "¡Atención!",
+  "profileEditWarnDesc": "Si editas, pierdes tu estado 'Verificado' y deberás ser reaprobado.",
+  "dialogCancel": "CANCELAR",
+  "dialogCancelMixed": "Cancelar",
+  "dialogCreate": "CREAR",
+  "errorGeneric": "Error: {msg}",
+  "@errorGeneric": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAmber": "Error de Amber: {msg}",
+  "@errorAmber": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "profileFillIn": "Por favor completa: {fields}",
+  "@profileFillIn": {
+    "placeholders": {
+      "fields": {
+        "type": "Object"
+      }
+    }
+  }
 }

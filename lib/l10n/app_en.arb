@@ -32,7 +32,7 @@
   "profileNickname": "Nickname",
   "profileChooseHomeMeetup": "Choose your home meetup",
   "profileYourIdentity": "Your identity",
-  "profileNostrKey": "Nostr key",
+  "profileNostrKey": "NOSTR KEY",
   "profileKeyActive": "Key active",
   "requiredField": "Required — please fill in",
   "requiredHomeMeetup": "Required — please choose your home meetup",
@@ -224,5 +224,91 @@
   "portalTagline": "for bullish Bitcoiners.",
   "portalInfotainment": "Toxic-maximalist infotainment",
   "portalPodcast": "Podcast",
-  "portalProfile2": "Portal"
+  "portalProfile2": "Portal",
+  "profileTitle": "YOUR PROFILE",
+  "profileEditTitle": "EDIT PROFILE",
+  "profileSave": "SAVE PROFILE",
+  "profileIntro": "Choose a nickname and your home meetup.",
+  "profileNicknameMin": "At least 2 characters",
+  "profileNicknameReq": "Required field — please fill in",
+  "profileNicknameAnon": "Please choose your own nickname (not 'Anon')",
+  "profileHomeMeetup": "Home meetup",
+  "profileHomeMeetupDash": "Home meetup",
+  "profileChooseMeetup": "Choose your home meetup",
+  "profileMeetupReq": "Required — please choose your home meetup",
+  "profileSearchCity": "Search city...",
+  "profileIdentity": "YOUR IDENTITY",
+  "profileStrengthen": "STRENGTHEN IDENTITY",
+  "profileStrengthenDesc": "Link platforms and prove your humanity to raise your Trust Score.",
+  "profileLinkPlatforms": "Link platforms",
+  "profilePlatformsSub": "Telegram, X, classifieds",
+  "profileProofHumanity": "Proof of Humanity",
+  "profileZapCheck": "Zapped once? Check now",
+  "profileLightningActive": "Lightning proof active",
+  "profileVerified": "VERIFIED",
+  "profileNostrKeyShort": "Nostr",
+  "profileNoKey": "No Nostr key yet",
+  "profileKeyActiveCaps": "KEY ACTIVE",
+  "profileCreateKey": "CREATE NOSTR KEY",
+  "profileCreateNewKey": "CREATE NEW KEY",
+  "profileCreating": "CREATING...",
+  "profileNoNostrNeeded": "You don't need a Nostr account. The app creates a key for you — takes a second.",
+  "profileKeyDesc": "Your cryptographic key — used to sign badges and verify your reputation.",
+  "profileConnectAmber": "CONNECT WITH AMBER",
+  "profileAmberDesc": "Amber is a separate signer for Android that keeps your private ",
+  "profileAmberConnected": "Connected with Amber! Your nsec stays in Amber.",
+  "profileAmberNotFound": "Amber not found",
+  "profileAmberInstall": "Key stored securely. Install Amber (e.g. via F-Droid ",
+  "profileAmberRetry": "or the Zapstore) and try again.",
+  "profileAmberAborted": "Connection aborted in Amber.",
+  "profileImportNsec": "IMPORT EXISTING NSEC",
+  "profileImportNsecShort": "IMPORT NSEC",
+  "profileImport": "IMPORT",
+  "profileEnterNsec": "Enter your private Nostr key (starts with nsec1...):",
+  "profileKeyImported": "Key imported!",
+  "profileShowNsecQ": "SHOW NSEC?",
+  "profileShowNsecWarn": "Your private key will be shown. Make sure nobody is looking at your screen!",
+  "profileShow": "SHOW",
+  "profileCopy": "COPY",
+  "profileSecureKey": "SECURE YOUR KEY!",
+  "profileSaveKeyDesc": "This is your private key. Store it in a safe place! ",
+  "profileKeyNotShownAgain": "This key will NOT be shown again!",
+  "profileKeySecured": "I'VE SECURED IT",
+  "profileNpubCopied": "npub copied!",
+  "profileNsecCopied": "nsec copied! Save it securely now.",
+  "profileNsecNeverLeaves": "Your nsec never leaves your device.",
+  "profileWhoHasKey": "Whoever has this key HAS your identity.",
+  "profileBackupNsec": "Important: back up your nsec! If you lose your device, your key is gone.",
+  "profileNewKeypairDesc": "A new key pair will be created. Your private key (nsec) is stored securely on your device.\n\n",
+  "profileEdit": "Edit",
+  "profileEditLoseStatus": "EDIT (lose status)",
+  "profileWarning": "Warning!",
+  "profileEditWarnDesc": "If you edit, you lose your 'Verified' status and must be re-approved.",
+  "dialogCancel": "CANCEL",
+  "dialogCancelMixed": "Cancel",
+  "dialogCreate": "CREATE",
+  "errorGeneric": "Error: {msg}",
+  "@errorGeneric": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "errorAmber": "Amber error: {msg}",
+  "@errorAmber": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "profileFillIn": "Please fill in: {fields}",
+  "@profileFillIn": {
+    "placeholders": {
+      "fields": {
+        "type": "Object"
+      }
+    }
+  }
 }

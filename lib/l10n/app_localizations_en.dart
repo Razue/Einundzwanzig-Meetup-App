@@ -105,7 +105,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileYourIdentity => 'Your identity';
 
   @override
-  String get profileNostrKey => 'Nostr key';
+  String get profileNostrKey => 'NOSTR KEY';
 
   @override
   String get profileKeyActive => 'Key active';
@@ -668,4 +668,218 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get portalProfile2 => 'Portal';
+
+  @override
+  String get profileTitle => 'YOUR PROFILE';
+
+  @override
+  String get profileEditTitle => 'EDIT PROFILE';
+
+  @override
+  String get profileSave => 'SAVE PROFILE';
+
+  @override
+  String get profileIntro => 'Choose a nickname and your home meetup.';
+
+  @override
+  String get profileNicknameMin => 'At least 2 characters';
+
+  @override
+  String get profileNicknameReq => 'Required field — please fill in';
+
+  @override
+  String get profileNicknameAnon =>
+      'Please choose your own nickname (not \'Anon\')';
+
+  @override
+  String get profileHomeMeetup => 'Home meetup';
+
+  @override
+  String get profileHomeMeetupDash => 'Home meetup';
+
+  @override
+  String get profileChooseMeetup => 'Choose your home meetup';
+
+  @override
+  String get profileMeetupReq => 'Required — please choose your home meetup';
+
+  @override
+  String get profileSearchCity => 'Search city...';
+
+  @override
+  String get profileIdentity => 'YOUR IDENTITY';
+
+  @override
+  String get profileStrengthen => 'STRENGTHEN IDENTITY';
+
+  @override
+  String get profileStrengthenDesc =>
+      'Link platforms and prove your humanity to raise your Trust Score.';
+
+  @override
+  String get profileLinkPlatforms => 'Link platforms';
+
+  @override
+  String get profilePlatformsSub => 'Telegram, X, classifieds';
+
+  @override
+  String get profileProofHumanity => 'Proof of Humanity';
+
+  @override
+  String get profileZapCheck => 'Zapped once? Check now';
+
+  @override
+  String get profileLightningActive => 'Lightning proof active';
+
+  @override
+  String get profileVerified => 'VERIFIED';
+
+  @override
+  String get profileNostrKeyShort => 'Nostr';
+
+  @override
+  String get profileNoKey => 'No Nostr key yet';
+
+  @override
+  String get profileKeyActiveCaps => 'KEY ACTIVE';
+
+  @override
+  String get profileCreateKey => 'CREATE NOSTR KEY';
+
+  @override
+  String get profileCreateNewKey => 'CREATE NEW KEY';
+
+  @override
+  String get profileCreating => 'CREATING...';
+
+  @override
+  String get profileNoNostrNeeded =>
+      'You don\'t need a Nostr account. The app creates a key for you — takes a second.';
+
+  @override
+  String get profileKeyDesc =>
+      'Your cryptographic key — used to sign badges and verify your reputation.';
+
+  @override
+  String get profileConnectAmber => 'CONNECT WITH AMBER';
+
+  @override
+  String get profileAmberDesc =>
+      'Amber is a separate signer for Android that keeps your private ';
+
+  @override
+  String get profileAmberConnected =>
+      'Connected with Amber! Your nsec stays in Amber.';
+
+  @override
+  String get profileAmberNotFound => 'Amber not found';
+
+  @override
+  String get profileAmberInstall =>
+      'Key stored securely. Install Amber (e.g. via F-Droid ';
+
+  @override
+  String get profileAmberRetry => 'or the Zapstore) and try again.';
+
+  @override
+  String get profileAmberAborted => 'Connection aborted in Amber.';
+
+  @override
+  String get profileImportNsec => 'IMPORT EXISTING NSEC';
+
+  @override
+  String get profileImportNsecShort => 'IMPORT NSEC';
+
+  @override
+  String get profileImport => 'IMPORT';
+
+  @override
+  String get profileEnterNsec =>
+      'Enter your private Nostr key (starts with nsec1...):';
+
+  @override
+  String get profileKeyImported => 'Key imported!';
+
+  @override
+  String get profileShowNsecQ => 'SHOW NSEC?';
+
+  @override
+  String get profileShowNsecWarn =>
+      'Your private key will be shown. Make sure nobody is looking at your screen!';
+
+  @override
+  String get profileShow => 'SHOW';
+
+  @override
+  String get profileCopy => 'COPY';
+
+  @override
+  String get profileSecureKey => 'SECURE YOUR KEY!';
+
+  @override
+  String get profileSaveKeyDesc =>
+      'This is your private key. Store it in a safe place! ';
+
+  @override
+  String get profileKeyNotShownAgain => 'This key will NOT be shown again!';
+
+  @override
+  String get profileKeySecured => 'I\'VE SECURED IT';
+
+  @override
+  String get profileNpubCopied => 'npub copied!';
+
+  @override
+  String get profileNsecCopied => 'nsec copied! Save it securely now.';
+
+  @override
+  String get profileNsecNeverLeaves => 'Your nsec never leaves your device.';
+
+  @override
+  String get profileWhoHasKey => 'Whoever has this key HAS your identity.';
+
+  @override
+  String get profileBackupNsec =>
+      'Important: back up your nsec! If you lose your device, your key is gone.';
+
+  @override
+  String get profileNewKeypairDesc =>
+      'A new key pair will be created. Your private key (nsec) is stored securely on your device.\n\n';
+
+  @override
+  String get profileEdit => 'Edit';
+
+  @override
+  String get profileEditLoseStatus => 'EDIT (lose status)';
+
+  @override
+  String get profileWarning => 'Warning!';
+
+  @override
+  String get profileEditWarnDesc =>
+      'If you edit, you lose your \'Verified\' status and must be re-approved.';
+
+  @override
+  String get dialogCancel => 'CANCEL';
+
+  @override
+  String get dialogCancelMixed => 'Cancel';
+
+  @override
+  String get dialogCreate => 'CREATE';
+
+  @override
+  String errorGeneric(String msg) {
+    return 'Error: $msg';
+  }
+
+  @override
+  String errorAmber(String msg) {
+    return 'Amber error: $msg';
+  }
+
+  @override
+  String profileFillIn(Object fields) {
+    return 'Please fill in: $fields';
+  }
 }
