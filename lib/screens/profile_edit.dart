@@ -318,10 +318,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
         title: Row(
-          children: const [
-            Icon(Icons.warning_amber, color: Colors.orange, size: 24),
-            SizedBox(width: 8),
-            Text(AppLocalizations.of(context).profileSecureKey, style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
+          children: [
+            const Icon(Icons.warning_amber, color: Colors.orange, size: 24),
+            const SizedBox(width: 8),
+            Text(AppLocalizations.of(context).profileSecureKey, style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 16)),
           ],
         ),
         content: Column(
@@ -708,10 +708,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    children: const [
-                      Icon(Icons.check_circle, color: Colors.green, size: 18),
-                      SizedBox(width: 8),
-                      Text(AppLocalizations.of(context).profileKeyActiveCaps, style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                      const SizedBox(width: 8),
+                      Text(AppLocalizations.of(context).profileKeyActiveCaps, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -1098,5 +1098,3 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
     );
   }
 }
-
-

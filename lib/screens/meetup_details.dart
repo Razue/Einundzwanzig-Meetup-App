@@ -152,9 +152,9 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: const [
-                    Icon(Icons.calendar_month, color: cCyan, size: 20),
-                    SizedBox(width: 10),
+                  Row(children: [
+                    const Icon(Icons.calendar_month, color: cCyan, size: 20),
+                    const SizedBox(width: 10),
                     Text(AppLocalizations.of(context).sectionDates, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
                   ]),
                   const SizedBox(height: 16),
@@ -228,9 +228,9 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: const [
-                    Icon(Icons.link, color: cOrange, size: 20),
-                    SizedBox(width: 10),
+                  Row(children: [
+                    const Icon(Icons.link, color: cOrange, size: 20),
+                    const SizedBox(width: 10),
                     Text(AppLocalizations.of(context).sectionLinks, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
                   ]),
                   const SizedBox(height: 16),
@@ -284,9 +284,9 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: const [
-                    Icon(Icons.location_on, color: Colors.redAccent, size: 20),
-                    SizedBox(width: 10),
+                  Row(children: [
+                    const Icon(Icons.location_on, color: Colors.redAccent, size: 20),
+                    const SizedBox(width: 10),
                     Text(AppLocalizations.of(context).sectionLocation, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
                   ]),
                   const SizedBox(height: 16),
@@ -356,5 +356,3 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
     );
   }
 }
-
-
