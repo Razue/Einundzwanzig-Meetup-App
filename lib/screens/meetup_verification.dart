@@ -29,6 +29,7 @@ import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';    // Ndef (cross-platf
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nostr/nostr.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/meetup.dart';
 import '../models/user.dart';
@@ -51,7 +52,7 @@ class MeetupVerificationScreen extends StatefulWidget {
 class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> with SingleTickerProviderStateMixin {
   bool _success = false;
   bool _isUnknownSigner = false; // Flag für unbekannten Signer
-  String _statusText = "Bereit zum Scannen";
+  String? _statusText;
   MeetupBadge? _pendingBadge; // Badge wartet auf Bestätigung
 
   late AnimationController _controller;
@@ -62,6 +63,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     super.initState();
     _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat(reverse: true);
     _animation = Tween<double>(begin: 0.9, end: 1.1).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _statusText ??= AppLocalizations.of(context).verifyReadyToScan;
   }
 
   @override
@@ -78,7 +85,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   // =============================================
 
   void _startNfcRead() async {
-    setState(() => _statusText = "Prüfe NFC...");
+    setState(() => _statusText = AppLocalizations.of(context).verifyCheckingNfc);
 
     final availability = await NfcManager.instance.checkAvailability();
 
@@ -101,26 +108,28 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             color: isNotSupported ? Colors.red : cOrange,
           ),
           title: Text(
-            isNotSupported ? "NFC nicht verfügbar" : "NFC ist deaktiviert",
+            isNotSupported ? AppLocalizations.of(context).nfcUnavailable : AppLocalizations.of(context).nfcDisabled,
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Text(
             isNotSupported
-                ? "Dieses Gerät unterstützt kein NFC.\n\n"
-                  "Nutze stattdessen den QR-Code-Scanner, "
-                  "um dein Badge zu erhalten."
-                : "Bitte aktiviere NFC in deinen Geräteeinstellungen, "
-                  "um den Tag zu scannen.\n\n"
-                  "Android: Einstellungen → Verbindungen → NFC\n"
-                  "iOS: Einstellungen → NFC",
+                ? AppLocalizations.of(context).verifyNoNfcLong +
+                  AppLocalizations.of(context).verifyUseQrInstead +
+                  AppLocalizations.of(context).verifyToGetBadge
+                : AppLocalizations.of(context).nfcEnableHint +
+                  AppLocalizations.of(context).verifyToGetBadge +
+                  "\n\n" +
+                  AppLocalizations.of(context).nfcSettingsAndroid +
+                  "\n" +
+                  AppLocalizations.of(context).nfcSettingsIos,
             style: const TextStyle(color: Colors.grey, height: 1.5),
           ),
           actions: [
             if (!isNotSupported)
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("EINSTELLUNGEN ÖFFNEN",
-                    style: TextStyle(color: Colors.grey)),
+                child: Text(AppLocalizations.of(context).nfcOpenSettings,
+                    style: const TextStyle(color: Colors.grey)),
               ),
             if (isNotSupported)
               TextButton(
@@ -128,8 +137,8 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                   Navigator.pop(ctx);
                   _startQRScan(); // Direkt QR-Scanner starten
                 },
-                child: const Text("QR-CODE SCANNEN",
-                    style: TextStyle(color: cCyan)),
+                child: Text(AppLocalizations.of(context).verifyScanQrCaps,
+                    style: const TextStyle(color: cCyan)),
               ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
@@ -141,14 +150,14 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
       setState(() {
         _statusText = isNotSupported
-            ? "Dieses Gerät hat kein NFC. Nutze den QR-Scanner."
-            : "NFC ist deaktiviert. Bitte einschalten.";
+            ? AppLocalizations.of(context).verifyNoNfcDevice
+            : AppLocalizations.of(context).nfcDisabledHint;
       });
       return;
     }
 
     // ── NFC verfügbar → Normal scannen ──
-    setState(() => _statusText = "Warte auf NFC Tag...");
+    setState(() => _statusText = AppLocalizations.of(context).verifyWaitingNfc);
 
     try {
       await NfcManager.instance.startSession(
@@ -158,21 +167,21 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             final ndef = Ndef.from(tag);
             if (ndef == null) {
               await NfcManager.instance.stopSession();
-              setState(() => _statusText = "✗ Kein NDEF Tag");
+              setState(() => _statusText = AppLocalizations.of(context).verifyErrNoNdef);
               return;
             }
 
             final ndefMessage = await ndef.read();
             if (ndefMessage == null || ndefMessage.records.isEmpty) {
               await NfcManager.instance.stopSession();
-              setState(() => _statusText = "✗ Tag ist leer");
+              setState(() => _statusText = AppLocalizations.of(context).verifyErrTagEmpty);
               return;
             }
 
             final payload = ndefMessage.records.first.payload;
             if (payload.isEmpty) {
               await NfcManager.instance.stopSession();
-              setState(() => _statusText = "✗ Payload leer");
+              setState(() => _statusText = AppLocalizations.of(context).verifyErrPayloadEmpty);
               return;
             }
 
@@ -180,7 +189,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             final textStart = 1 + languageCodeLength;
             if (payload.length <= textStart) {
               await NfcManager.instance.stopSession();
-              setState(() => _statusText = "✗ Ungültiges Format");
+              setState(() => _statusText = AppLocalizations.of(context).verifyErrInvalidFormat);
               return;
             }
 
@@ -194,7 +203,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
               final result = BadgeSecurity.verify(tagData);
               if (!result.isValid) {
                 setState(() {
-                  _statusText = "✗ ${result.message}";
+                  _statusText = AppLocalizations.of(context).verifyErrPrefix(result.message);
                   _success = false;
                 });
                 return;
@@ -210,16 +219,16 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
             } catch (e) {
               await NfcManager.instance.stopSession();
-              setState(() => _statusText = "✗ Ungültiger Tag: $e");
+              setState(() => _statusText = AppLocalizations.of(context).verifyErrInvalidTag(e.toString()));
             }
           } catch (e) {
             await NfcManager.instance.stopSession();
-            setState(() => _statusText = "✗ Lesefehler: $e");
+            setState(() => _statusText = AppLocalizations.of(context).verifyErrReadError(e.toString()));
           }
         },
       );
     } catch (e) {
-      setState(() => _statusText = "✗ NFC Fehler: $e");
+      setState(() => _statusText = AppLocalizations.of(context).verifyErrNfcError(e.toString()));
     }
   }
 
@@ -239,7 +248,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         final nonceResult = RollingQRService.validateNonce(result);
         if (!nonceResult.isValid) {
           setState(() {
-            _statusText = "✗ QR-Code abgelaufen!\n${nonceResult.message}\n\nBitte direkt am Bildschirm des Organisators scannen.";
+            _statusText = AppLocalizations.of(context).verifyErrQrExpired(nonceResult.message);
             _success = false;
           });
           return;
@@ -260,7 +269,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       final verifyResult = BadgeSecurity.verify(dataToVerify);
       if (!verifyResult.isValid) {
         setState(() {
-          _statusText = "✗ ${verifyResult.message}";
+          _statusText = AppLocalizations.of(context).verifyErrPrefix(verifyResult.message);
           _success = false;
         });
         return;
@@ -288,7 +297,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     // Kompakt-Format normalisieren
     final normalized = BadgeSecurity.normalize(tagData);
 
-    final String meetupName = normalized['meetup_name'] ?? 'Unbekanntes Meetup';
+    final String meetupName = normalized['meetup_name'] ?? AppLocalizations.of(context).verifyUnknownMeetup;
     final String meetupCountry = normalized['meetup_country'] ?? '';
     final String meetupId = normalized['meetup_id'] ?? DateTime.now().toString();
 
@@ -375,9 +384,9 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         if (isSelfScan) {
           setState(() {
             _success = false;
-            _statusText = "✗ Self-Scan nicht erlaubt\n\n"
-                "Du kannst dir nicht selbst ein Badge geben.\n"
-                "Bitte lass einen Teilnehmer deinen Tag scannen.";
+            _statusText = "✗ " +
+                AppLocalizations.of(context).verifyCantSelfBadge +
+                AppLocalizations.of(context).verifyAskScan;
           });
           return; // ← Abbruch, kein Badge wird gespeichert
         }
@@ -419,7 +428,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           final adminResult = await AdminRegistry.checkAdminByPubkey(adminPubkey);
           isKnownAdmin = adminResult.isAdmin;
           if (isKnownAdmin) {
-            final adminName = adminResult.name ?? adminResult.meetup ?? 'Verifizierter Admin';
+            final adminName = adminResult.name ?? adminResult.meetup ?? AppLocalizations.of(context).verifyVerifiedAdmin;
             adminCheckInfo = '✓ Bekannter Organisator: $adminName';
           } else {
             adminCheckInfo = '✗ UNBEKANNTER SIGNER!\nDieser Pubkey ist nicht in der Admin-Registry.';
@@ -490,11 +499,11 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         isRetroactive: false,
       );
 
-      msg = "BADGE GEFUNDEN\n\n";
-      msg += "Ort: $fullName\n";
-      if (currentBlockHeight > 0) msg += "Block: $currentBlockHeight\n";
-      if (tagData['_verified_by'] != null) msg += "Signiert von: ${tagData['_verified_by']}\n";
-      if (sigVersion == 2) msg += "Beweis: Schnorr (BIP-340)\n";
+      msg = "${AppLocalizations.of(context).verifyBadgeFound}\n\n";
+      msg += "${AppLocalizations.of(context).verifyMsgLocation(fullName)}\n";
+      if (currentBlockHeight > 0) msg += "${AppLocalizations.of(context).verifyMsgBlock(currentBlockHeight)}\n";
+      if (tagData['_verified_by'] != null) msg += "${AppLocalizations.of(context).verifyMsgSignedBy(tagData['_verified_by'].toString())}\n";
+      if (sigVersion == 2) msg += "${AppLocalizations.of(context).verifyMsgProof}\n";
       if (claimInfo.isNotEmpty) msg += claimInfo;
 
       if (adminCheckInfo.isNotEmpty) {
@@ -502,14 +511,14 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       }
 
       final expiryStr = BadgeSecurity.expiryInfo(tagData);
-      if (expiryStr != 'Kein Ablauf') msg += "\n\nTag-Ablauf: $expiryStr";
+      if (expiryStr != AppLocalizations.of(context).verifyNoExpiry) msg += "\n\n${AppLocalizations.of(context).verifyMsgTagExpiry(expiryStr)}";
 
       if (!isKnownAdmin && verifyResult != null && verifyResult.version >= 2 && adminPubkey.isNotEmpty) {
         _isUnknownSigner = true;
       }
 
     } else {
-      msg = "Bereits gesammelt\n\nHeute hast du bereits ein Badge von:\n$fullName";
+      msg = AppLocalizations.of(context).verifyAlreadyToday(fullName);
       _pendingBadge = null;
     }
 
@@ -544,7 +553,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("BADGE SCANNEN")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanBadge)),
       body: Center(
         child: _success
             ? _buildConfirmationView()
@@ -583,7 +592,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
           // ── Titel ──
           Text(
-            isAlreadyCollected ? 'BEREITS GESAMMELT' : 'BADGE GEFUNDEN',
+            isAlreadyCollected ? AppLocalizations.of(context).verifyAlreadyCollected : AppLocalizations.of(context).verifyBadgeFound,
             style: TextStyle(
               color: accentColor, fontSize: 11,
               fontWeight: FontWeight.w800, letterSpacing: 1.6,
@@ -601,7 +610,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
               border: Border.all(color: accentColor.withOpacity(0.2), width: 0.5),
             ),
             child: Text(
-              _statusText,
+              _statusText ?? AppLocalizations.of(context).verifyReadyToScan,
               textAlign: TextAlign.left,
               style: const TextStyle(
                 color: cText, fontWeight: FontWeight.w500,
@@ -618,9 +627,9 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
               child: ElevatedButton.icon(
                 onPressed: _confirmSaveBadge,
                 icon: const Icon(Icons.add_rounded, color: Colors.black),
-                label: const Text(
-                  'ZUR WALLET HINZUFÜGEN',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800,
+                label: Text(
+                  AppLocalizations.of(context).verifyAddToWallet,
+                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800,
                       fontSize: 13, letterSpacing: 0.8),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -677,13 +686,13 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     ),
                   ),
                   const SizedBox(height: 40),
-                  const Text("BADGE SCANNEN",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white, letterSpacing: 2)),
+                  Text(AppLocalizations.of(context).verifyScanBadge,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white, letterSpacing: 2)),
                   const SizedBox(height: 20),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40),
-                    child: Text("Scanne den NFC-Tag oder QR-Code\ndes Meetup-Organisators.",
-                      textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, height: 1.5)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(AppLocalizations.of(context).verifyScanInstruction,
+                      textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, height: 1.5)),
                   ),
                   const SizedBox(height: 40),
 
@@ -693,7 +702,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     child: ElevatedButton.icon(
                       onPressed: _startNfcRead,
                       icon: const Icon(Icons.nfc, color: Colors.white),
-                      label: const Text("NFC TAG SCANNEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(backgroundColor: cOrange),
                     ),
                   ),
@@ -705,7 +714,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     child: OutlinedButton.icon(
                       onPressed: _startQRScan,
                       icon: const Icon(Icons.qr_code_scanner, color: cCyan),
-                      label: const Text("QR-CODE SCANNEN", style: TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
+                      label: Text(AppLocalizations.of(context).verifyScanQrCaps, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(side: const BorderSide(color: cCyan, width: 2)),
                     ),
                   ),
@@ -713,7 +722,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(_statusText, textAlign: TextAlign.center,
+                    child: Text(_statusText ?? AppLocalizations.of(context).verifyReadyToScan, textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ),
                 ],
@@ -758,7 +767,7 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("QR SCANNEN")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
       body: Stack(children: [
         MobileScanner(onDetect: _onDetect),
         Positioned(
@@ -766,11 +775,13 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(12)),
-            child: const Text("Scanne den QR-Code\ndes Meetup-Organisators",
-              style: TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
+            child: Text(AppLocalizations.of(context).verifyScanQrInstruction,
+              style: const TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
           ),
         ),
       ]),
     );
   }
 }
+
+

@@ -22,6 +22,7 @@ import 'package:nfc_manager/ndef_record.dart';              // NdefRecord, NdefM
 import 'package:nfc_manager/nfc_manager_android.dart';      // NdefFormatableAndroid
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';    // Ndef (cross-platform)
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/user.dart';
 import '../models/meetup.dart';
 import '../services/meetup_service.dart';
@@ -40,7 +41,7 @@ class NFCWriterScreen extends StatefulWidget {
 
 class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProviderStateMixin {
   bool _success = false;
-  String _statusText = "Bereit zum Schreiben";
+  String? _statusText;
   Meetup? _homeMeetup;
   String _meetupInfo = "";
   int _payloadSize = 0;
@@ -60,6 +61,12 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _statusText ??= AppLocalizations.of(context).writerReadyToWrite;
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -70,8 +77,8 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
     
     if (user.homeMeetupId.isEmpty) {
       setState(() {
-        _statusText = "⚠️ Kein Home-Meetup gesetzt";
-        _meetupInfo = "Bitte erst ein Home-Meetup im Profil auswählen";
+        _statusText = AppLocalizations.of(context).writerNoHomeMeetup;
+        _meetupInfo = AppLocalizations.of(context).writerSelectHomeFirst;
       });
       return;
     }
@@ -90,11 +97,11 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
         _homeMeetup = meetup;
         _meetupInfo = "📍 ${meetup.city}, ${meetup.country}";
         _payloadSize = estimatedPayload.length + 10; // +10 für NFC Record Header
-        _statusText = "Bereit zum Schreiben";
+        _statusText = AppLocalizations.of(context).writerReadyToWrite;
       });
     } else {
       setState(() {
-        _statusText = "⚠️ Home-Meetup nicht gefunden";
+        _statusText = AppLocalizations.of(context).writerHomeMeetupNotFound;
         _meetupInfo = "Meetup: ${user.homeMeetupId}";
       });
     }
@@ -116,7 +123,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
     }
 
     setState(() {
-      _statusText = "Lade Session-Daten...";
+      _statusText = AppLocalizations.of(context).writerLoadingSession;
       _success = false;
       _isProcessingTag = false; // Reset lock
     });
@@ -125,7 +132,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
     final tagData = await RollingQRService.getBasePayload();
     
     if (tagData == null) {
-       setState(() => _statusText = "❌ Keine aktive Meetup-Session gefunden. Bitte starte das Meetup neu.");
+       setState(() => _statusText = AppLocalizations.of(context).writerNoActiveSession);
        return;
     }
 
@@ -149,24 +156,24 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
             color: isNotSupported ? Colors.red : cOrange,
           ),
           title: Text(
-            isNotSupported ? "NFC nicht verfügbar" : "NFC ist deaktiviert",
+            isNotSupported ? AppLocalizations.of(context).nfcUnavailable : AppLocalizations.of(context).nfcDisabled,
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Text(
             isNotSupported
-                ? "Dieses Gerät unterstützt kein NFC.\n\n"
-                  "Du kannst stattdessen Rolling QR-Codes "
-                  "für dein Meetup verwenden."
-                : "Bitte aktiviere NFC in deinen Geräteeinstellungen, "
-                  "um den Tag zu beschreiben.\n\n"
-                  "Android: Einstellungen → Verbindungen → NFC",
+                ? AppLocalizations.of(context).verifyNoNfcLong +
+                  AppLocalizations.of(context).writerUseRollingQr +
+                  AppLocalizations.of(context).writerForYourMeetup
+                : AppLocalizations.of(context).nfcEnableHint +
+                  AppLocalizations.of(context).writerToWriteTag +
+                  AppLocalizations.of(context).nfcSettingsAndroid,
             style: const TextStyle(color: Colors.grey, height: 1.5),
           ),
           actions: [
             if (!isNotSupported)
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text("EINSTELLUNGEN ÖFFNEN",
+                child: Text(AppLocalizations.of(context).nfcOpenSettings,
                     style: TextStyle(color: Colors.grey)),
               ),
             TextButton(
@@ -179,13 +186,13 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
 
       setState(() {
         _statusText = isNotSupported
-            ? "Dieses Gerät hat kein NFC. Nutze Rolling QR-Codes."
-            : "NFC ist deaktiviert. Bitte einschalten.";
+            ? AppLocalizations.of(context).writerNoNfcDevice
+            : AppLocalizations.of(context).nfcDisabledHint;
       });
       return;
     }
 
-    setState(() => _statusText = "Halte Tag an das Gerät...");
+    setState(() => _statusText = AppLocalizations.of(context).writerHoldTag);
 
     String jsonData = jsonEncode(tagData);
     final payload = Uint8List.fromList([0x02, 0x65, 0x6e, ...utf8.encode(jsonData)]);
@@ -216,27 +223,27 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
               var formatable = NdefFormatableAndroid.from(tag);
               if (formatable != null) {
                 try {
-                  setState(() => _statusText = "Formatiere leeren Tag...");
+                  setState(() => _statusText = AppLocalizations.of(context).writerFormatting);
                   await formatable.format(message);
                   await NfcManager.instance.stopSession();
                   _handleSuccessInUI(jsonData.length);
                   return;
                 } catch (e) {
                   await NfcManager.instance.stopSession();
-                  _handleErrorInUI("Formatierung fehlgeschlagen");
+                  _handleErrorInUI(AppLocalizations.of(context).writerFormatFailed);
                   _isProcessingTag = false;
                   return;
                 }
               }
               await NfcManager.instance.stopSession();
-              _handleErrorInUI("Kein NDEF Format möglich");
+              _handleErrorInUI(AppLocalizations.of(context).writerNoNdef);
               _isProcessingTag = false;
               return;
             }
 
             if (!ndef.isWritable) {
               await NfcManager.instance.stopSession();
-              _handleErrorInUI("Tag ist schreibgeschützt");
+              _handleErrorInUI(AppLocalizations.of(context).writerTagReadOnly);
               _isProcessingTag = false;
               return;
             }
@@ -246,8 +253,8 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
             if (actualSize > maxSize) {
               await NfcManager.instance.stopSession();
               _handleErrorInUI(
-                "Tag zu klein! Daten: ${actualSize}B, Tag: ${maxSize}B.\n"
-                "Verwende einen NTAG215 (504B) oder größer."
+                AppLocalizations.of(context).writerTagTooSmall(actualSize, maxSize) +
+                AppLocalizations.of(context).writerUseNtag215
               );
               _isProcessingTag = false;
               return;
@@ -262,9 +269,9 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
             await NfcManager.instance.stopSession();
             final errorMsg = e.toString();
             if (errorMsg.contains('IOException')) {
-              _handleErrorInUI("Tag zu früh entfernt — halte ihn ruhig 2–3 Sekunden ans Gerät");
+              _handleErrorInUI(AppLocalizations.of(context).writerTagRemovedEarly);
             } else if (errorMsg.contains('TagLost')) {
-              _handleErrorInUI("Tag verloren während dem Schreiben");
+              _handleErrorInUI(AppLocalizations.of(context).writerTagLost);
             } else {
               _handleErrorInUI(errorMsg);
             }
@@ -274,7 +281,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
       );
     } catch (e) {
       setState(() {
-        _statusText = "❌ Start Fehler: $e";
+        _statusText = AppLocalizations.of(context).writerStartError(e.toString());
         _isProcessingTag = false;
       });
     }
@@ -285,10 +292,10 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
     final expiresIn = BadgeSecurity.badgeValidityHours;
     setState(() {
       _success = true;
-      _statusText = "✅ MEETUP TAG geschrieben!\n\n"
-          "📦 ${dataSize}B (kompakt)\n"
-          "⏱️ Gültig für ${expiresIn}h\n\n"
-          "Springe zum QR-Code...";
+      _statusText = AppLocalizations.of(context).writerTagWritten +
+          AppLocalizations.of(context).writerCompactSize(dataSize) +
+          AppLocalizations.of(context).writerValidHours(expiresIn) +
+          AppLocalizations.of(context).writerJumpToQr;
     });
     
     // Automatischer Sprung zum QR-Code Screen
@@ -317,7 +324,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("MEETUP TAG ERSTELLEN"), backgroundColor: cOrange),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).writerCreateMeetupTag), backgroundColor: cOrange),
       body: Center(
         child: _success
             ? Column(
@@ -325,11 +332,11 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                 children: [
                   const Icon(Icons.check_circle, size: 100, color: Colors.green),
                   const SizedBox(height: 20),
-                  const Text("ERFOLG!", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text(AppLocalizations.of(context).writerSuccess, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.all(30),
-                    child: Text(_statusText, textAlign: TextAlign.center,
+                    child: Text(_statusText ?? AppLocalizations.of(context).writerReadyToWrite, textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 14, height: 1.6)),
                   ),
                 ],
@@ -352,14 +359,14 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                       ),
                     ),
                     const SizedBox(height: 40),
-                    const Text("MEETUP TAG", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white, letterSpacing: 2)),
+                    Text(AppLocalizations.of(context).writerMeetupTag, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white, letterSpacing: 2)),
                     const SizedBox(height: 20),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
                       child: Text(
-                        "Halte einen NFC Tag an das Gerät.\nTeilnehmer scannen diesen Tag um ein Badge zu sammeln.",
+                        AppLocalizations.of(context).writerHoldTagInstruction,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey, height: 1.5),
+                        style: const TextStyle(color: Colors.grey, height: 1.5),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -374,7 +381,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                         border: Border.all(color: cOrange.withOpacity(0.3)),
                       ),
                       child: Column(children: [
-                        const Text("DEIN HOME-MEETUP", style: TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                        Text(AppLocalizations.of(context).writerYourHomeMeetup, style: const TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
                         const SizedBox(height: 8),
                         Text(_meetupInfo.isNotEmpty ? _meetupInfo : "...", style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                       ]),
@@ -394,7 +401,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                         child: Row(children: [
                           const Icon(Icons.check_circle, color: Colors.green, size: 18),
                           const SizedBox(width: 8),
-                          Text("~${_payloadSize}B — passt auf NTAG215 (492B)",
+                          Text(AppLocalizations.of(context).writerFitsNtag215(_payloadSize),
                             style: const TextStyle(color: Colors.green, fontSize: 12)),
                         ]),
                       ),
@@ -412,16 +419,16 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(children: const [
-                            Icon(Icons.timer, color: cCyan, size: 16),
-                            SizedBox(width: 6),
-                            Text("Gültig für 6 Stunden", style: TextStyle(color: cCyan, fontSize: 12, fontWeight: FontWeight.bold)),
+                          Row(children: [
+                            const Icon(Icons.timer, color: cCyan, size: 16),
+                            const SizedBox(width: 6),
+                            Text(AppLocalizations.of(context).writerValid6h, style: const TextStyle(color: cCyan, fontSize: 12, fontWeight: FontWeight.bold)),
                           ]),
                           const SizedBox(height: 6),
-                          Row(children: const [
-                            Icon(Icons.refresh, color: cCyan, size: 16),
-                            SizedBox(width: 6),
-                            Text("Tag kann danach überschrieben werden", style: TextStyle(color: cCyan, fontSize: 12)),
+                          Row(children: [
+                            const Icon(Icons.refresh, color: cCyan, size: 16),
+                            const SizedBox(width: 6),
+                            Text(AppLocalizations.of(context).writerCanOverwrite, style: const TextStyle(color: cCyan, fontSize: 12)),
                           ]),
                         ],
                       ),
@@ -434,14 +441,14 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                       child: ElevatedButton.icon(
                         onPressed: _writeTag,
                         icon: const Icon(Icons.nfc, color: Colors.white),
-                        label: const Text("TAG ERSTELLEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        label: Text(AppLocalizations.of(context).writerCreateTag, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(backgroundColor: cOrange),
                       ),
                     ),
                     const SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 40),
-                      child: Text(_statusText, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      child: Text(_statusText ?? AppLocalizations.of(context).writerReadyToWrite, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     ),
                     const SizedBox(height: 40),
                   ],
@@ -451,3 +458,5 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
     );
   }
 }
+
+

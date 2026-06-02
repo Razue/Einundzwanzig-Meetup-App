@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme.dart'; // Zugriff auf unsere Farben (cOrange, cCard etc.)
+import '../theme.dart';
+import '../l10n/app_localizations.dart'; // Zugriff auf unsere Farben (cOrange, cCard etc.)
 
 class CreateMeetupScreen extends StatelessWidget {
   const CreateMeetupScreen({super.key});
@@ -7,22 +8,22 @@ class CreateMeetupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('NEUES MEETUP')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).cmNewMeetup)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("GRÜNDE EINE BASIS.", style: TextStyle(color: cOrange, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
+            Text(AppLocalizations.of(context).cmFoundBase, style: const TextStyle(color: cOrange, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
             const SizedBox(height: 20),
 
-            _brutalInput("NAME DER STADT", "z.B. Frankfurt"),
+            _brutalInput(AppLocalizations.of(context).cmCityName, AppLocalizations.of(context).cmCityExample),
             const SizedBox(height: 20),
-            _brutalInput("LOCATION / ORT", "z.B. Room 77"),
+            _brutalInput(AppLocalizations.of(context).cmLocation, AppLocalizations.of(context).cmLocationExample),
             const SizedBox(height: 20),
-            _brutalInput("DATUM & UHRZEIT", "z.B. 21. Mai, 19:00"),
+            _brutalInput(AppLocalizations.of(context).cmDateTime, AppLocalizations.of(context).cmDateExample),
             const SizedBox(height: 20),
-            _brutalInput("TELEGRAM GRUPPE (OPTIONAL)", "t.me/..."),
+            _brutalInput(AppLocalizations.of(context).cmTelegramGroup, "t.me/..."),
 
             const SizedBox(height: 40),
             
@@ -35,7 +36,7 @@ class CreateMeetupScreen extends StatelessWidget {
                   // Hier würde später das Speichern passieren
                   Navigator.pop(context); // Geht zurück zur Liste
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("ANFRAGE GESENDET 🚀")),
+                    SnackBar(content: Text(AppLocalizations.of(context).cmRequestSent)),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -45,7 +46,7 @@ class CreateMeetupScreen extends StatelessWidget {
                   elevation: 0,
                 ),
                 icon: const Icon(Icons.send, color: Colors.white),
-                label: const Text("MEETUP STARTEN", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                label: Text(AppLocalizations.of(context).apStartMeetup, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ),
           ],
@@ -85,3 +86,5 @@ class CreateMeetupScreen extends StatelessWidget {
     );
   }
 }
+
+

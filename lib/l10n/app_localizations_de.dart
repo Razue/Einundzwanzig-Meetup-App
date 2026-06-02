@@ -886,4 +886,1450 @@ class AppLocalizationsDe extends AppLocalizations {
   String profileFillIn(Object fields) {
     return 'Bitte ausfüllen: $fields';
   }
+
+  @override
+  String get backupEncryptTitle => 'Backup verschlüsseln';
+
+  @override
+  String get backupDecryptTitle => 'Backup entschlüsseln';
+
+  @override
+  String get backupExportDesc =>
+      'Vergib ein Passwort, um deinen privaten Schlüssel (nsec) im Backup zu schützen.\n\n⚠️ Wenn du dieses Passwort vergisst, ist das Backup UNWIEDERBRINGLICH verloren!';
+
+  @override
+  String get backupImportDesc =>
+      'Dieses Backup ist verschlüsselt. Bitte gib das Passwort ein.';
+
+  @override
+  String get backupPassword => 'Passwort';
+
+  @override
+  String get backupPasswordConfirm => 'Passwort bestätigen';
+
+  @override
+  String get backupPasswordEmpty => 'Passwort darf nicht leer sein';
+
+  @override
+  String get backupPasswordMin => 'Mindestens 8 Zeichen';
+
+  @override
+  String get backupPasswordMismatch => 'Passwörter stimmen nicht überein';
+
+  @override
+  String get backupEncryptSave => 'Verschlüsseln & Speichern';
+
+  @override
+  String get backupDecryptLoad => 'Entschlüsseln & Laden';
+
+  @override
+  String get backupShareTitle => 'Einundzwanzig App Backup (Verschlüsselt)';
+
+  @override
+  String get backupShareText =>
+      'Dein verschlüsseltes Backup. Halte dein Passwort bereit, um es wiederherzustellen.';
+
+  @override
+  String backupError(String msg) {
+    return 'Fehler beim Backup: $msg';
+  }
+
+  @override
+  String get backupCorrupt => 'Backup-Datei ist beschädigt (Formatfehler).';
+
+  @override
+  String get backupWrongPassword => 'Falsches Passwort oder Datei beschädigt!';
+
+  @override
+  String get backupNotValid =>
+      'Datei ist kein gültiges Backup oder das falsche Format.';
+
+  @override
+  String get backupNotEinundzwanzig =>
+      'Datei ist kein gültiges Einundzwanzig Backup.';
+
+  @override
+  String backupLoaded(Object items) {
+    return '✅ Backup geladen! $items wiederhergestellt.';
+  }
+
+  @override
+  String backupImportFailed(String msg) {
+    return 'Import fehlgeschlagen: $msg';
+  }
+
+  @override
+  String get qrScanTitle => 'REPUTATION PRÜFEN';
+
+  @override
+  String get qrResultTitle => 'ERGEBNIS';
+
+  @override
+  String get qrScanHint => 'Scanne einen Einundzwanzig\nReputation QR-Code';
+
+  @override
+  String get qrLoadFromGallery => 'QR AUS GALERIE LADEN';
+
+  @override
+  String get qrBack => 'ZURÜCK';
+
+  @override
+  String get qrNoCodeInImage => 'Kein QR-Code im Bild gefunden';
+
+  @override
+  String get qrNotEinundzwanzig =>
+      'QR-Code gefunden, aber kein Einundzwanzig-Format';
+
+  @override
+  String get qrVerified => 'VERIFIZIERT';
+
+  @override
+  String get qrVerifiedV1 => 'VERIFIZIERT (v1)';
+
+  @override
+  String get qrVerifiedV2 => 'VERIFIZIERT (v2)';
+
+  @override
+  String get qrSigInvalid => 'SIGNATUR UNGÜLTIG';
+
+  @override
+  String get qrFormatUnknown => 'FORMAT UNBEKANNT';
+
+  @override
+  String get qrReadError => 'LESEFEHLER';
+
+  @override
+  String get qrV2Subtitle => 'Legacy-Signatur gültig — kein Badge-Proof';
+
+  @override
+  String get qrV1Subtitle => 'Älteres Format — keine Identitätsbindung';
+
+  @override
+  String get qrCantRead => 'QR-Code konnte nicht gelesen werden.';
+
+  @override
+  String qrProcessError(String msg) {
+    return 'Fehler beim Verarbeiten: $msg';
+  }
+
+  @override
+  String get qrSectionIdentity => 'IDENTITÄT';
+
+  @override
+  String get qrNoIdentity => 'KEINE IDENTITÄT';
+
+  @override
+  String get qrNoVerifiableIdentity => 'Keine verifizierbare Identität.';
+
+  @override
+  String get qrSectionLightning => 'LIGHTNING';
+
+  @override
+  String get qrSectionSocial => 'SOZIALES NETZWERK';
+
+  @override
+  String get qrSectionPlatforms => 'VERKNÜPFTE PLATTFORMEN';
+
+  @override
+  String get qrSectionMeetups => 'BESUCHTE MEETUPS';
+
+  @override
+  String get qrHumanVerified => 'Mensch verifiziert';
+
+  @override
+  String get qrLightningActive => 'Lightning-Beweis aktiv';
+
+  @override
+  String get qrNoLightning => 'Kein Lightning-Beweis gefunden';
+
+  @override
+  String get qrNoZap => 'Keine Zap-Aktivität';
+
+  @override
+  String get qrNip05Invalid => 'NIP-05 ungültig';
+
+  @override
+  String get qrYouFollow => 'Du folgst';
+
+  @override
+  String get qrFollowsYou => 'Folgt dir';
+
+  @override
+  String get qrMutualFollow => 'Gegenseitiger Follow';
+
+  @override
+  String get qrNoDirectFollow => 'Kein direkter Follow';
+
+  @override
+  String get qrDirectConnection => 'Direkte Verbindung';
+
+  @override
+  String get qrBidirectional => 'Direkte bidirektionale Verbindung';
+
+  @override
+  String get qrOneWay => 'Einseitige Verbindung';
+
+  @override
+  String get qrViaContacts => 'Über gemeinsame Kontakte';
+
+  @override
+  String get qrStrongOverlap => 'Starke Netzwerk-Überlappung';
+
+  @override
+  String get qrPartiallyConnected => 'Teilweise verbunden';
+
+  @override
+  String get qrNoOverlap => 'Keine Überlappung';
+
+  @override
+  String get qrEndorsement => 'Endorsement von bekannten Admins';
+
+  @override
+  String get qrSigVerified => 'Signatur verifiziert';
+
+  @override
+  String get qrAnalyzingNetwork => 'Analysiere Netzwerk...';
+
+  @override
+  String get qrCheckingLightning => 'Prüfe Lightning...';
+
+  @override
+  String get qrCheckingNip05 => 'Prüfe NIP-05...';
+
+  @override
+  String get qrStatBadges => 'Badges';
+
+  @override
+  String get qrStatMeetups => 'Meetups';
+
+  @override
+  String get qrStatSigners => 'Signer';
+
+  @override
+  String get qrStatBound => 'Gebunden';
+
+  @override
+  String get qrStatDays => 'Tage';
+
+  @override
+  String get qrLabelNickname => 'Nickname';
+
+  @override
+  String get qrLabelTwitter => 'Twitter/X';
+
+  @override
+  String get qrPlatformOther => 'Andere';
+
+  @override
+  String get qrLinked => 'Verknüpft';
+
+  @override
+  String get qrSigVerifiedShort => 'Signatur verifiziert';
+
+  @override
+  String get qrLinkedShort => 'Verknüpft';
+
+  @override
+  String get nfcDisabled => 'NFC ist deaktiviert';
+
+  @override
+  String get nfcDisabledHint => 'NFC ist deaktiviert. Bitte einschalten.';
+
+  @override
+  String get nfcUnavailable => 'NFC nicht verfügbar';
+
+  @override
+  String get nfcOpenSettings => 'EINSTELLUNGEN ÖFFNEN';
+
+  @override
+  String get nfcEnableHint =>
+      'Bitte aktiviere NFC in deinen Geräteeinstellungen, ';
+
+  @override
+  String get nfcSettingsAndroid =>
+      'Android: Einstellungen → Verbindungen → NFC';
+
+  @override
+  String get nfcSettingsIos => 'iOS: Einstellungen → NFC';
+
+  @override
+  String get verifyScanBadge => 'BADGE SCANNEN';
+
+  @override
+  String get verifyScanNfc => 'NFC TAG SCANNEN';
+
+  @override
+  String get verifyScanQr => 'QR SCANNEN';
+
+  @override
+  String get verifyScanQrCaps => 'QR-CODE SCANNEN';
+
+  @override
+  String get verifyReadyToScan => 'Bereit zum Scannen';
+
+  @override
+  String get verifyWaitingNfc => 'Warte auf NFC Tag...';
+
+  @override
+  String get verifyCheckingNfc => 'Prüfe NFC...';
+
+  @override
+  String get verifyScanInstruction =>
+      'Scanne den NFC-Tag oder QR-Code\ndes Meetup-Organisators.';
+
+  @override
+  String get verifyScanQrInstruction =>
+      'Scanne den QR-Code\ndes Meetup-Organisators';
+
+  @override
+  String get verifyNoNfcDevice =>
+      'Dieses Gerät hat kein NFC. Nutze den QR-Scanner.';
+
+  @override
+  String get verifyNoNfcLong => 'Dieses Gerät unterstützt kein NFC.\n\n';
+
+  @override
+  String get verifyUseQrInstead => 'Nutze stattdessen den QR-Code-Scanner, ';
+
+  @override
+  String get verifyToGetBadge => 'um dein Badge zu erhalten.';
+
+  @override
+  String get verifyAskScan => 'Bitte lass einen Teilnehmer deinen Tag scannen.';
+
+  @override
+  String get verifyCantSelfBadge =>
+      'Du kannst dir nicht selbst ein Badge geben.\n';
+
+  @override
+  String get verifyBadgeFound => 'BADGE GEFUNDEN';
+
+  @override
+  String get verifyAlreadyCollected => 'BEREITS GESAMMELT';
+
+  @override
+  String get verifyAddToWallet => 'ZUR WALLET HINZUFÜGEN';
+
+  @override
+  String get verifyVerifiedAdmin => 'Verifizierter Admin';
+
+  @override
+  String get verifyUnknownMeetup => 'Unbekanntes Meetup';
+
+  @override
+  String get verifyNoExpiry => 'Kein Ablauf';
+
+  @override
+  String get writerReadyToWrite => 'Bereit zum Schreiben';
+
+  @override
+  String get writerNoNfcDevice =>
+      'Dieses Gerät hat kein NFC. Nutze Rolling QR-Codes.';
+
+  @override
+  String get writerUseRollingQr => 'Du kannst stattdessen Rolling QR-Codes ';
+
+  @override
+  String get writerForYourMeetup => 'für dein Meetup verwenden.';
+
+  @override
+  String get writerSelectHomeFirst =>
+      'Bitte erst ein Home-Meetup im Profil auswählen';
+
+  @override
+  String get writerYourHomeMeetup => 'DEIN HOME-MEETUP';
+
+  @override
+  String get writerCreateTag => 'TAG ERSTELLEN';
+
+  @override
+  String get writerCreateMeetupTag => 'MEETUP TAG ERSTELLEN';
+
+  @override
+  String get writerMeetupTag => 'MEETUP TAG';
+
+  @override
+  String get writerSuccess => 'ERFOLG!';
+
+  @override
+  String get writerValid6h => 'Gültig für 6 Stunden';
+
+  @override
+  String get writerHoldTag => 'Halte Tag an das Gerät...';
+
+  @override
+  String get writerHoldTagInstruction =>
+      'Halte einen NFC Tag an das Gerät.\nTeilnehmer scannen diesen Tag um ein Badge zu sammeln.';
+
+  @override
+  String get writerFormatting => 'Formatiere leeren Tag...';
+
+  @override
+  String get writerFormatFailed => 'Formatierung fehlgeschlagen';
+
+  @override
+  String get writerLoadingSession => 'Lade Session-Daten...';
+
+  @override
+  String get writerJumpToQr => 'Springe zum QR-Code...';
+
+  @override
+  String get writerNoNdef => 'Kein NDEF Format möglich';
+
+  @override
+  String get writerTagReadOnly => 'Tag ist schreibgeschützt';
+
+  @override
+  String get writerCanOverwrite => 'Tag kann danach überschrieben werden';
+
+  @override
+  String get writerTagLost => 'Tag verloren während dem Schreiben';
+
+  @override
+  String get writerTagRemovedEarly =>
+      'Tag zu früh entfernt — halte ihn ruhig 2–3 Sekunden ans Gerät';
+
+  @override
+  String get writerUseNtag215 => 'Verwende einen NTAG215 (504B) oder größer.';
+
+  @override
+  String get writerToWriteTag => 'um den Tag zu beschreiben.\n\n';
+
+  @override
+  String verifyMsgLocation(String name) {
+    return 'Ort: $name';
+  }
+
+  @override
+  String verifyMsgBlock(Object height) {
+    return 'Block: $height';
+  }
+
+  @override
+  String verifyMsgSignedBy(String signer) {
+    return 'Signiert von: $signer';
+  }
+
+  @override
+  String get verifyMsgProof => 'Beweis: Schnorr (BIP-340)';
+
+  @override
+  String verifyMsgTagExpiry(String expiry) {
+    return 'Tag-Ablauf: $expiry';
+  }
+
+  @override
+  String verifyAlreadyToday(String name) {
+    return 'Bereits gesammelt\n\nHeute hast du bereits ein Badge von:\n$name';
+  }
+
+  @override
+  String get wotTitle => 'WEB OF TRUST';
+
+  @override
+  String get wotActiveOrganizers => 'AKTIVE ORGANISATOREN';
+
+  @override
+  String get wotActiveOrganizer => 'AKTIVER ORGANISATOR';
+
+  @override
+  String get wotActiveWarnings => 'AKTIVE WARNUNGEN';
+
+  @override
+  String get wotActiveWarning => 'Aktive Warnung';
+
+  @override
+  String get wotMyStatus => 'DEIN STATUS';
+
+  @override
+  String get wotMyVouches => 'DEINE BÜRGSCHAFTEN';
+
+  @override
+  String get wotWhoYouVouchFor => 'FÜR WEN DU BÜRGST';
+
+  @override
+  String get wotWhoVouchesForYou => 'WER BÜRGT FÜR DICH';
+
+  @override
+  String get wotWeightedReporting => 'GEWICHTETES MELDESYSTEM';
+
+  @override
+  String get wotRestore => 'WIEDERHERSTELLEN';
+
+  @override
+  String get wotRevokeAll => 'ALLE WIDERRUFEN';
+
+  @override
+  String get wotPublishNostr => 'AUF NOSTR PUBLISHEN';
+
+  @override
+  String get wotVouch => 'BÜRGEN';
+
+  @override
+  String get wotVouchVerb => 'VERBÜRGEN';
+
+  @override
+  String get wotReportNpub => 'NPUB MELDEN';
+
+  @override
+  String get wotScanNpub => 'NPUB SCANNEN';
+
+  @override
+  String get wotPublishRevocation => 'WIDERRUF PUBLISHEN';
+
+  @override
+  String get wotSigningPublishing => 'SIGNIERE & PUBLIZIERE...';
+
+  @override
+  String get wotSyncNetwork => 'Netzwerk synchronisieren';
+
+  @override
+  String get wotBootstrapPhase => 'Bootstrap-Phase';
+
+  @override
+  String get wotDecentralized => 'Dezentral (Web of Trust)';
+
+  @override
+  String get wotMinVouches => 'Min. Bürgen';
+
+  @override
+  String get wotDistrustThreshold => 'Distrust-Schwelle';
+
+  @override
+  String get wotNotEnoughVouchers => 'NOCH NICHT GENUG BÜRGEN';
+
+  @override
+  String get wotVouchers => 'Bürgen';
+
+  @override
+  String get wotNoVouchersYet => 'Noch keine Bürgen';
+
+  @override
+  String get wotNobodyYet => 'Noch niemand';
+
+  @override
+  String get wotNotSuspendedWatch =>
+      'Noch nicht suspendiert, aber du solltest aufpassen.';
+
+  @override
+  String get wotNoReports => 'Keine Meldungen';
+
+  @override
+  String get wotNoActiveAdmins => 'Keine aktiven Admins';
+
+  @override
+  String get wotNoCleanNetwork =>
+      'Aktuell gibt es keine offenen Warnungen\nim Netzwerk. Alles sauber.';
+
+  @override
+  String get wotNoOrganizersEnough =>
+      'Das Netzwerk hat noch keine Organisatoren mit genug Bürgschaften.';
+
+  @override
+  String get wotNoVouchesFound =>
+      'Keine publizierten Bürgschaften auf den Relays gefunden.';
+
+  @override
+  String get wotTapPlusFirst =>
+      'Tippe auf + um deinen ersten Ritterschlag\nzu vergeben.';
+
+  @override
+  String get wotAskOthersVouch =>
+      'Bitte andere Organisatoren, für dich zu bürgen.\n';
+
+  @override
+  String get wotNoDataLoaded =>
+      'Netzwerk-Daten konnten nicht geladen werden.\nZiehe zum Aktualisieren nach unten.';
+
+  @override
+  String get wotNoRelay => 'Kein Relay erreichbar — später erneut versuchen.';
+
+  @override
+  String get wotRevokeAllTitle => 'ALLE BÜRGSCHAFTEN WIDERRUFEN?';
+
+  @override
+  String get wotRevokeVouchTitle => 'BÜRGSCHAFT ENTZIEHEN?';
+
+  @override
+  String get wotWithdrawVouch => 'Bürgschaft entziehen';
+
+  @override
+  String get wotVouchWithdrawn =>
+      'Bürgschaft entzogen. Vergiss nicht zu publishen.';
+
+  @override
+  String get wotVouchGiven =>
+      'Ritterschlag vergeben! Vergiss nicht zu publishen.';
+
+  @override
+  String get wotAllRevoked =>
+      'Alle Bürgschaften wurden im Netzwerk widerrufen.';
+
+  @override
+  String get wotReasonRequired => 'Grund (Pflicht)';
+
+  @override
+  String get wotNpubRequired => 'npub (Pflicht)';
+
+  @override
+  String get wotNameAlias => 'Name / Alias (optional)';
+
+  @override
+  String get wotMeetupExample => 'Meetup (z.B. München)';
+
+  @override
+  String get wotReasonExample => 'z.B. Fälscht Badges, kein echtes Meetup...';
+
+  @override
+  String get wotNpubReasonRequired => 'npub und Grund sind Pflicht.';
+
+  @override
+  String get wotScanInstruction =>
+      'Scanne den Nostr-QR-Code (npub)\ndes Organisators.';
+
+  @override
+  String get wotVouchExplain =>
+      'Du bürgst mit deiner eigenen Reputation für diesen Organisator.';
+
+  @override
+  String get wotEachVouchPersonal =>
+      'Jede Bürgschaft ist dein persönliches Vertrauens-Votum — ';
+
+  @override
+  String get wotAfterPublishAll =>
+      'nach dem Publishen sieht das gesamte Netzwerk, für wen du stehst.';
+
+  @override
+  String get wotWhoYouVouchExplain => 'Hier siehst du, für wen DU bürgst. ';
+
+  @override
+  String get wotPublishUpdated => 'Publishe danach deine aktualisierte Liste, ';
+
+  @override
+  String get wotSoNetworkKnows => 'damit das Netzwerk davon erfährt.';
+
+  @override
+  String get wotSingleReportNoWeight =>
+      'Eine einzelne Meldung hat kein Gewicht — ';
+
+  @override
+  String get wotOnlyMultipleIndep =>
+      'erst wenn mehrere unabhängige Organisatoren ';
+
+  @override
+  String get wotWarnSuspend => 'warnen, wird jemand suspendiert. ';
+
+  @override
+  String get wotNobodyAlonePower => 'Niemand hat allein Macht über andere.';
+
+  @override
+  String get wotYourReportAlone =>
+      'Deine Meldung allein hat kein Gewicht. Erst wenn ';
+
+  @override
+  String get wotOrgsWarnSuspended =>
+      'Organisatoren warnen, wird der npub suspendiert.';
+
+  @override
+  String get wotRevokeAllBody =>
+      'Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE ';
+
+  @override
+  String get wotFromOtherOrgs => 'von anderen Organisatoren.';
+
+  @override
+  String get wotRestoreExplain =>
+      'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ';
+
+  @override
+  String get wotRestoreListBack =>
+      'deine Liste nach einer Neuinstallation oder einem Backup-Wechsel zurück.';
+
+  @override
+  String get wotVouchesSignedOnNostr =>
+      'deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr ';
+
+  @override
+  String get wotVisibleLocally =>
+      'sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine ';
+
+  @override
+  String get wotCantResolveOld =>
+      'alten Bürgschaften nicht mehr auflösen kannst.';
+
+  @override
+  String get wotRemovedFromList =>
+      'wird von deiner Vouching-Liste entfernt.\n\n';
+
+  @override
+  String get wotSuspendedByNetwork =>
+      'durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.';
+
+  @override
+  String wotErrorLoading(String msg) {
+    return 'Fehler beim Laden: $msg';
+  }
+
+  @override
+  String wotSyncFailed(String msg) {
+    return 'Sync fehlgeschlagen: $msg';
+  }
+
+  @override
+  String wotRevocationFailed(String msg) {
+    return 'Widerruf fehlgeschlagen: $msg';
+  }
+
+  @override
+  String wotRestoreFailed(String msg) {
+    return 'Wiederherstellung fehlgeschlagen: $msg';
+  }
+
+  @override
+  String wotVouchesRestored(Object count) {
+    return '$count Bürgschaften von Nostr wiederhergestellt.';
+  }
+
+  @override
+  String wotNetworkHealth(String label) {
+    return 'NETZWERK $label';
+  }
+
+  @override
+  String wotVouchProgress(Object count, Object total) {
+    return '$count / $total Bürgen';
+  }
+
+  @override
+  String wotReportsCount(Object count) {
+    return '$count Meldungen';
+  }
+
+  @override
+  String wotNeedMoreVouches(Object count) {
+    return 'Du brauchst noch $count Bürgschaften ';
+  }
+
+  @override
+  String wotVouchesRequired(Object count, Object total) {
+    return '$count / $total benötigt';
+  }
+
+  @override
+  String wotSuspensionProgress(Object count, Object total) {
+    return '$count / $total Suspendierung';
+  }
+
+  @override
+  String wotLiability(Object count) {
+    return 'HAFTUNG: $count suspendiert';
+  }
+
+  @override
+  String wotWarningCount(Object count) {
+    return 'WARNUNG: $count gemeldet';
+  }
+
+  @override
+  String wotYourNpub(String npub) {
+    return 'Dein npub: $npub';
+  }
+
+  @override
+  String wotLiabilityBody(String names) {
+    return 'Du bürgst für $names — diese npubs sind durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.';
+  }
+
+  @override
+  String wotWarningBody(String names) {
+    return 'Für $names gibt es Meldungen. ';
+  }
+
+  @override
+  String get wotVotes => 'Stimmen';
+
+  @override
+  String get wotSuspended => 'Suspendiert';
+
+  @override
+  String wotReportNoWeightThreshold(Object count) {
+    return 'Deine Meldung allein hat kein Gewicht. Erst wenn $count unabhängige Organisatoren warnen, wird der npub suspendiert.';
+  }
+
+  @override
+  String wotPublishedLive(Object count) {
+    return 'Dein Web of Trust ist live ($count Relays)!';
+  }
+
+  @override
+  String wotReportPublished(Object count) {
+    return 'Meldung publiziert an $count Relays.';
+  }
+
+  @override
+  String wotErrorShort(String msg) {
+    return 'Fehler: $msg';
+  }
+
+  @override
+  String get wotOffline => 'Offline';
+
+  @override
+  String get wotActive => 'Aktive';
+
+  @override
+  String get wotPhase => 'Phase';
+
+  @override
+  String get wotPhaseDecentralized => 'Dezentral';
+
+  @override
+  String get wotPhaseBootstrap => 'Bootstrap';
+
+  @override
+  String get wotReportsLabel => 'Meldungen';
+
+  @override
+  String get wotVouchersLabel => 'BÜRGEN:';
+
+  @override
+  String writerTagTooSmall(Object data, Object max) {
+    return 'Tag zu klein! Daten: ${data}B, Tag: ${max}B.\n';
+  }
+
+  @override
+  String get writerTagWritten => '✅ MEETUP TAG geschrieben!\n\n';
+
+  @override
+  String writerCompactSize(Object size) {
+    return '📦 ${size}B (kompakt)\n';
+  }
+
+  @override
+  String writerValidHours(Object hours) {
+    return '⏱️ Gültig für ${hours}h\n\n';
+  }
+
+  @override
+  String get verifyErrNoNdef => '✗ Kein NDEF Tag';
+
+  @override
+  String get verifyErrTagEmpty => '✗ Tag ist leer';
+
+  @override
+  String get verifyErrPayloadEmpty => '✗ Payload leer';
+
+  @override
+  String get verifyErrInvalidFormat => '✗ Ungültiges Format';
+
+  @override
+  String verifyErrInvalidTag(String msg) {
+    return '✗ Ungültiger Tag: $msg';
+  }
+
+  @override
+  String verifyErrReadError(String msg) {
+    return '✗ Lesefehler: $msg';
+  }
+
+  @override
+  String verifyErrNfcError(String msg) {
+    return '✗ NFC Fehler: $msg';
+  }
+
+  @override
+  String verifyErrQrExpired(String msg) {
+    return '✗ QR-Code abgelaufen!\n$msg\n\nBitte direkt am Bildschirm des Organisators scannen.';
+  }
+
+  @override
+  String verifyErrPrefix(String msg) {
+    return '✗ $msg';
+  }
+
+  @override
+  String writerStartError(String msg) {
+    return '❌ Start Fehler: $msg';
+  }
+
+  @override
+  String writerFitsNtag215(Object size) {
+    return '~${size}B — passt auf NTAG215 (492B)';
+  }
+
+  @override
+  String get writerNoHomeMeetup => '⚠️ Kein Home-Meetup gesetzt';
+
+  @override
+  String get writerHomeMeetupNotFound => '⚠️ Home-Meetup nicht gefunden';
+
+  @override
+  String get writerNoActiveSession =>
+      '❌ Keine aktive Meetup-Session gefunden. Bitte starte das Meetup neu.';
+
+  @override
+  String get admMyWebOfTrust => 'MEIN WEB OF TRUST';
+
+  @override
+  String get admMyDelegations => 'DEINE DELEGATIONEN';
+
+  @override
+  String get admCoAdminKnight => 'CO-ADMIN RITTERN';
+
+  @override
+  String get admKnighthood => 'RITTERSCHLAG';
+
+  @override
+  String get admRemove => 'ENTFERNEN';
+
+  @override
+  String get admCancel => 'ABBRECHEN';
+
+  @override
+  String get admRevokeTrust => 'VERTRAUEN ENTZIEHEN?';
+
+  @override
+  String get admRevokeTrustShort => 'Vertrauen entziehen';
+
+  @override
+  String get admSyncWot => 'Web of Trust synchronisieren';
+
+  @override
+  String get admNobodyDelegated => 'Du hast noch niemanden delegiert.';
+
+  @override
+  String get admTapKnighthood =>
+      'Tippe unten auf \'RITTERSCHLAG\',\num einem neuen Organisator in deinem\nMeetup das Vertrauen auszusprechen.';
+
+  @override
+  String get admVouchNewExplain =>
+      'Du bürgst mit deiner eigenen Reputation für diesen neuen Organisator.';
+
+  @override
+  String get admScanNewOrg =>
+      'Scanne den Nostr-QR-Code (npub) des neuen Organisators.';
+
+  @override
+  String get admNetworkLearnsKnight =>
+      'Das Netzwerk erfährt erst von deinen neuen Co-Admins,\nwenn du deine Signatur auf Nostr veröffentlichst.';
+
+  @override
+  String get admMustRepublish =>
+      'Du musst die Liste danach neu publishen, damit das Netzwerk davon erfährt.';
+
+  @override
+  String get admPublishEmptyRevoke =>
+      'Publiziere eine leere Liste um alle Delegationen\nim Netzwerk zu widerrufen.';
+
+  @override
+  String get admRestoreListBack =>
+      'deine Liste nach einer Neuinstallation zurück.';
+
+  @override
+  String get admSigningSending => 'Signiere und sende an Nostr...';
+
+  @override
+  String get admRestoringVouches =>
+      'Stelle meine Bürgschaften von Nostr wieder her...';
+
+  @override
+  String get admSyncingWot => 'Synchronisiere Web of Trust...';
+
+  @override
+  String get admRevokingAll => 'Widerrufe alle Bürgschaften...';
+
+  @override
+  String admRevokeTrustBody(String name, String meetup) {
+    return 'Möchtest du $name das Vertrauen als Admin für $meetup entziehen?\n\n';
+  }
+
+  @override
+  String get admRestoreExplain =>
+      'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ';
+
+  @override
+  String admVouchedCount(Object count) {
+    return 'Du hast dich für $count Organisatoren verbürgt.';
+  }
+
+  @override
+  String get admCoAdminAdded =>
+      '✅ Co-Admin hinzugefügt! Vergiss nicht zu publishen.';
+
+  @override
+  String get apMeetupSession => 'MEETUP SESSION';
+
+  @override
+  String get apSessionRunning => 'SESSION LÄUFT';
+
+  @override
+  String get apOpenActiveMeetup => 'AKTIVES MEETUP ÖFFNEN';
+
+  @override
+  String get apStartMeetup => 'MEETUP STARTEN';
+
+  @override
+  String get apEndMeetupEarly => 'Meetup vorzeitig beenden';
+
+  @override
+  String get apNetwork => 'NETZWERK';
+
+  @override
+  String get apOrganizer => 'ORGANISATOR';
+
+  @override
+  String get apWebOfTrust => 'WEB OF TRUST';
+
+  @override
+  String get apHowItWorks => 'SO FUNKTIONIERT\'S';
+
+  @override
+  String get apManageVouches =>
+      'Bürgschaften verwalten, Netzwerk-Status, Meldungen';
+
+  @override
+  String get apNewMeetupQ => 'Neues Meetup starten?';
+
+  @override
+  String get apSessionEndQ => 'Session beenden?';
+
+  @override
+  String get apCancel => 'Abbrechen';
+
+  @override
+  String get apStart => 'Starten';
+
+  @override
+  String get apEnd => 'Beenden';
+
+  @override
+  String get apSeedAdmin => 'Seed Admin';
+
+  @override
+  String get apViaTrustScore => 'Via Trust Score';
+
+  @override
+  String get apNewMeetupBody =>
+      'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.';
+
+  @override
+  String get apSessionEndBody =>
+      'Damit sperrst du die aktuelle Blockzeit. Du kannst danach eine neue Session starten.';
+
+  @override
+  String get apGeneratesProof =>
+      'Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.';
+
+  @override
+  String get humTitle => 'PROOF OF HUMANITY';
+
+  @override
+  String get humVerified => 'MENSCH VERIFIZIERT';
+
+  @override
+  String get humNotVerified => 'NICHT VERIFIZIERT';
+
+  @override
+  String get humVerifiedSub => 'Du bist als Mensch verifiziert';
+
+  @override
+  String get humLightningActive => 'Lightning-Beweis aktiv';
+
+  @override
+  String get humCheckNow => 'JETZT PRÜFEN';
+
+  @override
+  String get humCheckAgain => 'ERNEUT PRÜFEN';
+
+  @override
+  String get humCheckAgainShort => 'Erneut prüfen';
+
+  @override
+  String get humSearchingRelays => 'SUCHE AUF RELAYS...';
+
+  @override
+  String get humHowTitle => 'WIE FUNKTIONIERT DAS?';
+
+  @override
+  String get humIntro1 =>
+      'Beweise, dass du ein Mensch bist — indem du nachweist, ';
+
+  @override
+  String get humIntro2 => 'dass du eine echte Lightning-Wallet besitzt und ';
+
+  @override
+  String get humIntro3 => 'schon einmal jemanden auf Nostr gezappt hast.';
+
+  @override
+  String get humExplain1 =>
+      'Bots haben keine Lightning-Wallets. Eine einzige echte ';
+
+  @override
+  String get humExplain2 =>
+      'Zahlung beweist, dass du ein Mensch mit einer echten ';
+
+  @override
+  String get humExplain3 =>
+      'Wallet bist — ohne persönliche Daten preiszugeben.';
+
+  @override
+  String get humStep1 => 'Du zappst irgendjemanden auf Nostr';
+
+  @override
+  String get humStep2 => 'Der Zap erzeugt ein Receipt auf Relays';
+
+  @override
+  String get humStep3 => 'Die App findet dein Receipt';
+
+  @override
+  String get humStepInstruction =>
+      'Egal wen, egal wieviel Sats. Nutze dafür einen Nostr-Client wie Damus, Amethyst oder Primal.';
+
+  @override
+  String get humCheckInstruction =>
+      'Drücke den Prüfen-Button und die App sucht auf Nostr-Relays nach deinem Zap.';
+
+  @override
+  String get humZapReturn => 'Zappe irgendjemanden und komm zurück';
+
+  @override
+  String get humCryptoProof =>
+      'Das ist ein kryptographischer Beweis, dass du eine echte Lightning-Zahlung geleistet hast.';
+
+  @override
+  String get humProofInEvent1 =>
+      'auf dem Nostr-Netzwerk geleistet. Dieser Beweis ist in deinem ';
+
+  @override
+  String get humProofPrivacy =>
+      'Der Beweis wird in dein Reputation-Event aufgenommen. Kein Betrag oder Empfänger wird gespeichert.';
+
+  @override
+  String get humReputationSaved => 'Reputation-Event gespeichert.';
+
+  @override
+  String humPaidOn(String date) {
+    return 'Du hast am $date eine Lightning-Zahlung ';
+  }
+
+  @override
+  String humLastCheck(String time) {
+    return 'Letzte Prüfung: $time';
+  }
+
+  @override
+  String get ppTitle => 'PLATTFORM-VERKNÜPFUNG';
+
+  @override
+  String get ppPlatform => 'PLATTFORM';
+
+  @override
+  String get ppUsername => 'BENUTZERNAME';
+
+  @override
+  String get ppActiveLinks => 'AKTIVE VERKNÜPFUNGEN';
+
+  @override
+  String get ppLinkPlatform => 'PLATTFORM VERKNÜPFEN';
+
+  @override
+  String get ppCreateLink => 'VERKNÜPFUNG ERSTELLEN';
+
+  @override
+  String get ppAnotherPlatform => 'WEITERE PLATTFORM';
+
+  @override
+  String get ppShareOnPlatform => 'AUF PLATTFORM TEILEN';
+
+  @override
+  String get ppUnlinkQ => 'VERKNÜPFUNG AUFHEBEN?';
+
+  @override
+  String get ppRevoke => 'WIDERRUFEN';
+
+  @override
+  String get ppCancel => 'ABBRECHEN';
+
+  @override
+  String get ppYourUsername => 'Dein Benutzername';
+
+  @override
+  String get ppPlatformName => 'Name der Plattform';
+
+  @override
+  String get ppIntro =>
+      'Verknüpfe deinen Account mit einer Plattform. Der Beweis wird automatisch in deinen Reputation-QR eingebettet.';
+
+  @override
+  String get ppLinkSaved =>
+      'Verknüpfung gespeichert! Wird automatisch in deinen Reputation-QR eingebettet.';
+
+  @override
+  String get ppMustUpdate =>
+      'Du musst dein Reputation-Event danach aktualisieren.';
+
+  @override
+  String get ppUnlinkBody1 => 'Die Plattform-Verknüpfung für \"';
+
+  @override
+  String get ppUnlinkBody2 => 'wird gelöscht.\n\n';
+
+  @override
+  String ppUnlinkBody(String username, String platform) {
+    return 'Die Plattform-Verknüpfung für \"$username\" auf $platform wird gelöscht.\n\nDu musst dein Reputation-Event danach aktualisieren.';
+  }
+
+  @override
+  String ppCreated(String date) {
+    return 'Erstellt: $date';
+  }
+
+  @override
+  String get ppRevokeTooltip => 'Widerrufen';
+
+  @override
+  String get rqTitle => 'MEETUP QR-CODE';
+
+  @override
+  String get rqActive => 'AKTIV';
+
+  @override
+  String get rqCodeRenewing => 'Code erneuert sich...';
+
+  @override
+  String get rqNextCodeIn => 'Nächster Code in';
+
+  @override
+  String get rqEndSession => 'Session beenden';
+
+  @override
+  String get rqEndSessionQ => 'Session beenden?';
+
+  @override
+  String get rqEnd => 'BEENDEN';
+
+  @override
+  String get rqEndSessionBody =>
+      'Eine beendete Session sperrt diese Blockzeit. Du kannst danach eine neue Session starten.';
+
+  @override
+  String get rqNoActiveSession => 'KEINE AKTIVE SESSION';
+
+  @override
+  String get rqNoSessionBody =>
+      'Es läuft aktuell keine Meetup-Session.\nBitte starte das Meetup im Admin Panel neu.';
+
+  @override
+  String get rqBackToAdmin => 'ZURÜCK ZUM ADMIN PANEL';
+
+  @override
+  String get rsTitle => 'NOSTR-RELAYS';
+
+  @override
+  String get rsDefaultRelays => 'DEFAULT-RELAYS';
+
+  @override
+  String get rsCustomRelays => 'EIGENE RELAYS';
+
+  @override
+  String get rsAddRelay => 'RELAY HINZUFÜGEN';
+
+  @override
+  String get rsAdd => 'HINZUFÜGEN';
+
+  @override
+  String get rsNoRelaysActive => 'Keine Relays aktiv!';
+
+  @override
+  String get rsNoCustomRelays => 'Keine eigenen Relays konfiguriert.';
+
+  @override
+  String get rsAllRelaysInfo =>
+      'Die App nutzt alle aktiven Relays gleichzeitig für maximale Erreichbarkeit.';
+
+  @override
+  String get rsRelaysIntro =>
+      'Relays verteilen deine Reputation im Nostr-Netzwerk. ';
+
+  @override
+  String get rsRelayPlaceholder => 'wss://mein-relay.de';
+
+  @override
+  String get rdScanAdminTag => 'ADMIN TAG SCANNEN';
+
+  @override
+  String get rdAnon => 'ANON';
+
+  @override
+  String get rdCollectBadge => 'BADGE ABHOLEN';
+
+  @override
+  String get rdYourReputation => 'DEINE REPUTATION';
+
+  @override
+  String get rdEditIdentity => 'Identität bearbeiten';
+
+  @override
+  String get rdLinkingIdentity => 'Identität verknüpfen...';
+
+  @override
+  String get rdNostrVerified => 'NOSTR VERIFIED';
+
+  @override
+  String get rdNoBadges => 'Noch keine Badges gesammelt.\nGeh zu einem Meetup!';
+
+  @override
+  String get rdSelfSovereign =>
+      'Self-Sovereign: Diese App läuft ohne Server. Deine Badges gehören nur dir und sind auf diesem Gerät gespeichert.';
+
+  @override
+  String get rdVerifiedByAdmin => 'VERIFIZIERT DURCH ADMIN';
+
+  @override
+  String rqRemainingTime(String time) {
+    return 'Restzeit: $time\n\n';
+  }
+
+  @override
+  String rqSessionRemaining(String time) {
+    return 'Session: $time';
+  }
+
+  @override
+  String get rvTitle => 'REPUTATION PRÜFEN';
+
+  @override
+  String get rvChecking => 'PRÜFE...';
+
+  @override
+  String get rvFullyVerified => 'VOLLSTÄNDIG VERIFIZIERT';
+
+  @override
+  String get rvPartiallyVerified => 'TEILWEISE VERIFIZIERT';
+
+  @override
+  String get rvSignatureOnly => 'NUR SIGNATUR GEPRÜFT';
+
+  @override
+  String get rvInvalid => 'UNGÜLTIG';
+
+  @override
+  String get rvConfirmedInEvent => 'Im Event bestätigt';
+
+  @override
+  String get rvPlatformProof => 'Plattform-Proof';
+
+  @override
+  String get rvIntro1 => 'Füge den Verify-String oder npub einer Person ein, ';
+
+  @override
+  String get rvIntro2 => 'um ihre Reputation über alle Beweis-Layer zu prüfen.';
+
+  @override
+  String get rvCheckingSignature => 'Prüfe Signatur...';
+
+  @override
+  String get rvCheckingNostr => 'Analysiere Nostr-Netzwerk...';
+
+  @override
+  String get rvCheckingLightning => 'Prüfe Lightning-Aktivität...';
+
+  @override
+  String get rvCheckingNip05 => 'Prüfe NIP-05...';
+
+  @override
+  String get msSelectMeetup => 'MEETUP AUSWÄHLEN';
+
+  @override
+  String get msSearchMeetup => 'Meetup suchen...';
+
+  @override
+  String get mlTitle => 'MEETUPS';
+
+  @override
+  String get mlRetry => 'Erneut versuchen';
+
+  @override
+  String get mlLoadError => 'Fehler beim Laden';
+
+  @override
+  String get mlNoMeetupsFound => 'Keine Meetups gefunden.';
+
+  @override
+  String mlNoMeetupFor(String query) {
+    return 'Kein Meetup für \"$query\"';
+  }
+
+  @override
+  String get cmRequestSent => 'ANFRAGE GESENDET 🚀';
+
+  @override
+  String get cmDateTime => 'DATUM & UHRZEIT';
+
+  @override
+  String get cmFoundBase => 'GRÜNDE EINE BASIS.';
+
+  @override
+  String get cmLocation => 'LOCATION / ORT';
+
+  @override
+  String get cmCityName => 'NAME DER STADT';
+
+  @override
+  String get cmTelegramGroup => 'TELEGRAM GRUPPE (OPTIONAL)';
+
+  @override
+  String get cmNewMeetup => 'NEUES MEETUP';
+
+  @override
+  String get cmDateExample => 'z.B. 21. Mai, 19:00';
+
+  @override
+  String get cmCityExample => 'z.B. Frankfurt';
+
+  @override
+  String get cmLocationExample => 'z.B. Room 77';
+
+  @override
+  String get evUpcomingEvents => 'KOMMENDE EVENTS';
+
+  @override
+  String get evDatesEvents => 'TERMINE & EVENTS';
+
+  @override
+  String get evNoMeetupsFound => 'Keine Meetups gefunden';
+
+  @override
+  String get evSearchCityCountry => 'Stadt oder Land suchen...';
+
+  @override
+  String get evIntro =>
+      'Die meisten Einundzwanzig Meetups finden regelmäßig statt. Klick auf ein Meetup für mehr Infos und Termine.';
+
+  @override
+  String get rvLabelPlatform => 'Plattform';
+
+  @override
+  String get rvLabelUsername => 'Username';
+
+  @override
+  String get countryDE => 'Deutschland';
+
+  @override
+  String get countryAT => 'Österreich';
+
+  @override
+  String get countryCH => 'Schweiz';
+
+  @override
+  String get countryES => 'Spanien';
+
+  @override
+  String get countryNL => 'Niederlande';
+
+  @override
+  String get countryIT => 'Italien';
+
+  @override
+  String get countryFR => 'Frankreich';
 }

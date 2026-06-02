@@ -12,6 +12,7 @@
 
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../services/platform_proof_service.dart';
 import '../services/reputation_publisher.dart';
@@ -73,15 +74,15 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
               )),
               const SizedBox(height: 20),
 
-              const Text("AUF PLATTFORM TEILEN",
-                style: TextStyle(color: cOrange, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1)),
+              Text(AppLocalizations.of(context).ppShareOnPlatform,
+                style: const TextStyle(color: cOrange, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1)),
               const SizedBox(height: 6),
-              Text("Verknüpfe deinen Account mit einer Plattform. Der Beweis wird automatisch in deinen Reputation-QR eingebettet.",
+              Text(AppLocalizations.of(context).ppIntro,
                 style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
               const SizedBox(height: 20),
 
               // Plattform-Auswahl
-              const Text("PLATTFORM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              Text(AppLocalizations.of(context).ppPlatform, style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -137,7 +138,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                   onChanged: (v) => customPlatformName = v,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: 'Name der Plattform',
+                    hintText: AppLocalizations.of(context).ppPlatformName,
                     hintStyle: TextStyle(color: Colors.grey.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.05),
@@ -149,13 +150,13 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
               // Username-Eingabe
               if (selectedPlatform != null) ...[
                 const SizedBox(height: 16),
-                const Text("BENUTZERNAME", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                Text(AppLocalizations.of(context).ppUsername, style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: usernameController,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText: PlatformProofService.platforms[selectedPlatform]?.hint ?? 'Dein Benutzername',
+                    hintText: PlatformProofService.platforms[selectedPlatform]?.hint ?? AppLocalizations.of(context).ppYourUsername,
                     hintStyle: TextStyle(color: Colors.grey.shade700),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.05),
@@ -182,7 +183,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                       );
                     },
                     icon: const Icon(Icons.lock, size: 18),
-                    label: const Text("VERKNÜPFUNG ERSTELLEN"),
+                    label: Text(AppLocalizations.of(context).ppCreateLink),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: cOrange,
                       foregroundColor: Colors.black,
@@ -230,8 +231,8 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
       // sehen die verifizierte Plattform-Verknüpfung direkt.
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Verknüpfung gespeichert! Wird automatisch in deinen Reputation-QR eingebettet."),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).ppLinkSaved),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 3),
           ),
@@ -254,17 +255,15 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("VERKNÜPFUNG AUFHEBEN?", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context).ppUnlinkQ, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
         content: Text(
-          "Die Plattform-Verknüpfung für \"${proof.username}\" auf ${proof.platform} "
-          "wird gelöscht.\n\n"
-          "Du musst dein Reputation-Event danach aktualisieren.",
+          AppLocalizations.of(context).ppUnlinkBody(proof.username, proof.platform),
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).ppCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -280,7 +279,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
               Navigator.pop(context);
               _loadProofs();
             },
-            child: const Text("WIDERRUFEN", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context).ppRevoke, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -295,7 +294,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("PLATTFORM-VERKNÜPFUNG")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).ppTitle)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cOrange))
           : SingleChildScrollView(
@@ -317,8 +316,8 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                         Row(children: [
                           Icon(Icons.link, color: cOrange, size: 22),
                           const SizedBox(width: 10),
-                          const Text("SO FUNKTIONIERT'S",
-                            style: TextStyle(color: cOrange, fontSize: 13, fontWeight: FontWeight.w800)),
+                          Text(AppLocalizations.of(context).apHowItWorks,
+                            style: const TextStyle(color: cOrange, fontSize: 13, fontWeight: FontWeight.w800)),
                         ]),
                         const SizedBox(height: 10),
                         Text(
@@ -336,8 +335,8 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
 
                   // Bestehende Proofs
                   if (_savedProofs.isNotEmpty) ...[
-                    const Text("AKTIVE VERKNÜPFUNGEN",
-                      style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    Text(AppLocalizations.of(context).ppActiveLinks,
+                      style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
                     const SizedBox(height: 12),
                     ..._savedProofs.map((proof) => _buildProofCard(proof)),
                     const SizedBox(height: 20),
@@ -350,7 +349,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _createNewProof,
                       icon: const Icon(Icons.add, size: 20),
-                      label: Text(_savedProofs.isEmpty ? "PLATTFORM VERKNÜPFEN" : "WEITERE PLATTFORM"),
+                      label: Text(_savedProofs.isEmpty ? AppLocalizations.of(context).ppLinkPlatform : AppLocalizations.of(context).ppAnotherPlatform),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: cOrange,
                         foregroundColor: Colors.black,
@@ -398,7 +397,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                   const SizedBox(height: 2),
                   Text(proof.username,
                     style: TextStyle(color: Colors.green.shade300, fontSize: 13, fontFamily: 'monospace')),
-                  Text("Erstellt: ${date.day}.${date.month}.${date.year}",
+                  Text(AppLocalizations.of(context).ppCreated("${date.day}.${date.month}.${date.year}"),
                     style: TextStyle(color: Colors.grey.shade600, fontSize: 10)),
                 ],
               ),
@@ -416,7 +415,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
             // Widerrufen
             IconButton(
               icon: Icon(Icons.delete_outline, color: Colors.red.shade400, size: 18),
-              tooltip: 'Widerrufen',
+              tooltip: AppLocalizations.of(context).ppRevokeTooltip,
               onPressed: () => _revokeProof(proof),
             ),
           ],
@@ -436,3 +435,5 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
     }
   }
 }
+
+

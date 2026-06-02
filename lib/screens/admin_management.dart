@@ -9,6 +9,7 @@ import 'dart:convert';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 class AdminManagementScreen extends StatefulWidget {
   const AdminManagementScreen({super.key});
@@ -47,7 +48,9 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   }
 
   Future<void> _loadAdmins() async {
-    final admins = await AdminRegistry.getAdminList();
+    // Persönliche Bürgschaften anzeigen (derselbe Topf, der publiziert
+    // und wiederhergestellt wird) — nicht der Netzwerk-Cache aller Admins.
+    final admins = await AdminRegistry.getMyVouches();
     final age = await AdminRegistry.cacheAge();
     if (mounted) {
       setState(() {
@@ -77,10 +80,10 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
         title: Row(
-          children: const [
-            Icon(Icons.shield, color: cPurple),
-            SizedBox(width: 8),
-            Text("CO-ADMIN RITTERN", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          children: [
+            const Icon(Icons.shield, color: cPurple),
+            const SizedBox(width: 8),
+            Text(AppLocalizations.of(context).admCoAdminKnight, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
         content: SingleChildScrollView(
@@ -88,8 +91,8 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Du bürgst mit deiner eigenen Reputation für diesen neuen Organisator.",
+              Text(
+                AppLocalizations.of(context).admVouchNewExplain,
                 style: TextStyle(color: Colors.grey, fontSize: 12, height: 1.4),
               ),
               const SizedBox(height: 16),
@@ -102,7 +105,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       controller: npubController,
                       style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 11),
                       decoration: InputDecoration(
-                        labelText: "npub (Pflicht)",
+                        labelText: AppLocalizations.of(context).wotNpubRequired,
                         labelStyle: const TextStyle(color: Colors.grey),
                         hintText: "npub1...",
                         filled: true, fillColor: cDark,
@@ -133,7 +136,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                 controller: meetupController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: "Meetup (z.B. München)",
+                  labelText: AppLocalizations.of(context).wotMeetupExample,
                   labelStyle: const TextStyle(color: Colors.grey),
                   filled: true, fillColor: cDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -144,7 +147,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                 controller: nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: "Name / Alias (optional)",
+                  labelText: AppLocalizations.of(context).wotNameAlias,
                   labelStyle: const TextStyle(color: Colors.grey),
                   filled: true, fillColor: cDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -156,13 +159,13 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).admCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cPurple, foregroundColor: Colors.white),
             onPressed: () async {
               try {
-                await AdminRegistry.addAdmin(AdminEntry(
+                await AdminRegistry.addVouch(AdminEntry(
                   npub: npubController.text.trim(),
                   meetup: meetupController.text.trim(),
                   name: nameController.text.trim(),
@@ -171,7 +174,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                   Navigator.pop(context);
                   _loadAdmins();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("✅ Co-Admin hinzugefügt! Vergiss nicht zu publishen."), backgroundColor: Colors.green),
+                    SnackBar(content: Text(AppLocalizations.of(context).admCoAdminAdded), backgroundColor: Colors.green),
                   );
                 }
               } catch (e) {
@@ -180,7 +183,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                 );
               }
             },
-            child: const Text("VERBÜRGEN", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context).wotVouchVerb, style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -193,28 +196,27 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("VERTRAUEN ENTZIEHEN?", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context).admRevokeTrust, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
         content: Text(
-          "Möchtest du ${admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub)} "
-          "das Vertrauen als Admin für ${admin.meetup} entziehen?\n\n"
-          "Du musst die Liste danach neu publishen, damit das Netzwerk davon erfährt.",
+          AppLocalizations.of(context).admRevokeTrustBody(admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub), admin.meetup) +
+          AppLocalizations.of(context).admMustRepublish,
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).admCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              await AdminRegistry.removeAdmin(admin.npub);
+              await AdminRegistry.removeVouch(admin.npub);
               if (mounted) {
                 Navigator.pop(context);
                 _loadAdmins();
               }
             },
-            child: const Text("ENTFERNEN", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context).admRemove, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -225,7 +227,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   void _publishToRelays() async {
     setState(() {
       _isPublishing = true;
-      _statusMessage = 'Signiere und sende an Nostr...';
+      _statusMessage = AppLocalizations.of(context).admSigningSending;
     });
 
     try {
@@ -240,7 +242,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text("✅ Deine Delegation wurde kryptografisch signiert und im Netzwerk veröffentlicht!"),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 4),
@@ -264,7 +266,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   void _refreshFromRelays() async {
     setState(() {
       _isRefreshing = true;
-      _statusMessage = 'Synchronisiere Web of Trust...';
+      _statusMessage = AppLocalizations.of(context).admSyncingWot;
     });
 
     try {
@@ -293,7 +295,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   void _recoverMyVouches() async {
     setState(() {
       _isRefreshing = true;
-      _statusMessage = 'Stelle meine Bürgschaften von Nostr wieder her...';
+      _statusMessage = AppLocalizations.of(context).admRestoringVouches;
     });
     try {
       final count = await AdminRegistry.recoverMyVouchesFromRelays();
@@ -325,19 +327,19 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("ALLE BÜRGSCHAFTEN WIDERRUFEN?",
-            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
-        content: const Text(
-          "Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE "
-          "deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr "
-          "sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine "
-          "alten Bürgschaften nicht mehr auflösen kannst.",
-          style: TextStyle(color: Colors.white70),
+        title: Text(AppLocalizations.of(context).wotRevokeAllTitle,
+            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+        content: Text(
+          AppLocalizations.of(context).wotRevokeAllBody +
+          AppLocalizations.of(context).wotVouchesSignedOnNostr +
+          AppLocalizations.of(context).wotVisibleLocally +
+          AppLocalizations.of(context).wotCantResolveOld,
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).admCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -345,7 +347,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
               Navigator.pop(context);
               setState(() {
                 _isPublishing = true;
-                _statusMessage = 'Widerrufe alle Bürgschaften...';
+                _statusMessage = AppLocalizations.of(context).admRevokingAll;
               });
               try {
                 await AdminRegistry.revokeAllVouches();
@@ -361,7 +363,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                 });
               }
             },
-            child: const Text("ALLE WIDERRUFEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context).wotRevokeAll, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -373,13 +375,13 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text("MEIN WEB OF TRUST"),
+        title: Text(AppLocalizations.of(context).admMyWebOfTrust),
         actions: [
           IconButton(
             icon: _isRefreshing
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: cCyan))
                 : const Icon(Icons.sync, color: cCyan),
-            tooltip: "Web of Trust synchronisieren",
+            tooltip: AppLocalizations.of(context).admSyncWot,
             onPressed: _isRefreshing ? null : _refreshFromRelays,
           ),
         ],
@@ -388,7 +390,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
         onPressed: _addAdmin,
         backgroundColor: cPurple,
         icon: const Icon(Icons.shield, color: Colors.white),
-        label: const Text("RITTERSCHLAG", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
+        label: Text(AppLocalizations.of(context).admKnighthood, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cPurple))
@@ -415,13 +417,13 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "DEINE DELEGATIONEN",
+                                Text(
+                                  AppLocalizations.of(context).admMyDelegations,
                                   style: TextStyle(color: cPurple, fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  "Du hast dich für ${_admins.length} Organisator${_admins.length != 1 ? 'en' : ''} verbürgt.",
+                                  AppLocalizations.of(context).admVouchedCount(_admins.length),
                                   style: const TextStyle(color: Colors.grey, fontSize: 12),
                                 ),
                               ],
@@ -463,10 +465,10 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                         : const Icon(Icons.satellite_alt, color: Colors.white),
                     label: Text(
                       _isPublishing 
-                          ? "SIGNIERE & PUBLIZIERE..." 
+                          ? AppLocalizations.of(context).wotSigningPublishing 
                           : _admins.isEmpty 
-                              ? "WIDERRUF PUBLISHEN"
-                              : "AUF NOSTR PUBLISHEN",
+                              ? AppLocalizations.of(context).wotPublishRevocation
+                              : AppLocalizations.of(context).wotPublishNostr,
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -478,8 +480,8 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                 const SizedBox(height: 8),
                 Text(
                   _admins.isEmpty
-                      ? "Publiziere eine leere Liste um alle Delegationen\nim Netzwerk zu widerrufen."
-                      : "Das Netzwerk erfährt erst von deinen neuen Co-Admins,\nwenn du deine Signatur auf Nostr veröffentlichst.",
+                      ? AppLocalizations.of(context).admPublishEmptyRevoke
+                      : AppLocalizations.of(context).admNetworkLearnsKnight,
                   style: const TextStyle(color: Colors.grey, fontSize: 11, height: 1.4),
                   textAlign: TextAlign.center,
                 ),
@@ -492,7 +494,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       child: OutlinedButton.icon(
                         onPressed: _isRefreshing ? null : _recoverMyVouches,
                         icon: const Icon(Icons.cloud_download_outlined, size: 18),
-                        label: const Text("WIEDERHERSTELLEN", style: TextStyle(fontSize: 11)),
+                        label: Text(AppLocalizations.of(context).wotRestore, style: const TextStyle(fontSize: 11)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: cCyan,
                           side: const BorderSide(color: cCyan),
@@ -505,7 +507,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       child: OutlinedButton.icon(
                         onPressed: _isPublishing ? null : _revokeAllVouches,
                         icon: const Icon(Icons.block, size: 18),
-                        label: const Text("ALLE WIDERRUFEN", style: TextStyle(fontSize: 11)),
+                        label: Text(AppLocalizations.of(context).wotRevokeAll, style: const TextStyle(fontSize: 11)),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.red,
                           side: const BorderSide(color: Colors.red),
@@ -517,8 +519,8 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt "
-                  "deine Liste nach einer Neuinstallation zurück.",
+                  AppLocalizations.of(context).admRestoreExplain +
+                  AppLocalizations.of(context).admRestoreListBack,
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 10, height: 1.4),
                   textAlign: TextAlign.center,
                 ),
@@ -529,14 +531,14 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 60),
                     child: Column(
-                      children: const [
-                        Icon(Icons.group_off, size: 64, color: Colors.white12),
-                        SizedBox(height: 16),
-                        Text("Du hast noch niemanden delegiert.", style: TextStyle(color: Colors.grey, fontSize: 14)),
-                        SizedBox(height: 12),
+                      children: [
+                        const Icon(Icons.group_off, size: 64, color: Colors.white12),
+                        const SizedBox(height: 16),
+                        Text(AppLocalizations.of(context).admNobodyDelegated, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                        const SizedBox(height: 12),
                         Text(
-                          "Tippe unten auf 'RITTERSCHLAG',\num einem neuen Organisator in deinem\nMeetup das Vertrauen auszusprechen.",
-                          style: TextStyle(color: Colors.white54, fontSize: 13, height: 1.5),
+                          AppLocalizations.of(context).admTapKnighthood,
+                          style: const TextStyle(color: Colors.white54, fontSize: 13, height: 1.5),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -579,7 +581,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       ),
                       trailing: IconButton(
                         icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 22),
-                        tooltip: "Vertrauen entziehen",
+                        tooltip: AppLocalizations.of(context).admRevokeTrustShort,
                         onPressed: () => _removeAdmin(admin),
                       ),
                     ),
@@ -630,7 +632,7 @@ class _NpubScannerScreenState extends State<_NpubScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text("NPUB SCANNEN"), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).wotScanNpub), backgroundColor: Colors.transparent, elevation: 0),
       body: Stack(
         children: [
           MobileScanner(onDetect: _onDetect),
@@ -643,8 +645,8 @@ class _NpubScannerScreenState extends State<_NpubScannerScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: cPurple),
               ),
-              child: const Text(
-                "Scanne den Nostr-QR-Code (npub) des neuen Organisators.",
+              child: Text(
+                AppLocalizations.of(context).admScanNewOrg,
                 style: TextStyle(color: Colors.white, fontSize: 14, height: 1.4), 
                 textAlign: TextAlign.center
               ),

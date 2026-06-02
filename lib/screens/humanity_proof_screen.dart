@@ -8,12 +8,13 @@
 //
 // Für Nutzer die noch nie gezappt haben:
 //   - Erklärung was Zaps sind
-//   - "Zappe irgendjemanden und komm zurück"
-//   - "Erneut prüfen" Button
+//   - AppLocalizations.of(context).humZapReturn
+//   - AppLocalizations.of(context).humCheckAgainShort Button
 // ============================================
 
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/humanity_proof_service.dart';
 import '../services/reputation_publisher.dart';
 
@@ -91,7 +92,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("PROOF OF HUMANITY")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).humTitle)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cOrange))
           : SingleChildScrollView(
@@ -145,7 +146,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
           const SizedBox(height: 16),
 
           Text(
-            verified ? "MENSCH VERIFIZIERT" : "NICHT VERIFIZIERT",
+            verified ? AppLocalizations.of(context).humVerified : AppLocalizations.of(context).humNotVerified,
             style: TextStyle(
               color: verified ? Colors.green : Colors.amber,
               fontSize: 16,
@@ -157,12 +158,12 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
 
           Text(
             verified
-                ? "Du hast am ${_status!.firstZapDateStr} eine Lightning-Zahlung "
-                  "auf dem Nostr-Netzwerk geleistet. Dieser Beweis ist in deinem "
-                  "Reputation-Event gespeichert."
-                : "Beweise, dass du ein Mensch bist — indem du nachweist, "
-                  "dass du eine echte Lightning-Wallet besitzt und "
-                  "schon einmal jemanden auf Nostr gezappt hast.",
+                ? AppLocalizations.of(context).humPaidOn(_status!.firstZapDateStr) +
+                  AppLocalizations.of(context).humProofInEvent1 +
+                  AppLocalizations.of(context).humReputationSaved
+                : AppLocalizations.of(context).humIntro1 +
+                  AppLocalizations.of(context).humIntro2 +
+                  AppLocalizations.of(context).humIntro3,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade400, fontSize: 13, height: 1.5),
           ),
@@ -180,7 +181,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
                 children: [
                   const Icon(Icons.bolt, color: Colors.amber, size: 16),
                   const SizedBox(width: 6),
-                  Text("Lightning-Beweis aktiv",
+                  Text(AppLocalizations.of(context).humLightningActive,
                     style: TextStyle(color: Colors.green.shade300, fontSize: 12, fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -206,19 +207,19 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("WIE FUNKTIONIERT DAS?",
+          Text(AppLocalizations.of(context).humHowTitle,
             style: TextStyle(color: Colors.grey.shade300, fontSize: 12,
               fontWeight: FontWeight.w800, letterSpacing: 0.5)),
           const SizedBox(height: 12),
 
-          _buildStep("1", "Du zappst irgendjemanden auf Nostr",
-            "Egal wen, egal wieviel Sats. Nutze dafür einen Nostr-Client wie Damus, Amethyst oder Primal."),
-          _buildStep("2", "Der Zap erzeugt ein Receipt auf Relays",
-            "Das ist ein kryptographischer Beweis, dass du eine echte Lightning-Zahlung geleistet hast."),
-          _buildStep("3", "Die App findet dein Receipt",
-            "Drücke den Prüfen-Button und die App sucht auf Nostr-Relays nach deinem Zap."),
-          _buildStep("4", "Du bist als Mensch verifiziert",
-            "Der Beweis wird in dein Reputation-Event aufgenommen. Kein Betrag oder Empfänger wird gespeichert."),
+          _buildStep("1", AppLocalizations.of(context).humStep1,
+            AppLocalizations.of(context).humStepInstruction),
+          _buildStep("2", AppLocalizations.of(context).humStep2,
+            AppLocalizations.of(context).humCryptoProof),
+          _buildStep("3", AppLocalizations.of(context).humStep3,
+            AppLocalizations.of(context).humCheckInstruction),
+          _buildStep("4", AppLocalizations.of(context).humVerifiedSub,
+            AppLocalizations.of(context).humProofPrivacy),
 
           const SizedBox(height: 12),
           Container(
@@ -235,9 +236,9 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    "Bots haben keine Lightning-Wallets. Eine einzige echte "
-                    "Zahlung beweist, dass du ein Mensch mit einer echten "
-                    "Wallet bist — ohne persönliche Daten preiszugeben.",
+                    AppLocalizations.of(context).humExplain1 +
+                    AppLocalizations.of(context).humExplain2 +
+                    AppLocalizations.of(context).humExplain3,
                     style: TextStyle(color: Colors.grey.shade400, fontSize: 11, height: 1.5),
                   ),
                 ),
@@ -302,10 +303,10 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
                 : Icon(verified ? Icons.refresh : Icons.bolt, size: 22),
             label: Text(
               _isChecking
-                  ? "SUCHE AUF RELAYS..."
+                  ? AppLocalizations.of(context).humSearchingRelays
                   : verified
-                      ? "ERNEUT PRÜFEN"
-                      : "JETZT PRÜFEN",
+                      ? AppLocalizations.of(context).humCheckAgain
+                      : AppLocalizations.of(context).humCheckNow,
               style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5),
             ),
             style: ElevatedButton.styleFrom(
@@ -320,7 +321,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
         // Letzte Prüfung
         if (_status != null && _status!.lastCheckedAt > 0) ...[
           const SizedBox(height: 8),
-          Text("Letzte Prüfung: ${_status!.lastCheckedStr}",
+          Text(AppLocalizations.of(context).humLastCheck(_status!.lastCheckedStr),
             style: TextStyle(color: Colors.grey.shade600, fontSize: 11)),
         ],
 
@@ -359,3 +360,5 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
     );
   }
 }
+
+

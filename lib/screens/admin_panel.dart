@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/user.dart';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
@@ -125,7 +126,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Fehler: $e"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).wotErrorShort(e.toString())), backgroundColor: Colors.red));
       }
     }
   }
@@ -144,7 +145,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("ORGANISATOR")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).apOrganizer)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
         child: Column(
@@ -155,7 +156,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               const Icon(Icons.verified_rounded, color: cOrange, size: 16),
               const SizedBox(width: 8),
               Expanded(child: Text(
-                _promotionSource == 'trust_score' ? 'Via Trust Score' : 'Organisator',
+                _promotionSource == 'trust_score' ? AppLocalizations.of(context).apViaTrustScore : AppLocalizations.of(context).apOrganizer,
                 style: const TextStyle(color: cTextSecondary, fontSize: 12),
               )),
               if (_adminNpub.isNotEmpty)
@@ -168,10 +169,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               if (false) _buildStatusChip(
                 icon: _promotionSource == 'trust_score' ? Icons.trending_up : Icons.star,
                 label: _promotionSource == 'trust_score'
-                    ? 'Via Trust Score'
+                    ? AppLocalizations.of(context).apViaTrustScore
                     : _promotionSource == 'seed_admin'
-                        ? 'Seed Admin'
-                        : 'Organisator',
+                        ? AppLocalizations.of(context).apSeedAdmin
+                        : AppLocalizations.of(context).apOrganizer,
                 color: _promotionSource == 'trust_score' ? Colors.green : cOrange,
               ),
             ]),
@@ -179,7 +180,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             const SizedBox(height: 32),
 
             // --- UNIFIED SESSION CONTROLLER ---
-            const Text('MEETUP SESSION', style: TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+            Text(AppLocalizations.of(context).apMeetupSession, style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
             const SizedBox(height: 12),
 
             if (isSessionActive) ...[
@@ -197,7 +198,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     Row(children: [
                       Container(width: 8, height: 8, decoration: const BoxDecoration(color: cGreen, shape: BoxShape.circle)),
                       const SizedBox(width: 8),
-                      const Text('SESSION LÄUFT', style: TextStyle(color: cGreen, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
+                      Text(AppLocalizations.of(context).apSessionRunning, style: const TextStyle(color: cGreen, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
                       const Spacer(),
                       Text(_timeLeft, style: TextStyle(color: cText, fontSize: 12, fontFamily: fontMono, fontWeight: FontWeight.w600)),
                     ]),
@@ -217,7 +218,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           );
                         },
                         icon: const Icon(Icons.qr_code_scanner),
-                        label: const Text("AKTIVES MEETUP ÖFFNEN", style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: Text(AppLocalizations.of(context).apOpenActiveMeetup, style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -227,17 +228,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                           context: context,
                           builder: (context) => AlertDialog(
                             backgroundColor: cCard,
-                            title: const Text("Session beenden?", style: TextStyle(color: Colors.white)),
-                            content: const Text("Damit sperrst du die aktuelle Blockzeit. Du kannst danach eine neue Session starten.", style: TextStyle(color: Colors.grey)),
+                            title: Text(AppLocalizations.of(context).apSessionEndQ, style: const TextStyle(color: Colors.white)),
+                            content: Text(AppLocalizations.of(context).apSessionEndBody, style: const TextStyle(color: Colors.grey)),
                             actions: [
-                              TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Abbrechen", style: TextStyle(color: Colors.grey))),
-                              TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Beenden", style: TextStyle(color: Colors.red))),
+                              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context).apCancel, style: const TextStyle(color: Colors.grey))),
+                              TextButton(onPressed: () => Navigator.pop(context, true), child: Text(AppLocalizations.of(context).apEnd, style: const TextStyle(color: Colors.red))),
                             ],
                           ),
                         );
                         if (confirm == true) _endSessionEarly();
                       },
-                      child: const Text("Meetup vorzeitig beenden", style: TextStyle(color: Colors.redAccent)),
+                      child: Text(AppLocalizations.of(context).apEndMeetupEarly, style: const TextStyle(color: Colors.redAccent)),
                     ),
                   ],
                 ),
@@ -248,21 +249,21 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 context: context,
                 icon: Icons.power_settings_new,
                 color: cOrange,
-                title: "MEETUP STARTEN",
-                subtitle: "Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.",
+                title: AppLocalizations.of(context).apStartMeetup,
+                subtitle: AppLocalizations.of(context).apGeneratesProof,
                 onTap: () async {
                   bool? confirm = await showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
                       backgroundColor: cCard,
-                      title: const Text("Neues Meetup starten?", style: TextStyle(color: Colors.white)),
-                      content: const Text("Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.", style: TextStyle(color: Colors.grey)),
+                      title: Text(AppLocalizations.of(context).apNewMeetupQ, style: const TextStyle(color: Colors.white)),
+                      content: Text(AppLocalizations.of(context).apNewMeetupBody, style: const TextStyle(color: Colors.grey)),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Abbrechen", style: TextStyle(color: Colors.grey))),
+                        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context).apCancel, style: const TextStyle(color: Colors.grey))),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(backgroundColor: cOrange, foregroundColor: Colors.black),
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text("Starten"),
+                          child: Text(AppLocalizations.of(context).apStart),
                         ),
                       ],
                     ),
@@ -278,7 +279,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             const SizedBox(height: 24),
 
             Text(
-              "NETZWERK",
+              AppLocalizations.of(context).apNetwork,
               style: TextStyle(color: cOrange, fontWeight: FontWeight.bold, letterSpacing: 1.2),
             ),
             const SizedBox(height: 12),
@@ -287,8 +288,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               context: context,
               icon: Icons.hub,
               color: cPurple,
-              title: "WEB OF TRUST",
-              subtitle: "Bürgschaften verwalten, Netzwerk-Status, Meldungen",
+              title: AppLocalizations.of(context).apWebOfTrust,
+              subtitle: AppLocalizations.of(context).apManageVouches,
               onTap: () async {
                 await Navigator.push(
                   context,
@@ -314,10 +315,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(children: const [
-                    Icon(Icons.info_outline, color: cOrange, size: 20),
-                    SizedBox(width: 8),
-                    Text("SO FUNKTIONIERT'S", style: TextStyle(color: cOrange, fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.5)),
+                  Row(children: [
+                    const Icon(Icons.info_outline, color: cOrange, size: 20),
+                    const SizedBox(width: 8),
+                    Text(AppLocalizations.of(context).apHowItWorks, style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.5)),
                   ]),
                   const SizedBox(height: 12),
                   Text(
@@ -390,3 +391,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 }
+
+
+

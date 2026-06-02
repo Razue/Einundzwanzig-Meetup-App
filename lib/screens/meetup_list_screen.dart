@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/meetup_service.dart';
 import '../models/meetup.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import 'meetup_details.dart';
 
 class MeetupListScreen extends StatefulWidget {
@@ -47,7 +48,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text("MEETUPS"),
+        title: Text(AppLocalizations.of(context).mlTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -64,7 +65,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
               onChanged: (value) => setState(() => _searchQuery = value),
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: "Meetup suchen...",
+                hintText: AppLocalizations.of(context).msSearchMeetup,
                 prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 filled: true,
                 fillColor: cCard,
@@ -94,14 +95,14 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
                         children: [
                           const Icon(Icons.cloud_off, color: Colors.grey, size: 48),
                           const SizedBox(height: 16),
-                          Text("Fehler beim Laden", style: TextStyle(color: Colors.grey.shade400, fontSize: 16)),
+                          Text(AppLocalizations.of(context).mlLoadError, style: TextStyle(color: Colors.grey.shade400, fontSize: 16)),
                           const SizedBox(height: 8),
                           Text("${snapshot.error}", style: TextStyle(color: Colors.grey.shade600, fontSize: 12), textAlign: TextAlign.center),
                           const SizedBox(height: 16),
                           TextButton.icon(
                             onPressed: _refresh,
                             icon: const Icon(Icons.refresh),
-                            label: const Text("Erneut versuchen"),
+                            label: Text(AppLocalizations.of(context).mlRetry),
                           ),
                         ],
                       ),
@@ -110,7 +111,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(
-                    child: Text("Keine Meetups gefunden.", style: TextStyle(color: Colors.grey.shade500)),
+                    child: Text(AppLocalizations.of(context).mlNoMeetupsFound, style: TextStyle(color: Colors.grey.shade500)),
                   );
                 }
 
@@ -118,7 +119,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
 
                 if (meetups.isEmpty) {
                   return Center(
-                    child: Text("Kein Meetup für \"$_searchQuery\" gefunden.", style: TextStyle(color: Colors.grey.shade500)),
+                    child: Text(AppLocalizations.of(context).mlNoMeetupFor(_searchQuery), style: TextStyle(color: Colors.grey.shade500)),
                   );
                 }
 
@@ -152,7 +153,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                _countryName(country),
+                                _countryName(context, country),
                                 style: const TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.5),
                               ),
                             ),
@@ -255,16 +256,19 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
     );
   }
 
-  static String _countryName(String code) {
+  static String _countryName(BuildContext context, String code) {
+    final t = AppLocalizations.of(context);
     switch (code.toUpperCase()) {
-      case 'DE': return 'Deutschland';
-      case 'AT': return 'Österreich';
-      case 'CH': return 'Schweiz';
-      case 'ES': return 'Spanien';
-      case 'NL': return 'Niederlande';
-      case 'IT': return 'Italien';
-      case 'FR': return 'Frankreich';
+      case 'DE': return t.countryDE;
+      case 'AT': return t.countryAT;
+      case 'CH': return t.countryCH;
+      case 'ES': return t.countryES;
+      case 'NL': return t.countryNL;
+      case 'IT': return t.countryIT;
+      case 'FR': return t.countryFR;
       default: return code;
     }
   }
 }
+
+

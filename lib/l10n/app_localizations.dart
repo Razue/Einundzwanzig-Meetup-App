@@ -1755,6 +1755,2556 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bitte ausfüllen: {fields}'**
   String profileFillIn(Object fields);
+
+  /// No description provided for @backupEncryptTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup verschlüsseln'**
+  String get backupEncryptTitle;
+
+  /// No description provided for @backupDecryptTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup entschlüsseln'**
+  String get backupDecryptTitle;
+
+  /// No description provided for @backupExportDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergib ein Passwort, um deinen privaten Schlüssel (nsec) im Backup zu schützen.\n\n⚠️ Wenn du dieses Passwort vergisst, ist das Backup UNWIEDERBRINGLICH verloren!'**
+  String get backupExportDesc;
+
+  /// No description provided for @backupImportDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Backup ist verschlüsselt. Bitte gib das Passwort ein.'**
+  String get backupImportDesc;
+
+  /// No description provided for @backupPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort'**
+  String get backupPassword;
+
+  /// No description provided for @backupPasswordConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort bestätigen'**
+  String get backupPasswordConfirm;
+
+  /// No description provided for @backupPasswordEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort darf nicht leer sein'**
+  String get backupPasswordEmpty;
+
+  /// No description provided for @backupPasswordMin.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens 8 Zeichen'**
+  String get backupPasswordMin;
+
+  /// No description provided for @backupPasswordMismatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwörter stimmen nicht überein'**
+  String get backupPasswordMismatch;
+
+  /// No description provided for @backupEncryptSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschlüsseln & Speichern'**
+  String get backupEncryptSave;
+
+  /// No description provided for @backupDecryptLoad.
+  ///
+  /// In de, this message translates to:
+  /// **'Entschlüsseln & Laden'**
+  String get backupDecryptLoad;
+
+  /// No description provided for @backupShareTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einundzwanzig App Backup (Verschlüsselt)'**
+  String get backupShareTitle;
+
+  /// No description provided for @backupShareText.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein verschlüsseltes Backup. Halte dein Passwort bereit, um es wiederherzustellen.'**
+  String get backupShareText;
+
+  /// No description provided for @backupError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Backup: {msg}'**
+  String backupError(String msg);
+
+  /// No description provided for @backupCorrupt.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup-Datei ist beschädigt (Formatfehler).'**
+  String get backupCorrupt;
+
+  /// No description provided for @backupWrongPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Falsches Passwort oder Datei beschädigt!'**
+  String get backupWrongPassword;
+
+  /// No description provided for @backupNotValid.
+  ///
+  /// In de, this message translates to:
+  /// **'Datei ist kein gültiges Backup oder das falsche Format.'**
+  String get backupNotValid;
+
+  /// No description provided for @backupNotEinundzwanzig.
+  ///
+  /// In de, this message translates to:
+  /// **'Datei ist kein gültiges Einundzwanzig Backup.'**
+  String get backupNotEinundzwanzig;
+
+  /// No description provided for @backupLoaded.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ Backup geladen! {items} wiederhergestellt.'**
+  String backupLoaded(Object items);
+
+  /// No description provided for @backupImportFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Import fehlgeschlagen: {msg}'**
+  String backupImportFailed(String msg);
+
+  /// No description provided for @qrScanTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'REPUTATION PRÜFEN'**
+  String get qrScanTitle;
+
+  /// No description provided for @qrResultTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'ERGEBNIS'**
+  String get qrResultTitle;
+
+  /// No description provided for @qrScanHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Scanne einen Einundzwanzig\nReputation QR-Code'**
+  String get qrScanHint;
+
+  /// No description provided for @qrLoadFromGallery.
+  ///
+  /// In de, this message translates to:
+  /// **'QR AUS GALERIE LADEN'**
+  String get qrLoadFromGallery;
+
+  /// No description provided for @qrBack.
+  ///
+  /// In de, this message translates to:
+  /// **'ZURÜCK'**
+  String get qrBack;
+
+  /// No description provided for @qrNoCodeInImage.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein QR-Code im Bild gefunden'**
+  String get qrNoCodeInImage;
+
+  /// No description provided for @qrNotEinundzwanzig.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code gefunden, aber kein Einundzwanzig-Format'**
+  String get qrNotEinundzwanzig;
+
+  /// No description provided for @qrVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'VERIFIZIERT'**
+  String get qrVerified;
+
+  /// No description provided for @qrVerifiedV1.
+  ///
+  /// In de, this message translates to:
+  /// **'VERIFIZIERT (v1)'**
+  String get qrVerifiedV1;
+
+  /// No description provided for @qrVerifiedV2.
+  ///
+  /// In de, this message translates to:
+  /// **'VERIFIZIERT (v2)'**
+  String get qrVerifiedV2;
+
+  /// No description provided for @qrSigInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'SIGNATUR UNGÜLTIG'**
+  String get qrSigInvalid;
+
+  /// No description provided for @qrFormatUnknown.
+  ///
+  /// In de, this message translates to:
+  /// **'FORMAT UNBEKANNT'**
+  String get qrFormatUnknown;
+
+  /// No description provided for @qrReadError.
+  ///
+  /// In de, this message translates to:
+  /// **'LESEFEHLER'**
+  String get qrReadError;
+
+  /// No description provided for @qrV2Subtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Legacy-Signatur gültig — kein Badge-Proof'**
+  String get qrV2Subtitle;
+
+  /// No description provided for @qrV1Subtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Älteres Format — keine Identitätsbindung'**
+  String get qrV1Subtitle;
+
+  /// No description provided for @qrCantRead.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code konnte nicht gelesen werden.'**
+  String get qrCantRead;
+
+  /// No description provided for @qrProcessError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Verarbeiten: {msg}'**
+  String qrProcessError(String msg);
+
+  /// No description provided for @qrSectionIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'IDENTITÄT'**
+  String get qrSectionIdentity;
+
+  /// No description provided for @qrNoIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'KEINE IDENTITÄT'**
+  String get qrNoIdentity;
+
+  /// No description provided for @qrNoVerifiableIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine verifizierbare Identität.'**
+  String get qrNoVerifiableIdentity;
+
+  /// No description provided for @qrSectionLightning.
+  ///
+  /// In de, this message translates to:
+  /// **'LIGHTNING'**
+  String get qrSectionLightning;
+
+  /// No description provided for @qrSectionSocial.
+  ///
+  /// In de, this message translates to:
+  /// **'SOZIALES NETZWERK'**
+  String get qrSectionSocial;
+
+  /// No description provided for @qrSectionPlatforms.
+  ///
+  /// In de, this message translates to:
+  /// **'VERKNÜPFTE PLATTFORMEN'**
+  String get qrSectionPlatforms;
+
+  /// No description provided for @qrSectionMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'BESUCHTE MEETUPS'**
+  String get qrSectionMeetups;
+
+  /// No description provided for @qrHumanVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Mensch verifiziert'**
+  String get qrHumanVerified;
+
+  /// No description provided for @qrLightningActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Lightning-Beweis aktiv'**
+  String get qrLightningActive;
+
+  /// No description provided for @qrNoLightning.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Lightning-Beweis gefunden'**
+  String get qrNoLightning;
+
+  /// No description provided for @qrNoZap.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Zap-Aktivität'**
+  String get qrNoZap;
+
+  /// No description provided for @qrNip05Invalid.
+  ///
+  /// In de, this message translates to:
+  /// **'NIP-05 ungültig'**
+  String get qrNip05Invalid;
+
+  /// No description provided for @qrYouFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Du folgst'**
+  String get qrYouFollow;
+
+  /// No description provided for @qrFollowsYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Folgt dir'**
+  String get qrFollowsYou;
+
+  /// No description provided for @qrMutualFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Gegenseitiger Follow'**
+  String get qrMutualFollow;
+
+  /// No description provided for @qrNoDirectFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein direkter Follow'**
+  String get qrNoDirectFollow;
+
+  /// No description provided for @qrDirectConnection.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkte Verbindung'**
+  String get qrDirectConnection;
+
+  /// No description provided for @qrBidirectional.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkte bidirektionale Verbindung'**
+  String get qrBidirectional;
+
+  /// No description provided for @qrOneWay.
+  ///
+  /// In de, this message translates to:
+  /// **'Einseitige Verbindung'**
+  String get qrOneWay;
+
+  /// No description provided for @qrViaContacts.
+  ///
+  /// In de, this message translates to:
+  /// **'Über gemeinsame Kontakte'**
+  String get qrViaContacts;
+
+  /// No description provided for @qrStrongOverlap.
+  ///
+  /// In de, this message translates to:
+  /// **'Starke Netzwerk-Überlappung'**
+  String get qrStrongOverlap;
+
+  /// No description provided for @qrPartiallyConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilweise verbunden'**
+  String get qrPartiallyConnected;
+
+  /// No description provided for @qrNoOverlap.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Überlappung'**
+  String get qrNoOverlap;
+
+  /// No description provided for @qrEndorsement.
+  ///
+  /// In de, this message translates to:
+  /// **'Endorsement von bekannten Admins'**
+  String get qrEndorsement;
+
+  /// No description provided for @qrSigVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Signatur verifiziert'**
+  String get qrSigVerified;
+
+  /// No description provided for @qrAnalyzingNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Analysiere Netzwerk...'**
+  String get qrAnalyzingNetwork;
+
+  /// No description provided for @qrCheckingLightning.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe Lightning...'**
+  String get qrCheckingLightning;
+
+  /// No description provided for @qrCheckingNip05.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe NIP-05...'**
+  String get qrCheckingNip05;
+
+  /// No description provided for @qrStatBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges'**
+  String get qrStatBadges;
+
+  /// No description provided for @qrStatMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get qrStatMeetups;
+
+  /// No description provided for @qrStatSigners.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer'**
+  String get qrStatSigners;
+
+  /// No description provided for @qrStatBound.
+  ///
+  /// In de, this message translates to:
+  /// **'Gebunden'**
+  String get qrStatBound;
+
+  /// No description provided for @qrStatDays.
+  ///
+  /// In de, this message translates to:
+  /// **'Tage'**
+  String get qrStatDays;
+
+  /// No description provided for @qrLabelNickname.
+  ///
+  /// In de, this message translates to:
+  /// **'Nickname'**
+  String get qrLabelNickname;
+
+  /// No description provided for @qrLabelTwitter.
+  ///
+  /// In de, this message translates to:
+  /// **'Twitter/X'**
+  String get qrLabelTwitter;
+
+  /// No description provided for @qrPlatformOther.
+  ///
+  /// In de, this message translates to:
+  /// **'Andere'**
+  String get qrPlatformOther;
+
+  /// No description provided for @qrLinked.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpft'**
+  String get qrLinked;
+
+  /// No description provided for @qrSigVerifiedShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Signatur verifiziert'**
+  String get qrSigVerifiedShort;
+
+  /// No description provided for @qrLinkedShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpft'**
+  String get qrLinkedShort;
+
+  /// No description provided for @nfcDisabled.
+  ///
+  /// In de, this message translates to:
+  /// **'NFC ist deaktiviert'**
+  String get nfcDisabled;
+
+  /// No description provided for @nfcDisabledHint.
+  ///
+  /// In de, this message translates to:
+  /// **'NFC ist deaktiviert. Bitte einschalten.'**
+  String get nfcDisabledHint;
+
+  /// No description provided for @nfcUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'NFC nicht verfügbar'**
+  String get nfcUnavailable;
+
+  /// No description provided for @nfcOpenSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'EINSTELLUNGEN ÖFFNEN'**
+  String get nfcOpenSettings;
+
+  /// No description provided for @nfcEnableHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte aktiviere NFC in deinen Geräteeinstellungen, '**
+  String get nfcEnableHint;
+
+  /// No description provided for @nfcSettingsAndroid.
+  ///
+  /// In de, this message translates to:
+  /// **'Android: Einstellungen → Verbindungen → NFC'**
+  String get nfcSettingsAndroid;
+
+  /// No description provided for @nfcSettingsIos.
+  ///
+  /// In de, this message translates to:
+  /// **'iOS: Einstellungen → NFC'**
+  String get nfcSettingsIos;
+
+  /// No description provided for @verifyScanBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'BADGE SCANNEN'**
+  String get verifyScanBadge;
+
+  /// No description provided for @verifyScanNfc.
+  ///
+  /// In de, this message translates to:
+  /// **'NFC TAG SCANNEN'**
+  String get verifyScanNfc;
+
+  /// No description provided for @verifyScanQr.
+  ///
+  /// In de, this message translates to:
+  /// **'QR SCANNEN'**
+  String get verifyScanQr;
+
+  /// No description provided for @verifyScanQrCaps.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-CODE SCANNEN'**
+  String get verifyScanQrCaps;
+
+  /// No description provided for @verifyReadyToScan.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit zum Scannen'**
+  String get verifyReadyToScan;
+
+  /// No description provided for @verifyWaitingNfc.
+  ///
+  /// In de, this message translates to:
+  /// **'Warte auf NFC Tag...'**
+  String get verifyWaitingNfc;
+
+  /// No description provided for @verifyCheckingNfc.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe NFC...'**
+  String get verifyCheckingNfc;
+
+  /// No description provided for @verifyScanInstruction.
+  ///
+  /// In de, this message translates to:
+  /// **'Scanne den NFC-Tag oder QR-Code\ndes Meetup-Organisators.'**
+  String get verifyScanInstruction;
+
+  /// No description provided for @verifyScanQrInstruction.
+  ///
+  /// In de, this message translates to:
+  /// **'Scanne den QR-Code\ndes Meetup-Organisators'**
+  String get verifyScanQrInstruction;
+
+  /// No description provided for @verifyNoNfcDevice.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät hat kein NFC. Nutze den QR-Scanner.'**
+  String get verifyNoNfcDevice;
+
+  /// No description provided for @verifyNoNfcLong.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät unterstützt kein NFC.\n\n'**
+  String get verifyNoNfcLong;
+
+  /// No description provided for @verifyUseQrInstead.
+  ///
+  /// In de, this message translates to:
+  /// **'Nutze stattdessen den QR-Code-Scanner, '**
+  String get verifyUseQrInstead;
+
+  /// No description provided for @verifyToGetBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'um dein Badge zu erhalten.'**
+  String get verifyToGetBadge;
+
+  /// No description provided for @verifyAskScan.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte lass einen Teilnehmer deinen Tag scannen.'**
+  String get verifyAskScan;
+
+  /// No description provided for @verifyCantSelfBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst dir nicht selbst ein Badge geben.\n'**
+  String get verifyCantSelfBadge;
+
+  /// No description provided for @verifyBadgeFound.
+  ///
+  /// In de, this message translates to:
+  /// **'BADGE GEFUNDEN'**
+  String get verifyBadgeFound;
+
+  /// No description provided for @verifyAlreadyCollected.
+  ///
+  /// In de, this message translates to:
+  /// **'BEREITS GESAMMELT'**
+  String get verifyAlreadyCollected;
+
+  /// No description provided for @verifyAddToWallet.
+  ///
+  /// In de, this message translates to:
+  /// **'ZUR WALLET HINZUFÜGEN'**
+  String get verifyAddToWallet;
+
+  /// No description provided for @verifyVerifiedAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Verifizierter Admin'**
+  String get verifyVerifiedAdmin;
+
+  /// No description provided for @verifyUnknownMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Unbekanntes Meetup'**
+  String get verifyUnknownMeetup;
+
+  /// No description provided for @verifyNoExpiry.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Ablauf'**
+  String get verifyNoExpiry;
+
+  /// No description provided for @writerReadyToWrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereit zum Schreiben'**
+  String get writerReadyToWrite;
+
+  /// No description provided for @writerNoNfcDevice.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Gerät hat kein NFC. Nutze Rolling QR-Codes.'**
+  String get writerNoNfcDevice;
+
+  /// No description provided for @writerUseRollingQr.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst stattdessen Rolling QR-Codes '**
+  String get writerUseRollingQr;
+
+  /// No description provided for @writerForYourMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'für dein Meetup verwenden.'**
+  String get writerForYourMeetup;
+
+  /// No description provided for @writerSelectHomeFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte erst ein Home-Meetup im Profil auswählen'**
+  String get writerSelectHomeFirst;
+
+  /// No description provided for @writerYourHomeMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'DEIN HOME-MEETUP'**
+  String get writerYourHomeMeetup;
+
+  /// No description provided for @writerCreateTag.
+  ///
+  /// In de, this message translates to:
+  /// **'TAG ERSTELLEN'**
+  String get writerCreateTag;
+
+  /// No description provided for @writerCreateMeetupTag.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP TAG ERSTELLEN'**
+  String get writerCreateMeetupTag;
+
+  /// No description provided for @writerMeetupTag.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP TAG'**
+  String get writerMeetupTag;
+
+  /// No description provided for @writerSuccess.
+  ///
+  /// In de, this message translates to:
+  /// **'ERFOLG!'**
+  String get writerSuccess;
+
+  /// No description provided for @writerValid6h.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültig für 6 Stunden'**
+  String get writerValid6h;
+
+  /// No description provided for @writerHoldTag.
+  ///
+  /// In de, this message translates to:
+  /// **'Halte Tag an das Gerät...'**
+  String get writerHoldTag;
+
+  /// No description provided for @writerHoldTagInstruction.
+  ///
+  /// In de, this message translates to:
+  /// **'Halte einen NFC Tag an das Gerät.\nTeilnehmer scannen diesen Tag um ein Badge zu sammeln.'**
+  String get writerHoldTagInstruction;
+
+  /// No description provided for @writerFormatting.
+  ///
+  /// In de, this message translates to:
+  /// **'Formatiere leeren Tag...'**
+  String get writerFormatting;
+
+  /// No description provided for @writerFormatFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Formatierung fehlgeschlagen'**
+  String get writerFormatFailed;
+
+  /// No description provided for @writerLoadingSession.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Session-Daten...'**
+  String get writerLoadingSession;
+
+  /// No description provided for @writerJumpToQr.
+  ///
+  /// In de, this message translates to:
+  /// **'Springe zum QR-Code...'**
+  String get writerJumpToQr;
+
+  /// No description provided for @writerNoNdef.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein NDEF Format möglich'**
+  String get writerNoNdef;
+
+  /// No description provided for @writerTagReadOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag ist schreibgeschützt'**
+  String get writerTagReadOnly;
+
+  /// No description provided for @writerCanOverwrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag kann danach überschrieben werden'**
+  String get writerCanOverwrite;
+
+  /// No description provided for @writerTagLost.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag verloren während dem Schreiben'**
+  String get writerTagLost;
+
+  /// No description provided for @writerTagRemovedEarly.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag zu früh entfernt — halte ihn ruhig 2–3 Sekunden ans Gerät'**
+  String get writerTagRemovedEarly;
+
+  /// No description provided for @writerUseNtag215.
+  ///
+  /// In de, this message translates to:
+  /// **'Verwende einen NTAG215 (504B) oder größer.'**
+  String get writerUseNtag215;
+
+  /// No description provided for @writerToWriteTag.
+  ///
+  /// In de, this message translates to:
+  /// **'um den Tag zu beschreiben.\n\n'**
+  String get writerToWriteTag;
+
+  /// No description provided for @verifyMsgLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort: {name}'**
+  String verifyMsgLocation(String name);
+
+  /// No description provided for @verifyMsgBlock.
+  ///
+  /// In de, this message translates to:
+  /// **'Block: {height}'**
+  String verifyMsgBlock(Object height);
+
+  /// No description provided for @verifyMsgSignedBy.
+  ///
+  /// In de, this message translates to:
+  /// **'Signiert von: {signer}'**
+  String verifyMsgSignedBy(String signer);
+
+  /// No description provided for @verifyMsgProof.
+  ///
+  /// In de, this message translates to:
+  /// **'Beweis: Schnorr (BIP-340)'**
+  String get verifyMsgProof;
+
+  /// No description provided for @verifyMsgTagExpiry.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag-Ablauf: {expiry}'**
+  String verifyMsgTagExpiry(String expiry);
+
+  /// No description provided for @verifyAlreadyToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Bereits gesammelt\n\nHeute hast du bereits ein Badge von:\n{name}'**
+  String verifyAlreadyToday(String name);
+
+  /// No description provided for @wotTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'WEB OF TRUST'**
+  String get wotTitle;
+
+  /// No description provided for @wotActiveOrganizers.
+  ///
+  /// In de, this message translates to:
+  /// **'AKTIVE ORGANISATOREN'**
+  String get wotActiveOrganizers;
+
+  /// No description provided for @wotActiveOrganizer.
+  ///
+  /// In de, this message translates to:
+  /// **'AKTIVER ORGANISATOR'**
+  String get wotActiveOrganizer;
+
+  /// No description provided for @wotActiveWarnings.
+  ///
+  /// In de, this message translates to:
+  /// **'AKTIVE WARNUNGEN'**
+  String get wotActiveWarnings;
+
+  /// No description provided for @wotActiveWarning.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktive Warnung'**
+  String get wotActiveWarning;
+
+  /// No description provided for @wotMyStatus.
+  ///
+  /// In de, this message translates to:
+  /// **'DEIN STATUS'**
+  String get wotMyStatus;
+
+  /// No description provided for @wotMyVouches.
+  ///
+  /// In de, this message translates to:
+  /// **'DEINE BÜRGSCHAFTEN'**
+  String get wotMyVouches;
+
+  /// No description provided for @wotWhoYouVouchFor.
+  ///
+  /// In de, this message translates to:
+  /// **'FÜR WEN DU BÜRGST'**
+  String get wotWhoYouVouchFor;
+
+  /// No description provided for @wotWhoVouchesForYou.
+  ///
+  /// In de, this message translates to:
+  /// **'WER BÜRGT FÜR DICH'**
+  String get wotWhoVouchesForYou;
+
+  /// No description provided for @wotWeightedReporting.
+  ///
+  /// In de, this message translates to:
+  /// **'GEWICHTETES MELDESYSTEM'**
+  String get wotWeightedReporting;
+
+  /// No description provided for @wotRestore.
+  ///
+  /// In de, this message translates to:
+  /// **'WIEDERHERSTELLEN'**
+  String get wotRestore;
+
+  /// No description provided for @wotRevokeAll.
+  ///
+  /// In de, this message translates to:
+  /// **'ALLE WIDERRUFEN'**
+  String get wotRevokeAll;
+
+  /// No description provided for @wotPublishNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'AUF NOSTR PUBLISHEN'**
+  String get wotPublishNostr;
+
+  /// No description provided for @wotVouch.
+  ///
+  /// In de, this message translates to:
+  /// **'BÜRGEN'**
+  String get wotVouch;
+
+  /// No description provided for @wotVouchVerb.
+  ///
+  /// In de, this message translates to:
+  /// **'VERBÜRGEN'**
+  String get wotVouchVerb;
+
+  /// No description provided for @wotReportNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'NPUB MELDEN'**
+  String get wotReportNpub;
+
+  /// No description provided for @wotScanNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'NPUB SCANNEN'**
+  String get wotScanNpub;
+
+  /// No description provided for @wotPublishRevocation.
+  ///
+  /// In de, this message translates to:
+  /// **'WIDERRUF PUBLISHEN'**
+  String get wotPublishRevocation;
+
+  /// No description provided for @wotSigningPublishing.
+  ///
+  /// In de, this message translates to:
+  /// **'SIGNIERE & PUBLIZIERE...'**
+  String get wotSigningPublishing;
+
+  /// No description provided for @wotSyncNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk synchronisieren'**
+  String get wotSyncNetwork;
+
+  /// No description provided for @wotBootstrapPhase.
+  ///
+  /// In de, this message translates to:
+  /// **'Bootstrap-Phase'**
+  String get wotBootstrapPhase;
+
+  /// No description provided for @wotDecentralized.
+  ///
+  /// In de, this message translates to:
+  /// **'Dezentral (Web of Trust)'**
+  String get wotDecentralized;
+
+  /// No description provided for @wotMinVouches.
+  ///
+  /// In de, this message translates to:
+  /// **'Min. Bürgen'**
+  String get wotMinVouches;
+
+  /// No description provided for @wotDistrustThreshold.
+  ///
+  /// In de, this message translates to:
+  /// **'Distrust-Schwelle'**
+  String get wotDistrustThreshold;
+
+  /// No description provided for @wotNotEnoughVouchers.
+  ///
+  /// In de, this message translates to:
+  /// **'NOCH NICHT GENUG BÜRGEN'**
+  String get wotNotEnoughVouchers;
+
+  /// No description provided for @wotVouchers.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgen'**
+  String get wotVouchers;
+
+  /// No description provided for @wotNoVouchersYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Bürgen'**
+  String get wotNoVouchersYet;
+
+  /// No description provided for @wotNobodyYet.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch niemand'**
+  String get wotNobodyYet;
+
+  /// No description provided for @wotNotSuspendedWatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nicht suspendiert, aber du solltest aufpassen.'**
+  String get wotNotSuspendedWatch;
+
+  /// No description provided for @wotNoReports.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Meldungen'**
+  String get wotNoReports;
+
+  /// No description provided for @wotNoActiveAdmins.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine aktiven Admins'**
+  String get wotNoActiveAdmins;
+
+  /// No description provided for @wotNoCleanNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktuell gibt es keine offenen Warnungen\nim Netzwerk. Alles sauber.'**
+  String get wotNoCleanNetwork;
+
+  /// No description provided for @wotNoOrganizersEnough.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Netzwerk hat noch keine Organisatoren mit genug Bürgschaften.'**
+  String get wotNoOrganizersEnough;
+
+  /// No description provided for @wotNoVouchesFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine publizierten Bürgschaften auf den Relays gefunden.'**
+  String get wotNoVouchesFound;
+
+  /// No description provided for @wotTapPlusFirst.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf + um deinen ersten Ritterschlag\nzu vergeben.'**
+  String get wotTapPlusFirst;
+
+  /// No description provided for @wotAskOthersVouch.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte andere Organisatoren, für dich zu bürgen.\n'**
+  String get wotAskOthersVouch;
+
+  /// No description provided for @wotNoDataLoaded.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk-Daten konnten nicht geladen werden.\nZiehe zum Aktualisieren nach unten.'**
+  String get wotNoDataLoaded;
+
+  /// No description provided for @wotNoRelay.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Relay erreichbar — später erneut versuchen.'**
+  String get wotNoRelay;
+
+  /// No description provided for @wotRevokeAllTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'ALLE BÜRGSCHAFTEN WIDERRUFEN?'**
+  String get wotRevokeAllTitle;
+
+  /// No description provided for @wotRevokeVouchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'BÜRGSCHAFT ENTZIEHEN?'**
+  String get wotRevokeVouchTitle;
+
+  /// No description provided for @wotWithdrawVouch.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgschaft entziehen'**
+  String get wotWithdrawVouch;
+
+  /// No description provided for @wotVouchWithdrawn.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgschaft entzogen. Vergiss nicht zu publishen.'**
+  String get wotVouchWithdrawn;
+
+  /// No description provided for @wotVouchGiven.
+  ///
+  /// In de, this message translates to:
+  /// **'Ritterschlag vergeben! Vergiss nicht zu publishen.'**
+  String get wotVouchGiven;
+
+  /// No description provided for @wotAllRevoked.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Bürgschaften wurden im Netzwerk widerrufen.'**
+  String get wotAllRevoked;
+
+  /// No description provided for @wotReasonRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Grund (Pflicht)'**
+  String get wotReasonRequired;
+
+  /// No description provided for @wotNpubRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'npub (Pflicht)'**
+  String get wotNpubRequired;
+
+  /// No description provided for @wotNameAlias.
+  ///
+  /// In de, this message translates to:
+  /// **'Name / Alias (optional)'**
+  String get wotNameAlias;
+
+  /// No description provided for @wotMeetupExample.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup (z.B. München)'**
+  String get wotMeetupExample;
+
+  /// No description provided for @wotReasonExample.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Fälscht Badges, kein echtes Meetup...'**
+  String get wotReasonExample;
+
+  /// No description provided for @wotNpubReasonRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'npub und Grund sind Pflicht.'**
+  String get wotNpubReasonRequired;
+
+  /// No description provided for @wotScanInstruction.
+  ///
+  /// In de, this message translates to:
+  /// **'Scanne den Nostr-QR-Code (npub)\ndes Organisators.'**
+  String get wotScanInstruction;
+
+  /// No description provided for @wotVouchExplain.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bürgst mit deiner eigenen Reputation für diesen Organisator.'**
+  String get wotVouchExplain;
+
+  /// No description provided for @wotEachVouchPersonal.
+  ///
+  /// In de, this message translates to:
+  /// **'Jede Bürgschaft ist dein persönliches Vertrauens-Votum — '**
+  String get wotEachVouchPersonal;
+
+  /// No description provided for @wotAfterPublishAll.
+  ///
+  /// In de, this message translates to:
+  /// **'nach dem Publishen sieht das gesamte Netzwerk, für wen du stehst.'**
+  String get wotAfterPublishAll;
+
+  /// No description provided for @wotWhoYouVouchExplain.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier siehst du, für wen DU bürgst. '**
+  String get wotWhoYouVouchExplain;
+
+  /// No description provided for @wotPublishUpdated.
+  ///
+  /// In de, this message translates to:
+  /// **'Publishe danach deine aktualisierte Liste, '**
+  String get wotPublishUpdated;
+
+  /// No description provided for @wotSoNetworkKnows.
+  ///
+  /// In de, this message translates to:
+  /// **'damit das Netzwerk davon erfährt.'**
+  String get wotSoNetworkKnows;
+
+  /// No description provided for @wotSingleReportNoWeight.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine einzelne Meldung hat kein Gewicht — '**
+  String get wotSingleReportNoWeight;
+
+  /// No description provided for @wotOnlyMultipleIndep.
+  ///
+  /// In de, this message translates to:
+  /// **'erst wenn mehrere unabhängige Organisatoren '**
+  String get wotOnlyMultipleIndep;
+
+  /// No description provided for @wotWarnSuspend.
+  ///
+  /// In de, this message translates to:
+  /// **'warnen, wird jemand suspendiert. '**
+  String get wotWarnSuspend;
+
+  /// No description provided for @wotNobodyAlonePower.
+  ///
+  /// In de, this message translates to:
+  /// **'Niemand hat allein Macht über andere.'**
+  String get wotNobodyAlonePower;
+
+  /// No description provided for @wotYourReportAlone.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Meldung allein hat kein Gewicht. Erst wenn '**
+  String get wotYourReportAlone;
+
+  /// No description provided for @wotOrgsWarnSuspended.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisatoren warnen, wird der npub suspendiert.'**
+  String get wotOrgsWarnSuspended;
+
+  /// No description provided for @wotRevokeAllBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE '**
+  String get wotRevokeAllBody;
+
+  /// No description provided for @wotFromOtherOrgs.
+  ///
+  /// In de, this message translates to:
+  /// **'von anderen Organisatoren.'**
+  String get wotFromOtherOrgs;
+
+  /// No description provided for @wotRestoreExplain.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt '**
+  String get wotRestoreExplain;
+
+  /// No description provided for @wotRestoreListBack.
+  ///
+  /// In de, this message translates to:
+  /// **'deine Liste nach einer Neuinstallation oder einem Backup-Wechsel zurück.'**
+  String get wotRestoreListBack;
+
+  /// No description provided for @wotVouchesSignedOnNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr '**
+  String get wotVouchesSignedOnNostr;
+
+  /// No description provided for @wotVisibleLocally.
+  ///
+  /// In de, this message translates to:
+  /// **'sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine '**
+  String get wotVisibleLocally;
+
+  /// No description provided for @wotCantResolveOld.
+  ///
+  /// In de, this message translates to:
+  /// **'alten Bürgschaften nicht mehr auflösen kannst.'**
+  String get wotCantResolveOld;
+
+  /// No description provided for @wotRemovedFromList.
+  ///
+  /// In de, this message translates to:
+  /// **'wird von deiner Vouching-Liste entfernt.\n\n'**
+  String get wotRemovedFromList;
+
+  /// No description provided for @wotSuspendedByNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.'**
+  String get wotSuspendedByNetwork;
+
+  /// No description provided for @wotErrorLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden: {msg}'**
+  String wotErrorLoading(String msg);
+
+  /// No description provided for @wotSyncFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Sync fehlgeschlagen: {msg}'**
+  String wotSyncFailed(String msg);
+
+  /// No description provided for @wotRevocationFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Widerruf fehlgeschlagen: {msg}'**
+  String wotRevocationFailed(String msg);
+
+  /// No description provided for @wotRestoreFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellung fehlgeschlagen: {msg}'**
+  String wotRestoreFailed(String msg);
+
+  /// No description provided for @wotVouchesRestored.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Bürgschaften von Nostr wiederhergestellt.'**
+  String wotVouchesRestored(Object count);
+
+  /// No description provided for @wotNetworkHealth.
+  ///
+  /// In de, this message translates to:
+  /// **'NETZWERK {label}'**
+  String wotNetworkHealth(String label);
+
+  /// No description provided for @wotVouchProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} / {total} Bürgen'**
+  String wotVouchProgress(Object count, Object total);
+
+  /// No description provided for @wotReportsCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Meldungen'**
+  String wotReportsCount(Object count);
+
+  /// No description provided for @wotNeedMoreVouches.
+  ///
+  /// In de, this message translates to:
+  /// **'Du brauchst noch {count} Bürgschaften '**
+  String wotNeedMoreVouches(Object count);
+
+  /// No description provided for @wotVouchesRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} / {total} benötigt'**
+  String wotVouchesRequired(Object count, Object total);
+
+  /// No description provided for @wotSuspensionProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} / {total} Suspendierung'**
+  String wotSuspensionProgress(Object count, Object total);
+
+  /// No description provided for @wotLiability.
+  ///
+  /// In de, this message translates to:
+  /// **'HAFTUNG: {count} suspendiert'**
+  String wotLiability(Object count);
+
+  /// No description provided for @wotWarningCount.
+  ///
+  /// In de, this message translates to:
+  /// **'WARNUNG: {count} gemeldet'**
+  String wotWarningCount(Object count);
+
+  /// No description provided for @wotYourNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein npub: {npub}'**
+  String wotYourNpub(String npub);
+
+  /// No description provided for @wotLiabilityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bürgst für {names} — diese npubs sind durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.'**
+  String wotLiabilityBody(String names);
+
+  /// No description provided for @wotWarningBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Für {names} gibt es Meldungen. '**
+  String wotWarningBody(String names);
+
+  /// No description provided for @wotVotes.
+  ///
+  /// In de, this message translates to:
+  /// **'Stimmen'**
+  String get wotVotes;
+
+  /// No description provided for @wotSuspended.
+  ///
+  /// In de, this message translates to:
+  /// **'Suspendiert'**
+  String get wotSuspended;
+
+  /// No description provided for @wotReportNoWeightThreshold.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Meldung allein hat kein Gewicht. Erst wenn {count} unabhängige Organisatoren warnen, wird der npub suspendiert.'**
+  String wotReportNoWeightThreshold(Object count);
+
+  /// No description provided for @wotPublishedLive.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Web of Trust ist live ({count} Relays)!'**
+  String wotPublishedLive(Object count);
+
+  /// No description provided for @wotReportPublished.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldung publiziert an {count} Relays.'**
+  String wotReportPublished(Object count);
+
+  /// No description provided for @wotErrorShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler: {msg}'**
+  String wotErrorShort(String msg);
+
+  /// No description provided for @wotOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Offline'**
+  String get wotOffline;
+
+  /// No description provided for @wotActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktive'**
+  String get wotActive;
+
+  /// No description provided for @wotPhase.
+  ///
+  /// In de, this message translates to:
+  /// **'Phase'**
+  String get wotPhase;
+
+  /// No description provided for @wotPhaseDecentralized.
+  ///
+  /// In de, this message translates to:
+  /// **'Dezentral'**
+  String get wotPhaseDecentralized;
+
+  /// No description provided for @wotPhaseBootstrap.
+  ///
+  /// In de, this message translates to:
+  /// **'Bootstrap'**
+  String get wotPhaseBootstrap;
+
+  /// No description provided for @wotReportsLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldungen'**
+  String get wotReportsLabel;
+
+  /// No description provided for @wotVouchersLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'BÜRGEN:'**
+  String get wotVouchersLabel;
+
+  /// No description provided for @writerTagTooSmall.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag zu klein! Daten: {data}B, Tag: {max}B.\n'**
+  String writerTagTooSmall(Object data, Object max);
+
+  /// No description provided for @writerTagWritten.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ MEETUP TAG geschrieben!\n\n'**
+  String get writerTagWritten;
+
+  /// No description provided for @writerCompactSize.
+  ///
+  /// In de, this message translates to:
+  /// **'📦 {size}B (kompakt)\n'**
+  String writerCompactSize(Object size);
+
+  /// No description provided for @writerValidHours.
+  ///
+  /// In de, this message translates to:
+  /// **'⏱️ Gültig für {hours}h\n\n'**
+  String writerValidHours(Object hours);
+
+  /// No description provided for @verifyErrNoNdef.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ Kein NDEF Tag'**
+  String get verifyErrNoNdef;
+
+  /// No description provided for @verifyErrTagEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ Tag ist leer'**
+  String get verifyErrTagEmpty;
+
+  /// No description provided for @verifyErrPayloadEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ Payload leer'**
+  String get verifyErrPayloadEmpty;
+
+  /// No description provided for @verifyErrInvalidFormat.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ Ungültiges Format'**
+  String get verifyErrInvalidFormat;
+
+  /// No description provided for @verifyErrInvalidTag.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ Ungültiger Tag: {msg}'**
+  String verifyErrInvalidTag(String msg);
+
+  /// No description provided for @verifyErrReadError.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ Lesefehler: {msg}'**
+  String verifyErrReadError(String msg);
+
+  /// No description provided for @verifyErrNfcError.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ NFC Fehler: {msg}'**
+  String verifyErrNfcError(String msg);
+
+  /// No description provided for @verifyErrQrExpired.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ QR-Code abgelaufen!\n{msg}\n\nBitte direkt am Bildschirm des Organisators scannen.'**
+  String verifyErrQrExpired(String msg);
+
+  /// No description provided for @verifyErrPrefix.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ {msg}'**
+  String verifyErrPrefix(String msg);
+
+  /// No description provided for @writerStartError.
+  ///
+  /// In de, this message translates to:
+  /// **'❌ Start Fehler: {msg}'**
+  String writerStartError(String msg);
+
+  /// No description provided for @writerFitsNtag215.
+  ///
+  /// In de, this message translates to:
+  /// **'~{size}B — passt auf NTAG215 (492B)'**
+  String writerFitsNtag215(Object size);
+
+  /// No description provided for @writerNoHomeMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'⚠️ Kein Home-Meetup gesetzt'**
+  String get writerNoHomeMeetup;
+
+  /// No description provided for @writerHomeMeetupNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'⚠️ Home-Meetup nicht gefunden'**
+  String get writerHomeMeetupNotFound;
+
+  /// No description provided for @writerNoActiveSession.
+  ///
+  /// In de, this message translates to:
+  /// **'❌ Keine aktive Meetup-Session gefunden. Bitte starte das Meetup neu.'**
+  String get writerNoActiveSession;
+
+  /// No description provided for @admMyWebOfTrust.
+  ///
+  /// In de, this message translates to:
+  /// **'MEIN WEB OF TRUST'**
+  String get admMyWebOfTrust;
+
+  /// No description provided for @admMyDelegations.
+  ///
+  /// In de, this message translates to:
+  /// **'DEINE DELEGATIONEN'**
+  String get admMyDelegations;
+
+  /// No description provided for @admCoAdminKnight.
+  ///
+  /// In de, this message translates to:
+  /// **'CO-ADMIN RITTERN'**
+  String get admCoAdminKnight;
+
+  /// No description provided for @admKnighthood.
+  ///
+  /// In de, this message translates to:
+  /// **'RITTERSCHLAG'**
+  String get admKnighthood;
+
+  /// No description provided for @admRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'ENTFERNEN'**
+  String get admRemove;
+
+  /// No description provided for @admCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'ABBRECHEN'**
+  String get admCancel;
+
+  /// No description provided for @admRevokeTrust.
+  ///
+  /// In de, this message translates to:
+  /// **'VERTRAUEN ENTZIEHEN?'**
+  String get admRevokeTrust;
+
+  /// No description provided for @admRevokeTrustShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauen entziehen'**
+  String get admRevokeTrustShort;
+
+  /// No description provided for @admSyncWot.
+  ///
+  /// In de, this message translates to:
+  /// **'Web of Trust synchronisieren'**
+  String get admSyncWot;
+
+  /// No description provided for @admNobodyDelegated.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast noch niemanden delegiert.'**
+  String get admNobodyDelegated;
+
+  /// No description provided for @admTapKnighthood.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe unten auf \'RITTERSCHLAG\',\num einem neuen Organisator in deinem\nMeetup das Vertrauen auszusprechen.'**
+  String get admTapKnighthood;
+
+  /// No description provided for @admVouchNewExplain.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bürgst mit deiner eigenen Reputation für diesen neuen Organisator.'**
+  String get admVouchNewExplain;
+
+  /// No description provided for @admScanNewOrg.
+  ///
+  /// In de, this message translates to:
+  /// **'Scanne den Nostr-QR-Code (npub) des neuen Organisators.'**
+  String get admScanNewOrg;
+
+  /// No description provided for @admNetworkLearnsKnight.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Netzwerk erfährt erst von deinen neuen Co-Admins,\nwenn du deine Signatur auf Nostr veröffentlichst.'**
+  String get admNetworkLearnsKnight;
+
+  /// No description provided for @admMustRepublish.
+  ///
+  /// In de, this message translates to:
+  /// **'Du musst die Liste danach neu publishen, damit das Netzwerk davon erfährt.'**
+  String get admMustRepublish;
+
+  /// No description provided for @admPublishEmptyRevoke.
+  ///
+  /// In de, this message translates to:
+  /// **'Publiziere eine leere Liste um alle Delegationen\nim Netzwerk zu widerrufen.'**
+  String get admPublishEmptyRevoke;
+
+  /// No description provided for @admRestoreListBack.
+  ///
+  /// In de, this message translates to:
+  /// **'deine Liste nach einer Neuinstallation zurück.'**
+  String get admRestoreListBack;
+
+  /// No description provided for @admSigningSending.
+  ///
+  /// In de, this message translates to:
+  /// **'Signiere und sende an Nostr...'**
+  String get admSigningSending;
+
+  /// No description provided for @admRestoringVouches.
+  ///
+  /// In de, this message translates to:
+  /// **'Stelle meine Bürgschaften von Nostr wieder her...'**
+  String get admRestoringVouches;
+
+  /// No description provided for @admSyncingWot.
+  ///
+  /// In de, this message translates to:
+  /// **'Synchronisiere Web of Trust...'**
+  String get admSyncingWot;
+
+  /// No description provided for @admRevokingAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Widerrufe alle Bürgschaften...'**
+  String get admRevokingAll;
+
+  /// No description provided for @admRevokeTrustBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du {name} das Vertrauen als Admin für {meetup} entziehen?\n\n'**
+  String admRevokeTrustBody(String name, String meetup);
+
+  /// No description provided for @admRestoreExplain.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt '**
+  String get admRestoreExplain;
+
+  /// No description provided for @admVouchedCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast dich für {count} Organisatoren verbürgt.'**
+  String admVouchedCount(Object count);
+
+  /// No description provided for @admCoAdminAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ Co-Admin hinzugefügt! Vergiss nicht zu publishen.'**
+  String get admCoAdminAdded;
+
+  /// No description provided for @apMeetupSession.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP SESSION'**
+  String get apMeetupSession;
+
+  /// No description provided for @apSessionRunning.
+  ///
+  /// In de, this message translates to:
+  /// **'SESSION LÄUFT'**
+  String get apSessionRunning;
+
+  /// No description provided for @apOpenActiveMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'AKTIVES MEETUP ÖFFNEN'**
+  String get apOpenActiveMeetup;
+
+  /// No description provided for @apStartMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP STARTEN'**
+  String get apStartMeetup;
+
+  /// No description provided for @apEndMeetupEarly.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup vorzeitig beenden'**
+  String get apEndMeetupEarly;
+
+  /// No description provided for @apNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'NETZWERK'**
+  String get apNetwork;
+
+  /// No description provided for @apOrganizer.
+  ///
+  /// In de, this message translates to:
+  /// **'ORGANISATOR'**
+  String get apOrganizer;
+
+  /// No description provided for @apWebOfTrust.
+  ///
+  /// In de, this message translates to:
+  /// **'WEB OF TRUST'**
+  String get apWebOfTrust;
+
+  /// No description provided for @apHowItWorks.
+  ///
+  /// In de, this message translates to:
+  /// **'SO FUNKTIONIERT\'S'**
+  String get apHowItWorks;
+
+  /// No description provided for @apManageVouches.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgschaften verwalten, Netzwerk-Status, Meldungen'**
+  String get apManageVouches;
+
+  /// No description provided for @apNewMeetupQ.
+  ///
+  /// In de, this message translates to:
+  /// **'Neues Meetup starten?'**
+  String get apNewMeetupQ;
+
+  /// No description provided for @apSessionEndQ.
+  ///
+  /// In de, this message translates to:
+  /// **'Session beenden?'**
+  String get apSessionEndQ;
+
+  /// No description provided for @apCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get apCancel;
+
+  /// No description provided for @apStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Starten'**
+  String get apStart;
+
+  /// No description provided for @apEnd.
+  ///
+  /// In de, this message translates to:
+  /// **'Beenden'**
+  String get apEnd;
+
+  /// No description provided for @apSeedAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'Seed Admin'**
+  String get apSeedAdmin;
+
+  /// No description provided for @apViaTrustScore.
+  ///
+  /// In de, this message translates to:
+  /// **'Via Trust Score'**
+  String get apViaTrustScore;
+
+  /// No description provided for @apNewMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.'**
+  String get apNewMeetupBody;
+
+  /// No description provided for @apSessionEndBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Damit sperrst du die aktuelle Blockzeit. Du kannst danach eine neue Session starten.'**
+  String get apSessionEndBody;
+
+  /// No description provided for @apGeneratesProof.
+  ///
+  /// In de, this message translates to:
+  /// **'Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.'**
+  String get apGeneratesProof;
+
+  /// No description provided for @humTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'PROOF OF HUMANITY'**
+  String get humTitle;
+
+  /// No description provided for @humVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'MENSCH VERIFIZIERT'**
+  String get humVerified;
+
+  /// No description provided for @humNotVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'NICHT VERIFIZIERT'**
+  String get humNotVerified;
+
+  /// No description provided for @humVerifiedSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist als Mensch verifiziert'**
+  String get humVerifiedSub;
+
+  /// No description provided for @humLightningActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Lightning-Beweis aktiv'**
+  String get humLightningActive;
+
+  /// No description provided for @humCheckNow.
+  ///
+  /// In de, this message translates to:
+  /// **'JETZT PRÜFEN'**
+  String get humCheckNow;
+
+  /// No description provided for @humCheckAgain.
+  ///
+  /// In de, this message translates to:
+  /// **'ERNEUT PRÜFEN'**
+  String get humCheckAgain;
+
+  /// No description provided for @humCheckAgainShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut prüfen'**
+  String get humCheckAgainShort;
+
+  /// No description provided for @humSearchingRelays.
+  ///
+  /// In de, this message translates to:
+  /// **'SUCHE AUF RELAYS...'**
+  String get humSearchingRelays;
+
+  /// No description provided for @humHowTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'WIE FUNKTIONIERT DAS?'**
+  String get humHowTitle;
+
+  /// No description provided for @humIntro1.
+  ///
+  /// In de, this message translates to:
+  /// **'Beweise, dass du ein Mensch bist — indem du nachweist, '**
+  String get humIntro1;
+
+  /// No description provided for @humIntro2.
+  ///
+  /// In de, this message translates to:
+  /// **'dass du eine echte Lightning-Wallet besitzt und '**
+  String get humIntro2;
+
+  /// No description provided for @humIntro3.
+  ///
+  /// In de, this message translates to:
+  /// **'schon einmal jemanden auf Nostr gezappt hast.'**
+  String get humIntro3;
+
+  /// No description provided for @humExplain1.
+  ///
+  /// In de, this message translates to:
+  /// **'Bots haben keine Lightning-Wallets. Eine einzige echte '**
+  String get humExplain1;
+
+  /// No description provided for @humExplain2.
+  ///
+  /// In de, this message translates to:
+  /// **'Zahlung beweist, dass du ein Mensch mit einer echten '**
+  String get humExplain2;
+
+  /// No description provided for @humExplain3.
+  ///
+  /// In de, this message translates to:
+  /// **'Wallet bist — ohne persönliche Daten preiszugeben.'**
+  String get humExplain3;
+
+  /// No description provided for @humStep1.
+  ///
+  /// In de, this message translates to:
+  /// **'Du zappst irgendjemanden auf Nostr'**
+  String get humStep1;
+
+  /// No description provided for @humStep2.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Zap erzeugt ein Receipt auf Relays'**
+  String get humStep2;
+
+  /// No description provided for @humStep3.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App findet dein Receipt'**
+  String get humStep3;
+
+  /// No description provided for @humStepInstruction.
+  ///
+  /// In de, this message translates to:
+  /// **'Egal wen, egal wieviel Sats. Nutze dafür einen Nostr-Client wie Damus, Amethyst oder Primal.'**
+  String get humStepInstruction;
+
+  /// No description provided for @humCheckInstruction.
+  ///
+  /// In de, this message translates to:
+  /// **'Drücke den Prüfen-Button und die App sucht auf Nostr-Relays nach deinem Zap.'**
+  String get humCheckInstruction;
+
+  /// No description provided for @humZapReturn.
+  ///
+  /// In de, this message translates to:
+  /// **'Zappe irgendjemanden und komm zurück'**
+  String get humZapReturn;
+
+  /// No description provided for @humCryptoProof.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist ein kryptographischer Beweis, dass du eine echte Lightning-Zahlung geleistet hast.'**
+  String get humCryptoProof;
+
+  /// No description provided for @humProofInEvent1.
+  ///
+  /// In de, this message translates to:
+  /// **'auf dem Nostr-Netzwerk geleistet. Dieser Beweis ist in deinem '**
+  String get humProofInEvent1;
+
+  /// No description provided for @humProofPrivacy.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Beweis wird in dein Reputation-Event aufgenommen. Kein Betrag oder Empfänger wird gespeichert.'**
+  String get humProofPrivacy;
+
+  /// No description provided for @humReputationSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation-Event gespeichert.'**
+  String get humReputationSaved;
+
+  /// No description provided for @humPaidOn.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast am {date} eine Lightning-Zahlung '**
+  String humPaidOn(String date);
+
+  /// No description provided for @humLastCheck.
+  ///
+  /// In de, this message translates to:
+  /// **'Letzte Prüfung: {time}'**
+  String humLastCheck(String time);
+
+  /// No description provided for @ppTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'PLATTFORM-VERKNÜPFUNG'**
+  String get ppTitle;
+
+  /// No description provided for @ppPlatform.
+  ///
+  /// In de, this message translates to:
+  /// **'PLATTFORM'**
+  String get ppPlatform;
+
+  /// No description provided for @ppUsername.
+  ///
+  /// In de, this message translates to:
+  /// **'BENUTZERNAME'**
+  String get ppUsername;
+
+  /// No description provided for @ppActiveLinks.
+  ///
+  /// In de, this message translates to:
+  /// **'AKTIVE VERKNÜPFUNGEN'**
+  String get ppActiveLinks;
+
+  /// No description provided for @ppLinkPlatform.
+  ///
+  /// In de, this message translates to:
+  /// **'PLATTFORM VERKNÜPFEN'**
+  String get ppLinkPlatform;
+
+  /// No description provided for @ppCreateLink.
+  ///
+  /// In de, this message translates to:
+  /// **'VERKNÜPFUNG ERSTELLEN'**
+  String get ppCreateLink;
+
+  /// No description provided for @ppAnotherPlatform.
+  ///
+  /// In de, this message translates to:
+  /// **'WEITERE PLATTFORM'**
+  String get ppAnotherPlatform;
+
+  /// No description provided for @ppShareOnPlatform.
+  ///
+  /// In de, this message translates to:
+  /// **'AUF PLATTFORM TEILEN'**
+  String get ppShareOnPlatform;
+
+  /// No description provided for @ppUnlinkQ.
+  ///
+  /// In de, this message translates to:
+  /// **'VERKNÜPFUNG AUFHEBEN?'**
+  String get ppUnlinkQ;
+
+  /// No description provided for @ppRevoke.
+  ///
+  /// In de, this message translates to:
+  /// **'WIDERRUFEN'**
+  String get ppRevoke;
+
+  /// No description provided for @ppCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'ABBRECHEN'**
+  String get ppCancel;
+
+  /// No description provided for @ppYourUsername.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Benutzername'**
+  String get ppYourUsername;
+
+  /// No description provided for @ppPlatformName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name der Plattform'**
+  String get ppPlatformName;
+
+  /// No description provided for @ppIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpfe deinen Account mit einer Plattform. Der Beweis wird automatisch in deinen Reputation-QR eingebettet.'**
+  String get ppIntro;
+
+  /// No description provided for @ppLinkSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpfung gespeichert! Wird automatisch in deinen Reputation-QR eingebettet.'**
+  String get ppLinkSaved;
+
+  /// No description provided for @ppMustUpdate.
+  ///
+  /// In de, this message translates to:
+  /// **'Du musst dein Reputation-Event danach aktualisieren.'**
+  String get ppMustUpdate;
+
+  /// No description provided for @ppUnlinkBody1.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Plattform-Verknüpfung für \"'**
+  String get ppUnlinkBody1;
+
+  /// No description provided for @ppUnlinkBody2.
+  ///
+  /// In de, this message translates to:
+  /// **'wird gelöscht.\n\n'**
+  String get ppUnlinkBody2;
+
+  /// No description provided for @ppUnlinkBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Plattform-Verknüpfung für \"{username}\" auf {platform} wird gelöscht.\n\nDu musst dein Reputation-Event danach aktualisieren.'**
+  String ppUnlinkBody(String username, String platform);
+
+  /// No description provided for @ppCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstellt: {date}'**
+  String ppCreated(String date);
+
+  /// No description provided for @ppRevokeTooltip.
+  ///
+  /// In de, this message translates to:
+  /// **'Widerrufen'**
+  String get ppRevokeTooltip;
+
+  /// No description provided for @rqTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP QR-CODE'**
+  String get rqTitle;
+
+  /// No description provided for @rqActive.
+  ///
+  /// In de, this message translates to:
+  /// **'AKTIV'**
+  String get rqActive;
+
+  /// No description provided for @rqCodeRenewing.
+  ///
+  /// In de, this message translates to:
+  /// **'Code erneuert sich...'**
+  String get rqCodeRenewing;
+
+  /// No description provided for @rqNextCodeIn.
+  ///
+  /// In de, this message translates to:
+  /// **'Nächster Code in'**
+  String get rqNextCodeIn;
+
+  /// No description provided for @rqEndSession.
+  ///
+  /// In de, this message translates to:
+  /// **'Session beenden'**
+  String get rqEndSession;
+
+  /// No description provided for @rqEndSessionQ.
+  ///
+  /// In de, this message translates to:
+  /// **'Session beenden?'**
+  String get rqEndSessionQ;
+
+  /// No description provided for @rqEnd.
+  ///
+  /// In de, this message translates to:
+  /// **'BEENDEN'**
+  String get rqEnd;
+
+  /// No description provided for @rqEndSessionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine beendete Session sperrt diese Blockzeit. Du kannst danach eine neue Session starten.'**
+  String get rqEndSessionBody;
+
+  /// No description provided for @rqNoActiveSession.
+  ///
+  /// In de, this message translates to:
+  /// **'KEINE AKTIVE SESSION'**
+  String get rqNoActiveSession;
+
+  /// No description provided for @rqNoSessionBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Es läuft aktuell keine Meetup-Session.\nBitte starte das Meetup im Admin Panel neu.'**
+  String get rqNoSessionBody;
+
+  /// No description provided for @rqBackToAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'ZURÜCK ZUM ADMIN PANEL'**
+  String get rqBackToAdmin;
+
+  /// No description provided for @rsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'NOSTR-RELAYS'**
+  String get rsTitle;
+
+  /// No description provided for @rsDefaultRelays.
+  ///
+  /// In de, this message translates to:
+  /// **'DEFAULT-RELAYS'**
+  String get rsDefaultRelays;
+
+  /// No description provided for @rsCustomRelays.
+  ///
+  /// In de, this message translates to:
+  /// **'EIGENE RELAYS'**
+  String get rsCustomRelays;
+
+  /// No description provided for @rsAddRelay.
+  ///
+  /// In de, this message translates to:
+  /// **'RELAY HINZUFÜGEN'**
+  String get rsAddRelay;
+
+  /// No description provided for @rsAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'HINZUFÜGEN'**
+  String get rsAdd;
+
+  /// No description provided for @rsNoRelaysActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Relays aktiv!'**
+  String get rsNoRelaysActive;
+
+  /// No description provided for @rsNoCustomRelays.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine eigenen Relays konfiguriert.'**
+  String get rsNoCustomRelays;
+
+  /// No description provided for @rsAllRelaysInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App nutzt alle aktiven Relays gleichzeitig für maximale Erreichbarkeit.'**
+  String get rsAllRelaysInfo;
+
+  /// No description provided for @rsRelaysIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Relays verteilen deine Reputation im Nostr-Netzwerk. '**
+  String get rsRelaysIntro;
+
+  /// No description provided for @rsRelayPlaceholder.
+  ///
+  /// In de, this message translates to:
+  /// **'wss://mein-relay.de'**
+  String get rsRelayPlaceholder;
+
+  /// No description provided for @rdScanAdminTag.
+  ///
+  /// In de, this message translates to:
+  /// **'ADMIN TAG SCANNEN'**
+  String get rdScanAdminTag;
+
+  /// No description provided for @rdAnon.
+  ///
+  /// In de, this message translates to:
+  /// **'ANON'**
+  String get rdAnon;
+
+  /// No description provided for @rdCollectBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'BADGE ABHOLEN'**
+  String get rdCollectBadge;
+
+  /// No description provided for @rdYourReputation.
+  ///
+  /// In de, this message translates to:
+  /// **'DEINE REPUTATION'**
+  String get rdYourReputation;
+
+  /// No description provided for @rdEditIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität bearbeiten'**
+  String get rdEditIdentity;
+
+  /// No description provided for @rdLinkingIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität verknüpfen...'**
+  String get rdLinkingIdentity;
+
+  /// No description provided for @rdNostrVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'NOSTR VERIFIED'**
+  String get rdNostrVerified;
+
+  /// No description provided for @rdNoBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Badges gesammelt.\nGeh zu einem Meetup!'**
+  String get rdNoBadges;
+
+  /// No description provided for @rdSelfSovereign.
+  ///
+  /// In de, this message translates to:
+  /// **'Self-Sovereign: Diese App läuft ohne Server. Deine Badges gehören nur dir und sind auf diesem Gerät gespeichert.'**
+  String get rdSelfSovereign;
+
+  /// No description provided for @rdVerifiedByAdmin.
+  ///
+  /// In de, this message translates to:
+  /// **'VERIFIZIERT DURCH ADMIN'**
+  String get rdVerifiedByAdmin;
+
+  /// No description provided for @rqRemainingTime.
+  ///
+  /// In de, this message translates to:
+  /// **'Restzeit: {time}\n\n'**
+  String rqRemainingTime(String time);
+
+  /// No description provided for @rqSessionRemaining.
+  ///
+  /// In de, this message translates to:
+  /// **'Session: {time}'**
+  String rqSessionRemaining(String time);
+
+  /// No description provided for @rvTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'REPUTATION PRÜFEN'**
+  String get rvTitle;
+
+  /// No description provided for @rvChecking.
+  ///
+  /// In de, this message translates to:
+  /// **'PRÜFE...'**
+  String get rvChecking;
+
+  /// No description provided for @rvFullyVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'VOLLSTÄNDIG VERIFIZIERT'**
+  String get rvFullyVerified;
+
+  /// No description provided for @rvPartiallyVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'TEILWEISE VERIFIZIERT'**
+  String get rvPartiallyVerified;
+
+  /// No description provided for @rvSignatureOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'NUR SIGNATUR GEPRÜFT'**
+  String get rvSignatureOnly;
+
+  /// No description provided for @rvInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'UNGÜLTIG'**
+  String get rvInvalid;
+
+  /// No description provided for @rvConfirmedInEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Event bestätigt'**
+  String get rvConfirmedInEvent;
+
+  /// No description provided for @rvPlatformProof.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattform-Proof'**
+  String get rvPlatformProof;
+
+  /// No description provided for @rvIntro1.
+  ///
+  /// In de, this message translates to:
+  /// **'Füge den Verify-String oder npub einer Person ein, '**
+  String get rvIntro1;
+
+  /// No description provided for @rvIntro2.
+  ///
+  /// In de, this message translates to:
+  /// **'um ihre Reputation über alle Beweis-Layer zu prüfen.'**
+  String get rvIntro2;
+
+  /// No description provided for @rvCheckingSignature.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe Signatur...'**
+  String get rvCheckingSignature;
+
+  /// No description provided for @rvCheckingNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'Analysiere Nostr-Netzwerk...'**
+  String get rvCheckingNostr;
+
+  /// No description provided for @rvCheckingLightning.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe Lightning-Aktivität...'**
+  String get rvCheckingLightning;
+
+  /// No description provided for @rvCheckingNip05.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe NIP-05...'**
+  String get rvCheckingNip05;
+
+  /// No description provided for @msSelectMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP AUSWÄHLEN'**
+  String get msSelectMeetup;
+
+  /// No description provided for @msSearchMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup suchen...'**
+  String get msSearchMeetup;
+
+  /// No description provided for @mlTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUPS'**
+  String get mlTitle;
+
+  /// No description provided for @mlRetry.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut versuchen'**
+  String get mlRetry;
+
+  /// No description provided for @mlLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Laden'**
+  String get mlLoadError;
+
+  /// No description provided for @mlNoMeetupsFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Meetups gefunden.'**
+  String get mlNoMeetupsFound;
+
+  /// No description provided for @mlNoMeetupFor.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Meetup für \"{query}\"'**
+  String mlNoMeetupFor(String query);
+
+  /// No description provided for @cmRequestSent.
+  ///
+  /// In de, this message translates to:
+  /// **'ANFRAGE GESENDET 🚀'**
+  String get cmRequestSent;
+
+  /// No description provided for @cmDateTime.
+  ///
+  /// In de, this message translates to:
+  /// **'DATUM & UHRZEIT'**
+  String get cmDateTime;
+
+  /// No description provided for @cmFoundBase.
+  ///
+  /// In de, this message translates to:
+  /// **'GRÜNDE EINE BASIS.'**
+  String get cmFoundBase;
+
+  /// No description provided for @cmLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'LOCATION / ORT'**
+  String get cmLocation;
+
+  /// No description provided for @cmCityName.
+  ///
+  /// In de, this message translates to:
+  /// **'NAME DER STADT'**
+  String get cmCityName;
+
+  /// No description provided for @cmTelegramGroup.
+  ///
+  /// In de, this message translates to:
+  /// **'TELEGRAM GRUPPE (OPTIONAL)'**
+  String get cmTelegramGroup;
+
+  /// No description provided for @cmNewMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'NEUES MEETUP'**
+  String get cmNewMeetup;
+
+  /// No description provided for @cmDateExample.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. 21. Mai, 19:00'**
+  String get cmDateExample;
+
+  /// No description provided for @cmCityExample.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Frankfurt'**
+  String get cmCityExample;
+
+  /// No description provided for @cmLocationExample.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Room 77'**
+  String get cmLocationExample;
+
+  /// No description provided for @evUpcomingEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'KOMMENDE EVENTS'**
+  String get evUpcomingEvents;
+
+  /// No description provided for @evDatesEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'TERMINE & EVENTS'**
+  String get evDatesEvents;
+
+  /// No description provided for @evNoMeetupsFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Meetups gefunden'**
+  String get evNoMeetupsFound;
+
+  /// No description provided for @evSearchCityCountry.
+  ///
+  /// In de, this message translates to:
+  /// **'Stadt oder Land suchen...'**
+  String get evSearchCityCountry;
+
+  /// No description provided for @evIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Die meisten Einundzwanzig Meetups finden regelmäßig statt. Klick auf ein Meetup für mehr Infos und Termine.'**
+  String get evIntro;
+
+  /// No description provided for @rvLabelPlatform.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattform'**
+  String get rvLabelPlatform;
+
+  /// No description provided for @rvLabelUsername.
+  ///
+  /// In de, this message translates to:
+  /// **'Username'**
+  String get rvLabelUsername;
+
+  /// No description provided for @countryDE.
+  ///
+  /// In de, this message translates to:
+  /// **'Deutschland'**
+  String get countryDE;
+
+  /// No description provided for @countryAT.
+  ///
+  /// In de, this message translates to:
+  /// **'Österreich'**
+  String get countryAT;
+
+  /// No description provided for @countryCH.
+  ///
+  /// In de, this message translates to:
+  /// **'Schweiz'**
+  String get countryCH;
+
+  /// No description provided for @countryES.
+  ///
+  /// In de, this message translates to:
+  /// **'Spanien'**
+  String get countryES;
+
+  /// No description provided for @countryNL.
+  ///
+  /// In de, this message translates to:
+  /// **'Niederlande'**
+  String get countryNL;
+
+  /// No description provided for @countryIT.
+  ///
+  /// In de, this message translates to:
+  /// **'Italien'**
+  String get countryIT;
+
+  /// No description provided for @countryFR.
+  ///
+  /// In de, this message translates to:
+  /// **'Frankreich'**
+  String get countryFR;
 }
 
 class _AppLocalizationsDelegate

@@ -310,5 +310,784 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "backupEncryptTitle": "Encrypt backup",
+  "backupDecryptTitle": "Decrypt backup",
+  "backupExportDesc": "Set a password to protect your private key (nsec) in the backup.\n\n⚠️ If you forget this password, the backup is IRRECOVERABLY lost!",
+  "backupImportDesc": "This backup is encrypted. Please enter the password.",
+  "backupPassword": "Password",
+  "backupPasswordConfirm": "Confirm password",
+  "backupPasswordEmpty": "Password cannot be empty",
+  "backupPasswordMin": "At least 8 characters",
+  "backupPasswordMismatch": "Passwords do not match",
+  "backupEncryptSave": "Encrypt & Save",
+  "backupDecryptLoad": "Decrypt & Load",
+  "backupShareTitle": "Einundzwanzig App Backup (Encrypted)",
+  "backupShareText": "Your encrypted backup. Keep your password ready to restore it.",
+  "backupError": "Backup error: {msg}",
+  "@backupError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "backupCorrupt": "Backup file is corrupted (format error).",
+  "backupWrongPassword": "Wrong password or file corrupted!",
+  "backupNotValid": "File is not a valid backup or wrong format.",
+  "backupNotEinundzwanzig": "File is not a valid Einundzwanzig backup.",
+  "backupLoaded": "✅ Backup loaded! {items} restored.",
+  "@backupLoaded": {
+    "placeholders": {
+      "items": {
+        "type": "Object"
+      }
+    }
+  },
+  "backupImportFailed": "Import failed: {msg}",
+  "@backupImportFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "qrScanTitle": "CHECK REPUTATION",
+  "qrResultTitle": "RESULT",
+  "qrScanHint": "Scan an Einundzwanzig\nreputation QR code",
+  "qrLoadFromGallery": "LOAD QR FROM GALLERY",
+  "qrBack": "BACK",
+  "qrNoCodeInImage": "No QR code found in image",
+  "qrNotEinundzwanzig": "QR code found, but not Einundzwanzig format",
+  "qrVerified": "VERIFIED",
+  "qrVerifiedV1": "VERIFIED (v1)",
+  "qrVerifiedV2": "VERIFIED (v2)",
+  "qrSigInvalid": "SIGNATURE INVALID",
+  "qrFormatUnknown": "FORMAT UNKNOWN",
+  "qrReadError": "READ ERROR",
+  "qrV2Subtitle": "Legacy signature valid — no badge proof",
+  "qrV1Subtitle": "Older format — no identity binding",
+  "qrCantRead": "QR code could not be read.",
+  "qrProcessError": "Processing error: {msg}",
+  "@qrProcessError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "qrSectionIdentity": "IDENTITY",
+  "qrNoIdentity": "NO IDENTITY",
+  "qrNoVerifiableIdentity": "No verifiable identity.",
+  "qrSectionLightning": "LIGHTNING",
+  "qrSectionSocial": "SOCIAL NETWORK",
+  "qrSectionPlatforms": "LINKED PLATFORMS",
+  "qrSectionMeetups": "VISITED MEETUPS",
+  "qrHumanVerified": "Human verified",
+  "qrLightningActive": "Lightning proof active",
+  "qrNoLightning": "No Lightning proof found",
+  "qrNoZap": "No zap activity",
+  "qrNip05Invalid": "NIP-05 invalid",
+  "qrYouFollow": "You follow",
+  "qrFollowsYou": "Follows you",
+  "qrMutualFollow": "Mutual follow",
+  "qrNoDirectFollow": "No direct follow",
+  "qrDirectConnection": "Direct connection",
+  "qrBidirectional": "Direct bidirectional connection",
+  "qrOneWay": "One-way connection",
+  "qrViaContacts": "Via shared contacts",
+  "qrStrongOverlap": "Strong network overlap",
+  "qrPartiallyConnected": "Partially connected",
+  "qrNoOverlap": "No overlap",
+  "qrEndorsement": "Endorsement from known admins",
+  "qrSigVerified": "Signature verified",
+  "qrAnalyzingNetwork": "Analyzing network...",
+  "qrCheckingLightning": "Checking Lightning...",
+  "qrCheckingNip05": "Checking NIP-05...",
+  "qrStatBadges": "Badges",
+  "qrStatMeetups": "Meetups",
+  "qrStatSigners": "Signers",
+  "qrStatBound": "Bound",
+  "qrStatDays": "Days",
+  "qrLabelNickname": "Nickname",
+  "qrLabelTwitter": "Twitter/X",
+  "qrPlatformOther": "Other",
+  "qrLinked": "Linked",
+  "qrSigVerifiedShort": "Signature verified",
+  "qrLinkedShort": "Linked",
+  "nfcDisabled": "NFC is disabled",
+  "nfcDisabledHint": "NFC is disabled. Please turn it on.",
+  "nfcUnavailable": "NFC unavailable",
+  "nfcOpenSettings": "OPEN SETTINGS",
+  "nfcEnableHint": "Please enable NFC in your device settings ",
+  "nfcSettingsAndroid": "Android: Settings → Connections → NFC",
+  "nfcSettingsIos": "iOS: Settings → NFC",
+  "verifyScanBadge": "SCAN BADGE",
+  "verifyScanNfc": "SCAN NFC TAG",
+  "verifyScanQr": "SCAN QR",
+  "verifyScanQrCaps": "SCAN QR CODE",
+  "verifyReadyToScan": "Ready to scan",
+  "verifyWaitingNfc": "Waiting for NFC tag...",
+  "verifyCheckingNfc": "Checking NFC...",
+  "verifyScanInstruction": "Scan the NFC tag or QR code\nof the meetup organizer.",
+  "verifyScanQrInstruction": "Scan the QR code\nof the meetup organizer",
+  "verifyNoNfcDevice": "This device has no NFC. Use the QR scanner.",
+  "verifyNoNfcLong": "This device does not support NFC.\n\n",
+  "verifyUseQrInstead": "Use the QR code scanner instead ",
+  "verifyToGetBadge": "to get your badge.",
+  "verifyAskScan": "Please let a participant scan your tag.",
+  "verifyCantSelfBadge": "You cannot give yourself a badge.\n",
+  "verifyBadgeFound": "BADGE FOUND",
+  "verifyAlreadyCollected": "ALREADY COLLECTED",
+  "verifyAddToWallet": "ADD TO WALLET",
+  "verifyVerifiedAdmin": "Verified admin",
+  "verifyUnknownMeetup": "Unknown meetup",
+  "verifyNoExpiry": "No expiry",
+  "writerReadyToWrite": "Ready to write",
+  "writerNoNfcDevice": "This device has no NFC. Use rolling QR codes.",
+  "writerUseRollingQr": "You can use rolling QR codes instead ",
+  "writerForYourMeetup": "for your meetup.",
+  "writerSelectHomeFirst": "Please select a home meetup in your profile first",
+  "writerYourHomeMeetup": "YOUR HOME MEETUP",
+  "writerCreateTag": "CREATE TAG",
+  "writerCreateMeetupTag": "CREATE MEETUP TAG",
+  "writerMeetupTag": "MEETUP TAG",
+  "writerSuccess": "SUCCESS!",
+  "writerValid6h": "Valid for 6 hours",
+  "writerHoldTag": "Hold tag to the device...",
+  "writerHoldTagInstruction": "Hold an NFC tag to the device.\nParticipants scan this tag to collect a badge.",
+  "writerFormatting": "Formatting empty tag...",
+  "writerFormatFailed": "Formatting failed",
+  "writerLoadingSession": "Loading session data...",
+  "writerJumpToQr": "Jumping to QR code...",
+  "writerNoNdef": "NDEF format not possible",
+  "writerTagReadOnly": "Tag is read-only",
+  "writerCanOverwrite": "Tag can be overwritten afterwards",
+  "writerTagLost": "Tag lost during writing",
+  "writerTagRemovedEarly": "Tag removed too early — hold it steady for 2–3 seconds",
+  "writerUseNtag215": "Use an NTAG215 (504B) or larger.",
+  "writerToWriteTag": "to write the tag.\n\n",
+  "verifyMsgLocation": "Location: {name}",
+  "@verifyMsgLocation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyMsgBlock": "Block: {height}",
+  "@verifyMsgBlock": {
+    "placeholders": {
+      "height": {
+        "type": "Object"
+      }
+    }
+  },
+  "verifyMsgSignedBy": "Signed by: {signer}",
+  "@verifyMsgSignedBy": {
+    "placeholders": {
+      "signer": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyMsgProof": "Proof: Schnorr (BIP-340)",
+  "verifyMsgTagExpiry": "Tag expiry: {expiry}",
+  "@verifyMsgTagExpiry": {
+    "placeholders": {
+      "expiry": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyAlreadyToday": "Already collected\n\nYou already have a badge today from:\n{name}",
+  "@verifyAlreadyToday": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "wotTitle": "WEB OF TRUST",
+  "wotActiveOrganizers": "ACTIVE ORGANIZERS",
+  "wotActiveOrganizer": "ACTIVE ORGANIZER",
+  "wotActiveWarnings": "ACTIVE WARNINGS",
+  "wotActiveWarning": "Active warning",
+  "wotMyStatus": "YOUR STATUS",
+  "wotMyVouches": "YOUR VOUCHES",
+  "wotWhoYouVouchFor": "WHO YOU VOUCH FOR",
+  "wotWhoVouchesForYou": "WHO VOUCHES FOR YOU",
+  "wotWeightedReporting": "WEIGHTED REPORTING SYSTEM",
+  "wotRestore": "RESTORE",
+  "wotRevokeAll": "REVOKE ALL",
+  "wotPublishNostr": "PUBLISH TO NOSTR",
+  "wotVouch": "VOUCH",
+  "wotVouchVerb": "VOUCH",
+  "wotReportNpub": "REPORT NPUB",
+  "wotScanNpub": "SCAN NPUB",
+  "wotPublishRevocation": "PUBLISH REVOCATION",
+  "wotSigningPublishing": "SIGNING & PUBLISHING...",
+  "wotSyncNetwork": "Sync network",
+  "wotBootstrapPhase": "Bootstrap phase",
+  "wotDecentralized": "Decentralized (Web of Trust)",
+  "wotMinVouches": "Min. vouchers",
+  "wotDistrustThreshold": "Distrust threshold",
+  "wotNotEnoughVouchers": "NOT ENOUGH VOUCHERS YET",
+  "wotVouchers": "Vouchers",
+  "wotNoVouchersYet": "No vouchers yet",
+  "wotNobodyYet": "Nobody yet",
+  "wotNotSuspendedWatch": "Not suspended yet, but you should watch out.",
+  "wotNoReports": "No reports",
+  "wotNoActiveAdmins": "No active admins",
+  "wotNoCleanNetwork": "There are currently no open warnings\nin the network. All clean.",
+  "wotNoOrganizersEnough": "The network has no organizers with enough vouches yet.",
+  "wotNoVouchesFound": "No published vouches found on the relays.",
+  "wotTapPlusFirst": "Tap + to give your first vouch.",
+  "wotAskOthersVouch": "Ask other organizers to vouch for you.\n",
+  "wotNoDataLoaded": "Network data could not be loaded.\nPull down to refresh.",
+  "wotNoRelay": "No relay reachable — try again later.",
+  "wotRevokeAllTitle": "REVOKE ALL VOUCHES?",
+  "wotRevokeVouchTitle": "WITHDRAW VOUCH?",
+  "wotWithdrawVouch": "Withdraw vouch",
+  "wotVouchWithdrawn": "Vouch withdrawn. Don't forget to publish.",
+  "wotVouchGiven": "Vouch given! Don't forget to publish.",
+  "wotAllRevoked": "All vouches have been revoked in the network.",
+  "wotReasonRequired": "Reason (required)",
+  "wotNpubRequired": "npub (required)",
+  "wotNameAlias": "Name / alias (optional)",
+  "wotMeetupExample": "Meetup (e.g. Munich)",
+  "wotReasonExample": "e.g. Forges badges, no real meetup...",
+  "wotNpubReasonRequired": "npub and reason are required.",
+  "wotScanInstruction": "Scan the Nostr QR code (npub)\nof the organizer.",
+  "wotVouchExplain": "You vouch for this organizer with your own reputation.",
+  "wotEachVouchPersonal": "Each vouch is your personal vote of trust — ",
+  "wotAfterPublishAll": "after publishing, the whole network sees who you stand for.",
+  "wotWhoYouVouchExplain": "Here you see who YOU vouch for. ",
+  "wotPublishUpdated": "Then publish your updated list ",
+  "wotSoNetworkKnows": "so the network finds out.",
+  "wotSingleReportNoWeight": "A single report has no weight — ",
+  "wotOnlyMultipleIndep": "only when several independent organizers ",
+  "wotWarnSuspend": "warn, someone gets suspended. ",
+  "wotNobodyAlonePower": "Nobody alone has power over others.",
+  "wotYourReportAlone": "Your report alone has no weight. Only when ",
+  "wotOrgsWarnSuspended": "organizers warn, the npub gets suspended.",
+  "wotRevokeAllBody": "This publishes an empty list on Nostr, revoking ALL ",
+  "wotFromOtherOrgs": "from other organizers.",
+  "wotRestoreExplain": "Vouches are signed on Nostr. \"Restore\" fetches ",
+  "wotRestoreListBack": "your list back after a reinstall or backup change.",
+  "wotVouchesSignedOnNostr": "your vouches in the network — even ones no longer ",
+  "wotVisibleLocally": "visible locally.\n\nUse this if, after a reinstall, you ",
+  "wotCantResolveOld": "can no longer resolve your old vouches.",
+  "wotRemovedFromList": "will be removed from your vouching list.\n\n",
+  "wotSuspendedByNetwork": "suspended by the network. Check your vouches.",
+  "wotErrorLoading": "Error loading: {msg}",
+  "@wotErrorLoading": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotSyncFailed": "Sync failed: {msg}",
+  "@wotSyncFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotRevocationFailed": "Revocation failed: {msg}",
+  "@wotRevocationFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotRestoreFailed": "Restore failed: {msg}",
+  "@wotRestoreFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotVouchesRestored": "{count} vouches restored from Nostr.",
+  "@wotVouchesRestored": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotNetworkHealth": "NETWORK {label}",
+  "@wotNetworkHealth": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "wotVouchProgress": "{count} / {total} vouchers",
+  "@wotVouchProgress": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotReportsCount": "{count} reports",
+  "@wotReportsCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotNeedMoreVouches": "You still need {count} more vouches ",
+  "@wotNeedMoreVouches": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotVouchesRequired": "{count} / {total} required",
+  "@wotVouchesRequired": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotSuspensionProgress": "{count} / {total} suspension",
+  "@wotSuspensionProgress": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotLiability": "LIABILITY: {count} suspended",
+  "@wotLiability": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotWarningCount": "WARNING: {count} reported",
+  "@wotWarningCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotYourNpub": "Your npub: {npub}",
+  "@wotYourNpub": {
+    "placeholders": {
+      "npub": {
+        "type": "String"
+      }
+    }
+  },
+  "wotLiabilityBody": "You vouch for {names} — these npubs are suspended by the network. Check your vouches.",
+  "@wotLiabilityBody": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "wotWarningBody": "There are reports for {names}. ",
+  "@wotWarningBody": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "wotVotes": "Votes",
+  "wotSuspended": "Suspended",
+  "wotReportNoWeightThreshold": "Your report alone has no weight. Only when {count} independent organizers warn does the npub get suspended.",
+  "@wotReportNoWeightThreshold": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotPublishedLive": "Your Web of Trust is live ({count} relays)!",
+  "@wotPublishedLive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotReportPublished": "Report published to {count} relays.",
+  "@wotReportPublished": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotErrorShort": "Error: {msg}",
+  "@wotErrorShort": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotOffline": "Offline",
+  "wotActive": "Active",
+  "wotPhase": "Phase",
+  "wotPhaseDecentralized": "Decentralized",
+  "wotPhaseBootstrap": "Bootstrap",
+  "wotReportsLabel": "Reports",
+  "wotVouchersLabel": "VOUCHERS:",
+  "writerTagTooSmall": "Tag too small! Data: {data}B, tag: {max}B.\n",
+  "@writerTagTooSmall": {
+    "placeholders": {
+      "data": {
+        "type": "Object"
+      },
+      "max": {
+        "type": "Object"
+      }
+    }
+  },
+  "writerTagWritten": "✅ MEETUP TAG written!\n\n",
+  "writerCompactSize": "📦 {size}B (compact)\n",
+  "@writerCompactSize": {
+    "placeholders": {
+      "size": {
+        "type": "Object"
+      }
+    }
+  },
+  "writerValidHours": "⏱️ Valid for {hours}h\n\n",
+  "@writerValidHours": {
+    "placeholders": {
+      "hours": {
+        "type": "Object"
+      }
+    }
+  },
+  "verifyErrNoNdef": "✗ No NDEF tag",
+  "verifyErrTagEmpty": "✗ Tag is empty",
+  "verifyErrPayloadEmpty": "✗ Payload empty",
+  "verifyErrInvalidFormat": "✗ Invalid format",
+  "verifyErrInvalidTag": "✗ Invalid tag: {msg}",
+  "@verifyErrInvalidTag": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrReadError": "✗ Read error: {msg}",
+  "@verifyErrReadError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrNfcError": "✗ NFC error: {msg}",
+  "@verifyErrNfcError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrQrExpired": "✗ QR code expired!\n{msg}\n\nPlease scan directly on the organizer's screen.",
+  "@verifyErrQrExpired": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrPrefix": "✗ {msg}",
+  "@verifyErrPrefix": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "writerStartError": "❌ Start error: {msg}",
+  "@writerStartError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "writerFitsNtag215": "~{size}B — fits on NTAG215 (492B)",
+  "@writerFitsNtag215": {
+    "placeholders": {
+      "size": {
+        "type": "Object"
+      }
+    }
+  },
+  "writerNoHomeMeetup": "⚠️ No home meetup set",
+  "writerHomeMeetupNotFound": "⚠️ Home meetup not found",
+  "writerNoActiveSession": "❌ No active meetup session found. Please restart the meetup.",
+  "admMyWebOfTrust": "MY WEB OF TRUST",
+  "admMyDelegations": "YOUR DELEGATIONS",
+  "admCoAdminKnight": "KNIGHT CO-ADMIN",
+  "admKnighthood": "KNIGHTHOOD",
+  "admRemove": "REMOVE",
+  "admCancel": "CANCEL",
+  "admRevokeTrust": "WITHDRAW TRUST?",
+  "admRevokeTrustShort": "Withdraw trust",
+  "admSyncWot": "Sync Web of Trust",
+  "admNobodyDelegated": "You haven't delegated anyone yet.",
+  "admTapKnighthood": "Tap 'KNIGHTHOOD' below\nto extend trust to a new organizer\nin your meetup.",
+  "admVouchNewExplain": "You vouch for this new organizer with your own reputation.",
+  "admScanNewOrg": "Scan the new organizer's Nostr QR code (npub).",
+  "admNetworkLearnsKnight": "The network only learns of your new co-admins\nonce you publish your signature on Nostr.",
+  "admMustRepublish": "You must republish the list afterwards so the network finds out.",
+  "admPublishEmptyRevoke": "Publish an empty list to revoke all delegations\nin the network.",
+  "admRestoreListBack": "your list after a reinstall.",
+  "admSigningSending": "Signing and sending to Nostr...",
+  "admRestoringVouches": "Restoring my vouches from Nostr...",
+  "admSyncingWot": "Syncing Web of Trust...",
+  "admRevokingAll": "Revoking all vouches...",
+  "admRevokeTrustBody": "Do you want to withdraw trust as admin for {meetup} from {name}?\n\n",
+  "@admRevokeTrustBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "meetup": {
+        "type": "String"
+      }
+    }
+  },
+  "admRestoreExplain": "Vouches are signed on Nostr. \"Restore\" fetches ",
+  "admVouchedCount": "You have vouched for {count} organizers.",
+  "@admVouchedCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admCoAdminAdded": "✅ Co-admin added! Don't forget to publish.",
+  "apMeetupSession": "MEETUP SESSION",
+  "apSessionRunning": "SESSION RUNNING",
+  "apOpenActiveMeetup": "OPEN ACTIVE MEETUP",
+  "apStartMeetup": "START MEETUP",
+  "apEndMeetupEarly": "End meetup early",
+  "apNetwork": "NETWORK",
+  "apOrganizer": "ORGANIZER",
+  "apWebOfTrust": "WEB OF TRUST",
+  "apHowItWorks": "HOW IT WORKS",
+  "apManageVouches": "Manage vouches, network status, reports",
+  "apNewMeetupQ": "Start new meetup?",
+  "apSessionEndQ": "End session?",
+  "apCancel": "Cancel",
+  "apStart": "Start",
+  "apEnd": "End",
+  "apSeedAdmin": "Seed Admin",
+  "apViaTrustScore": "Via Trust Score",
+  "apNewMeetupBody": "This creates a unique signature (block time) for the next 6 hours. During this time, creating new sessions is locked.",
+  "apSessionEndBody": "This locks the current block time. You can start a new session afterwards.",
+  "apGeneratesProof": "Generates a new cryptographic proof for the next 6 hours.",
+  "humTitle": "PROOF OF HUMANITY",
+  "humVerified": "HUMAN VERIFIED",
+  "humNotVerified": "NOT VERIFIED",
+  "humVerifiedSub": "You are verified as human",
+  "humLightningActive": "Lightning proof active",
+  "humCheckNow": "CHECK NOW",
+  "humCheckAgain": "CHECK AGAIN",
+  "humCheckAgainShort": "Check again",
+  "humSearchingRelays": "SEARCHING RELAYS...",
+  "humHowTitle": "HOW DOES IT WORK?",
+  "humIntro1": "Prove you are human — by demonstrating ",
+  "humIntro2": "that you own a real Lightning wallet and ",
+  "humIntro3": "have zapped someone on Nostr before.",
+  "humExplain1": "Bots don't have Lightning wallets. A single real ",
+  "humExplain2": "payment proves you are a human with a real ",
+  "humExplain3": "wallet — without revealing personal data.",
+  "humStep1": "You zap anyone on Nostr",
+  "humStep2": "The zap creates a receipt on relays",
+  "humStep3": "The app finds your receipt",
+  "humStepInstruction": "Anyone, any amount of sats. Use a Nostr client like Damus, Amethyst or Primal.",
+  "humCheckInstruction": "Press the check button and the app searches Nostr relays for your zap.",
+  "humZapReturn": "Zap anyone and come back",
+  "humCryptoProof": "This is a cryptographic proof that you made a real Lightning payment.",
+  "humProofInEvent1": "on the Nostr network. This proof is in your ",
+  "humProofPrivacy": "The proof is included in your reputation event. No amount or recipient is stored.",
+  "humReputationSaved": "Reputation event saved.",
+  "humPaidOn": "You made a Lightning payment on {date} ",
+  "@humPaidOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "humLastCheck": "Last check: {time}",
+  "@humLastCheck": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ppTitle": "PLATFORM LINK",
+  "ppPlatform": "PLATFORM",
+  "ppUsername": "USERNAME",
+  "ppActiveLinks": "ACTIVE LINKS",
+  "ppLinkPlatform": "LINK PLATFORM",
+  "ppCreateLink": "CREATE LINK",
+  "ppAnotherPlatform": "ANOTHER PLATFORM",
+  "ppShareOnPlatform": "SHARE ON PLATFORM",
+  "ppUnlinkQ": "UNLINK?",
+  "ppRevoke": "REVOKE",
+  "ppCancel": "CANCEL",
+  "ppYourUsername": "Your username",
+  "ppPlatformName": "Platform name",
+  "ppIntro": "Link your account with a platform. The proof is automatically embedded in your reputation QR.",
+  "ppLinkSaved": "Link saved! Automatically embedded in your reputation QR.",
+  "ppMustUpdate": "You must update your reputation event afterwards.",
+  "ppUnlinkBody1": "The platform link for \"",
+  "ppUnlinkBody2": "will be deleted.\n\n",
+  "ppUnlinkBody": "The platform link for \"{username}\" on {platform} will be deleted.\n\nYou must update your reputation event afterwards.",
+  "@ppUnlinkBody": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      },
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "ppCreated": "Created: {date}",
+  "@ppCreated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ppRevokeTooltip": "Revoke",
+  "rqTitle": "MEETUP QR CODE",
+  "rqActive": "ACTIVE",
+  "rqCodeRenewing": "Code is renewing...",
+  "rqNextCodeIn": "Next code in",
+  "rqEndSession": "End session",
+  "rqEndSessionQ": "End session?",
+  "rqEnd": "END",
+  "rqEndSessionBody": "An ended session locks this block time. You can start a new session afterwards.",
+  "rqNoActiveSession": "NO ACTIVE SESSION",
+  "rqNoSessionBody": "There is currently no active meetup session.\nPlease restart the meetup in the Admin Panel.",
+  "rqBackToAdmin": "BACK TO ADMIN PANEL",
+  "rsTitle": "NOSTR RELAYS",
+  "rsDefaultRelays": "DEFAULT RELAYS",
+  "rsCustomRelays": "CUSTOM RELAYS",
+  "rsAddRelay": "ADD RELAY",
+  "rsAdd": "ADD",
+  "rsNoRelaysActive": "No relays active!",
+  "rsNoCustomRelays": "No custom relays configured.",
+  "rsAllRelaysInfo": "The app uses all active relays simultaneously for maximum reach.",
+  "rsRelaysIntro": "Relays distribute your reputation across the Nostr network. ",
+  "rsRelayPlaceholder": "wss://my-relay.com",
+  "rdScanAdminTag": "SCAN ADMIN TAG",
+  "rdAnon": "ANON",
+  "rdCollectBadge": "COLLECT BADGE",
+  "rdYourReputation": "YOUR REPUTATION",
+  "rdEditIdentity": "Edit identity",
+  "rdLinkingIdentity": "Linking identity...",
+  "rdNostrVerified": "NOSTR VERIFIED",
+  "rdNoBadges": "No badges collected yet.\nGo to a meetup!",
+  "rdSelfSovereign": "Self-sovereign: This app runs without a server. Your badges belong only to you and are stored on this device.",
+  "rdVerifiedByAdmin": "VERIFIED BY ADMIN",
+  "rqRemainingTime": "Remaining time: {time}\n\n",
+  "@rqRemainingTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "rqSessionRemaining": "Session: {time}",
+  "@rqSessionRemaining": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "rvTitle": "CHECK REPUTATION",
+  "rvChecking": "CHECKING...",
+  "rvFullyVerified": "FULLY VERIFIED",
+  "rvPartiallyVerified": "PARTIALLY VERIFIED",
+  "rvSignatureOnly": "SIGNATURE ONLY CHECKED",
+  "rvInvalid": "INVALID",
+  "rvConfirmedInEvent": "Confirmed in event",
+  "rvPlatformProof": "Platform proof",
+  "rvIntro1": "Paste a person's verify string or npub ",
+  "rvIntro2": "to check their reputation across all proof layers.",
+  "rvCheckingSignature": "Checking signature...",
+  "rvCheckingNostr": "Analyzing Nostr network...",
+  "rvCheckingLightning": "Checking Lightning activity...",
+  "rvCheckingNip05": "Checking NIP-05...",
+  "msSelectMeetup": "SELECT MEETUP",
+  "msSearchMeetup": "Search meetup...",
+  "mlTitle": "MEETUPS",
+  "mlRetry": "Retry",
+  "mlLoadError": "Error loading",
+  "mlNoMeetupsFound": "No meetups found.",
+  "mlNoMeetupFor": "No meetup for \"{query}\"",
+  "@mlNoMeetupFor": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "cmRequestSent": "REQUEST SENT 🚀",
+  "cmDateTime": "DATE & TIME",
+  "cmFoundBase": "FOUND A BASE.",
+  "cmLocation": "LOCATION",
+  "cmCityName": "CITY NAME",
+  "cmTelegramGroup": "TELEGRAM GROUP (OPTIONAL)",
+  "cmNewMeetup": "NEW MEETUP",
+  "cmDateExample": "e.g. May 21, 7:00 PM",
+  "cmCityExample": "e.g. Frankfurt",
+  "cmLocationExample": "e.g. Room 77",
+  "evUpcomingEvents": "UPCOMING EVENTS",
+  "evDatesEvents": "DATES & EVENTS",
+  "evNoMeetupsFound": "No meetups found",
+  "evSearchCityCountry": "Search city or country...",
+  "evIntro": "Most Einundzwanzig meetups take place regularly. Tap a meetup for more info and dates.",
+  "rvLabelPlatform": "Platform",
+  "rvLabelUsername": "Username",
+  "countryDE": "Germany",
+  "countryAT": "Austria",
+  "countryCH": "Switzerland",
+  "countryES": "Spain",
+  "countryNL": "Netherlands",
+  "countryIT": "Italy",
+  "countryFR": "France"
 }

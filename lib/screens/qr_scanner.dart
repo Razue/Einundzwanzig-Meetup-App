@@ -24,6 +24,7 @@ import '../services/zap_verification_service.dart';
 import '../services/nip05_service.dart';
 import '../services/relay_config.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 
 class SecureQRScanner extends StatefulWidget {
   const SecureQRScanner({super.key});
@@ -79,8 +80,8 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
       if (barcodes == null || barcodes.barcodes.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Kein QR-Code im Bild gefunden'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context).qrNoCodeInImage),
               backgroundColor: Colors.orange,
             ),
           );
@@ -99,8 +100,8 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('QR-Code gefunden, aber kein Einundzwanzig-Format'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).qrNotEinundzwanzig),
             backgroundColor: Colors.orange,
           ),
         );
@@ -109,7 +110,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fehler: $e'),
+            content: Text(AppLocalizations.of(context).qrProcessError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -155,7 +156,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
           final data = jsonDecode(jsonString);
           _showV3Result(data, signerNpub: result.signerNpub, verifyMessage: result.message);
         } else {
-          _showFailed(title: "SIGNATUR UNGÜLTIG", subtitle: result.message);
+          _showFailed(title: AppLocalizations.of(context).qrSigInvalid, subtitle: result.message);
         }
         return;
       }
@@ -177,7 +178,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
           final data = jsonDecode(jsonString);
           _showV2Result(data, signerNpub: result.signerNpub);
         } else {
-          _showFailed(title: "SIGNATUR UNGÜLTIG", subtitle: result.message);
+          _showFailed(title: AppLocalizations.of(context).qrSigInvalid, subtitle: result.message);
         }
         return;
       }
@@ -197,14 +198,14 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
           final data = jsonDecode(jsonString);
           _showV1Result(data);
         } else {
-          _showFailed(title: "SIGNATUR UNGÜLTIG", subtitle: result.message);
+          _showFailed(title: AppLocalizations.of(context).qrSigInvalid, subtitle: result.message);
         }
         return;
       }
 
-      _showFailed(title: "FORMAT UNBEKANNT", subtitle: "QR-Code konnte nicht gelesen werden.");
+      _showFailed(title: AppLocalizations.of(context).qrFormatUnknown, subtitle: AppLocalizations.of(context).qrCantRead);
     } catch (e) {
-      _showFailed(title: "LESEFEHLER", subtitle: "Fehler beim Verarbeiten: $e");
+      _showFailed(title: AppLocalizations.of(context).qrReadError, subtitle: AppLocalizations.of(context).qrProcessError(e.toString()));
     }
   }
 
@@ -222,7 +223,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => _VerificationResultScreen(
         isValid: true, version: 3,
-        title: "VERIFIZIERT",
+        title: AppLocalizations.of(context).qrVerified,
         subtitle: verifyMessage,
         identity: id, hasIdentity: hasRealIdentity,
         signerNpub: signerNpub,
@@ -253,8 +254,8 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => _VerificationResultScreen(
         isValid: true, version: 2,
-        title: "VERIFIZIERT (v2)",
-        subtitle: "Legacy-Signatur gültig — kein Badge-Proof",
+        title: AppLocalizations.of(context).qrVerifiedV2,
+        subtitle: AppLocalizations.of(context).qrV2Subtitle,
         identity: id, hasIdentity: hasRealIdentity,
         signerNpub: signerNpub,
         badgeCount: data['c'] as int? ?? 0,
@@ -267,8 +268,8 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (context) => _VerificationResultScreen(
         isValid: true, version: 1,
-        title: "VERIFIZIERT (v1)",
-        subtitle: "Älteres Format — keine Identitätsbindung",
+        title: AppLocalizations.of(context).qrVerifiedV1,
+        subtitle: AppLocalizations.of(context).qrV1Subtitle,
         identity: {'n': data['u'] ?? 'Anon'},
         hasIdentity: false,
         badgeCount: data['c'] as int? ?? 0,
@@ -291,11 +292,11 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text("REPUTATION PRÜFEN"),
+        title: Text(AppLocalizations.of(context).qrScanTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.photo_library_outlined, color: cCyan),
-            tooltip: 'QR aus Galerie laden',
+            tooltip: AppLocalizations.of(context).qrLoadFromGallery,
             onPressed: _isScanned ? null : _pickFromGallery,
           ),
         ],
@@ -315,7 +316,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
                 child: ElevatedButton.icon(
                   onPressed: _isScanned ? null : _pickFromGallery,
                   icon: const Icon(Icons.photo_library, size: 20),
-                  label: const Text("QR AUS GALERIE LADEN"),
+                  label: Text(AppLocalizations.of(context).qrLoadFromGallery),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white.withOpacity(0.15),
                     foregroundColor: Colors.white,
@@ -332,9 +333,9 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
                   color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  "Scanne einen Einundzwanzig\nReputation QR-Code",
-                  style: TextStyle(color: Colors.white, fontSize: 14),
+                child: Text(
+                  AppLocalizations.of(context).qrScanHint,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -450,7 +451,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
 
   Future<void> _loadSocial(String pubkeyHex) async {
     try {
-      if (mounted) setState(() => _layerStatus = 'Analysiere Netzwerk...');
+      if (mounted) setState(() => _layerStatus = AppLocalizations.of(context).qrAnalyzingNetwork);
       final analysis = await SocialGraphService.analyze(pubkeyHex);
       if (mounted) setState(() => _socialAnalysis = analysis);
     } catch (_) {}
@@ -458,7 +459,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
 
   Future<void> _loadZaps(String pubkeyHex) async {
     try {
-      if (mounted) setState(() => _layerStatus = 'Prüfe Lightning...');
+      if (mounted) setState(() => _layerStatus = AppLocalizations.of(context).qrCheckingLightning);
       final stats = await ZapVerificationService.analyzeZapActivity(pubkeyHex, useCache: false);
       if (mounted) setState(() => _zapStats = stats);
     } catch (_) {}
@@ -466,7 +467,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
 
   Future<void> _loadNip05(String pubkeyHex) async {
     try {
-      if (mounted) setState(() => _layerStatus = 'Prüfe NIP-05...');
+      if (mounted) setState(() => _layerStatus = AppLocalizations.of(context).qrCheckingNip05);
       final relays = await RelayConfig.getActiveRelays();
       final nip05 = await Nip05Service.fetchNip05FromProfile(pubkeyHex, relays);
       if (nip05 != null && nip05.isNotEmpty) {
@@ -508,7 +509,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
 
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("ERGEBNIS")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).qrResultTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(children: [
@@ -581,11 +582,11 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
                 // Mini-Stats
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-                  _miniStat(Icons.military_tech, "${widget.badgeCount}", "Badges", cOrange),
-                  _miniStat(Icons.location_on, "${widget.meetupCount}", "Meetups", cCyan),
-                  _miniStat(Icons.people_outline, "${widget.signerCount}", "Signer", cPurple),
-                  _miniStat(Icons.link, "${widget.boundBadgeCount}", "Gebunden", Colors.green),
-                  _miniStat(Icons.calendar_today, "${widget.accountAgeDays}", "Tage", Colors.grey),
+                  _miniStat(Icons.military_tech, "${widget.badgeCount}", AppLocalizations.of(context).qrStatBadges, cOrange),
+                  _miniStat(Icons.location_on, "${widget.meetupCount}", AppLocalizations.of(context).qrStatMeetups, cCyan),
+                  _miniStat(Icons.people_outline, "${widget.signerCount}", AppLocalizations.of(context).qrStatSigners, cPurple),
+                  _miniStat(Icons.link, "${widget.boundBadgeCount}", AppLocalizations.of(context).qrStatBound, Colors.green),
+                  _miniStat(Icons.calendar_today, "${widget.accountAgeDays}", AppLocalizations.of(context).qrStatDays, Colors.grey),
                 ]),
               ]),
             ),
@@ -642,9 +643,9 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
           if (widget.isValid && widget.version < 3 && (widget.badgeCount > 0 || widget.meetupCount > 0)) ...[
             const SizedBox(height: 20),
             Row(children: [
-              Expanded(child: _statBox(Icons.military_tech, "${widget.badgeCount}", "Badges", cOrange)),
+              Expanded(child: _statBox(Icons.military_tech, "${widget.badgeCount}", AppLocalizations.of(context).qrStatBadges, cOrange)),
               const SizedBox(width: 12),
-              Expanded(child: _statBox(Icons.location_on, "${widget.meetupCount}", "Meetups", cCyan)),
+              Expanded(child: _statBox(Icons.location_on, "${widget.meetupCount}", AppLocalizations.of(context).qrStatMeetups, cCyan)),
             ]),
           ],
 
@@ -654,7 +655,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
             child: ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(backgroundColor: cOrange, foregroundColor: Colors.black),
-              child: const Text("ZURÜCK", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              child: Text(AppLocalizations.of(context).qrBack, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             ),
           ),
         ]),
@@ -675,7 +676,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
       child: _layerRow(
         icon: Icons.alternate_email,
         color: valid ? cCyan : Colors.red,
-        title: valid ? _nip05Result!.nip05 : "NIP-05 ungültig",
+        title: valid ? _nip05Result!.nip05 : AppLocalizations.of(context).qrNip05Invalid,
         subtitle: valid ? _nip05Result!.domainLabel : _nip05Result!.nip05,
       ),
     );
@@ -707,12 +708,12 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
             Row(children: [
               Icon(Icons.bolt, color: hasZaps ? Colors.amber : Colors.grey, size: 16),
               const SizedBox(width: 8),
-              Text("LIGHTNING",
+              Text(AppLocalizations.of(context).qrSectionLightning,
                 style: TextStyle(color: hasZaps ? Colors.amber : Colors.grey, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
             ]),
             const SizedBox(height: 8),
             if (hasProof)
-              _detailRow(Icons.verified_user, "Mensch verifiziert", "Lightning-Beweis aktiv", Colors.green),
+              _detailRow(Icons.verified_user, AppLocalizations.of(context).qrHumanVerified, AppLocalizations.of(context).qrLightningActive, Colors.green),
             if (hasZaps) ...[
               _detailRow(Icons.arrow_upward, "${_zapStats!.sentCount} gesendet",
                 "${_zapStats!.uniqueRecipientCount} verschiedene Empfänger",
@@ -724,7 +725,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
                 _detailRow(Icons.schedule, "${_zapStats!.activeMonths} Monate aktiv",
                   _zapStats!.activityLabel, Colors.amber),
             ] else
-              _detailRow(Icons.info_outline, "Keine Zap-Aktivität", "Kein Lightning-Beweis gefunden", Colors.grey),
+              _detailRow(Icons.info_outline, AppLocalizations.of(context).qrNoZap, AppLocalizations.of(context).qrNoLightning, Colors.grey),
           ],
         ),
       ),
@@ -755,7 +756,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
             Row(children: [
               Icon(Icons.link, color: Colors.purple, size: 16),
               const SizedBox(width: 8),
-              Text("VERKNÜPFTE PLATTFORMEN",
+              Text(AppLocalizations.of(context).qrSectionPlatforms,
                 style: TextStyle(color: Colors.purple, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
             ]),
             const SizedBox(height: 8),
@@ -767,8 +768,8 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
 
               return _detailRow(
                 _platformIcon(platform),
-                '${_platformLabel(platform)}${username.isNotEmpty ? ': @$username' : ''}',
-                hasSig ? 'Signatur verifiziert' : 'Verknüpft',
+                '${_platformLabel(context, platform)}${username.isNotEmpty ? ': @$username' : ''}',
+                hasSig ? AppLocalizations.of(context).qrSigVerifiedShort : AppLocalizations.of(context).qrLinkedShort,
                 hasSig ? Colors.green : Colors.amber,
               );
             }),
@@ -804,36 +805,36 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
             Row(children: [
               Icon(Icons.hub, color: hasConnection ? cCyan : Colors.grey, size: 16),
               const SizedBox(width: 8),
-              Text("SOZIALES NETZWERK",
+              Text(AppLocalizations.of(context).qrSectionSocial,
                 style: TextStyle(color: hasConnection ? cCyan : Colors.grey, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
             ]),
             const SizedBox(height: 8),
 
             // Direkte Verbindung
             if (sa.isMutual)
-              _detailRow(Icons.sync_alt, "Gegenseitiger Follow", "Direkte bidirektionale Verbindung", Colors.green)
+              _detailRow(Icons.sync_alt, AppLocalizations.of(context).qrMutualFollow, AppLocalizations.of(context).qrBidirectional, Colors.green)
             else if (sa.iFollow)
-              _detailRow(Icons.person_add, "Du folgst", "Einseitige Verbindung", cCyan)
+              _detailRow(Icons.person_add, AppLocalizations.of(context).qrYouFollow, AppLocalizations.of(context).qrOneWay, cCyan)
             else if (sa.followsMe)
-              _detailRow(Icons.person, "Folgt dir", "Einseitige Verbindung", cCyan)
+              _detailRow(Icons.person, AppLocalizations.of(context).qrFollowsYou, AppLocalizations.of(context).qrOneWay, cCyan)
             else
-              _detailRow(Icons.person_off, "Kein direkter Follow", "", Colors.grey),
+              _detailRow(Icons.person_off, AppLocalizations.of(context).qrNoDirectFollow, "", Colors.grey),
 
             // Gemeinsame Kontakte
             _detailRow(Icons.group, "${sa.commonContactCount} gemeinsame Kontakte",
-              sa.commonContactCount > 3 ? "Starke Netzwerk-Überlappung"
-                  : sa.commonContactCount > 0 ? "Teilweise verbunden" : "Keine Überlappung",
+              sa.commonContactCount > 3 ? AppLocalizations.of(context).qrStrongOverlap
+                  : sa.commonContactCount > 0 ? AppLocalizations.of(context).qrPartiallyConnected : AppLocalizations.of(context).qrNoOverlap,
               sa.commonContactCount > 0 ? Colors.green : Colors.grey),
 
             // Organisator-Endorsement
             if (sa.orgFollowerCount > 0)
               _detailRow(Icons.verified_user, "${sa.orgFollowerCount} Organisatoren folgen",
-                "Endorsement von bekannten Admins", Colors.green),
+                AppLocalizations.of(context).qrEndorsement, Colors.green),
 
             // Hop-Distanz
             if (sa.hops > 0)
               _detailRow(Icons.route, "${sa.hops} Hop${sa.hops > 1 ? 's' : ''} entfernt",
-                sa.hops == 1 ? "Direkte Verbindung" : "Über gemeinsame Kontakte",
+                sa.hops == 1 ? AppLocalizations.of(context).qrDirectConnection : AppLocalizations.of(context).qrViaContacts,
                 sa.hops == 1 ? Colors.green : Colors.amber),
           ],
         ),
@@ -849,9 +850,9 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
       width: double.infinity, padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(12), border: Border.all(color: cBorder)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: const [
-          Icon(Icons.location_on, color: cCyan, size: 16), SizedBox(width: 8),
-          Text("BESUCHTE MEETUPS", style: TextStyle(color: cCyan, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1)),
+        Row(children: [
+          const Icon(Icons.location_on, color: cCyan, size: 16), const SizedBox(width: 8),
+          Text(AppLocalizations.of(context).qrSectionMeetups, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1)),
         ]),
         const SizedBox(height: 10),
         Wrap(spacing: 8, runSpacing: 8, children: widget.meetupList.map((m) =>
@@ -911,18 +912,18 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
           Icon(Icons.fingerprint, color: widget.hasIdentity ? cPurple : Colors.orange, size: 16),
           const SizedBox(width: 8),
           Text(
-            widget.hasIdentity ? "IDENTITÄT" : "KEINE IDENTITÄT",
+            widget.hasIdentity ? AppLocalizations.of(context).qrSectionIdentity : AppLocalizations.of(context).qrNoIdentity,
             style: TextStyle(color: widget.hasIdentity ? cPurple : Colors.orange, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1),
           ),
         ]),
         const SizedBox(height: 10),
-        _idLine("Nickname", widget.identity!['n'] ?? 'Anon', Icons.person),
+        _idLine(AppLocalizations.of(context).qrLabelNickname, widget.identity!['n'] ?? 'Anon', Icons.person),
         if (widget.identity!['np'] != null && widget.identity!['np'].toString().isNotEmpty)
           _idLine("Nostr", widget.identity!['np'], Icons.key, mono: true),
         if (widget.identity!['tg'] != null && widget.identity!['tg'].toString().isNotEmpty)
           _idLine("Telegram", "@${widget.identity!['tg']}", Icons.send),
         if (widget.identity!['tw'] != null && widget.identity!['tw'].toString().isNotEmpty)
-          _idLine("Twitter/X", "@${widget.identity!['tw']}", Icons.alternate_email),
+          _idLine(AppLocalizations.of(context).qrLabelTwitter, "@${widget.identity!['tw']}", Icons.alternate_email),
 
         if (!widget.hasIdentity) ...[
           const SizedBox(height: 8),
@@ -932,8 +933,8 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
             child: Row(children: [
               Icon(Icons.info_outline, color: Colors.orange.shade300, size: 14),
               const SizedBox(width: 8),
-              const Expanded(child: Text("Keine verifizierbare Identität.",
-                style: TextStyle(color: Colors.orange, fontSize: 11))),
+              Expanded(child: Text(AppLocalizations.of(context).qrNoVerifiableIdentity,
+                style: const TextStyle(color: Colors.orange, fontSize: 11))),
             ]),
           ),
         ],
@@ -1042,14 +1043,16 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
   }
 
   /// Anzeigename für bekannte Plattformen
-  String _platformLabel(String platform) {
+  String _platformLabel(BuildContext context, String platform) {
     switch (platform) {
       case 'telegram': return 'Telegram';
       case 'satoshikleinanzeigen': return 'Satoshi-Kleinanzeigen';
       case 'robosats': return 'RoboSats';
       case 'nostr': return 'Nostr';
-      case 'other': return 'Andere';
+      case 'other': return AppLocalizations.of(context).qrPlatformOther;
       default: return platform;
     }
   }
 }
+
+

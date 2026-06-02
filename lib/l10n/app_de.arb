@@ -332,5 +332,784 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "backupEncryptTitle": "Backup verschlüsseln",
+  "backupDecryptTitle": "Backup entschlüsseln",
+  "backupExportDesc": "Vergib ein Passwort, um deinen privaten Schlüssel (nsec) im Backup zu schützen.\n\n⚠️ Wenn du dieses Passwort vergisst, ist das Backup UNWIEDERBRINGLICH verloren!",
+  "backupImportDesc": "Dieses Backup ist verschlüsselt. Bitte gib das Passwort ein.",
+  "backupPassword": "Passwort",
+  "backupPasswordConfirm": "Passwort bestätigen",
+  "backupPasswordEmpty": "Passwort darf nicht leer sein",
+  "backupPasswordMin": "Mindestens 8 Zeichen",
+  "backupPasswordMismatch": "Passwörter stimmen nicht überein",
+  "backupEncryptSave": "Verschlüsseln & Speichern",
+  "backupDecryptLoad": "Entschlüsseln & Laden",
+  "backupShareTitle": "Einundzwanzig App Backup (Verschlüsselt)",
+  "backupShareText": "Dein verschlüsseltes Backup. Halte dein Passwort bereit, um es wiederherzustellen.",
+  "backupError": "Fehler beim Backup: {msg}",
+  "@backupError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "backupCorrupt": "Backup-Datei ist beschädigt (Formatfehler).",
+  "backupWrongPassword": "Falsches Passwort oder Datei beschädigt!",
+  "backupNotValid": "Datei ist kein gültiges Backup oder das falsche Format.",
+  "backupNotEinundzwanzig": "Datei ist kein gültiges Einundzwanzig Backup.",
+  "backupLoaded": "✅ Backup geladen! {items} wiederhergestellt.",
+  "@backupLoaded": {
+    "placeholders": {
+      "items": {
+        "type": "Object"
+      }
+    }
+  },
+  "backupImportFailed": "Import fehlgeschlagen: {msg}",
+  "@backupImportFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "qrScanTitle": "REPUTATION PRÜFEN",
+  "qrResultTitle": "ERGEBNIS",
+  "qrScanHint": "Scanne einen Einundzwanzig\nReputation QR-Code",
+  "qrLoadFromGallery": "QR AUS GALERIE LADEN",
+  "qrBack": "ZURÜCK",
+  "qrNoCodeInImage": "Kein QR-Code im Bild gefunden",
+  "qrNotEinundzwanzig": "QR-Code gefunden, aber kein Einundzwanzig-Format",
+  "qrVerified": "VERIFIZIERT",
+  "qrVerifiedV1": "VERIFIZIERT (v1)",
+  "qrVerifiedV2": "VERIFIZIERT (v2)",
+  "qrSigInvalid": "SIGNATUR UNGÜLTIG",
+  "qrFormatUnknown": "FORMAT UNBEKANNT",
+  "qrReadError": "LESEFEHLER",
+  "qrV2Subtitle": "Legacy-Signatur gültig — kein Badge-Proof",
+  "qrV1Subtitle": "Älteres Format — keine Identitätsbindung",
+  "qrCantRead": "QR-Code konnte nicht gelesen werden.",
+  "qrProcessError": "Fehler beim Verarbeiten: {msg}",
+  "@qrProcessError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "qrSectionIdentity": "IDENTITÄT",
+  "qrNoIdentity": "KEINE IDENTITÄT",
+  "qrNoVerifiableIdentity": "Keine verifizierbare Identität.",
+  "qrSectionLightning": "LIGHTNING",
+  "qrSectionSocial": "SOZIALES NETZWERK",
+  "qrSectionPlatforms": "VERKNÜPFTE PLATTFORMEN",
+  "qrSectionMeetups": "BESUCHTE MEETUPS",
+  "qrHumanVerified": "Mensch verifiziert",
+  "qrLightningActive": "Lightning-Beweis aktiv",
+  "qrNoLightning": "Kein Lightning-Beweis gefunden",
+  "qrNoZap": "Keine Zap-Aktivität",
+  "qrNip05Invalid": "NIP-05 ungültig",
+  "qrYouFollow": "Du folgst",
+  "qrFollowsYou": "Folgt dir",
+  "qrMutualFollow": "Gegenseitiger Follow",
+  "qrNoDirectFollow": "Kein direkter Follow",
+  "qrDirectConnection": "Direkte Verbindung",
+  "qrBidirectional": "Direkte bidirektionale Verbindung",
+  "qrOneWay": "Einseitige Verbindung",
+  "qrViaContacts": "Über gemeinsame Kontakte",
+  "qrStrongOverlap": "Starke Netzwerk-Überlappung",
+  "qrPartiallyConnected": "Teilweise verbunden",
+  "qrNoOverlap": "Keine Überlappung",
+  "qrEndorsement": "Endorsement von bekannten Admins",
+  "qrSigVerified": "Signatur verifiziert",
+  "qrAnalyzingNetwork": "Analysiere Netzwerk...",
+  "qrCheckingLightning": "Prüfe Lightning...",
+  "qrCheckingNip05": "Prüfe NIP-05...",
+  "qrStatBadges": "Badges",
+  "qrStatMeetups": "Meetups",
+  "qrStatSigners": "Signer",
+  "qrStatBound": "Gebunden",
+  "qrStatDays": "Tage",
+  "qrLabelNickname": "Nickname",
+  "qrLabelTwitter": "Twitter/X",
+  "qrPlatformOther": "Andere",
+  "qrLinked": "Verknüpft",
+  "qrSigVerifiedShort": "Signatur verifiziert",
+  "qrLinkedShort": "Verknüpft",
+  "nfcDisabled": "NFC ist deaktiviert",
+  "nfcDisabledHint": "NFC ist deaktiviert. Bitte einschalten.",
+  "nfcUnavailable": "NFC nicht verfügbar",
+  "nfcOpenSettings": "EINSTELLUNGEN ÖFFNEN",
+  "nfcEnableHint": "Bitte aktiviere NFC in deinen Geräteeinstellungen, ",
+  "nfcSettingsAndroid": "Android: Einstellungen → Verbindungen → NFC",
+  "nfcSettingsIos": "iOS: Einstellungen → NFC",
+  "verifyScanBadge": "BADGE SCANNEN",
+  "verifyScanNfc": "NFC TAG SCANNEN",
+  "verifyScanQr": "QR SCANNEN",
+  "verifyScanQrCaps": "QR-CODE SCANNEN",
+  "verifyReadyToScan": "Bereit zum Scannen",
+  "verifyWaitingNfc": "Warte auf NFC Tag...",
+  "verifyCheckingNfc": "Prüfe NFC...",
+  "verifyScanInstruction": "Scanne den NFC-Tag oder QR-Code\ndes Meetup-Organisators.",
+  "verifyScanQrInstruction": "Scanne den QR-Code\ndes Meetup-Organisators",
+  "verifyNoNfcDevice": "Dieses Gerät hat kein NFC. Nutze den QR-Scanner.",
+  "verifyNoNfcLong": "Dieses Gerät unterstützt kein NFC.\n\n",
+  "verifyUseQrInstead": "Nutze stattdessen den QR-Code-Scanner, ",
+  "verifyToGetBadge": "um dein Badge zu erhalten.",
+  "verifyAskScan": "Bitte lass einen Teilnehmer deinen Tag scannen.",
+  "verifyCantSelfBadge": "Du kannst dir nicht selbst ein Badge geben.\n",
+  "verifyBadgeFound": "BADGE GEFUNDEN",
+  "verifyAlreadyCollected": "BEREITS GESAMMELT",
+  "verifyAddToWallet": "ZUR WALLET HINZUFÜGEN",
+  "verifyVerifiedAdmin": "Verifizierter Admin",
+  "verifyUnknownMeetup": "Unbekanntes Meetup",
+  "verifyNoExpiry": "Kein Ablauf",
+  "writerReadyToWrite": "Bereit zum Schreiben",
+  "writerNoNfcDevice": "Dieses Gerät hat kein NFC. Nutze Rolling QR-Codes.",
+  "writerUseRollingQr": "Du kannst stattdessen Rolling QR-Codes ",
+  "writerForYourMeetup": "für dein Meetup verwenden.",
+  "writerSelectHomeFirst": "Bitte erst ein Home-Meetup im Profil auswählen",
+  "writerYourHomeMeetup": "DEIN HOME-MEETUP",
+  "writerCreateTag": "TAG ERSTELLEN",
+  "writerCreateMeetupTag": "MEETUP TAG ERSTELLEN",
+  "writerMeetupTag": "MEETUP TAG",
+  "writerSuccess": "ERFOLG!",
+  "writerValid6h": "Gültig für 6 Stunden",
+  "writerHoldTag": "Halte Tag an das Gerät...",
+  "writerHoldTagInstruction": "Halte einen NFC Tag an das Gerät.\nTeilnehmer scannen diesen Tag um ein Badge zu sammeln.",
+  "writerFormatting": "Formatiere leeren Tag...",
+  "writerFormatFailed": "Formatierung fehlgeschlagen",
+  "writerLoadingSession": "Lade Session-Daten...",
+  "writerJumpToQr": "Springe zum QR-Code...",
+  "writerNoNdef": "Kein NDEF Format möglich",
+  "writerTagReadOnly": "Tag ist schreibgeschützt",
+  "writerCanOverwrite": "Tag kann danach überschrieben werden",
+  "writerTagLost": "Tag verloren während dem Schreiben",
+  "writerTagRemovedEarly": "Tag zu früh entfernt — halte ihn ruhig 2–3 Sekunden ans Gerät",
+  "writerUseNtag215": "Verwende einen NTAG215 (504B) oder größer.",
+  "writerToWriteTag": "um den Tag zu beschreiben.\n\n",
+  "verifyMsgLocation": "Ort: {name}",
+  "@verifyMsgLocation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyMsgBlock": "Block: {height}",
+  "@verifyMsgBlock": {
+    "placeholders": {
+      "height": {
+        "type": "Object"
+      }
+    }
+  },
+  "verifyMsgSignedBy": "Signiert von: {signer}",
+  "@verifyMsgSignedBy": {
+    "placeholders": {
+      "signer": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyMsgProof": "Beweis: Schnorr (BIP-340)",
+  "verifyMsgTagExpiry": "Tag-Ablauf: {expiry}",
+  "@verifyMsgTagExpiry": {
+    "placeholders": {
+      "expiry": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyAlreadyToday": "Bereits gesammelt\n\nHeute hast du bereits ein Badge von:\n{name}",
+  "@verifyAlreadyToday": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "wotTitle": "WEB OF TRUST",
+  "wotActiveOrganizers": "AKTIVE ORGANISATOREN",
+  "wotActiveOrganizer": "AKTIVER ORGANISATOR",
+  "wotActiveWarnings": "AKTIVE WARNUNGEN",
+  "wotActiveWarning": "Aktive Warnung",
+  "wotMyStatus": "DEIN STATUS",
+  "wotMyVouches": "DEINE BÜRGSCHAFTEN",
+  "wotWhoYouVouchFor": "FÜR WEN DU BÜRGST",
+  "wotWhoVouchesForYou": "WER BÜRGT FÜR DICH",
+  "wotWeightedReporting": "GEWICHTETES MELDESYSTEM",
+  "wotRestore": "WIEDERHERSTELLEN",
+  "wotRevokeAll": "ALLE WIDERRUFEN",
+  "wotPublishNostr": "AUF NOSTR PUBLISHEN",
+  "wotVouch": "BÜRGEN",
+  "wotVouchVerb": "VERBÜRGEN",
+  "wotReportNpub": "NPUB MELDEN",
+  "wotScanNpub": "NPUB SCANNEN",
+  "wotPublishRevocation": "WIDERRUF PUBLISHEN",
+  "wotSigningPublishing": "SIGNIERE & PUBLIZIERE...",
+  "wotSyncNetwork": "Netzwerk synchronisieren",
+  "wotBootstrapPhase": "Bootstrap-Phase",
+  "wotDecentralized": "Dezentral (Web of Trust)",
+  "wotMinVouches": "Min. Bürgen",
+  "wotDistrustThreshold": "Distrust-Schwelle",
+  "wotNotEnoughVouchers": "NOCH NICHT GENUG BÜRGEN",
+  "wotVouchers": "Bürgen",
+  "wotNoVouchersYet": "Noch keine Bürgen",
+  "wotNobodyYet": "Noch niemand",
+  "wotNotSuspendedWatch": "Noch nicht suspendiert, aber du solltest aufpassen.",
+  "wotNoReports": "Keine Meldungen",
+  "wotNoActiveAdmins": "Keine aktiven Admins",
+  "wotNoCleanNetwork": "Aktuell gibt es keine offenen Warnungen\nim Netzwerk. Alles sauber.",
+  "wotNoOrganizersEnough": "Das Netzwerk hat noch keine Organisatoren mit genug Bürgschaften.",
+  "wotNoVouchesFound": "Keine publizierten Bürgschaften auf den Relays gefunden.",
+  "wotTapPlusFirst": "Tippe auf + um deinen ersten Ritterschlag\nzu vergeben.",
+  "wotAskOthersVouch": "Bitte andere Organisatoren, für dich zu bürgen.\n",
+  "wotNoDataLoaded": "Netzwerk-Daten konnten nicht geladen werden.\nZiehe zum Aktualisieren nach unten.",
+  "wotNoRelay": "Kein Relay erreichbar — später erneut versuchen.",
+  "wotRevokeAllTitle": "ALLE BÜRGSCHAFTEN WIDERRUFEN?",
+  "wotRevokeVouchTitle": "BÜRGSCHAFT ENTZIEHEN?",
+  "wotWithdrawVouch": "Bürgschaft entziehen",
+  "wotVouchWithdrawn": "Bürgschaft entzogen. Vergiss nicht zu publishen.",
+  "wotVouchGiven": "Ritterschlag vergeben! Vergiss nicht zu publishen.",
+  "wotAllRevoked": "Alle Bürgschaften wurden im Netzwerk widerrufen.",
+  "wotReasonRequired": "Grund (Pflicht)",
+  "wotNpubRequired": "npub (Pflicht)",
+  "wotNameAlias": "Name / Alias (optional)",
+  "wotMeetupExample": "Meetup (z.B. München)",
+  "wotReasonExample": "z.B. Fälscht Badges, kein echtes Meetup...",
+  "wotNpubReasonRequired": "npub und Grund sind Pflicht.",
+  "wotScanInstruction": "Scanne den Nostr-QR-Code (npub)\ndes Organisators.",
+  "wotVouchExplain": "Du bürgst mit deiner eigenen Reputation für diesen Organisator.",
+  "wotEachVouchPersonal": "Jede Bürgschaft ist dein persönliches Vertrauens-Votum — ",
+  "wotAfterPublishAll": "nach dem Publishen sieht das gesamte Netzwerk, für wen du stehst.",
+  "wotWhoYouVouchExplain": "Hier siehst du, für wen DU bürgst. ",
+  "wotPublishUpdated": "Publishe danach deine aktualisierte Liste, ",
+  "wotSoNetworkKnows": "damit das Netzwerk davon erfährt.",
+  "wotSingleReportNoWeight": "Eine einzelne Meldung hat kein Gewicht — ",
+  "wotOnlyMultipleIndep": "erst wenn mehrere unabhängige Organisatoren ",
+  "wotWarnSuspend": "warnen, wird jemand suspendiert. ",
+  "wotNobodyAlonePower": "Niemand hat allein Macht über andere.",
+  "wotYourReportAlone": "Deine Meldung allein hat kein Gewicht. Erst wenn ",
+  "wotOrgsWarnSuspended": "Organisatoren warnen, wird der npub suspendiert.",
+  "wotRevokeAllBody": "Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE ",
+  "wotFromOtherOrgs": "von anderen Organisatoren.",
+  "wotRestoreExplain": "Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ",
+  "wotRestoreListBack": "deine Liste nach einer Neuinstallation oder einem Backup-Wechsel zurück.",
+  "wotVouchesSignedOnNostr": "deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr ",
+  "wotVisibleLocally": "sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine ",
+  "wotCantResolveOld": "alten Bürgschaften nicht mehr auflösen kannst.",
+  "wotRemovedFromList": "wird von deiner Vouching-Liste entfernt.\n\n",
+  "wotSuspendedByNetwork": "durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.",
+  "wotErrorLoading": "Fehler beim Laden: {msg}",
+  "@wotErrorLoading": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotSyncFailed": "Sync fehlgeschlagen: {msg}",
+  "@wotSyncFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotRevocationFailed": "Widerruf fehlgeschlagen: {msg}",
+  "@wotRevocationFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotRestoreFailed": "Wiederherstellung fehlgeschlagen: {msg}",
+  "@wotRestoreFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotVouchesRestored": "{count} Bürgschaften von Nostr wiederhergestellt.",
+  "@wotVouchesRestored": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotNetworkHealth": "NETZWERK {label}",
+  "@wotNetworkHealth": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "wotVouchProgress": "{count} / {total} Bürgen",
+  "@wotVouchProgress": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotReportsCount": "{count} Meldungen",
+  "@wotReportsCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotNeedMoreVouches": "Du brauchst noch {count} Bürgschaften ",
+  "@wotNeedMoreVouches": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotVouchesRequired": "{count} / {total} benötigt",
+  "@wotVouchesRequired": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotSuspensionProgress": "{count} / {total} Suspendierung",
+  "@wotSuspensionProgress": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotLiability": "HAFTUNG: {count} suspendiert",
+  "@wotLiability": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotWarningCount": "WARNUNG: {count} gemeldet",
+  "@wotWarningCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotYourNpub": "Dein npub: {npub}",
+  "@wotYourNpub": {
+    "placeholders": {
+      "npub": {
+        "type": "String"
+      }
+    }
+  },
+  "wotLiabilityBody": "Du bürgst für {names} — diese npubs sind durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.",
+  "@wotLiabilityBody": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "wotWarningBody": "Für {names} gibt es Meldungen. ",
+  "@wotWarningBody": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "wotVotes": "Stimmen",
+  "wotSuspended": "Suspendiert",
+  "wotReportNoWeightThreshold": "Deine Meldung allein hat kein Gewicht. Erst wenn {count} unabhängige Organisatoren warnen, wird der npub suspendiert.",
+  "@wotReportNoWeightThreshold": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotPublishedLive": "Dein Web of Trust ist live ({count} Relays)!",
+  "@wotPublishedLive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotReportPublished": "Meldung publiziert an {count} Relays.",
+  "@wotReportPublished": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotErrorShort": "Fehler: {msg}",
+  "@wotErrorShort": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "wotOffline": "Offline",
+  "wotActive": "Aktive",
+  "wotPhase": "Phase",
+  "wotPhaseDecentralized": "Dezentral",
+  "wotPhaseBootstrap": "Bootstrap",
+  "wotReportsLabel": "Meldungen",
+  "wotVouchersLabel": "BÜRGEN:",
+  "writerTagTooSmall": "Tag zu klein! Daten: {data}B, Tag: {max}B.\n",
+  "@writerTagTooSmall": {
+    "placeholders": {
+      "data": {
+        "type": "Object"
+      },
+      "max": {
+        "type": "Object"
+      }
+    }
+  },
+  "writerTagWritten": "✅ MEETUP TAG geschrieben!\n\n",
+  "writerCompactSize": "📦 {size}B (kompakt)\n",
+  "@writerCompactSize": {
+    "placeholders": {
+      "size": {
+        "type": "Object"
+      }
+    }
+  },
+  "writerValidHours": "⏱️ Gültig für {hours}h\n\n",
+  "@writerValidHours": {
+    "placeholders": {
+      "hours": {
+        "type": "Object"
+      }
+    }
+  },
+  "verifyErrNoNdef": "✗ Kein NDEF Tag",
+  "verifyErrTagEmpty": "✗ Tag ist leer",
+  "verifyErrPayloadEmpty": "✗ Payload leer",
+  "verifyErrInvalidFormat": "✗ Ungültiges Format",
+  "verifyErrInvalidTag": "✗ Ungültiger Tag: {msg}",
+  "@verifyErrInvalidTag": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrReadError": "✗ Lesefehler: {msg}",
+  "@verifyErrReadError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrNfcError": "✗ NFC Fehler: {msg}",
+  "@verifyErrNfcError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrQrExpired": "✗ QR-Code abgelaufen!\n{msg}\n\nBitte direkt am Bildschirm des Organisators scannen.",
+  "@verifyErrQrExpired": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "verifyErrPrefix": "✗ {msg}",
+  "@verifyErrPrefix": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "writerStartError": "❌ Start Fehler: {msg}",
+  "@writerStartError": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "writerFitsNtag215": "~{size}B — passt auf NTAG215 (492B)",
+  "@writerFitsNtag215": {
+    "placeholders": {
+      "size": {
+        "type": "Object"
+      }
+    }
+  },
+  "writerNoHomeMeetup": "⚠️ Kein Home-Meetup gesetzt",
+  "writerHomeMeetupNotFound": "⚠️ Home-Meetup nicht gefunden",
+  "writerNoActiveSession": "❌ Keine aktive Meetup-Session gefunden. Bitte starte das Meetup neu.",
+  "admMyWebOfTrust": "MEIN WEB OF TRUST",
+  "admMyDelegations": "DEINE DELEGATIONEN",
+  "admCoAdminKnight": "CO-ADMIN RITTERN",
+  "admKnighthood": "RITTERSCHLAG",
+  "admRemove": "ENTFERNEN",
+  "admCancel": "ABBRECHEN",
+  "admRevokeTrust": "VERTRAUEN ENTZIEHEN?",
+  "admRevokeTrustShort": "Vertrauen entziehen",
+  "admSyncWot": "Web of Trust synchronisieren",
+  "admNobodyDelegated": "Du hast noch niemanden delegiert.",
+  "admTapKnighthood": "Tippe unten auf 'RITTERSCHLAG',\num einem neuen Organisator in deinem\nMeetup das Vertrauen auszusprechen.",
+  "admVouchNewExplain": "Du bürgst mit deiner eigenen Reputation für diesen neuen Organisator.",
+  "admScanNewOrg": "Scanne den Nostr-QR-Code (npub) des neuen Organisators.",
+  "admNetworkLearnsKnight": "Das Netzwerk erfährt erst von deinen neuen Co-Admins,\nwenn du deine Signatur auf Nostr veröffentlichst.",
+  "admMustRepublish": "Du musst die Liste danach neu publishen, damit das Netzwerk davon erfährt.",
+  "admPublishEmptyRevoke": "Publiziere eine leere Liste um alle Delegationen\nim Netzwerk zu widerrufen.",
+  "admRestoreListBack": "deine Liste nach einer Neuinstallation zurück.",
+  "admSigningSending": "Signiere und sende an Nostr...",
+  "admRestoringVouches": "Stelle meine Bürgschaften von Nostr wieder her...",
+  "admSyncingWot": "Synchronisiere Web of Trust...",
+  "admRevokingAll": "Widerrufe alle Bürgschaften...",
+  "admRevokeTrustBody": "Möchtest du {name} das Vertrauen als Admin für {meetup} entziehen?\n\n",
+  "@admRevokeTrustBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "meetup": {
+        "type": "String"
+      }
+    }
+  },
+  "admRestoreExplain": "Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ",
+  "admVouchedCount": "Du hast dich für {count} Organisatoren verbürgt.",
+  "@admVouchedCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admCoAdminAdded": "✅ Co-Admin hinzugefügt! Vergiss nicht zu publishen.",
+  "apMeetupSession": "MEETUP SESSION",
+  "apSessionRunning": "SESSION LÄUFT",
+  "apOpenActiveMeetup": "AKTIVES MEETUP ÖFFNEN",
+  "apStartMeetup": "MEETUP STARTEN",
+  "apEndMeetupEarly": "Meetup vorzeitig beenden",
+  "apNetwork": "NETZWERK",
+  "apOrganizer": "ORGANISATOR",
+  "apWebOfTrust": "WEB OF TRUST",
+  "apHowItWorks": "SO FUNKTIONIERT'S",
+  "apManageVouches": "Bürgschaften verwalten, Netzwerk-Status, Meldungen",
+  "apNewMeetupQ": "Neues Meetup starten?",
+  "apSessionEndQ": "Session beenden?",
+  "apCancel": "Abbrechen",
+  "apStart": "Starten",
+  "apEnd": "Beenden",
+  "apSeedAdmin": "Seed Admin",
+  "apViaTrustScore": "Via Trust Score",
+  "apNewMeetupBody": "Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.",
+  "apSessionEndBody": "Damit sperrst du die aktuelle Blockzeit. Du kannst danach eine neue Session starten.",
+  "apGeneratesProof": "Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.",
+  "humTitle": "PROOF OF HUMANITY",
+  "humVerified": "MENSCH VERIFIZIERT",
+  "humNotVerified": "NICHT VERIFIZIERT",
+  "humVerifiedSub": "Du bist als Mensch verifiziert",
+  "humLightningActive": "Lightning-Beweis aktiv",
+  "humCheckNow": "JETZT PRÜFEN",
+  "humCheckAgain": "ERNEUT PRÜFEN",
+  "humCheckAgainShort": "Erneut prüfen",
+  "humSearchingRelays": "SUCHE AUF RELAYS...",
+  "humHowTitle": "WIE FUNKTIONIERT DAS?",
+  "humIntro1": "Beweise, dass du ein Mensch bist — indem du nachweist, ",
+  "humIntro2": "dass du eine echte Lightning-Wallet besitzt und ",
+  "humIntro3": "schon einmal jemanden auf Nostr gezappt hast.",
+  "humExplain1": "Bots haben keine Lightning-Wallets. Eine einzige echte ",
+  "humExplain2": "Zahlung beweist, dass du ein Mensch mit einer echten ",
+  "humExplain3": "Wallet bist — ohne persönliche Daten preiszugeben.",
+  "humStep1": "Du zappst irgendjemanden auf Nostr",
+  "humStep2": "Der Zap erzeugt ein Receipt auf Relays",
+  "humStep3": "Die App findet dein Receipt",
+  "humStepInstruction": "Egal wen, egal wieviel Sats. Nutze dafür einen Nostr-Client wie Damus, Amethyst oder Primal.",
+  "humCheckInstruction": "Drücke den Prüfen-Button und die App sucht auf Nostr-Relays nach deinem Zap.",
+  "humZapReturn": "Zappe irgendjemanden und komm zurück",
+  "humCryptoProof": "Das ist ein kryptographischer Beweis, dass du eine echte Lightning-Zahlung geleistet hast.",
+  "humProofInEvent1": "auf dem Nostr-Netzwerk geleistet. Dieser Beweis ist in deinem ",
+  "humProofPrivacy": "Der Beweis wird in dein Reputation-Event aufgenommen. Kein Betrag oder Empfänger wird gespeichert.",
+  "humReputationSaved": "Reputation-Event gespeichert.",
+  "humPaidOn": "Du hast am {date} eine Lightning-Zahlung ",
+  "@humPaidOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "humLastCheck": "Letzte Prüfung: {time}",
+  "@humLastCheck": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "ppTitle": "PLATTFORM-VERKNÜPFUNG",
+  "ppPlatform": "PLATTFORM",
+  "ppUsername": "BENUTZERNAME",
+  "ppActiveLinks": "AKTIVE VERKNÜPFUNGEN",
+  "ppLinkPlatform": "PLATTFORM VERKNÜPFEN",
+  "ppCreateLink": "VERKNÜPFUNG ERSTELLEN",
+  "ppAnotherPlatform": "WEITERE PLATTFORM",
+  "ppShareOnPlatform": "AUF PLATTFORM TEILEN",
+  "ppUnlinkQ": "VERKNÜPFUNG AUFHEBEN?",
+  "ppRevoke": "WIDERRUFEN",
+  "ppCancel": "ABBRECHEN",
+  "ppYourUsername": "Dein Benutzername",
+  "ppPlatformName": "Name der Plattform",
+  "ppIntro": "Verknüpfe deinen Account mit einer Plattform. Der Beweis wird automatisch in deinen Reputation-QR eingebettet.",
+  "ppLinkSaved": "Verknüpfung gespeichert! Wird automatisch in deinen Reputation-QR eingebettet.",
+  "ppMustUpdate": "Du musst dein Reputation-Event danach aktualisieren.",
+  "ppUnlinkBody1": "Die Plattform-Verknüpfung für \"",
+  "ppUnlinkBody2": "wird gelöscht.\n\n",
+  "ppUnlinkBody": "Die Plattform-Verknüpfung für \"{username}\" auf {platform} wird gelöscht.\n\nDu musst dein Reputation-Event danach aktualisieren.",
+  "@ppUnlinkBody": {
+    "placeholders": {
+      "username": {
+        "type": "String"
+      },
+      "platform": {
+        "type": "String"
+      }
+    }
+  },
+  "ppCreated": "Erstellt: {date}",
+  "@ppCreated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ppRevokeTooltip": "Widerrufen",
+  "rqTitle": "MEETUP QR-CODE",
+  "rqActive": "AKTIV",
+  "rqCodeRenewing": "Code erneuert sich...",
+  "rqNextCodeIn": "Nächster Code in",
+  "rqEndSession": "Session beenden",
+  "rqEndSessionQ": "Session beenden?",
+  "rqEnd": "BEENDEN",
+  "rqEndSessionBody": "Eine beendete Session sperrt diese Blockzeit. Du kannst danach eine neue Session starten.",
+  "rqNoActiveSession": "KEINE AKTIVE SESSION",
+  "rqNoSessionBody": "Es läuft aktuell keine Meetup-Session.\nBitte starte das Meetup im Admin Panel neu.",
+  "rqBackToAdmin": "ZURÜCK ZUM ADMIN PANEL",
+  "rsTitle": "NOSTR-RELAYS",
+  "rsDefaultRelays": "DEFAULT-RELAYS",
+  "rsCustomRelays": "EIGENE RELAYS",
+  "rsAddRelay": "RELAY HINZUFÜGEN",
+  "rsAdd": "HINZUFÜGEN",
+  "rsNoRelaysActive": "Keine Relays aktiv!",
+  "rsNoCustomRelays": "Keine eigenen Relays konfiguriert.",
+  "rsAllRelaysInfo": "Die App nutzt alle aktiven Relays gleichzeitig für maximale Erreichbarkeit.",
+  "rsRelaysIntro": "Relays verteilen deine Reputation im Nostr-Netzwerk. ",
+  "rsRelayPlaceholder": "wss://mein-relay.de",
+  "rdScanAdminTag": "ADMIN TAG SCANNEN",
+  "rdAnon": "ANON",
+  "rdCollectBadge": "BADGE ABHOLEN",
+  "rdYourReputation": "DEINE REPUTATION",
+  "rdEditIdentity": "Identität bearbeiten",
+  "rdLinkingIdentity": "Identität verknüpfen...",
+  "rdNostrVerified": "NOSTR VERIFIED",
+  "rdNoBadges": "Noch keine Badges gesammelt.\nGeh zu einem Meetup!",
+  "rdSelfSovereign": "Self-Sovereign: Diese App läuft ohne Server. Deine Badges gehören nur dir und sind auf diesem Gerät gespeichert.",
+  "rdVerifiedByAdmin": "VERIFIZIERT DURCH ADMIN",
+  "rqRemainingTime": "Restzeit: {time}\n\n",
+  "@rqRemainingTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "rqSessionRemaining": "Session: {time}",
+  "@rqSessionRemaining": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "rvTitle": "REPUTATION PRÜFEN",
+  "rvChecking": "PRÜFE...",
+  "rvFullyVerified": "VOLLSTÄNDIG VERIFIZIERT",
+  "rvPartiallyVerified": "TEILWEISE VERIFIZIERT",
+  "rvSignatureOnly": "NUR SIGNATUR GEPRÜFT",
+  "rvInvalid": "UNGÜLTIG",
+  "rvConfirmedInEvent": "Im Event bestätigt",
+  "rvPlatformProof": "Plattform-Proof",
+  "rvIntro1": "Füge den Verify-String oder npub einer Person ein, ",
+  "rvIntro2": "um ihre Reputation über alle Beweis-Layer zu prüfen.",
+  "rvCheckingSignature": "Prüfe Signatur...",
+  "rvCheckingNostr": "Analysiere Nostr-Netzwerk...",
+  "rvCheckingLightning": "Prüfe Lightning-Aktivität...",
+  "rvCheckingNip05": "Prüfe NIP-05...",
+  "msSelectMeetup": "MEETUP AUSWÄHLEN",
+  "msSearchMeetup": "Meetup suchen...",
+  "mlTitle": "MEETUPS",
+  "mlRetry": "Erneut versuchen",
+  "mlLoadError": "Fehler beim Laden",
+  "mlNoMeetupsFound": "Keine Meetups gefunden.",
+  "mlNoMeetupFor": "Kein Meetup für \"{query}\"",
+  "@mlNoMeetupFor": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "cmRequestSent": "ANFRAGE GESENDET 🚀",
+  "cmDateTime": "DATUM & UHRZEIT",
+  "cmFoundBase": "GRÜNDE EINE BASIS.",
+  "cmLocation": "LOCATION / ORT",
+  "cmCityName": "NAME DER STADT",
+  "cmTelegramGroup": "TELEGRAM GRUPPE (OPTIONAL)",
+  "cmNewMeetup": "NEUES MEETUP",
+  "cmDateExample": "z.B. 21. Mai, 19:00",
+  "cmCityExample": "z.B. Frankfurt",
+  "cmLocationExample": "z.B. Room 77",
+  "evUpcomingEvents": "KOMMENDE EVENTS",
+  "evDatesEvents": "TERMINE & EVENTS",
+  "evNoMeetupsFound": "Keine Meetups gefunden",
+  "evSearchCityCountry": "Stadt oder Land suchen...",
+  "evIntro": "Die meisten Einundzwanzig Meetups finden regelmäßig statt. Klick auf ein Meetup für mehr Infos und Termine.",
+  "rvLabelPlatform": "Plattform",
+  "rvLabelUsername": "Username",
+  "countryDE": "Deutschland",
+  "countryAT": "Österreich",
+  "countryCH": "Schweiz",
+  "countryES": "Spanien",
+  "countryNL": "Niederlande",
+  "countryIT": "Italien",
+  "countryFR": "Frankreich"
 }

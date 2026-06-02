@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/meetup.dart';
 import '../services/meetup_service.dart';
 import 'meetup_details.dart';
@@ -59,7 +60,7 @@ class _EventsScreenState extends State<EventsScreen> {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text("TERMINE & EVENTS"),
+        title: Text(AppLocalizations.of(context).evDatesEvents),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cOrange))
@@ -88,7 +89,7 @@ class _EventsScreenState extends State<EventsScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        "KOMMENDE EVENTS",
+                        AppLocalizations.of(context).evUpcomingEvents,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.3,
@@ -96,7 +97,7 @@ class _EventsScreenState extends State<EventsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        "Die meisten Einundzwanzig Meetups finden regelmäßig statt. Klick auf ein Meetup für mehr Infos und Termine.",
+                        AppLocalizations.of(context).evIntro,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -109,7 +110,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: "Stadt oder Land suchen...",
+                      hintText: AppLocalizations.of(context).evSearchCityCountry,
                       prefixIcon: const Icon(Icons.search, color: cCyan),
                       suffixIcon: _searchController.text.isNotEmpty
                           ? IconButton(
@@ -128,10 +129,10 @@ class _EventsScreenState extends State<EventsScreen> {
                 // Meetup Liste
                 Expanded(
                   child: _filteredMeetups.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text(
-                            "Keine Meetups gefunden",
-                            style: TextStyle(color: Colors.grey),
+                            AppLocalizations.of(context).evNoMeetupsFound,
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         )
                       : ListView.builder(
@@ -237,3 +238,6 @@ class _EventsScreenState extends State<EventsScreen> {
     );
   }
 }
+
+
+

@@ -17,6 +17,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../models/user.dart';
 import '../models/meetup.dart';
 import '../services/meetup_service.dart';
@@ -197,23 +198,23 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("Session beenden?", style: TextStyle(color: Colors.white)),
+        title: Text(AppLocalizations.of(context).rqEndSessionQ, style: const TextStyle(color: Colors.white)),
         content: Text(
-          "Restzeit: ${_session?.remainingTimeString ?? '-'}\n\n"
-          "Eine beendete Session sperrt diese Blockzeit. Du kannst danach eine neue Session starten.",
+          AppLocalizations.of(context).rqRemainingTime(_session?.remainingTimeString ?? '-') +
+          AppLocalizations.of(context).rqEndSessionBody,
           style: const TextStyle(color: Colors.grey),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).apCancel, style: const TextStyle(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               _stopSession();
             },
-            child: const Text("BEENDEN", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            child: Text(AppLocalizations.of(context).rqEnd, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -229,14 +230,14 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text("MEETUP QR-CODE"),
+        title: Text(AppLocalizations.of(context).rqTitle),
         backgroundColor: cOrange,
         actions: [
           if (_isActive)
             IconButton(
               icon: const Icon(Icons.stop_circle, color: Colors.white70),
               onPressed: _confirmStopSession,
-              tooltip: "Session beenden",
+              tooltip: AppLocalizations.of(context).rqEndSession,
             ),
         ],
       ),
@@ -264,11 +265,11 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
               child: const Icon(Icons.error_outline, size: 80, color: Colors.redAccent),
             ),
             const SizedBox(height: 30),
-            const Text("KEINE AKTIVE SESSION",
-              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+            Text(AppLocalizations.of(context).rqNoActiveSession,
+              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
             const SizedBox(height: 16),
-            const Text(
-              "Es läuft aktuell keine Meetup-Session.\nBitte starte das Meetup im Admin Panel neu.",
+            Text(
+              AppLocalizations.of(context).rqNoSessionBody,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey, fontSize: 16, height: 1.5)
             ),
@@ -280,7 +281,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
                 style: ElevatedButton.styleFrom(backgroundColor: cOrange, foregroundColor: Colors.black),
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back),
-                label: const Text("ZURÜCK ZUM ADMIN PANEL", style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(AppLocalizations.of(context).rqBackToAdmin, style: const TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -308,7 +309,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
                 children: [
                   Text(_meetupInfo, style: const TextStyle(color: cOrange, fontWeight: FontWeight.bold, fontSize: 14)),
                   const SizedBox(height: 2),
-                  Text("Session: $remaining", style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                  Text(AppLocalizations.of(context).rqSessionRemaining(remaining), style: const TextStyle(color: Colors.white70, fontSize: 11)),
                 ],
               ),
               // Session-Status
@@ -323,7 +324,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
                   children: [
                     Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle)),
                     const SizedBox(width: 6),
-                    const Text("AKTIV", style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 11)),
+                    Text(AppLocalizations.of(context).rqActive, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 11)),
                   ],
                 ),
               ),
@@ -382,7 +383,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _secondsLeft <= 3 ? "Code erneuert sich..." : "Nächster Code in",
+                  _secondsLeft <= 3 ? AppLocalizations.of(context).rqCodeRenewing : AppLocalizations.of(context).rqNextCodeIn,
                   style: TextStyle(color: _secondsLeft <= 3 ? Colors.red : Colors.grey, fontSize: 12),
                 ),
               ],
@@ -410,3 +411,5 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
     );
   }
 }
+
+

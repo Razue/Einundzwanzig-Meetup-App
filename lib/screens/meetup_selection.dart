@@ -3,6 +3,7 @@ import '../models/meetup.dart';
 import '../models/user.dart';
 import '../services/meetup_service.dart'; // <--- Service nutzen
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import 'radar.dart'; 
 import '../services/app_logger.dart';
 
@@ -65,7 +66,7 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text("MEETUP AUSWÄHLEN"),
+        title: Text(AppLocalizations.of(context).msSelectMeetup),
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator(color: cOrange))
@@ -77,7 +78,7 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: "Meetup suchen...",
+                    hintText: AppLocalizations.of(context).msSearchMeetup,
                     prefixIcon: const Icon(Icons.search, color: cOrange),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -170,3 +171,5 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
     );
   }
 }
+
+

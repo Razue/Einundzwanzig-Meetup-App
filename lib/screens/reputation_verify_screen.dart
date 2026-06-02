@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nostr/nostr.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/platform_proof_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/social_graph_service.dart';
@@ -68,7 +69,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
 
     setState(() {
       _isVerifying = true;
-      _statusText = 'Prüfe Signatur...';
+      _statusText = AppLocalizations.of(context).rvCheckingSignature;
       _proofResult = null;
       _socialAnalysis = null;
       _zapStats = null;
@@ -116,7 +117,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
 
   Future<void> _loadSocial(String pubkeyHex) async {
     try {
-      if (mounted) setState(() => _statusText = 'Analysiere Nostr-Netzwerk...');
+      if (mounted) setState(() => _statusText = AppLocalizations.of(context).rvCheckingNostr);
       final analysis = await SocialGraphService.analyze(pubkeyHex);
       if (mounted) setState(() => _socialAnalysis = analysis);
     } catch (_) {}
@@ -124,7 +125,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
 
   Future<void> _loadZaps(String pubkeyHex) async {
     try {
-      if (mounted) setState(() => _statusText = 'Prüfe Lightning-Aktivität...');
+      if (mounted) setState(() => _statusText = AppLocalizations.of(context).rvCheckingLightning);
       final stats = await ZapVerificationService.analyzeZapActivity(pubkeyHex, useCache: false);
       if (mounted) setState(() => _zapStats = stats);
     } catch (_) {}
@@ -132,7 +133,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
 
   Future<void> _loadNip05(String pubkeyHex) async {
     try {
-      if (mounted) setState(() => _statusText = 'Prüfe NIP-05...');
+      if (mounted) setState(() => _statusText = AppLocalizations.of(context).rvCheckingNip05);
       final relays = await RelayConfig.getActiveRelays();
       final nip05 = await Nip05Service.fetchNip05FromProfile(pubkeyHex, relays);
       if (nip05 != null && nip05.isNotEmpty) {
@@ -158,7 +159,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("REPUTATION PRÜFEN")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).rvTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -179,8 +180,8 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      "Füge den Verify-String oder npub einer Person ein, "
-                      "um ihre Reputation über alle Beweis-Layer zu prüfen.",
+                      AppLocalizations.of(context).rvIntro1 +
+                      AppLocalizations.of(context).rvIntro2,
                       style: TextStyle(color: Colors.grey.shade400, fontSize: 13, height: 1.5),
                     ),
                   ),
@@ -218,7 +219,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
                 icon: _isVerifying
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
                     : const Icon(Icons.search, size: 20),
-                label: Text(_isVerifying ? "PRÜFE..." : "REPUTATION PRÜFEN"),
+                label: Text(_isVerifying ? AppLocalizations.of(context).rvChecking : AppLocalizations.of(context).rvTitle),
                 style: ElevatedButton.styleFrom(backgroundColor: cCyan, foregroundColor: Colors.black, disabledBackgroundColor: cCyan.withOpacity(0.5)),
               ),
             ),
@@ -232,10 +233,10 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
 
               // Plattform-Info
               if (_proofResult!.platform != null && _proofResult!.claimedUsername != null) ...[
-                _buildInfoRow(Icons.language, "Plattform", _proofResult!.platform!),
-                _buildInfoRow(Icons.person, "Username", _proofResult!.claimedUsername!),
+                _buildInfoRow(Icons.language, AppLocalizations.of(context).rvLabelPlatform, _proofResult!.platform!),
+                _buildInfoRow(Icons.person, AppLocalizations.of(context).rvLabelUsername, _proofResult!.claimedUsername!),
                 if (_proofResult!.proofInEvent)
-                  _buildInfoRow(Icons.check_circle, "Plattform-Proof", "Im Event bestätigt", color: Colors.green),
+                  _buildInfoRow(Icons.check_circle, AppLocalizations.of(context).rvPlatformProof, AppLocalizations.of(context).rvConfirmedInEvent, color: Colors.green),
               ],
 
               if (_proofResult!.npub != null)
@@ -290,13 +291,13 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
 
     switch (result.level) {
       case VerifyLevel.full:
-        color = Colors.green; icon = Icons.verified; title = "VOLLSTÄNDIG VERIFIZIERT"; break;
+        color = Colors.green; icon = Icons.verified; title = AppLocalizations.of(context).rvFullyVerified; break;
       case VerifyLevel.partial:
-        color = Colors.amber; icon = Icons.shield; title = "TEILWEISE VERIFIZIERT"; break;
+        color = Colors.amber; icon = Icons.shield; title = AppLocalizations.of(context).rvPartiallyVerified; break;
       case VerifyLevel.signatureOnly:
-        color = cOrange; icon = Icons.lock_outline; title = "NUR SIGNATUR GEPRÜFT"; break;
+        color = cOrange; icon = Icons.lock_outline; title = AppLocalizations.of(context).rvSignatureOnly; break;
       case VerifyLevel.invalid:
-        color = Colors.red; icon = Icons.dangerous; title = "UNGÜLTIG"; break;
+        color = Colors.red; icon = Icons.dangerous; title = AppLocalizations.of(context).rvInvalid; break;
     }
 
     return Container(
@@ -351,3 +352,5 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
     return '${npub.substring(0, 12)}...${npub.substring(npub.length - 8)}';
   }
 }
+
+

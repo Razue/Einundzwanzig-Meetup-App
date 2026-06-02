@@ -8,13 +8,14 @@
 //
 // ÄNDERUNG: Wiederherstellung der eigenen Bürgschaften von den Relays
 //   - Auto-Sync beim Öffnen (_loadAll) und beim manuellen Refresh
-//   - Buttons "WIEDERHERSTELLEN" + "ALLE WIDERRUFEN" im BÜRGEN-Tab
+//   - Buttons AppLocalizations.of(context).wotRestore + AppLocalizations.of(context).wotRevokeAll im BÜRGEN-Tab
 // ============================================
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:convert';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/vouching_service.dart';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
@@ -76,7 +77,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         _consensus = null;
       }
     } catch (e) {
-      _statusMessage = 'Fehler beim Laden: $e';
+      _statusMessage = AppLocalizations.of(context).wotErrorLoading(e.toString());
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -93,7 +94,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       _myVouches = await AdminRegistry.getMyVouches();
       _statusMessage = '';
     } catch (e) {
-      _statusMessage = 'Sync fehlgeschlagen: $e';
+      _statusMessage = AppLocalizations.of(context).wotSyncFailed(e.toString());
     }
     if (mounted) setState(() => _isRefreshing = false);
   }
@@ -111,10 +112,10 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(count < 0
-                ? 'Kein Relay erreichbar — später erneut versuchen.'
+                ? AppLocalizations.of(context).wotNoRelay
                 : count == 0
-                    ? 'Keine publizierten Bürgschaften auf den Relays gefunden.'
-                    : '$count Bürgschaft${count == 1 ? "" : "en"} von Nostr wiederhergestellt.'),
+                    ? AppLocalizations.of(context).wotNoVouchesFound
+                    : AppLocalizations.of(context).wotVouchesRestored(count)),
             backgroundColor: count > 0 ? Colors.green : Colors.orange,
           ),
         );
@@ -122,7 +123,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Wiederherstellung fehlgeschlagen: $e'),
+          SnackBar(content: Text(AppLocalizations.of(context).wotRestoreFailed(e.toString())),
               backgroundColor: Colors.red),
         );
       }
@@ -135,13 +136,13 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text('ALLE BÜRGSCHAFTEN WIDERRUFEN?',
-            style: TextStyle(color: cRed, fontWeight: FontWeight.w700, fontSize: 15)),
-        content: const Text(
-          'Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE '
-          'deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr '
-          'sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine '
-          'alten Bürgschaften nicht mehr auflösen kannst.',
+        title: Text(AppLocalizations.of(context).wotRevokeAllTitle,
+            style: const TextStyle(color: cRed, fontWeight: FontWeight.w700, fontSize: 15)),
+        content: Text(
+          AppLocalizations.of(context).wotRevokeAllBody +
+          AppLocalizations.of(context).wotVouchesSignedOnNostr +
+          AppLocalizations.of(context).wotVisibleLocally +
+          AppLocalizations.of(context).wotCantResolveOld,
           style: TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4),
         ),
         actions: [
@@ -159,8 +160,8 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 _myVouches = await AdminRegistry.getMyVouches();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Alle Bürgschaften wurden im Netzwerk widerrufen.'),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context).wotAllRevoked),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -168,15 +169,15 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Widerruf fehlgeschlagen: $e'),
+                    SnackBar(content: Text(AppLocalizations.of(context).wotRevocationFailed(e.toString())),
                         backgroundColor: Colors.red),
                   );
                 }
               }
               if (mounted) setState(() => _isPublishing = false);
             },
-            child: const Text('ALLE WIDERRUFEN',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            child: Text(AppLocalizations.of(context).wotRevokeAll,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -188,7 +189,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text('WEB OF TRUST'),
+        title: Text(AppLocalizations.of(context).wotTitle),
         actions: [
           IconButton(
             icon: _isRefreshing
@@ -196,7 +197,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                     width: 20, height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2, color: cCyan))
                 : const Icon(Icons.sync_rounded, color: cTextSecondary),
-            tooltip: 'Netzwerk synchronisieren',
+            tooltip: AppLocalizations.of(context).wotSyncNetwork,
             onPressed: _isRefreshing ? null : _refresh,
           ),
         ],
@@ -209,7 +210,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.5),
           tabs: [
             Tab(icon: const Icon(Icons.hub, size: 20), text: 'NETZWERK'),
-            Tab(icon: const Icon(Icons.shield, size: 20), text: 'BÜRGEN'),
+            Tab(icon: const Icon(Icons.shield, size: 20), text: AppLocalizations.of(context).wotVouch),
             Tab(icon: const Icon(Icons.report_outlined, size: 20), text: 'MELDUNGEN'),
           ],
         ),
@@ -258,19 +259,19 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ],
           _buildMyStatusCard(consensus),
           const SizedBox(height: 24),
-          _buildSectionHeader('AKTIVE ORGANISATOREN', Icons.verified_user),
+          _buildSectionHeader(AppLocalizations.of(context).wotActiveOrganizers, Icons.verified_user),
           const SizedBox(height: 12),
           if (consensus == null)
             _buildEmptyState(
               icon: Icons.cloud_off,
-              title: 'Offline',
-              subtitle: 'Netzwerk-Daten konnten nicht geladen werden.\nZiehe zum Aktualisieren nach unten.',
+              title: AppLocalizations.of(context).wotOffline,
+              subtitle: AppLocalizations.of(context).wotNoDataLoaded,
             )
           else if (consensus.effectiveAdmins.isEmpty)
             _buildEmptyState(
               icon: Icons.group_off,
-              title: 'Keine aktiven Admins',
-              subtitle: 'Das Netzwerk hat noch keine Organisatoren mit genug Bürgschaften.',
+              title: AppLocalizations.of(context).wotNoActiveAdmins,
+              subtitle: AppLocalizations.of(context).wotNoOrganizersEnough,
             )
           else
             ...consensus.effectiveAdmins.map((admin) =>
@@ -337,12 +338,12 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('NETZWERK $healthLabel',
+                    Text(AppLocalizations.of(context).wotNetworkHealth(healthLabel),
                         style: TextStyle(color: healthColor, fontWeight: FontWeight.w800,
                             fontSize: 14, letterSpacing: 0.5)),
                     const SizedBox(height: 4),
                     Text(
-                      isSunset ? 'Dezentral (Web of Trust)' : 'Bootstrap-Phase',
+                      isSunset ? AppLocalizations.of(context).wotDecentralized : AppLocalizations.of(context).wotBootstrapPhase,
                       style: TextStyle(color: cTextSecondary, fontSize: 12),
                     ),
                   ],
@@ -353,11 +354,11 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           const SizedBox(height: 20),
           Row(
             children: [
-              _buildStatBox(effectiveCount.toString(), 'Aktive', Colors.green),
+              _buildStatBox(effectiveCount.toString(), AppLocalizations.of(context).wotActive, Colors.green),
               const SizedBox(width: 12),
-              _buildStatBox(totalVoters.toString(), 'Stimmen', cCyan),
+              _buildStatBox(totalVoters.toString(), AppLocalizations.of(context).wotVotes, cCyan),
               const SizedBox(width: 12),
-              _buildStatBox(suspendedCount.toString(), 'Suspendiert',
+              _buildStatBox(suspendedCount.toString(), AppLocalizations.of(context).wotSuspended,
                   suspendedCount > 0 ? cRed : cTextTertiary),
             ],
           ),
@@ -410,7 +411,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           Expanded(
             child: _buildThresholdItem(
               icon: Icons.how_to_vote,
-              label: 'Min. Bürgen',
+              label: AppLocalizations.of(context).wotMinVouches,
               value: '${consensus.minVouches}',
               color: cCyan,
             ),
@@ -419,7 +420,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           Expanded(
             child: _buildThresholdItem(
               icon: Icons.report,
-              label: 'Distrust-Schwelle',
+              label: AppLocalizations.of(context).wotDistrustThreshold,
               value: '${consensus.distrustThreshold}',
               color: Colors.orange,
             ),
@@ -428,8 +429,8 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           Expanded(
             child: _buildThresholdItem(
               icon: Icons.landscape,
-              label: 'Phase',
-              value: consensus.isSunset ? 'Dezentral' : 'Bootstrap',
+              label: AppLocalizations.of(context).wotPhase,
+              value: consensus.isSunset ? AppLocalizations.of(context).wotPhaseDecentralized : AppLocalizations.of(context).wotPhaseBootstrap,
               color: consensus.isSunset ? Colors.green : cPurple,
               small: true,
             ),
@@ -473,7 +474,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
 
     final statusColor = isAdmin ? Colors.green : Colors.orange;
     final statusIcon = isAdmin ? Icons.verified : Icons.pending;
-    final statusLabel = isAdmin ? 'AKTIVER ORGANISATOR' : 'NOCH NICHT GENUG BÜRGEN';
+    final statusLabel = isAdmin ? AppLocalizations.of(context).wotActiveOrganizer : AppLocalizations.of(context).wotNotEnoughVouchers;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -489,7 +490,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             children: [
               Icon(statusIcon, color: statusColor, size: 20),
               const SizedBox(width: 8),
-              Text('DEIN STATUS', style: TextStyle(color: statusColor,
+              Text(AppLocalizations.of(context).wotMyStatus, style: TextStyle(color: statusColor,
                   fontWeight: FontWeight.w800, fontSize: 12, letterSpacing: 0.5)),
             ],
           ),
@@ -499,18 +500,18 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildMiniStat(Icons.how_to_vote, '$vouchCount / $minV Bürgen',
+              _buildMiniStat(Icons.how_to_vote, AppLocalizations.of(context).wotVouchProgress(vouchCount, minV),
                   vouchCount >= minV ? Colors.green : Colors.orange),
               const SizedBox(width: 16),
               if (distrustCount > 0)
-                _buildMiniStat(Icons.warning_amber, '$distrustCount Meldungen', cRed),
+                _buildMiniStat(Icons.warning_amber, AppLocalizations.of(context).wotReportsCount(distrustCount), cRed),
             ],
           ),
           if (!isAdmin && vouchCount < minV) ...[
             const SizedBox(height: 12),
             Text(
-              'Du brauchst noch ${minV - vouchCount} Bürgschaft${minV - vouchCount != 1 ? "en" : ""} '
-              'von anderen Organisatoren.',
+              AppLocalizations.of(context).wotNeedMoreVouches(minV - vouchCount) +
+              AppLocalizations.of(context).wotFromOtherOrgs,
               style: TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4),
             ),
           ],
@@ -591,17 +592,17 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ],
         ),
         children: [
-          _buildDetailRow(Icons.how_to_vote, 'Bürgen',
-              '${admin.vouchCount} / ${consensus.minVouches} benötigt'),
+          _buildDetailRow(Icons.how_to_vote, AppLocalizations.of(context).wotVouchers,
+              AppLocalizations.of(context).wotVouchesRequired(admin.vouchCount, consensus.minVouches)),
           if (admin.distrustCount > 0)
-            _buildDetailRow(Icons.warning_amber, 'Meldungen',
-                '${admin.distrustCount} / ${consensus.distrustThreshold} Suspendierung',
+            _buildDetailRow(Icons.warning_amber, AppLocalizations.of(context).wotReportsLabel,
+                AppLocalizations.of(context).wotSuspensionProgress(admin.distrustCount, consensus.distrustThreshold),
                 color: cRed),
           _buildDetailRow(Icons.fingerprint, 'npub',
               NostrService.shortenNpub(admin.npub, chars: 12)),
           if (admin.vouchers.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('BÜRGEN:', style: TextStyle(color: cTextTertiary, fontSize: 9,
+            Text(AppLocalizations.of(context).wotVouchersLabel, style: const TextStyle(color: cTextTertiary, fontSize: 9,
                 fontWeight: FontWeight.w700, letterSpacing: 0.5)),
             const SizedBox(height: 4),
             Wrap(
@@ -698,10 +699,10 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         _buildInfoCard(
           icon: Icons.shield,
           color: cPurple,
-          title: 'DEINE BÜRGSCHAFTEN',
-          body: 'Hier siehst du, für wen DU bürgst. '
-              'Jede Bürgschaft ist dein persönliches Vertrauens-Votum — '
-              'nach dem Publishen sieht das gesamte Netzwerk, für wen du stehst.',
+          title: AppLocalizations.of(context).wotMyVouches,
+          body: AppLocalizations.of(context).wotWhoYouVouchExplain +
+              AppLocalizations.of(context).wotEachVouchPersonal +
+              AppLocalizations.of(context).wotAfterPublishAll,
         ),
         const SizedBox(height: 16),
 
@@ -709,21 +710,20 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           _buildLiabilityWarning(
             icon: Icons.error,
             color: cRed,
-            title: 'HAFTUNG: ${suspendedNpubs.length} suspendiert',
-            body: 'Du bürgst für ${suspendedNpubs.map((v) =>
+            title: AppLocalizations.of(context).wotLiability(suspendedNpubs.length),
+            body: AppLocalizations.of(context).wotLiabilityBody(suspendedNpubs.map((v) =>
                 v.name.isNotEmpty ? v.name : NostrService.shortenNpub(v.npub, chars: 6)
-            ).join(", ")} — ${suspendedNpubs.length == 1 ? "dieser npub ist" : "diese npubs sind"} '
-                'durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.',
+            ).join(", ")),
           ),
         if (warnedNpubs.isNotEmpty)
           _buildLiabilityWarning(
             icon: Icons.warning_amber,
             color: Colors.orange,
-            title: 'WARNUNG: ${warnedNpubs.length} gemeldet',
-            body: 'Für ${warnedNpubs.map((v) =>
+            title: AppLocalizations.of(context).wotWarningCount(warnedNpubs.length),
+            body: AppLocalizations.of(context).wotWarningBody(warnedNpubs.map((v) =>
                 v.name.isNotEmpty ? v.name : NostrService.shortenNpub(v.npub, chars: 6)
-            ).join(", ")} gibt es Meldungen. '
-                'Noch nicht suspendiert, aber du solltest aufpassen.',
+            ).join(", ")) +
+                AppLocalizations.of(context).wotNotSuspendedWatch,
           ),
 
         _buildPublishButton(),
@@ -749,7 +749,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               child: OutlinedButton.icon(
                 onPressed: _isPublishing ? null : _revokeAllVouches,
                 icon: const Icon(Icons.block, size: 18),
-                label: const Text('ALLE WIDERRUFEN', style: TextStyle(fontSize: 11)),
+                label: Text(AppLocalizations.of(context).wotRevokeAll, style: const TextStyle(fontSize: 11)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: cRed,
                   side: const BorderSide(color: cRed),
@@ -761,36 +761,36 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         ),
         const SizedBox(height: 6),
         Text(
-          'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen" holt '
-          'deine Liste nach einer Neuinstallation oder einem Backup-Wechsel zurück.',
+          AppLocalizations.of(context).wotRestoreExplain +
+          AppLocalizations.of(context).wotRestoreListBack,
           style: TextStyle(color: cTextTertiary, fontSize: 10, height: 1.4),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 24),
 
-        _buildSectionHeader('FÜR WEN DU BÜRGST', Icons.how_to_vote),
+        _buildSectionHeader(AppLocalizations.of(context).wotWhoYouVouchFor, Icons.how_to_vote),
         const SizedBox(height: 12),
 
         if (_myVouches.isEmpty)
           _buildEmptyState(
             icon: Icons.group_add,
-            title: 'Noch niemand',
-            subtitle: 'Tippe auf + um deinen ersten Ritterschlag\nzu vergeben.',
+            title: AppLocalizations.of(context).wotNobodyYet,
+            subtitle: AppLocalizations.of(context).wotTapPlusFirst,
           )
         else
           ..._myVouches.map(_buildVouchEntry),
 
         const SizedBox(height: 24),
 
-        _buildSectionHeader('WER BÜRGT FÜR DICH', Icons.verified_user, color: cCyan),
+        _buildSectionHeader(AppLocalizations.of(context).wotWhoVouchesForYou, Icons.verified_user, color: cCyan),
         const SizedBox(height: 12),
 
         if (myVouchers.isEmpty)
           _buildEmptyState(
             icon: Icons.person_search,
-            title: 'Noch keine Bürgen',
-            subtitle: 'Bitte andere Organisatoren, für dich zu bürgen.\n'
-                'Dein npub: ${_myNpub != null ? NostrService.shortenNpub(_myNpub!, chars: 10) : "?"}',
+            title: AppLocalizations.of(context).wotNoVouchersYet,
+            subtitle: AppLocalizations.of(context).wotAskOthersVouch +
+                AppLocalizations.of(context).wotYourNpub(_myNpub != null ? NostrService.shortenNpub(_myNpub!, chars: 10) : "?"),
             color: cCyan,
           )
         else
@@ -893,10 +893,10 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             : const Icon(Icons.satellite_alt, color: Colors.white),
         label: Text(
           _isPublishing
-              ? 'SIGNIERE & PUBLIZIERE...'
+              ? AppLocalizations.of(context).wotSigningPublishing
               : _myVouches.isEmpty
-                  ? 'WIDERRUF PUBLISHEN'
-                  : 'AUF NOSTR PUBLISHEN',
+                  ? AppLocalizations.of(context).wotPublishRevocation
+                  : AppLocalizations.of(context).wotPublishNostr,
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700,
               fontSize: 13, letterSpacing: 0.5),
         ),
@@ -979,7 +979,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         ),
         trailing: IconButton(
           icon: const Icon(Icons.remove_circle_outline, color: cRed, size: 22),
-          tooltip: 'Bürgschaft entziehen',
+          tooltip: AppLocalizations.of(context).wotWithdrawVouch,
           onPressed: () => _revokeVouch(admin),
         ),
       ),
@@ -1001,11 +1001,11 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         _buildInfoCard(
           icon: Icons.shield_outlined,
           color: Colors.orange,
-          title: 'GEWICHTETES MELDESYSTEM',
-          body: 'Eine einzelne Meldung hat kein Gewicht — '
-              'erst wenn mehrere unabhängige Organisatoren '
-              'warnen, wird jemand suspendiert. '
-              'Niemand hat allein Macht über andere.',
+          title: AppLocalizations.of(context).wotWeightedReporting,
+          body: AppLocalizations.of(context).wotSingleReportNoWeight +
+              AppLocalizations.of(context).wotOnlyMultipleIndep +
+              AppLocalizations.of(context).wotWarnSuspend +
+              AppLocalizations.of(context).wotNobodyAlonePower,
         ),
         const SizedBox(height: 16),
         SizedBox(
@@ -1014,7 +1014,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           child: OutlinedButton.icon(
             onPressed: _showReportDialog,
             icon: const Icon(Icons.report_outlined, size: 20),
-            label: const Text('NPUB MELDEN', style: TextStyle(fontWeight: FontWeight.w700,
+            label: Text(AppLocalizations.of(context).wotReportNpub, style: const TextStyle(fontWeight: FontWeight.w700,
                 letterSpacing: 0.3)),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.orange,
@@ -1024,14 +1024,14 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ),
         ),
         const SizedBox(height: 24),
-        _buildSectionHeader('AKTIVE WARNUNGEN', Icons.warning_amber,
+        _buildSectionHeader(AppLocalizations.of(context).wotActiveWarnings, Icons.warning_amber,
             color: distrusts.isNotEmpty ? Colors.orange : cTextTertiary),
         const SizedBox(height: 12),
         if (distrusts.isEmpty)
           _buildEmptyState(
             icon: Icons.check_circle_outline,
-            title: 'Keine Meldungen',
-            subtitle: 'Aktuell gibt es keine offenen Warnungen\nim Netzwerk. Alles sauber.',
+            title: AppLocalizations.of(context).wotNoReports,
+            subtitle: AppLocalizations.of(context).wotNoCleanNetwork,
             color: Colors.green,
           )
         else
@@ -1109,7 +1109,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             ),
             const SizedBox(height: 4),
             Text(
-              admin.isSuspended ? 'SUSPENDIERT' : 'Aktive Warnung',
+              admin.isSuspended ? 'SUSPENDIERT' : AppLocalizations.of(context).wotActiveWarning,
               style: TextStyle(
                 color: admin.isSuspended ? cRed : Colors.orange,
                 fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.3,
@@ -1179,7 +1179,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           children: [
             Icon(Icons.report_outlined, color: Colors.orange, size: 22),
             const SizedBox(width: 8),
-            const Text('NPUB MELDEN', style: TextStyle(color: Colors.white,
+            Text(AppLocalizations.of(context).wotReportNpub, style: const TextStyle(color: Colors.white,
                 fontSize: 16, fontWeight: FontWeight.w700)),
           ],
         ),
@@ -1189,9 +1189,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Deine Meldung allein hat kein Gewicht. Erst wenn '
-                '${_consensus?.distrustThreshold ?? 3} unabhängige '
-                'Organisatoren warnen, wird der npub suspendiert.',
+                AppLocalizations.of(context).wotReportNoWeightThreshold(_consensus?.distrustThreshold ?? 3),
                 style: TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4),
               ),
               const SizedBox(height: 16),
@@ -1203,7 +1201,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                       style: const TextStyle(color: Colors.white, fontFamily: 'monospace',
                           fontSize: 11),
                       decoration: InputDecoration(
-                        labelText: 'npub (Pflicht)',
+                        labelText: AppLocalizations.of(context).wotNpubRequired,
                         labelStyle: TextStyle(color: cTextTertiary),
                         hintText: 'npub1...',
                         filled: true, fillColor: cDark,
@@ -1235,9 +1233,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 maxLength: 200,
                 style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
-                  labelText: 'Grund (Pflicht)',
+                  labelText: AppLocalizations.of(context).wotReasonRequired,
                   labelStyle: TextStyle(color: cTextTertiary),
-                  hintText: 'z.B. Fälscht Badges, kein echtes Meetup...',
+                  hintText: AppLocalizations.of(context).wotReasonExample,
                   hintStyle: TextStyle(color: cTextTertiary.withOpacity(0.5)),
                   filled: true, fillColor: cDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -1261,7 +1259,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               final reason = reasonController.text.trim();
               if (npub.isEmpty || reason.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('npub und Grund sind Pflicht.'),
+                  SnackBar(content: Text(AppLocalizations.of(context).wotNpubReasonRequired),
                       backgroundColor: Colors.red),
                 );
                 return;
@@ -1281,13 +1279,13 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text('BÜRGSCHAFT ENTZIEHEN?',
-            style: TextStyle(color: cRed, fontWeight: FontWeight.w700, fontSize: 16)),
+        title: Text(AppLocalizations.of(context).wotRevokeVouchTitle,
+            style: const TextStyle(color: cRed, fontWeight: FontWeight.w700, fontSize: 16)),
         content: Text(
-          '${admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub)} '
-          'wird von deiner Vouching-Liste entfernt.\n\n'
-          'Publishe danach deine aktualisierte Liste, '
-          'damit das Netzwerk davon erfährt.',
+          '${admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub)} ' +
+          AppLocalizations.of(context).wotRemovedFromList +
+          AppLocalizations.of(context).wotPublishUpdated +
+          AppLocalizations.of(context).wotSoNetworkKnows,
           style: TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4),
         ),
         actions: [
@@ -1305,7 +1303,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 setState(() {});
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Bürgschaft entzogen. Vergiss nicht zu publishen.'),
+                    content: Text(AppLocalizations.of(context).wotVouchWithdrawn),
                     backgroundColor: Colors.orange,
                   ),
                 );
@@ -1341,7 +1339,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Du bürgst mit deiner eigenen Reputation für diesen Organisator.',
+                AppLocalizations.of(context).wotVouchExplain,
                 style: TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4),
               ),
               const SizedBox(height: 16),
@@ -1353,7 +1351,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                       style: const TextStyle(color: Colors.white, fontFamily: 'monospace',
                           fontSize: 11),
                       decoration: InputDecoration(
-                        labelText: 'npub (Pflicht)',
+                        labelText: AppLocalizations.of(context).wotNpubRequired,
                         labelStyle: TextStyle(color: cTextTertiary),
                         hintText: 'npub1...',
                         filled: true, fillColor: cDark,
@@ -1383,7 +1381,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 controller: meetupController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: 'Meetup (z.B. München)',
+                  labelText: AppLocalizations.of(context).wotMeetupExample,
                   labelStyle: TextStyle(color: cTextTertiary),
                   filled: true, fillColor: cDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -1394,7 +1392,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 controller: nameController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  labelText: 'Name / Alias (optional)',
+                  labelText: AppLocalizations.of(context).wotNameAlias,
                   labelStyle: TextStyle(color: cTextTertiary),
                   filled: true, fillColor: cDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -1423,8 +1421,8 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                   _myVouches = await AdminRegistry.getMyVouches();
                   setState(() {});
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Ritterschlag vergeben! Vergiss nicht zu publishen.'),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context).wotVouchGiven),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -1435,7 +1433,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 );
               }
             },
-            child: const Text('VERBÜRGEN', style: TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(AppLocalizations.of(context).wotVouchVerb, style: const TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -1456,7 +1454,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Dein Web of Trust ist live ($sentTo Relays)!'),
+            content: Text(AppLocalizations.of(context).wotPublishedLive(sentTo)),
             backgroundColor: Colors.green,
           ),
         );
@@ -1464,7 +1462,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).wotErrorShort(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
@@ -1480,7 +1478,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Meldung publiziert an $count Relays.'),
+            content: Text(AppLocalizations.of(context).wotReportPublished(count)),
             backgroundColor: Colors.orange,
           ),
         );
@@ -1489,7 +1487,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).wotErrorShort(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
@@ -1614,7 +1612,7 @@ class _NpubScannerScreenState extends State<_NpubScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: const Text('NPUB SCANNEN'),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).wotScanNpub),
           backgroundColor: Colors.transparent, elevation: 0),
       body: Stack(
         children: [
@@ -1628,8 +1626,8 @@ class _NpubScannerScreenState extends State<_NpubScannerScreen> {
                 borderRadius: BorderRadius.circular(kTileRadius),
                 border: Border.all(color: cPurple),
               ),
-              child: const Text(
-                'Scanne den Nostr-QR-Code (npub)\ndes Organisators.',
+              child: Text(
+                AppLocalizations.of(context).wotScanInstruction,
                 style: TextStyle(color: Colors.white, fontSize: 14, height: 1.4),
                 textAlign: TextAlign.center,
               ),

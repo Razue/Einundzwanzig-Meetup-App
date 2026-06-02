@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -102,7 +103,7 @@ class BackupService {
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1A1A1A),
           title: Text(
-            isExport ? 'Backup verschlüsseln' : 'Backup entschlüsseln',
+            isExport ? AppLocalizations.of(context).backupEncryptTitle : AppLocalizations.of(context).backupDecryptTitle,
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Column(
@@ -111,9 +112,8 @@ class BackupService {
             children: [
               Text(
                 isExport
-                    ? 'Vergib ein Passwort, um deinen privaten Schlüssel (nsec) im Backup zu schützen.\n\n'
-                      '⚠️ Wenn du dieses Passwort vergisst, ist das Backup UNWIEDERBRINGLICH verloren!'
-                    : 'Dieses Backup ist verschlüsselt. Bitte gib das Passwort ein.',
+                    ? AppLocalizations.of(context).backupExportDesc
+                    : AppLocalizations.of(context).backupImportDesc,
                 style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
               const SizedBox(height: 16),
@@ -121,7 +121,7 @@ class BackupService {
                 obscureText: true,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'Passwort',
+                  hintText: AppLocalizations.of(context).backupPassword,
                   hintStyle: const TextStyle(color: Colors.white30),
                   filled: true,
                   fillColor: const Color(0xFF0A0A0A),
@@ -138,12 +138,12 @@ class BackupService {
                 TextField(
                   obscureText: true,
                   style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    hintText: 'Passwort bestätigen',
-                    hintStyle: TextStyle(color: Colors.white30),
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context).backupPasswordConfirm,
+                    hintStyle: const TextStyle(color: Colors.white30),
                     filled: true,
-                    fillColor: Color(0xFF0A0A0A),
-                    border: OutlineInputBorder(),
+                    fillColor: const Color(0xFF0A0A0A),
+                    border: const OutlineInputBorder(),
                   ),
                   onChanged: (val) => passwordConfirm = val,
                 ),
@@ -153,27 +153,27 @@ class BackupService {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, null),
-              child: const Text('Abbrechen', style: TextStyle(color: Colors.grey)),
+              child: Text(AppLocalizations.of(context).dialogCancelMixed, style: const TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
               onPressed: () {
                 if (password.isEmpty) {
-                  setDialogState(() => errorText = 'Passwort darf nicht leer sein');
+                  setDialogState(() => errorText = AppLocalizations.of(context).backupPasswordEmpty);
                   return;
                 }
                 if (isExport && password.length < 8) {
-                  setDialogState(() => errorText = 'Mindestens 8 Zeichen');
+                  setDialogState(() => errorText = AppLocalizations.of(context).backupPasswordMin);
                   return;
                 }
                 if (isExport && password != passwordConfirm) {
-                  setDialogState(() => errorText = 'Passwörter stimmen nicht überein');
+                  setDialogState(() => errorText = AppLocalizations.of(context).backupPasswordMismatch);
                   return;
                 }
                 Navigator.pop(context, password);
               },
               child: Text(
-                isExport ? 'Verschlüsseln & Speichern' : 'Entschlüsseln & Laden',
+                isExport ? AppLocalizations.of(context).backupEncryptSave : AppLocalizations.of(context).backupDecryptLoad,
                 style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               ),
             ),
@@ -320,15 +320,15 @@ class BackupService {
       // Teilen
       await Share.shareXFiles(
         [XFile(file.path)],
-        subject: 'Einundzwanzig App Backup (Verschlüsselt)',
-        text: 'Dein verschlüsseltes Backup. Halte dein Passwort bereit, um es wiederherzustellen.',
+        subject: AppLocalizations.of(context).backupShareTitle,
+        text: AppLocalizations.of(context).backupShareText,
       );
     } catch (e) {
       AppLogger.debug('App', "Backup Fehler: $e");
       if (context.mounted) {
         Navigator.pop(context); // Ladeindikator weg
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Fehler beim Backup: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).backupError(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
@@ -356,7 +356,7 @@ class BackupService {
 
           try {
             final parts = content.split(':');
-            if (parts.length != 4) throw Exception("Backup-Datei ist beschädigt (Formatfehler).");
+            if (parts.length != 4) throw Exception(AppLocalizations.of(context).backupCorrupt);
 
             final salt = Uint8List.fromList(base64Decode(parts[1]));
             final iv = enc.IV.fromBase64(parts[2]);
@@ -369,8 +369,8 @@ class BackupService {
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Falsches Passwort oder Datei beschädigt!"),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context).backupWrongPassword),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -388,7 +388,7 @@ class BackupService {
 
           try {
             final parts = content.split(':');
-            if (parts.length != 3) throw Exception("Backup-Datei ist beschädigt (Formatfehler).");
+            if (parts.length != 3) throw Exception(AppLocalizations.of(context).backupCorrupt);
 
             final iv = enc.IV.fromBase64(parts[1]);
             final cipherText = parts[2];
@@ -403,8 +403,8 @@ class BackupService {
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Falsches Passwort oder Datei beschädigt!"),
+                SnackBar(
+                  content: Text(AppLocalizations.of(context).backupWrongPassword),
                   backgroundColor: Colors.red,
                 ),
               );
@@ -418,11 +418,11 @@ class BackupService {
         try {
           data = jsonDecode(decryptedJson);
         } catch (e) {
-          throw Exception("Datei ist kein gültiges Backup oder das falsche Format.");
+          throw Exception(AppLocalizations.of(context).backupNotValid);
         }
 
         if (!data.containsKey('user') || !data.containsKey('badges')) {
-          throw Exception("Datei ist kein gültiges Einundzwanzig Backup.");
+          throw Exception(AppLocalizations.of(context).backupNotEinundzwanzig);
         }
 
         final int version = data['version'] ?? 1;
@@ -648,7 +648,7 @@ class BackupService {
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("✅ Backup geladen! ${restored.join(', ')} wiederhergestellt."),
+              content: Text(AppLocalizations.of(context).backupLoaded(restored.join(', '))),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 4),
             ),
@@ -662,7 +662,7 @@ class BackupService {
       AppLogger.debug('App', "Import Fehler: $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Import fehlgeschlagen: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).backupImportFailed(e.toString())), backgroundColor: Colors.red),
         );
       }
       return false;

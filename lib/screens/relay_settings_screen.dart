@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/relay_config.dart';
 
 class RelaySettingsScreen extends StatefulWidget {
@@ -53,13 +54,13 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: cCard,
-        title: const Text("RELAY HINZUFÜGEN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context).rsAddRelay, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: controller,
           autofocus: true,
           style: const TextStyle(color: Colors.white, fontFamily: 'monospace', fontSize: 14),
           decoration: InputDecoration(
-            hintText: 'wss://mein-relay.de',
+            hintText: AppLocalizations.of(context).rsRelayPlaceholder,
             hintStyle: TextStyle(color: Colors.grey.shade700),
             filled: true,
             fillColor: Colors.white.withOpacity(0.05),
@@ -69,7 +70,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("ABBRECHEN", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).apCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -84,7 +85,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: cOrange),
-            child: const Text("HINZUFÜGEN", style: TextStyle(color: Colors.black)),
+            child: Text(AppLocalizations.of(context).rsAdd, style: const TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -100,7 +101,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: const Text("NOSTR-RELAYS")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).rsTitle)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cOrange))
           : SingleChildScrollView(
@@ -123,8 +124,8 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            "Relays verteilen deine Reputation im Nostr-Netzwerk. "
-                            "Die App nutzt alle aktiven Relays gleichzeitig für maximale Erreichbarkeit.",
+                            AppLocalizations.of(context).rsRelaysIntro +
+                            AppLocalizations.of(context).rsAllRelaysInfo,
                             style: TextStyle(color: Colors.grey.shade500, fontSize: 12, height: 1.5),
                           ),
                         ),
@@ -135,8 +136,8 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                   const SizedBox(height: 24),
 
                   // Default-Relays
-                  const Text("DEFAULT-RELAYS",
-                    style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  Text(AppLocalizations.of(context).rsDefaultRelays,
+                    style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   const SizedBox(height: 10),
 
                   ...RelayConfig.defaultRelays.map((url) {
@@ -155,8 +156,8 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("EIGENE RELAYS",
-                        style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      Text(AppLocalizations.of(context).rsCustomRelays,
+                        style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1)),
                       GestureDetector(
                         onTap: _addCustomRelay,
                         child: Container(
@@ -165,12 +166,12 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                             color: cOrange.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.add, color: cOrange, size: 14),
-                              SizedBox(width: 4),
-                              Text("HINZUFÜGEN", style: TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w700)),
+                              const Icon(Icons.add, color: cOrange, size: 14),
+                              const SizedBox(width: 4),
+                              Text(AppLocalizations.of(context).rsAdd, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w700)),
                             ],
                           ),
                         ),
@@ -184,7 +185,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       child: Center(
                         child: Text(
-                          "Keine eigenen Relays konfiguriert.",
+                          AppLocalizations.of(context).rsNoCustomRelays,
                           style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
                         ),
                       ),
@@ -221,7 +222,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              count > 0 ? "$count aktive Relays" : "Keine Relays aktiv!",
+                              count > 0 ? "$count aktive Relays" : AppLocalizations.of(context).rsNoRelaysActive,
                               style: TextStyle(
                                 color: count > 0 ? Colors.green.shade300 : Colors.red.shade300,
                                 fontSize: 13,
@@ -292,3 +293,5 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
     );
   }
 }
+
+
