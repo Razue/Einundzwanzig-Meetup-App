@@ -77,7 +77,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
     if (user.homeMeetupId.isEmpty) {
       setState(() {
         _isLoading = false;
-        _meetupInfo = "⚠️ Kein Home-Meetup gesetzt";
+        _meetupInfo = AppLocalizations.of(context).rqNoHomeMeetup;
       });
       return;
     }
@@ -88,7 +88,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
 
     setState(() {
       _homeMeetup = meetup;
-      _meetupInfo = meetup != null ? "📍 ${meetup.city}, ${meetup.country}" : "⚠️ Meetup nicht gefunden";
+      _meetupInfo = meetup != null ? "📍 ${meetup.city}, ${meetup.country}" : AppLocalizations.of(context).rqMeetupNotFound;
       _adminNpub = npub ?? '';
     });
 
@@ -164,7 +164,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
         });
       }
     } catch (e) {
-      AppLogger.debug('RollingQR', 'Fehler: $e');
+      AppLogger.debug('RollingQR', AppLocalizations.of(context).wotErrorShort(e.toString()));
 
     }
   }

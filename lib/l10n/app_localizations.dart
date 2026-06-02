@@ -4305,6 +4305,1026 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Frankreich'**
   String get countryFR;
+
+  /// No description provided for @siTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'DEIN TRUST SCORE'**
+  String get siTitle;
+
+  /// No description provided for @siIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Misst deine Vertrauenswürdigkeit. Basiert auf kryptographischen Beweisen — niemand kann ihn fälschen.'**
+  String get siIntro;
+
+  /// No description provided for @siIdentityLayer.
+  ///
+  /// In de, this message translates to:
+  /// **'IDENTITY LAYER'**
+  String get siIdentityLayer;
+
+  /// No description provided for @siLinksActive.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Verknüpfungen aktiv'**
+  String siLinksActive(Object count);
+
+  /// No description provided for @siHumanitySub.
+  ///
+  /// In de, this message translates to:
+  /// **'Lightning Zap Verifikation'**
+  String get siHumanitySub;
+
+  /// No description provided for @siNip05Sub.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr-Identität (name@domain)'**
+  String get siNip05Sub;
+
+  /// No description provided for @siPlatformActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattform aktiv'**
+  String get siPlatformActive;
+
+  /// No description provided for @siPlatforms.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattformen'**
+  String get siPlatforms;
+
+  /// No description provided for @siNoneLinked.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine verknüpft'**
+  String get siNoneLinked;
+
+  /// No description provided for @siTrustLevel.
+  ///
+  /// In de, this message translates to:
+  /// **'TRUST LEVEL'**
+  String get siTrustLevel;
+
+  /// No description provided for @siLvlNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Startlevel. Besuche Meetups um Badges zu sammeln.'**
+  String get siLvlNew;
+
+  /// No description provided for @siLvlStarter.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine ersten Badges zeigen Community-Teilnahme.'**
+  String get siLvlStarter;
+
+  /// No description provided for @siLvlActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Regelmäßig dabei. Verschiedene Meetups und Organisatoren stärken dein Profil.'**
+  String get siLvlActive;
+
+  /// No description provided for @siLvlEstablished.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauenswürdiges Mitglied. Breit vernetzt und lange dabei.'**
+  String get siLvlEstablished;
+
+  /// No description provided for @siLvlVeteran.
+  ///
+  /// In de, this message translates to:
+  /// **'Höchstes Level. Reputation über Monate bewiesen.'**
+  String get siLvlVeteran;
+
+  /// No description provided for @siCalculation.
+  ///
+  /// In de, this message translates to:
+  /// **'BERECHNUNG'**
+  String get siCalculation;
+
+  /// No description provided for @siFacBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup-Badges'**
+  String get siFacBadges;
+
+  /// No description provided for @siFacBadgesDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Basiswert pro Badge. Gut besuchte Meetups wertvoller.'**
+  String get siFacBadgesDesc;
+
+  /// No description provided for @siFacDiversity.
+  ///
+  /// In de, this message translates to:
+  /// **'Diversität'**
+  String get siFacDiversity;
+
+  /// No description provided for @siFacDiversityDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschiedene Städte/Organisatoren = mehr Punkte.'**
+  String get siFacDiversityDesc;
+
+  /// No description provided for @siFacSigners.
+  ///
+  /// In de, this message translates to:
+  /// **'Signers'**
+  String get siFacSigners;
+
+  /// No description provided for @siFacSignersDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Unabhängige Organisatoren = höherer Trust.'**
+  String get siFacSignersDesc;
+
+  /// No description provided for @siFacMaturity.
+  ///
+  /// In de, this message translates to:
+  /// **'Reife'**
+  String get siFacMaturity;
+
+  /// No description provided for @siFacMaturityDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Account-Alter + Regelmäßigkeit = Bonus.'**
+  String get siFacMaturityDesc;
+
+  /// No description provided for @siFacFrequency.
+  ///
+  /// In de, this message translates to:
+  /// **'Frequency Cap'**
+  String get siFacFrequency;
+
+  /// No description provided for @siFacFrequencyDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Max. 2 Badges/Woche. Anti-Farming.'**
+  String get siFacFrequencyDesc;
+
+  /// No description provided for @siBecomeOrganizer.
+  ///
+  /// In de, this message translates to:
+  /// **'ORGANISATOR WERDEN'**
+  String get siBecomeOrganizer;
+
+  /// No description provided for @siBecomeOrgDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Automatische Beförderung ab genügend Trust Score. Dann eigene NFC-Tags und QR-Codes erstellen.'**
+  String get siBecomeOrgDesc;
+
+  /// No description provided for @siProgressLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'FORTSCHRITT ({name})'**
+  String siProgressLabel(Object name);
+
+  /// No description provided for @siAlreadyOrganizer.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist bereits Organisator!'**
+  String get siAlreadyOrganizer;
+
+  /// No description provided for @siIncreaseScore.
+  ///
+  /// In de, this message translates to:
+  /// **'SCORE ERHÖHEN'**
+  String get siIncreaseScore;
+
+  /// No description provided for @siTip1.
+  ///
+  /// In de, this message translates to:
+  /// **'Regelmäßig verschiedene Meetups besuchen'**
+  String get siTip1;
+
+  /// No description provided for @siTip2.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges bei Meetups in anderen Städten sammeln'**
+  String get siTip2;
+
+  /// No description provided for @siTip3.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges von verschiedenen Organisatoren'**
+  String get siTip3;
+
+  /// No description provided for @siTip4.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität mit Lightning-Zap verifizieren'**
+  String get siTip4;
+
+  /// No description provided for @siTip5.
+  ///
+  /// In de, this message translates to:
+  /// **'NIP-05 einrichten'**
+  String get siTip5;
+
+  /// No description provided for @siTip6.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattformen verknüpfen'**
+  String get siTip6;
+
+  /// No description provided for @siProgressRow.
+  ///
+  /// In de, this message translates to:
+  /// **'{label}: {current}/{required}'**
+  String siProgressRow(Object label, Object current, Object required);
+
+  /// No description provided for @wotTabNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'NETZWERK'**
+  String get wotTabNetwork;
+
+  /// No description provided for @wotTabReports.
+  ///
+  /// In de, this message translates to:
+  /// **'MELDUNGEN'**
+  String get wotTabReports;
+
+  /// No description provided for @wotHealthGood.
+  ///
+  /// In de, this message translates to:
+  /// **'GESUND'**
+  String get wotHealthGood;
+
+  /// No description provided for @wotHealthBuilding.
+  ///
+  /// In de, this message translates to:
+  /// **'AUFBAU'**
+  String get wotHealthBuilding;
+
+  /// No description provided for @wotHealthCritical.
+  ///
+  /// In de, this message translates to:
+  /// **'KRITISCH'**
+  String get wotHealthCritical;
+
+  /// No description provided for @badgeUnknown.
+  ///
+  /// In de, this message translates to:
+  /// **'unbekannt'**
+  String get badgeUnknown;
+
+  /// No description provided for @badgeBlockAtScan.
+  ///
+  /// In de, this message translates to:
+  /// **'₿ Blockhöhe beim Scan'**
+  String get badgeBlockAtScan;
+
+  /// No description provided for @mwStartMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUP STARTEN'**
+  String get mwStartMeetup;
+
+  /// No description provided for @mwStep1Nfc.
+  ///
+  /// In de, this message translates to:
+  /// **'SCHRITT 1: NFC TAG'**
+  String get mwStep1Nfc;
+
+  /// No description provided for @mwNfcIntro1.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du physische NFC-Tags (NTAG215) für dieses Meetup auslegen? '**
+  String get mwNfcIntro1;
+
+  /// No description provided for @mwNfcIntro2.
+  ///
+  /// In de, this message translates to:
+  /// **'Der kryptographische Beweis (Blockzeit & Signatur) wird darauf fixiert.'**
+  String get mwNfcIntro2;
+
+  /// No description provided for @mwWriteNfcTag.
+  ///
+  /// In de, this message translates to:
+  /// **'NFC TAG BESCHREIBEN'**
+  String get mwWriteNfcTag;
+
+  /// No description provided for @mwSkipQrOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'ÜBERSPRINGEN — NUR QR NUTZEN'**
+  String get mwSkipQrOnly;
+
+  /// No description provided for @repAllBound.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle {total} Badges gebunden und verifiziert'**
+  String repAllBound(Object total);
+
+  /// No description provided for @repBoundOf.
+  ///
+  /// In de, this message translates to:
+  /// **'{bound} von {total} Badges identitätsgebunden'**
+  String repBoundOf(Object total, Object bound);
+
+  /// No description provided for @repBoundExtra.
+  ///
+  /// In de, this message translates to:
+  /// **' ({verified} kryptographisch verifiziert)'**
+  String repBoundExtra(Object verified);
+
+  /// No description provided for @repAllVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle {total} Badges kryptographisch verifiziert (noch nicht gebunden)'**
+  String repAllVerified(Object total);
+
+  /// No description provided for @repVerifiedSchnorr.
+  ///
+  /// In de, this message translates to:
+  /// **'{verified} von {total} Badges mit Schnorr-Beweis'**
+  String repVerifiedSchnorr(Object total, Object verified);
+
+  /// No description provided for @repPlatformLinksActive.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Plattform-Verknüpfungen aktiv'**
+  String repPlatformLinksActive(Object count);
+
+  /// No description provided for @homeCouldNotOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Konnte {url} nicht öffnen'**
+  String homeCouldNotOpen(Object url);
+
+  /// No description provided for @admWotLive.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ Dein Web of Trust ist live ({count} Relays)!'**
+  String admWotLive(Object count);
+
+  /// No description provided for @admDelegationSigned.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ Deine Delegation wurde kryptografisch signiert und im Netzwerk veröffentlicht!'**
+  String get admDelegationSigned;
+
+  /// No description provided for @admWotCurrent.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ Web of Trust aktuell ({count} Admins verifiziert)'**
+  String admWotCurrent(Object count);
+
+  /// No description provided for @admNoVouchesFound.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ Keine publizierten Bürgschaften auf den Relays gefunden'**
+  String get admNoVouchesFound;
+
+  /// No description provided for @admVouchesRestored.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ {count} Bürgschaften wiederhergestellt'**
+  String admVouchesRestored(Object count);
+
+  /// No description provided for @admNoRelayReachable.
+  ///
+  /// In de, this message translates to:
+  /// **'⚠️ Kein Relay erreichbar — später erneut versuchen'**
+  String get admNoRelayReachable;
+
+  /// No description provided for @admAllVouchesRevoked.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ Alle Bürgschaften wurden im Netzwerk widerrufen'**
+  String get admAllVouchesRevoked;
+
+  /// No description provided for @apHowStep3.
+  ///
+  /// In de, this message translates to:
+  /// **'3. Jeder Scan = ein Badge für den Teilnehmer\n'**
+  String get apHowStep3;
+
+  /// No description provided for @badgeSchnorrSig.
+  ///
+  /// In de, this message translates to:
+  /// **'Schnorr (Nostr v2) ✓'**
+  String get badgeSchnorrSig;
+
+  /// No description provided for @msHomeMeetupSet.
+  ///
+  /// In de, this message translates to:
+  /// **'✅ {city} als Home-Meetup gesetzt'**
+  String msHomeMeetupSet(Object city);
+
+  /// No description provided for @mvKnownOrganizer.
+  ///
+  /// In de, this message translates to:
+  /// **'✓ Bekannter Organisator: {name}'**
+  String mvKnownOrganizer(Object name);
+
+  /// No description provided for @mvUnknownSigner.
+  ///
+  /// In de, this message translates to:
+  /// **'✗ UNBEKANNTER SIGNER!\nDieser Pubkey ist nicht in der Admin-Registry.'**
+  String get mvUnknownSigner;
+
+  /// No description provided for @mvAdminCheckFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'! Admin-Status konnte nicht geprüft werden (offline?)'**
+  String get mvAdminCheckFailed;
+
+  /// No description provided for @mvLegacyBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'! Legacy-Badge (v1) — Signer nicht prüfbar'**
+  String get mvLegacyBadge;
+
+  /// No description provided for @mvBadgeBound.
+  ///
+  /// In de, this message translates to:
+  /// **'🔗 Badge gebunden'**
+  String get mvBadgeBound;
+
+  /// No description provided for @nwSelectHomeMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'❌ Bitte erst ein Home-Meetup im Profil auswählen!'**
+  String get nwSelectHomeMeetup;
+
+  /// No description provided for @qrUniqueRecipients.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} verschiedene Empfänger'**
+  String qrUniqueRecipients(Object count);
+
+  /// No description provided for @apHowStep1.
+  ///
+  /// In de, this message translates to:
+  /// **'1. Starte ein neues Meetup (Session).\n'**
+  String get apHowStep1;
+
+  /// No description provided for @apHowStep2.
+  ///
+  /// In de, this message translates to:
+  /// **'2. Beschreibe danach NFC Tags oder zeige den QR-Code.\n'**
+  String get apHowStep2;
+
+  /// No description provided for @apHowStep4.
+  ///
+  /// In de, this message translates to:
+  /// **'4. Badges bauen Reputation auf → mehr Reputation = neue Organisatoren'**
+  String get apHowStep4;
+
+  /// No description provided for @ppHowStep1.
+  ///
+  /// In de, this message translates to:
+  /// **'1. Wähle eine Plattform und gib deinen Usernamen ein\n'**
+  String get ppHowStep1;
+
+  /// No description provided for @ppHowStep2.
+  ///
+  /// In de, this message translates to:
+  /// **'2. Die App erstellt einen kryptographischen Beweis\n'**
+  String get ppHowStep2;
+
+  /// No description provided for @ppHowStep3.
+  ///
+  /// In de, this message translates to:
+  /// **'3. Der Beweis wird automatisch in deinen Reputation-QR eingebettet\n'**
+  String get ppHowStep3;
+
+  /// No description provided for @ppHowStep4.
+  ///
+  /// In de, this message translates to:
+  /// **'4. Andere scannen deinen QR und sehen die verifizierte Verknüpfung'**
+  String get ppHowStep4;
+
+  /// No description provided for @admErrorEmoji.
+  ///
+  /// In de, this message translates to:
+  /// **'❌ Fehler: {msg}'**
+  String admErrorEmoji(Object msg);
+
+  /// No description provided for @admNoNewUpdates.
+  ///
+  /// In de, this message translates to:
+  /// **'⚠️ Keine neuen Updates gefunden'**
+  String get admNoNewUpdates;
+
+  /// No description provided for @homeImageLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild konnte nicht geladen werden: {msg}'**
+  String homeImageLoadError(Object msg);
+
+  /// No description provided for @qrSentCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} gesendet'**
+  String qrSentCount(Object count);
+
+  /// No description provided for @repShareError.
+  ///
+  /// In de, this message translates to:
+  /// **'Fehler beim Teilen: {msg}'**
+  String repShareError(Object msg);
+
+  /// No description provided for @rqNoHomeMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'⚠️ Kein Home-Meetup gesetzt'**
+  String get rqNoHomeMeetup;
+
+  /// No description provided for @rqMeetupNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'⚠️ Meetup nicht gefunden'**
+  String get rqMeetupNotFound;
+
+  /// No description provided for @rlWhatMeans.
+  ///
+  /// In de, this message translates to:
+  /// **'Was bedeutet das?'**
+  String get rlWhatMeans;
+
+  /// No description provided for @rlWhyImportant.
+  ///
+  /// In de, this message translates to:
+  /// **'Warum das wichtig ist'**
+  String get rlWhyImportant;
+
+  /// No description provided for @rlWeakLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Schwaches Profil'**
+  String get rlWeakLabel;
+
+  /// No description provided for @rlWeakExpl.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur ein Beweis-Layer aktiv. Dieser Nutzer hat kaum nachprüfbare Verbindungen. Bei größeren Transaktionen: Vorsicht.'**
+  String get rlWeakExpl;
+
+  /// No description provided for @rlWeakAdvice.
+  ///
+  /// In de, this message translates to:
+  /// **'Frage nach weiteren Beweisen (Lightning, NIP-05) oder triff die Person zuerst persönlich.'**
+  String get rlWeakAdvice;
+
+  /// No description provided for @rlLimitedLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Eingeschränkt'**
+  String get rlLimitedLabel;
+
+  /// No description provided for @rlLimitedExpl.
+  ///
+  /// In de, this message translates to:
+  /// **'Es gibt Meetup-Badges, aber keine weiteren unabhängigen Beweise. Der Nutzer könnte echt sein — aber es fehlt die Bestätigung durch andere Layer.'**
+  String get rlLimitedExpl;
+
+  /// No description provided for @rlLimitedAdvice.
+  ///
+  /// In de, this message translates to:
+  /// **'Für Kleinstbeträge OK. Für größere Beträge: Abwarten bis mehr Layer aktiv sind.'**
+  String get rlLimitedAdvice;
+
+  /// No description provided for @rlBuildingLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Aufbauend'**
+  String get rlBuildingLabel;
+
+  /// No description provided for @rlBuildingExpl.
+  ///
+  /// In de, this message translates to:
+  /// **'Zwei Beweis-Layer aktiv. Der Nutzer baut Reputation auf, hat aber noch nicht die volle Breite.'**
+  String get rlBuildingExpl;
+
+  /// No description provided for @rlBuildingAdvice.
+  ///
+  /// In de, this message translates to:
+  /// **'Für moderate Transaktionen geeignet.'**
+  String get rlBuildingAdvice;
+
+  /// No description provided for @rlConnectedLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Gut vernetzt'**
+  String get rlConnectedLabel;
+
+  /// No description provided for @rlConnectedExpl.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehrere unabhängige Beweise: Meetups, Lightning-Aktivität und soziale Verbindungen. Schwer zu faken.'**
+  String get rlConnectedExpl;
+
+  /// No description provided for @rlConnectedAdvice.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauenswürdig für die meisten Transaktionen.'**
+  String get rlConnectedAdvice;
+
+  /// No description provided for @rlSolidLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Solide'**
+  String get rlSolidLabel;
+
+  /// No description provided for @rlSolidExpl.
+  ///
+  /// In de, this message translates to:
+  /// **'Breite Basis an Beweisen. Manipulation wäre aufwändig und teuer.'**
+  String get rlSolidExpl;
+
+  /// No description provided for @rlSolidAdvice.
+  ///
+  /// In de, this message translates to:
+  /// **'Für die meisten Zwecke vertrauenswürdig.'**
+  String get rlSolidAdvice;
+
+  /// No description provided for @rlDefaultExpl.
+  ///
+  /// In de, this message translates to:
+  /// **'Einige Beweise vorhanden, aber Raum für mehr.'**
+  String get rlDefaultExpl;
+
+  /// No description provided for @rlDefaultAdvice.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigene Einschätzung nutzen.'**
+  String get rlDefaultAdvice;
+
+  /// No description provided for @rlMeetupProofs.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup-Beweise'**
+  String get rlMeetupProofs;
+
+  /// No description provided for @rlMeetupGood.
+  ///
+  /// In de, this message translates to:
+  /// **'War bei verschiedenen Meetups mit verschiedenen Organisatoren. Das erfordert physische Anwesenheit an mehreren Orten.'**
+  String get rlMeetupGood;
+
+  /// No description provided for @rlMeetupMoreDiverse.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehr Vielfalt wäre überzeugender.'**
+  String get rlMeetupMoreDiverse;
+
+  /// No description provided for @rlMeetupNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Meetup-Badges vorhanden. Dieser Nutzer hat noch kein Einundzwanzig-Meetup besucht — oder nutzt die App erst seit kurzem.'**
+  String get rlMeetupNone;
+
+  /// No description provided for @rlAllBound.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle kryptographisch gebunden'**
+  String get rlAllBound;
+
+  /// No description provided for @rlGoodSpread.
+  ///
+  /// In de, this message translates to:
+  /// **'Gute regionale Streuung'**
+  String get rlGoodSpread;
+
+  /// No description provided for @rlLowSpread.
+  ///
+  /// In de, this message translates to:
+  /// **'Wenig Streuung'**
+  String get rlLowSpread;
+
+  /// No description provided for @rlPhysGoodDiversity.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat Meetup-Badges, aber nur von {count} Organisator(en). Mehr Vielfalt wäre überzeugender.'**
+  String rlPhysGoodDiversity(Object count);
+
+  /// No description provided for @rlBadgeCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badges'**
+  String rlBadgeCount(Object count);
+
+  /// No description provided for @rlBoundOf.
+  ///
+  /// In de, this message translates to:
+  /// **'{bound} von {total} gebunden'**
+  String rlBoundOf(Object bound, Object total);
+
+  /// No description provided for @rlDiffMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} verschiedene Meetups'**
+  String rlDiffMeetups(Object count);
+
+  /// No description provided for @rlOrganizers.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Organisatoren'**
+  String rlOrganizers(Object count);
+
+  /// No description provided for @rlConfirmedByDiff.
+  ///
+  /// In de, this message translates to:
+  /// **'Von verschiedenen Personen bestätigt'**
+  String get rlConfirmedByDiff;
+
+  /// No description provided for @rlOneOrgOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur ein Organisator — wenig unabhängige Bestätigung'**
+  String get rlOneOrgOnly;
+
+  /// No description provided for @rlMemberSince.
+  ///
+  /// In de, this message translates to:
+  /// **'Dabei seit {since}'**
+  String rlMemberSince(Object since);
+
+  /// No description provided for @rlDaysCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Tage'**
+  String rlDaysCount(Object count);
+
+  /// No description provided for @rlLightningProof.
+  ///
+  /// In de, this message translates to:
+  /// **'Lightning-Beweis'**
+  String get rlLightningProof;
+
+  /// No description provided for @rlLnBoth.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat echte Lightning-Zahlungen getätigt und empfangen. Bots haben keine Lightning-Wallets — das ist ein starkes Echtheitssignal.'**
+  String get rlLnBoth;
+
+  /// No description provided for @rlLnPaid.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat mindestens einmal über Lightning gezahlt. Grundlegender Beweis dass eine echte Wallet existiert.'**
+  String get rlLnPaid;
+
+  /// No description provided for @rlLnActiveOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Lightning-Aktivität vorhanden, aber Humanity-Proof noch nicht aktiv.'**
+  String get rlLnActiveOnly;
+
+  /// No description provided for @rlLnNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Lightning-Aktivität. Das heißt nicht dass der Nutzer unecht ist — vielleicht nutzt er Lightning nicht über Nostr. Aber es fehlt ein wichtiges Anti-Bot-Signal.'**
+  String get rlLnNone;
+
+  /// No description provided for @rlHumanVerified.
+  ///
+  /// In de, this message translates to:
+  /// **'Mensch verifiziert'**
+  String get rlHumanVerified;
+
+  /// No description provided for @rlRealLnPayment.
+  ///
+  /// In de, this message translates to:
+  /// **'Echte Lightning-Zahlung nachgewiesen'**
+  String get rlRealLnPayment;
+
+  /// No description provided for @rlZapsSent.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Zaps gesendet'**
+  String rlZapsSent(Object count);
+
+  /// No description provided for @rlToRecipients.
+  ///
+  /// In de, this message translates to:
+  /// **'An {count} verschiedene Empfänger'**
+  String rlToRecipients(Object count);
+
+  /// No description provided for @rlZapsReceived.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Zaps empfangen'**
+  String rlZapsReceived(Object count);
+
+  /// No description provided for @rlFromSenders.
+  ///
+  /// In de, this message translates to:
+  /// **'Von {count} verschiedenen Sendern'**
+  String rlFromSenders(Object count);
+
+  /// No description provided for @rlMonthsActive.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Monate aktiv'**
+  String rlMonthsActive(Object count);
+
+  /// No description provided for @rlSocialTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Soziales Netzwerk'**
+  String get rlSocialTitle;
+
+  /// No description provided for @rlSocMutualMany.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr kennt euch gegenseitig auf Nostr und habt viele gemeinsame Kontakte. Starke Verbindung.'**
+  String get rlSocMutualMany;
+
+  /// No description provided for @rlSocMutual.
+  ///
+  /// In de, this message translates to:
+  /// **'Gegenseitiger Follow — ihr kennt euch auf Nostr.'**
+  String get rlSocMutual;
+
+  /// No description provided for @rlSocCommon.
+  ///
+  /// In de, this message translates to:
+  /// **'Viele gemeinsame Kontakte — ihr bewegt euch im selben Netzwerk.'**
+  String get rlSocCommon;
+
+  /// No description provided for @rlSocOneSided.
+  ///
+  /// In de, this message translates to:
+  /// **'Einseitige Verbindung. Ihr kennt euch flüchtig.'**
+  String get rlSocOneSided;
+
+  /// No description provided for @rlSocOrgFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Bekannte Einundzwanzig-Organisatoren folgen diesem Nutzer. Das ist ein positives Signal.'**
+  String get rlSocOrgFollow;
+
+  /// No description provided for @rlSocDefault.
+  ///
+  /// In de, this message translates to:
+  /// **'Es gibt Verbindungen im Nostr-Netzwerk zu diesem Nutzer.'**
+  String get rlSocDefault;
+
+  /// No description provided for @rlSocNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung im Nostr-Netzwerk gefunden. Das kann bedeuten: Ihr seid euch noch nie auf Nostr begegnet, oder der Nutzer ist sehr neu. Bei Fremden ist das normal — bei angeblich bekannten Gesichtern ein Warnsignal.'**
+  String get rlSocNone;
+
+  /// No description provided for @rlMutualFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Gegenseitiger Follow'**
+  String get rlMutualFollow;
+
+  /// No description provided for @rlYouFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Du folgst'**
+  String get rlYouFollow;
+
+  /// No description provided for @rlFollowsYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Folgt dir'**
+  String get rlFollowsYou;
+
+  /// No description provided for @rlNoFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Follow'**
+  String get rlNoFollow;
+
+  /// No description provided for @rlKnowOnNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr kennt euch auf Nostr'**
+  String get rlKnowOnNostr;
+
+  /// No description provided for @rlNoDirectConn.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine direkte Verbindung'**
+  String get rlNoDirectConn;
+
+  /// No description provided for @rlCommonContacts.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} gemeinsame Kontakte'**
+  String rlCommonContacts(Object count);
+
+  /// No description provided for @rlSameNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Gleiches Netzwerk'**
+  String get rlSameNetwork;
+
+  /// No description provided for @rlSomeOverlap.
+  ///
+  /// In de, this message translates to:
+  /// **'Einige Überlappungen'**
+  String get rlSomeOverlap;
+
+  /// No description provided for @rlSeparateNetworks.
+  ///
+  /// In de, this message translates to:
+  /// **'Getrennte Netzwerke'**
+  String get rlSeparateNetworks;
+
+  /// No description provided for @rlOrgsFollow.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Organisatoren folgen'**
+  String rlOrgsFollow(Object count);
+
+  /// No description provided for @rlEndorsement.
+  ///
+  /// In de, this message translates to:
+  /// **'Endorsement von bekannten Admins'**
+  String get rlEndorsement;
+
+  /// No description provided for @rlIdentityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Identitäts-Nachweis'**
+  String get rlIdentityTitle;
+
+  /// No description provided for @rlIdNip05Plat.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat eine NIP-05-Adresse und verknüpfte Plattformen. Das verknüpft die Nostr-Identität mit einer Domain — schwerer zu faken als ein anonymer Account.'**
+  String get rlIdNip05Plat;
+
+  /// No description provided for @rlIdNip05Only.
+  ///
+  /// In de, this message translates to:
+  /// **'Hat eine NIP-05-Adresse. Das verknüpft die Nostr-Identität mit einer Domain — schwerer zu faken als ein anonymer Account.'**
+  String get rlIdNip05Only;
+
+  /// No description provided for @rlIdPlatOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpfte Plattform-Accounts. Mehr Plattformen = mehr Aufwand für Fälscher.'**
+  String get rlIdPlatOnly;
+
+  /// No description provided for @rlIdNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Internet-Identifikation. Komplett anonym. Das ist für Privatsphäre OK, aber gibt auch weniger Anhaltspunkte für Vertrauen.'**
+  String get rlIdNone;
+
+  /// No description provided for @rlLinked.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpft'**
+  String get rlLinked;
+
+  /// No description provided for @rlNoIdentification.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Identifikation'**
+  String get rlNoIdentification;
+
+  /// No description provided for @rlAnonymous.
+  ///
+  /// In de, this message translates to:
+  /// **'Anonym'**
+  String get rlAnonymous;
+
+  /// No description provided for @rlActive.
+  ///
+  /// In de, this message translates to:
+  /// **'✓ aktiv'**
+  String get rlActive;
+
+  /// No description provided for @rlActiveShort.
+  ///
+  /// In de, this message translates to:
+  /// **'✓ aktiv'**
+  String get rlActiveShort;
+
+  /// No description provided for @rlMissingShort.
+  ///
+  /// In de, this message translates to:
+  /// **'— fehlt'**
+  String get rlMissingShort;
+
+  /// No description provided for @qrReceivedCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} empfangen'**
+  String qrReceivedCount(Object count);
+
+  /// No description provided for @qrUniqueSenders.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} verschiedene Sender'**
+  String qrUniqueSenders(Object count);
+
+  /// No description provided for @rlProofsOfFour.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} / 4 Beweise'**
+  String rlProofsOfFour(Object count);
 }
 
 class _AppLocalizationsDelegate

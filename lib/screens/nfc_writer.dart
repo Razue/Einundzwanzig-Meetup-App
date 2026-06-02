@@ -117,7 +117,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
   void _writeTag() async {
     if (_homeMeetup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("❌ Bitte erst ein Home-Meetup im Profil auswählen!"), backgroundColor: Colors.red),
+        SnackBar(content: Text(AppLocalizations.of(context).nwSelectHomeMeetup), backgroundColor: Colors.red),
       );
       return;
     }

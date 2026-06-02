@@ -24,6 +24,7 @@
 
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import '../services/social_graph_service.dart';
 import '../services/zap_verification_service.dart';
 import '../services/nip05_service.dart';
@@ -125,7 +126,8 @@ class ReputationLayersWidget extends StatelessWidget {
   }
 
   /// Vertrauens-Stufe als Ampel
-  _TrustSignal get _trustSignal {
+  _TrustSignal _trustSignalOf(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final layers = _activeLayerCount;
     final score = _combinedScore;
 
@@ -134,12 +136,9 @@ class ReputationLayersWidget extends StatelessWidget {
       return _TrustSignal(
         color: Colors.red.shade400,
         icon: Icons.warning_amber_rounded,
-        label: 'Schwaches Profil',
-        explanation: 'Nur ein Beweis-Layer aktiv. '
-            'Dieser Nutzer hat kaum nachprüfbare Verbindungen. '
-            'Bei größeren Transaktionen: Vorsicht.',
-        actionHint: 'Frage nach weiteren Beweisen (Lightning, NIP-05) '
-            'oder triff die Person zuerst persönlich.',
+        label: t.rlWeakLabel,
+        explanation: t.rlWeakExpl,
+        actionHint: t.rlWeakAdvice,
       );
     }
 
@@ -147,12 +146,9 @@ class ReputationLayersWidget extends StatelessWidget {
       return _TrustSignal(
         color: Colors.orange,
         icon: Icons.info_outline,
-        label: 'Eingeschränkt',
-        explanation: 'Es gibt Meetup-Badges, aber keine weiteren '
-            'unabhängigen Beweise. Der Nutzer könnte echt sein — '
-            'aber es fehlt die Bestätigung durch andere Layer.',
-        actionHint: 'Für Kleinstbeträge OK. Für größere Beträge: '
-            'Abwarten bis mehr Layer aktiv sind.',
+        label: t.rlLimitedLabel,
+        explanation: t.rlLimitedExpl,
+        actionHint: t.rlLimitedAdvice,
       );
     }
 
@@ -160,10 +156,9 @@ class ReputationLayersWidget extends StatelessWidget {
       return _TrustSignal(
         color: Colors.amber,
         icon: Icons.shield_outlined,
-        label: 'Aufbauend',
-        explanation: 'Zwei Beweis-Layer aktiv. Der Nutzer baut '
-            'Reputation auf, hat aber noch nicht die volle Breite.',
-        actionHint: 'Für moderate Transaktionen geeignet.',
+        label: t.rlBuildingLabel,
+        explanation: t.rlBuildingExpl,
+        actionHint: t.rlBuildingAdvice,
       );
     }
 
@@ -171,11 +166,9 @@ class ReputationLayersWidget extends StatelessWidget {
       return _TrustSignal(
         color: Colors.green,
         icon: Icons.verified_user,
-        label: 'Gut vernetzt',
-        explanation: 'Mehrere unabhängige Beweise: Meetups, '
-            'Lightning-Aktivität und soziale Verbindungen. '
-            'Schwer zu faken.',
-        actionHint: 'Vertrauenswürdig für die meisten Transaktionen.',
+        label: t.rlConnectedLabel,
+        explanation: t.rlConnectedExpl,
+        actionHint: t.rlConnectedAdvice,
       );
     }
 
@@ -183,25 +176,24 @@ class ReputationLayersWidget extends StatelessWidget {
       return _TrustSignal(
         color: Colors.green.shade300,
         icon: Icons.shield,
-        label: 'Solide',
-        explanation: 'Breite Basis an Beweisen. Manipulation wäre '
-            'aufwändig und teuer.',
-        actionHint: 'Für die meisten Zwecke vertrauenswürdig.',
+        label: t.rlSolidLabel,
+        explanation: t.rlSolidExpl,
+        actionHint: t.rlSolidAdvice,
       );
     }
 
     return _TrustSignal(
       color: Colors.amber,
       icon: Icons.shield_outlined,
-      label: 'Aufbauend',
-      explanation: 'Einige Beweise vorhanden, aber Raum für mehr.',
-      actionHint: 'Eigene Einschätzung nutzen.',
+      label: t.rlBuildingLabel,
+      explanation: t.rlDefaultExpl,
+      actionHint: t.rlDefaultAdvice,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final signal = _trustSignal;
+    final signal = _trustSignalOf(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,20 +201,20 @@ class ReputationLayersWidget extends StatelessWidget {
         // =============================================
         // VERTRAUENS-AMPEL — Das Erste was man sieht
         // =============================================
-        _buildTrustSignalCard(signal),
+        _buildTrustSignalCard(context, signal),
 
         const SizedBox(height: 16),
 
         // =============================================
         // DIE 4 BEWEIS-LAYER
         // =============================================
-        _buildPhysicalLayer(),
+        _buildPhysicalLayer(context),
         const SizedBox(height: 10),
-        _buildLightningLayer(),
+        _buildLightningLayer(context),
         const SizedBox(height: 10),
-        _buildSocialLayer(),
+        _buildSocialLayer(context),
         const SizedBox(height: 10),
-        _buildIdentityLayer(),
+        _buildIdentityLayer(context),
 
         // =============================================
         // HANDLUNGSEMPFEHLUNG
@@ -239,7 +231,7 @@ class ReputationLayersWidget extends StatelessWidget {
   // VERTRAUENS-AMPEL CARD
   // =============================================
 
-  Widget _buildTrustSignalCard(_TrustSignal signal) {
+  Widget _buildTrustSignalCard(BuildContext context, _TrustSignal signal) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -284,7 +276,7 @@ class ReputationLayersWidget extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        '$_activeLayerCount / 4 Beweise',
+                        AppLocalizations.of(context).rlProofsOfFour(_activeLayerCount),
                         style: TextStyle(
                           color: Colors.grey.shade500,
                           fontSize: 11,
@@ -315,54 +307,52 @@ class ReputationLayersWidget extends StatelessWidget {
   // LAYER 1: PHYSISCHER BEWEIS (Meetup-Badges)
   // =============================================
 
-  Widget _buildPhysicalLayer() {
+  Widget _buildPhysicalLayer(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final hasData = _physicalScore != null && _physicalScore! > 0;
     final bool hasDiversity = (signerCount ?? 0) >= 2;
     final bool hasBound = boundBadges != null && badgeCount != null && boundBadges == badgeCount;
 
     return _buildLayerCard(
+      context,
       icon: Icons.nfc,
       color: cOrange,
-      title: 'Meetup-Beweise',
+      title: t.rlMeetupProofs,
       hasData: hasData,
       // Was bedeutet das?
       meaningWhenPresent: hasDiversity
-          ? 'War bei verschiedenen Meetups mit verschiedenen Organisatoren. '
-            'Das erfordert physische Anwesenheit an mehreren Orten.'
+          ? t.rlMeetupGood
           : badgeCount != null && badgeCount! > 0
-              ? 'Hat Meetup-Badges, aber nur von ${signerCount ?? 1} Organisator(en). '
-                'Mehr Vielfalt wäre überzeugender.'
+              ? t.rlPhysGoodDiversity(signerCount ?? 1)
               : null,
-      meaningWhenMissing: 'Keine Meetup-Badges vorhanden. '
-          'Dieser Nutzer hat noch kein Einundzwanzig-Meetup besucht — '
-          'oder nutzt die App erst seit kurzem.',
+      meaningWhenMissing: t.rlMeetupNone,
       details: hasData
           ? [
               _LayerDetail(
-                label: '${badgeCount ?? 0} Badge${(badgeCount ?? 0) != 1 ? 's' : ''}',
+                label: t.rlBadgeCount(badgeCount ?? 0),
                 sublabel: hasBound
-                    ? 'Alle kryptographisch gebunden'
-                    : '${boundBadges ?? 0} von ${badgeCount ?? 0} gebunden',
+                    ? t.rlAllBound
+                    : t.rlBoundOf(boundBadges ?? 0, badgeCount ?? 0),
                 positive: hasBound,
               ),
               _LayerDetail(
-                label: '${meetupCount ?? 0} verschiedene Meetups',
+                label: t.rlDiffMeetups(meetupCount ?? 0),
                 sublabel: (meetupCount ?? 0) >= 3
-                    ? 'Gute regionale Streuung'
-                    : 'Wenig Streuung',
+                    ? t.rlGoodSpread
+                    : t.rlLowSpread,
                 positive: (meetupCount ?? 0) >= 2,
               ),
               _LayerDetail(
-                label: '${signerCount ?? 0} Organisator${(signerCount ?? 0) != 1 ? 'en' : ''}',
+                label: t.rlOrganizers(signerCount ?? 0),
                 sublabel: hasDiversity
-                    ? 'Von verschiedenen Personen bestätigt'
-                    : 'Nur ein Organisator — wenig unabhängige Bestätigung',
+                    ? t.rlConfirmedByDiff
+                    : t.rlOneOrgOnly,
                 positive: hasDiversity,
               ),
               if (since != null && since!.isNotEmpty)
                 _LayerDetail(
-                  label: 'Dabei seit $since',
-                  sublabel: '${accountAgeDays ?? 0} Tage',
+                  label: t.rlMemberSince(since!),
+                  sublabel: t.rlDaysCount(accountAgeDays ?? 0),
                   positive: (accountAgeDays ?? 0) > 60,
                 ),
             ]
@@ -374,49 +364,45 @@ class ReputationLayersWidget extends StatelessWidget {
   // LAYER 2: LIGHTNING-BEWEIS
   // =============================================
 
-  Widget _buildLightningLayer() {
+  Widget _buildLightningLayer(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final hasZaps = zapStats != null && zapStats!.totalCount > 0;
     final hasData = hasZaps || humanityVerified;
 
     return _buildLayerCard(
+      context,
       icon: Icons.bolt,
       color: Colors.amber,
-      title: 'Lightning-Beweis',
+      title: t.rlLightningProof,
       hasData: hasData,
       meaningWhenPresent: humanityVerified && hasZaps
-          ? 'Hat echte Lightning-Zahlungen getätigt und empfangen. '
-            'Bots haben keine Lightning-Wallets — das ist ein starkes Echtheitssignal.'
+          ? t.rlLnBoth
           : humanityVerified
-              ? 'Hat mindestens einmal über Lightning gezahlt. '
-                'Grundlegender Beweis dass eine echte Wallet existiert.'
-              : 'Lightning-Aktivität vorhanden, '
-                'aber Humanity-Proof noch nicht aktiv.',
-      meaningWhenMissing: 'Keine Lightning-Aktivität. '
-          'Das heißt nicht dass der Nutzer unecht ist — '
-          'vielleicht nutzt er Lightning nicht über Nostr. '
-          'Aber es fehlt ein wichtiges Anti-Bot-Signal.',
+              ? t.rlLnPaid
+              : t.rlLnActiveOnly,
+      meaningWhenMissing: t.rlLnNone,
       details: hasData
           ? [
               if (humanityVerified)
                 _LayerDetail(
-                  label: 'Mensch verifiziert',
-                  sublabel: 'Echte Lightning-Zahlung nachgewiesen',
+                  label: t.rlHumanVerified,
+                  sublabel: t.rlRealLnPayment,
                   positive: true,
                 ),
               if (hasZaps) ...[
                 _LayerDetail(
-                  label: '${zapStats!.sentCount} Zaps gesendet',
-                  sublabel: 'An ${zapStats!.uniqueRecipientCount} verschiedene Empfänger',
+                  label: t.rlZapsSent(zapStats!.sentCount),
+                  sublabel: t.rlToRecipients(zapStats!.uniqueRecipientCount),
                   positive: zapStats!.uniqueRecipientCount > 3,
                 ),
                 _LayerDetail(
-                  label: '${zapStats!.receivedCount} Zaps empfangen',
-                  sublabel: 'Von ${zapStats!.uniqueSenderCount} verschiedenen Sendern',
+                  label: t.rlZapsReceived(zapStats!.receivedCount),
+                  sublabel: t.rlFromSenders(zapStats!.uniqueSenderCount),
                   positive: zapStats!.receivedCount > 0,
                 ),
                 if (zapStats!.activeMonths > 0)
                   _LayerDetail(
-                    label: '${zapStats!.activeMonths} Monate aktiv',
+                    label: t.rlMonthsActive(zapStats!.activeMonths),
                     sublabel: zapStats!.activityLabel,
                     positive: zapStats!.activeMonths >= 3,
                   ),
@@ -430,70 +416,65 @@ class ReputationLayersWidget extends StatelessWidget {
   // LAYER 3: SOZIALER BEWEIS
   // =============================================
 
-  Widget _buildSocialLayer() {
+  Widget _buildSocialLayer(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final hasData = socialAnalysis != null && socialAnalysis!.socialScore > 0;
     final sa = socialAnalysis;
 
     String? meaning;
     if (sa != null) {
       if (sa.isMutual && sa.commonContactCount > 3) {
-        meaning = 'Ihr kennt euch gegenseitig auf Nostr und habt viele '
-            'gemeinsame Kontakte. Starke Verbindung.';
+        meaning = t.rlSocMutualMany;
       } else if (sa.isMutual) {
-        meaning = 'Gegenseitiger Follow — ihr kennt euch auf Nostr.';
+        meaning = t.rlSocMutual;
       } else if (sa.commonContactCount > 5) {
-        meaning = 'Viele gemeinsame Kontakte — ihr bewegt euch '
-            'im selben Netzwerk.';
+        meaning = t.rlSocCommon;
       } else if (sa.iFollow || sa.followsMe) {
-        meaning = 'Einseitige Verbindung. Ihr kennt euch flüchtig.';
+        meaning = t.rlSocOneSided;
       } else if (sa.orgFollowerCount > 0) {
-        meaning = 'Bekannte Einundzwanzig-Organisatoren folgen diesem Nutzer. '
-            'Das ist ein positives Signal.';
+        meaning = t.rlSocOrgFollow;
       }
     }
 
     return _buildLayerCard(
+      context,
       icon: Icons.hub,
       color: cCyan,
-      title: 'Soziales Netzwerk',
+      title: t.rlSocialTitle,
       hasData: hasData,
-      meaningWhenPresent: meaning ??
-          'Es gibt Verbindungen im Nostr-Netzwerk zu diesem Nutzer.',
-      meaningWhenMissing: 'Keine Verbindung im Nostr-Netzwerk gefunden. '
-          'Das kann bedeuten: Ihr seid euch noch nie auf Nostr begegnet, '
-          'oder der Nutzer ist sehr neu. '
-          'Bei Fremden ist das normal — bei angeblich bekannten Gesichtern ein Warnsignal.',
+      meaningWhenPresent: meaning ?? t.rlSocDefault,
+      meaningWhenMissing: t.rlSocNone,
       details: sa != null
           ? [
               // Direkte Verbindung
               _LayerDetail(
                 label: sa.isMutual
-                    ? 'Gegenseitiger Follow'
+                    ? t.rlMutualFollow
                     : sa.iFollow
-                        ? 'Du folgst'
+                        ? t.rlYouFollow
                         : sa.followsMe
-                            ? 'Folgt dir'
-                            : 'Kein Follow',
+                            ? t.rlFollowsYou
+                            : t.rlNoFollow,
                 sublabel: sa.isMutual
-                    ? 'Ihr kennt euch auf Nostr'
-                    : 'Keine direkte Verbindung',
+                    ? t.rlKnowOnNostr
+                    : t.rlNoDirectConn,
                 positive: sa.isMutual || sa.iFollow || sa.followsMe,
               ),
               // Gemeinsame Kontakte
               _LayerDetail(
-                label: '${sa.commonContactCount} gemeinsame Kontakte',
+                label: t.rlCommonContacts(sa.commonContactCount),
                 sublabel: sa.commonContactCount > 5
-                    ? 'Gleiches Netzwerk'
+                    ? t.rlSameNetwork
                     : sa.commonContactCount > 0
-                        ? 'Einige Überlappungen'
-                        : 'Getrennte Netzwerke',
+                        ? t.rlSomeOverlap
+                        : t.rlSeparateNetworks,
                 positive: sa.commonContactCount > 0,
               ),
               // Organisator-Follows
               if (sa.orgFollowerCount > 0)
                 _LayerDetail(
-                  label: '${sa.orgFollowerCount} Organisatoren folgen',
-                  sublabel: 'Endorsement von bekannten Admins',
+                  label: t.rlOrgsFollow(sa.orgFollowerCount),
+                  sublabel: t.rlEndorsement,
                   positive: true,
                 ),
             ]
@@ -505,26 +486,23 @@ class ReputationLayersWidget extends StatelessWidget {
   // LAYER 4: IDENTITÄTS-BEWEIS
   // =============================================
 
-  Widget _buildIdentityLayer() {
+  Widget _buildIdentityLayer(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final hasNip05 = nip05 != null && nip05!.valid;
     final hasPlatforms = (platformProofCount ?? 0) > 0 ||
         (platformProofs != null && platformProofs!.isNotEmpty);
     final hasData = hasNip05 || hasPlatforms;
 
     return _buildLayerCard(
+      context,
       icon: Icons.fingerprint,
       color: Colors.purple,
-      title: 'Identitäts-Nachweis',
+      title: t.rlIdentityTitle,
       hasData: hasData,
       meaningWhenPresent: hasNip05
-          ? 'Hat eine NIP-05-Adresse${hasPlatforms ? ' und verknüpfte Plattformen' : ''}. '
-            'Das verknüpft die Nostr-Identität mit einer Domain — '
-            'schwerer zu faken als ein anonymer Account.'
-          : 'Verknüpfte Plattform-Accounts. '
-            'Mehr Plattformen = mehr Aufwand für Fälscher.',
-      meaningWhenMissing: 'Keine Internet-Identifikation. '
-          'Komplett anonym. Das ist für Privatsphäre OK, '
-          'aber gibt auch weniger Anhaltspunkte für Vertrauen.',
+          ? (hasPlatforms ? t.rlIdNip05Plat : t.rlIdNip05Only)
+          : t.rlIdPlatOnly,
+      meaningWhenMissing: t.rlIdNone,
       details: [
         if (hasNip05)
           _LayerDetail(
@@ -538,14 +516,14 @@ class ReputationLayersWidget extends StatelessWidget {
             final username = data['username'] as String? ?? '';
             return _LayerDetail(
               label: '${_platformLabel(entry.key)}${username.isNotEmpty ? ': @$username' : ''}',
-              sublabel: 'Verknüpft',
+              sublabel: t.rlLinked,
               positive: true,
             );
           }),
         if (!hasNip05 && !hasPlatforms)
           _LayerDetail(
-            label: 'Keine Identifikation',
-            sublabel: 'Anonym',
+            label: t.rlNoIdentification,
+            sublabel: t.rlAnonymous,
             positive: false,
           ),
       ],
@@ -588,7 +566,8 @@ class ReputationLayersWidget extends StatelessWidget {
   // GENERISCHER LAYER-CARD BUILDER
   // =============================================
 
-  Widget _buildLayerCard({
+  Widget _buildLayerCard(
+    BuildContext context, {
     required IconData icon,
     required Color color,
     required String title,
@@ -645,7 +624,7 @@ class ReputationLayersWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  hasData ? '✓ aktiv' : '— fehlt',
+                  hasData ? AppLocalizations.of(context).rlActiveShort : AppLocalizations.of(context).rlMissingShort,
                   style: TextStyle(
                     color: hasData ? color : Colors.grey.shade600,
                     fontSize: 11,
@@ -777,3 +756,5 @@ class _LayerDetail {
     this.positive = false,
   });
 }
+
+

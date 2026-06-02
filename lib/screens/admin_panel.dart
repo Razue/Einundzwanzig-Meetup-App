@@ -322,10 +322,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   ]),
                   const SizedBox(height: 12),
                   Text(
-                    "1. Starte ein neues Meetup (Session).\n"
-                    "2. Beschreibe danach NFC Tags oder zeige den QR-Code.\n"
-                    "3. Jeder Scan = ein Badge für den Teilnehmer\n"
-                    "4. Badges bauen Reputation auf → mehr Reputation = neue Organisatoren",
+                    AppLocalizations.of(context).apHowStep1 +
+                    AppLocalizations.of(context).apHowStep2 +
+                    AppLocalizations.of(context).apHowStep3 +
+                    AppLocalizations.of(context).apHowStep4,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.6, color: cTextSecondary),
                   ),
                 ],

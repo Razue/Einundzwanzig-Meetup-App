@@ -215,7 +215,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Fehler beim Teilen: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context).repShareError(e.toString())), backgroundColor: Colors.red),
         );
       }
     }
@@ -583,20 +583,20 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     if (allBound) {
       c = Colors.green;
       icon = Icons.verified;
-      text = "Alle $total Badges gebunden und verifiziert";
+      text = AppLocalizations.of(context).repAllBound(total);
     } else if (bound > 0) {
       c = cCyan;
       icon = Icons.link;
-      text = "$bound von $total Badges identitätsgebunden"
-          "${verified > bound ? ' ($verified kryptographisch verifiziert)' : ''}";
+      text = AppLocalizations.of(context).repBoundOf(bound, total) +
+          (verified > bound ? AppLocalizations.of(context).repBoundExtra(verified) : '');
     } else if (allVerified) {
       c = cOrange;
       icon = Icons.shield_outlined;
-      text = "Alle $total Badges kryptographisch verifiziert (noch nicht gebunden)";
+      text = AppLocalizations.of(context).repAllVerified(total);
     } else if (verified > 0) {
       c = cOrange;
       icon = Icons.shield_outlined;
-      text = "$verified von $total Badges mit Schnorr-Beweis";
+      text = AppLocalizations.of(context).repVerifiedSchnorr(verified, total);
     } else {
       c = Colors.grey;
       icon = Icons.info_outline;
@@ -625,7 +625,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
               Icon(Icons.language, color: Colors.green.shade400, size: 16),
               const SizedBox(width: 12),
               Text(
-                "$_platformProofCount Plattform-Verknüpfung${_platformProofCount > 1 ? 'en' : ''} aktiv",
+                AppLocalizations.of(context).repPlatformLinksActive(_platformProofCount),
                 style: TextStyle(color: Colors.green.shade400, fontSize: 11, fontWeight: FontWeight.w600),
               ),
             ]),

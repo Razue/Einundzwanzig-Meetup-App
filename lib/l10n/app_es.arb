@@ -1089,5 +1089,449 @@
   "countryES": "España",
   "countryNL": "Países Bajos",
   "countryIT": "Italia",
-  "countryFR": "Francia"
+  "countryFR": "Francia",
+  "siTitle": "TU TRUST SCORE",
+  "siIntro": "Mide tu fiabilidad. Se basa en pruebas criptográficas — nadie puede falsificarlo.",
+  "siIdentityLayer": "CAPA DE IDENTIDAD",
+  "siLinksActive": "{count} vínculos activos",
+  "@siLinksActive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "siHumanitySub": "Verificación con zap Lightning",
+  "siNip05Sub": "Identidad Nostr (name@domain)",
+  "siPlatformActive": "Plataforma activa",
+  "siPlatforms": "Plataformas",
+  "siNoneLinked": "Aún ninguna vinculada",
+  "siTrustLevel": "NIVEL DE CONFIANZA",
+  "siLvlNew": "Nivel inicial. Visita meetups para recoger insignias.",
+  "siLvlStarter": "Tus primeras insignias muestran participación en la comunidad.",
+  "siLvlActive": "Activo con regularidad. Diferentes meetups y organizadores refuerzan tu perfil.",
+  "siLvlEstablished": "Miembro de confianza. Bien conectado y veterano.",
+  "siLvlVeteran": "Nivel máximo. Reputación demostrada durante meses.",
+  "siCalculation": "CÁLCULO",
+  "siFacBadges": "Insignias de meetup",
+  "siFacBadgesDesc": "Valor base por insignia. Los meetups concurridos valen más.",
+  "siFacDiversity": "Diversidad",
+  "siFacDiversityDesc": "Diferentes ciudades/organizadores = más puntos.",
+  "siFacSigners": "Firmantes",
+  "siFacSignersDesc": "Organizadores independientes = mayor confianza.",
+  "siFacMaturity": "Madurez",
+  "siFacMaturityDesc": "Antigüedad de la cuenta + regularidad = bonus.",
+  "siFacFrequency": "Límite de frecuencia",
+  "siFacFrequencyDesc": "Máx. 2 insignias/semana. Anti-farming.",
+  "siBecomeOrganizer": "HACERTE ORGANIZADOR",
+  "siBecomeOrgDesc": "Promoción automática al alcanzar suficiente Trust Score. Luego puedes crear tus propias etiquetas NFC y códigos QR.",
+  "siProgressLabel": "PROGRESO ({name})",
+  "@siProgressLabel": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "siAlreadyOrganizer": "¡Ya eres organizador!",
+  "siIncreaseScore": "AUMENTAR SCORE",
+  "siTip1": "Visita diferentes meetups con regularidad",
+  "siTip2": "Recoge insignias en meetups de otras ciudades",
+  "siTip3": "Insignias de diferentes organizadores",
+  "siTip4": "Verifica tu identidad con un zap Lightning",
+  "siTip5": "Configura NIP-05",
+  "siTip6": "Vincula plataformas",
+  "siProgressRow": "{label}: {current}/{required}",
+  "@siProgressRow": {
+    "placeholders": {
+      "label": {
+        "type": "Object"
+      },
+      "current": {
+        "type": "Object"
+      },
+      "required": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotTabNetwork": "RED",
+  "wotTabReports": "DENUNCIAS",
+  "wotHealthGood": "SALUDABLE",
+  "wotHealthBuilding": "EN DESARROLLO",
+  "wotHealthCritical": "CRÍTICO",
+  "badgeUnknown": "desconocido",
+  "badgeBlockAtScan": "₿ Altura de bloque al escanear",
+  "mwStartMeetup": "INICIAR MEETUP",
+  "mwStep1Nfc": "PASO 1: ETIQUETA NFC",
+  "mwNfcIntro1": "¿Quieres colocar etiquetas NFC físicas (NTAG215) para este meetup? ",
+  "mwNfcIntro2": "La prueba criptográfica (tiempo de bloque y firma) queda fijada en ellas.",
+  "mwWriteNfcTag": "ESCRIBIR ETIQUETA NFC",
+  "mwSkipQrOnly": "OMITIR — SOLO USAR QR",
+  "repAllBound": "Las {total} insignias vinculadas y verificadas",
+  "@repAllBound": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "repBoundOf": "{bound} de {total} insignias vinculadas a identidad",
+  "@repBoundOf": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      },
+      "bound": {
+        "type": "Object"
+      }
+    }
+  },
+  "repBoundExtra": " ({verified} verificadas criptográficamente)",
+  "@repBoundExtra": {
+    "placeholders": {
+      "verified": {
+        "type": "Object"
+      }
+    }
+  },
+  "repAllVerified": "Las {total} insignias verificadas criptográficamente (aún no vinculadas)",
+  "@repAllVerified": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "repVerifiedSchnorr": "{verified} de {total} insignias con prueba Schnorr",
+  "@repVerifiedSchnorr": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      },
+      "verified": {
+        "type": "Object"
+      }
+    }
+  },
+  "repPlatformLinksActive": "{count} vínculos de plataforma activos",
+  "@repPlatformLinksActive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "homeCouldNotOpen": "No se pudo abrir {url}",
+  "@homeCouldNotOpen": {
+    "placeholders": {
+      "url": {
+        "type": "Object"
+      }
+    }
+  },
+  "admWotLive": "✅ ¡Tu Web of Trust está activo ({count} relays)!",
+  "@admWotLive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admDelegationSigned": "✅ ¡Tu delegación fue firmada criptográficamente y publicada en la red!",
+  "admWotCurrent": "✅ Web of Trust actualizado ({count} admins verificados)",
+  "@admWotCurrent": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admNoVouchesFound": "✅ No se encontraron avales publicados en los relays",
+  "admVouchesRestored": "✅ {count} avales restaurados",
+  "@admVouchesRestored": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admNoRelayReachable": "⚠️ Ningún relay accesible — inténtalo más tarde",
+  "admAllVouchesRevoked": "✅ Todos los avales han sido revocados en la red",
+  "apHowStep3": "3. Cada escaneo = una insignia para el participante\n",
+  "badgeSchnorrSig": "Schnorr (Nostr v2) ✓",
+  "msHomeMeetupSet": "✅ {city} establecido como meetup principal",
+  "@msHomeMeetupSet": {
+    "placeholders": {
+      "city": {
+        "type": "Object"
+      }
+    }
+  },
+  "mvKnownOrganizer": "✓ Organizador conocido: {name}",
+  "@mvKnownOrganizer": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "mvUnknownSigner": "✗ ¡FIRMANTE DESCONOCIDO!\nEsta pubkey no está en el registro de admins.",
+  "mvAdminCheckFailed": "! No se pudo verificar el estado de admin (¿sin conexión?)",
+  "mvLegacyBadge": "! Insignia antigua (v1) — firmante no verificable",
+  "mvBadgeBound": "🔗 Insignia vinculada",
+  "nwSelectHomeMeetup": "❌ ¡Primero selecciona un meetup principal en tu perfil!",
+  "qrUniqueRecipients": "{count} destinatarios diferentes",
+  "@qrUniqueRecipients": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "apHowStep1": "1. Inicia un nuevo meetup (sesión).\n",
+  "apHowStep2": "2. Luego escribe etiquetas NFC o muestra el código QR.\n",
+  "apHowStep4": "4. Las insignias construyen reputación → más reputación = nuevos organizadores",
+  "ppHowStep1": "1. Elige una plataforma e introduce tu nombre de usuario\n",
+  "ppHowStep2": "2. La app crea una prueba criptográfica\n",
+  "ppHowStep3": "3. La prueba se incrusta automáticamente en tu QR de reputación\n",
+  "ppHowStep4": "4. Otros escanean tu QR y ven el vínculo verificado",
+  "admErrorEmoji": "❌ Error: {msg}",
+  "@admErrorEmoji": {
+    "placeholders": {
+      "msg": {
+        "type": "Object"
+      }
+    }
+  },
+  "admNoNewUpdates": "⚠️ No se encontraron actualizaciones",
+  "homeImageLoadError": "No se pudo cargar la imagen: {msg}",
+  "@homeImageLoadError": {
+    "placeholders": {
+      "msg": {
+        "type": "Object"
+      }
+    }
+  },
+  "qrSentCount": "{count} enviados",
+  "@qrSentCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "repShareError": "Error al compartir: {msg}",
+  "@repShareError": {
+    "placeholders": {
+      "msg": {
+        "type": "Object"
+      }
+    }
+  },
+  "rqNoHomeMeetup": "⚠️ Sin meetup principal definido",
+  "rqMeetupNotFound": "⚠️ Meetup no encontrado",
+  "rlWhatMeans": "¿Qué significa esto?",
+  "rlWhyImportant": "Por qué es importante",
+  "rlWeakLabel": "Perfil débil",
+  "rlWeakExpl": "Solo una capa de prueba activa. Este usuario tiene pocas conexiones verificables. Para transacciones grandes: precaución.",
+  "rlWeakAdvice": "Pide más pruebas (Lightning, NIP-05) o reúnete con la persona primero.",
+  "rlLimitedLabel": "Limitado",
+  "rlLimitedExpl": "Hay insignias de meetup, pero no otras pruebas independientes. El usuario podría ser real — pero falta confirmación de otras capas.",
+  "rlLimitedAdvice": "OK para importes mínimos. Para importes mayores: espera a que haya más capas activas.",
+  "rlBuildingLabel": "En desarrollo",
+  "rlBuildingExpl": "Dos capas de prueba activas. El usuario está construyendo reputación pero aún sin amplitud completa.",
+  "rlBuildingAdvice": "Adecuado para transacciones moderadas.",
+  "rlConnectedLabel": "Bien conectado",
+  "rlConnectedExpl": "Múltiples pruebas independientes: meetups, actividad Lightning y conexiones sociales. Difícil de falsificar.",
+  "rlConnectedAdvice": "Fiable para la mayoría de transacciones.",
+  "rlSolidLabel": "Sólido",
+  "rlSolidExpl": "Amplia base de pruebas. Manipularlo sería laborioso y costoso.",
+  "rlSolidAdvice": "Fiable para la mayoría de los casos.",
+  "rlDefaultExpl": "Algunas pruebas presentes, pero hay margen para más.",
+  "rlDefaultAdvice": "Usa tu propio criterio.",
+  "rlMeetupProofs": "Pruebas de meetup",
+  "rlMeetupGood": "Asistió a diferentes meetups con diferentes organizadores. Esto requiere presencia física en varios lugares.",
+  "rlMeetupMoreDiverse": "Más diversidad sería más convincente.",
+  "rlMeetupNone": "Sin insignias de meetup. Este usuario aún no ha asistido a un meetup de Einundzwanzig — o usa la app desde hace poco.",
+  "rlAllBound": "Todas vinculadas criptográficamente",
+  "rlGoodSpread": "Buena distribución regional",
+  "rlLowSpread": "Poca distribución",
+  "rlPhysGoodDiversity": "Tiene insignias de meetup, pero solo de {count} organizador(es). Más diversidad sería más convincente.",
+  "@rlPhysGoodDiversity": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlBadgeCount": "{count} insignias",
+  "@rlBadgeCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlBoundOf": "{bound} de {total} vinculadas",
+  "@rlBoundOf": {
+    "placeholders": {
+      "bound": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlDiffMeetups": "{count} meetups diferentes",
+  "@rlDiffMeetups": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlOrganizers": "{count} organizadores",
+  "@rlOrganizers": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlConfirmedByDiff": "Confirmado por distintas personas",
+  "rlOneOrgOnly": "Solo un organizador — poca confirmación independiente",
+  "rlMemberSince": "Miembro desde {since}",
+  "@rlMemberSince": {
+    "placeholders": {
+      "since": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlDaysCount": "{count} días",
+  "@rlDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlLightningProof": "Prueba Lightning",
+  "rlLnBoth": "Ha realizado y recibido pagos Lightning reales. Los bots no tienen carteras Lightning — una fuerte señal de autenticidad.",
+  "rlLnPaid": "Ha pagado vía Lightning al menos una vez. Prueba básica de que existe una cartera real.",
+  "rlLnActiveOnly": "Hay actividad Lightning, pero Proof of Humanity aún no activo.",
+  "rlLnNone": "Sin actividad Lightning. No significa que el usuario sea falso — quizás no usa Lightning vía Nostr. Pero falta una señal anti-bot importante.",
+  "rlHumanVerified": "Humano verificado",
+  "rlRealLnPayment": "Pago Lightning real demostrado",
+  "rlZapsSent": "{count} zaps enviados",
+  "@rlZapsSent": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlToRecipients": "A {count} destinatarios diferentes",
+  "@rlToRecipients": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlZapsReceived": "{count} zaps recibidos",
+  "@rlZapsReceived": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlFromSenders": "De {count} remitentes diferentes",
+  "@rlFromSenders": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlMonthsActive": "{count} meses activo",
+  "@rlMonthsActive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlSocialTitle": "Red social",
+  "rlSocMutualMany": "Os conocéis en Nostr y compartís muchos contactos. Conexión fuerte.",
+  "rlSocMutual": "Seguimiento mutuo — os conocéis en Nostr.",
+  "rlSocCommon": "Muchos contactos en común — os movéis en la misma red.",
+  "rlSocOneSided": "Conexión unilateral. Os conocéis de pasada.",
+  "rlSocOrgFollow": "Organizadores conocidos de Einundzwanzig siguen a este usuario. Es una señal positiva.",
+  "rlSocDefault": "Hay conexiones en la red Nostr con este usuario.",
+  "rlSocNone": "No se encontró conexión en la red Nostr. Puede significar: nunca os habéis encontrado en Nostr, o el usuario es muy nuevo. Normal con desconocidos — señal de alerta con caras supuestamente conocidas.",
+  "rlMutualFollow": "Seguimiento mutuo",
+  "rlYouFollow": "Tú sigues",
+  "rlFollowsYou": "Te sigue",
+  "rlNoFollow": "Sin seguimiento",
+  "rlKnowOnNostr": "Os conocéis en Nostr",
+  "rlNoDirectConn": "Sin conexión directa",
+  "rlCommonContacts": "{count} contactos en común",
+  "@rlCommonContacts": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlSameNetwork": "Misma red",
+  "rlSomeOverlap": "Algunas coincidencias",
+  "rlSeparateNetworks": "Redes separadas",
+  "rlOrgsFollow": "{count} organizadores siguen",
+  "@rlOrgsFollow": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlEndorsement": "Respaldo de admins conocidos",
+  "rlIdentityTitle": "Prueba de identidad",
+  "rlIdNip05Plat": "Tiene una dirección NIP-05 y plataformas vinculadas. Esto liga la identidad Nostr a un dominio — más difícil de falsificar que una cuenta anónima.",
+  "rlIdNip05Only": "Tiene una dirección NIP-05. Esto liga la identidad Nostr a un dominio — más difícil de falsificar que una cuenta anónima.",
+  "rlIdPlatOnly": "Cuentas de plataforma vinculadas. Más plataformas = más esfuerzo para falsificadores.",
+  "rlIdNone": "Sin identificación de internet. Completamente anónimo. Bien para la privacidad, pero da menos indicios de confianza.",
+  "rlLinked": "Vinculado",
+  "rlNoIdentification": "Sin identificación",
+  "rlAnonymous": "Anónimo",
+  "rlActive": "✓ activo",
+  "rlActiveShort": "✓ activo",
+  "rlMissingShort": "— falta",
+  "qrReceivedCount": "{count} recibidos",
+  "@qrReceivedCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "qrUniqueSenders": "{count} remitentes diferentes",
+  "@qrUniqueSenders": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlProofsOfFour": "{count} / 4 pruebas",
+  "@rlProofsOfFour": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  }
 }

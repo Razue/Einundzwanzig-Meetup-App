@@ -237,13 +237,13 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
 
       setState(() {
         _isPublishing = false;
-        _statusMessage = '✅ Dein Web of Trust ist live ($sentTo Relays)!';
+        _statusMessage = AppLocalizations.of(context).admWotLive(sentTo);
       });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("✅ Deine Delegation wurde kryptografisch signiert und im Netzwerk veröffentlicht!"),
+            content: Text(AppLocalizations.of(context).admDelegationSigned),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 4),
           ),
@@ -252,7 +252,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
     } catch (e) {
       setState(() {
         _isPublishing = false;
-        _statusMessage = '❌ Fehler: $e';
+        _statusMessage = AppLocalizations.of(context).admErrorEmoji(e.toString());
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -275,12 +275,12 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
         await _loadAdmins();
         setState(() {
           _isRefreshing = false;
-          _statusMessage = '✅ Web of Trust aktuell ($count Admins verifiziert)';
+          _statusMessage = AppLocalizations.of(context).admWotCurrent(count);
         });
       } else {
         setState(() {
           _isRefreshing = false;
-          _statusMessage = '⚠️ Keine neuen Updates gefunden';
+          _statusMessage = AppLocalizations.of(context).admNoNewUpdates;
         });
       }
     } catch (e) {
@@ -304,13 +304,13 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
         setState(() {
           _isRefreshing = false;
           _statusMessage = count == 0
-              ? '✅ Keine publizierten Bürgschaften auf den Relays gefunden'
-              : '✅ $count Bürgschaft${count == 1 ? "" : "en"} wiederhergestellt';
+              ? AppLocalizations.of(context).admNoVouchesFound
+              : AppLocalizations.of(context).admVouchesRestored(count);
         });
       } else {
         setState(() {
           _isRefreshing = false;
-          _statusMessage = '⚠️ Kein Relay erreichbar — später erneut versuchen';
+          _statusMessage = AppLocalizations.of(context).admNoRelayReachable;
         });
       }
     } catch (e) {
@@ -354,7 +354,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                 await _loadAdmins();
                 setState(() {
                   _isPublishing = false;
-                  _statusMessage = '✅ Alle Bürgschaften wurden im Netzwerk widerrufen';
+                  _statusMessage = AppLocalizations.of(context).admAllVouchesRevoked;
                 });
               } catch (e) {
                 setState(() {

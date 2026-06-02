@@ -2316,4 +2316,638 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get countryFR => 'Francia';
+
+  @override
+  String get siTitle => 'TU TRUST SCORE';
+
+  @override
+  String get siIntro =>
+      'Mide tu fiabilidad. Se basa en pruebas criptográficas — nadie puede falsificarlo.';
+
+  @override
+  String get siIdentityLayer => 'CAPA DE IDENTIDAD';
+
+  @override
+  String siLinksActive(Object count) {
+    return '$count vínculos activos';
+  }
+
+  @override
+  String get siHumanitySub => 'Verificación con zap Lightning';
+
+  @override
+  String get siNip05Sub => 'Identidad Nostr (name@domain)';
+
+  @override
+  String get siPlatformActive => 'Plataforma activa';
+
+  @override
+  String get siPlatforms => 'Plataformas';
+
+  @override
+  String get siNoneLinked => 'Aún ninguna vinculada';
+
+  @override
+  String get siTrustLevel => 'NIVEL DE CONFIANZA';
+
+  @override
+  String get siLvlNew =>
+      'Nivel inicial. Visita meetups para recoger insignias.';
+
+  @override
+  String get siLvlStarter =>
+      'Tus primeras insignias muestran participación en la comunidad.';
+
+  @override
+  String get siLvlActive =>
+      'Activo con regularidad. Diferentes meetups y organizadores refuerzan tu perfil.';
+
+  @override
+  String get siLvlEstablished =>
+      'Miembro de confianza. Bien conectado y veterano.';
+
+  @override
+  String get siLvlVeteran =>
+      'Nivel máximo. Reputación demostrada durante meses.';
+
+  @override
+  String get siCalculation => 'CÁLCULO';
+
+  @override
+  String get siFacBadges => 'Insignias de meetup';
+
+  @override
+  String get siFacBadgesDesc =>
+      'Valor base por insignia. Los meetups concurridos valen más.';
+
+  @override
+  String get siFacDiversity => 'Diversidad';
+
+  @override
+  String get siFacDiversityDesc =>
+      'Diferentes ciudades/organizadores = más puntos.';
+
+  @override
+  String get siFacSigners => 'Firmantes';
+
+  @override
+  String get siFacSignersDesc =>
+      'Organizadores independientes = mayor confianza.';
+
+  @override
+  String get siFacMaturity => 'Madurez';
+
+  @override
+  String get siFacMaturityDesc =>
+      'Antigüedad de la cuenta + regularidad = bonus.';
+
+  @override
+  String get siFacFrequency => 'Límite de frecuencia';
+
+  @override
+  String get siFacFrequencyDesc => 'Máx. 2 insignias/semana. Anti-farming.';
+
+  @override
+  String get siBecomeOrganizer => 'HACERTE ORGANIZADOR';
+
+  @override
+  String get siBecomeOrgDesc =>
+      'Promoción automática al alcanzar suficiente Trust Score. Luego puedes crear tus propias etiquetas NFC y códigos QR.';
+
+  @override
+  String siProgressLabel(Object name) {
+    return 'PROGRESO ($name)';
+  }
+
+  @override
+  String get siAlreadyOrganizer => '¡Ya eres organizador!';
+
+  @override
+  String get siIncreaseScore => 'AUMENTAR SCORE';
+
+  @override
+  String get siTip1 => 'Visita diferentes meetups con regularidad';
+
+  @override
+  String get siTip2 => 'Recoge insignias en meetups de otras ciudades';
+
+  @override
+  String get siTip3 => 'Insignias de diferentes organizadores';
+
+  @override
+  String get siTip4 => 'Verifica tu identidad con un zap Lightning';
+
+  @override
+  String get siTip5 => 'Configura NIP-05';
+
+  @override
+  String get siTip6 => 'Vincula plataformas';
+
+  @override
+  String siProgressRow(Object label, Object current, Object required) {
+    return '$label: $current/$required';
+  }
+
+  @override
+  String get wotTabNetwork => 'RED';
+
+  @override
+  String get wotTabReports => 'DENUNCIAS';
+
+  @override
+  String get wotHealthGood => 'SALUDABLE';
+
+  @override
+  String get wotHealthBuilding => 'EN DESARROLLO';
+
+  @override
+  String get wotHealthCritical => 'CRÍTICO';
+
+  @override
+  String get badgeUnknown => 'desconocido';
+
+  @override
+  String get badgeBlockAtScan => '₿ Altura de bloque al escanear';
+
+  @override
+  String get mwStartMeetup => 'INICIAR MEETUP';
+
+  @override
+  String get mwStep1Nfc => 'PASO 1: ETIQUETA NFC';
+
+  @override
+  String get mwNfcIntro1 =>
+      '¿Quieres colocar etiquetas NFC físicas (NTAG215) para este meetup? ';
+
+  @override
+  String get mwNfcIntro2 =>
+      'La prueba criptográfica (tiempo de bloque y firma) queda fijada en ellas.';
+
+  @override
+  String get mwWriteNfcTag => 'ESCRIBIR ETIQUETA NFC';
+
+  @override
+  String get mwSkipQrOnly => 'OMITIR — SOLO USAR QR';
+
+  @override
+  String repAllBound(Object total) {
+    return 'Las $total insignias vinculadas y verificadas';
+  }
+
+  @override
+  String repBoundOf(Object total, Object bound) {
+    return '$bound de $total insignias vinculadas a identidad';
+  }
+
+  @override
+  String repBoundExtra(Object verified) {
+    return ' ($verified verificadas criptográficamente)';
+  }
+
+  @override
+  String repAllVerified(Object total) {
+    return 'Las $total insignias verificadas criptográficamente (aún no vinculadas)';
+  }
+
+  @override
+  String repVerifiedSchnorr(Object total, Object verified) {
+    return '$verified de $total insignias con prueba Schnorr';
+  }
+
+  @override
+  String repPlatformLinksActive(Object count) {
+    return '$count vínculos de plataforma activos';
+  }
+
+  @override
+  String homeCouldNotOpen(Object url) {
+    return 'No se pudo abrir $url';
+  }
+
+  @override
+  String admWotLive(Object count) {
+    return '✅ ¡Tu Web of Trust está activo ($count relays)!';
+  }
+
+  @override
+  String get admDelegationSigned =>
+      '✅ ¡Tu delegación fue firmada criptográficamente y publicada en la red!';
+
+  @override
+  String admWotCurrent(Object count) {
+    return '✅ Web of Trust actualizado ($count admins verificados)';
+  }
+
+  @override
+  String get admNoVouchesFound =>
+      '✅ No se encontraron avales publicados en los relays';
+
+  @override
+  String admVouchesRestored(Object count) {
+    return '✅ $count avales restaurados';
+  }
+
+  @override
+  String get admNoRelayReachable =>
+      '⚠️ Ningún relay accesible — inténtalo más tarde';
+
+  @override
+  String get admAllVouchesRevoked =>
+      '✅ Todos los avales han sido revocados en la red';
+
+  @override
+  String get apHowStep3 =>
+      '3. Cada escaneo = una insignia para el participante\n';
+
+  @override
+  String get badgeSchnorrSig => 'Schnorr (Nostr v2) ✓';
+
+  @override
+  String msHomeMeetupSet(Object city) {
+    return '✅ $city establecido como meetup principal';
+  }
+
+  @override
+  String mvKnownOrganizer(Object name) {
+    return '✓ Organizador conocido: $name';
+  }
+
+  @override
+  String get mvUnknownSigner =>
+      '✗ ¡FIRMANTE DESCONOCIDO!\nEsta pubkey no está en el registro de admins.';
+
+  @override
+  String get mvAdminCheckFailed =>
+      '! No se pudo verificar el estado de admin (¿sin conexión?)';
+
+  @override
+  String get mvLegacyBadge =>
+      '! Insignia antigua (v1) — firmante no verificable';
+
+  @override
+  String get mvBadgeBound => '🔗 Insignia vinculada';
+
+  @override
+  String get nwSelectHomeMeetup =>
+      '❌ ¡Primero selecciona un meetup principal en tu perfil!';
+
+  @override
+  String qrUniqueRecipients(Object count) {
+    return '$count destinatarios diferentes';
+  }
+
+  @override
+  String get apHowStep1 => '1. Inicia un nuevo meetup (sesión).\n';
+
+  @override
+  String get apHowStep2 =>
+      '2. Luego escribe etiquetas NFC o muestra el código QR.\n';
+
+  @override
+  String get apHowStep4 =>
+      '4. Las insignias construyen reputación → más reputación = nuevos organizadores';
+
+  @override
+  String get ppHowStep1 =>
+      '1. Elige una plataforma e introduce tu nombre de usuario\n';
+
+  @override
+  String get ppHowStep2 => '2. La app crea una prueba criptográfica\n';
+
+  @override
+  String get ppHowStep3 =>
+      '3. La prueba se incrusta automáticamente en tu QR de reputación\n';
+
+  @override
+  String get ppHowStep4 =>
+      '4. Otros escanean tu QR y ven el vínculo verificado';
+
+  @override
+  String admErrorEmoji(Object msg) {
+    return '❌ Error: $msg';
+  }
+
+  @override
+  String get admNoNewUpdates => '⚠️ No se encontraron actualizaciones';
+
+  @override
+  String homeImageLoadError(Object msg) {
+    return 'No se pudo cargar la imagen: $msg';
+  }
+
+  @override
+  String qrSentCount(Object count) {
+    return '$count enviados';
+  }
+
+  @override
+  String repShareError(Object msg) {
+    return 'Error al compartir: $msg';
+  }
+
+  @override
+  String get rqNoHomeMeetup => '⚠️ Sin meetup principal definido';
+
+  @override
+  String get rqMeetupNotFound => '⚠️ Meetup no encontrado';
+
+  @override
+  String get rlWhatMeans => '¿Qué significa esto?';
+
+  @override
+  String get rlWhyImportant => 'Por qué es importante';
+
+  @override
+  String get rlWeakLabel => 'Perfil débil';
+
+  @override
+  String get rlWeakExpl =>
+      'Solo una capa de prueba activa. Este usuario tiene pocas conexiones verificables. Para transacciones grandes: precaución.';
+
+  @override
+  String get rlWeakAdvice =>
+      'Pide más pruebas (Lightning, NIP-05) o reúnete con la persona primero.';
+
+  @override
+  String get rlLimitedLabel => 'Limitado';
+
+  @override
+  String get rlLimitedExpl =>
+      'Hay insignias de meetup, pero no otras pruebas independientes. El usuario podría ser real — pero falta confirmación de otras capas.';
+
+  @override
+  String get rlLimitedAdvice =>
+      'OK para importes mínimos. Para importes mayores: espera a que haya más capas activas.';
+
+  @override
+  String get rlBuildingLabel => 'En desarrollo';
+
+  @override
+  String get rlBuildingExpl =>
+      'Dos capas de prueba activas. El usuario está construyendo reputación pero aún sin amplitud completa.';
+
+  @override
+  String get rlBuildingAdvice => 'Adecuado para transacciones moderadas.';
+
+  @override
+  String get rlConnectedLabel => 'Bien conectado';
+
+  @override
+  String get rlConnectedExpl =>
+      'Múltiples pruebas independientes: meetups, actividad Lightning y conexiones sociales. Difícil de falsificar.';
+
+  @override
+  String get rlConnectedAdvice => 'Fiable para la mayoría de transacciones.';
+
+  @override
+  String get rlSolidLabel => 'Sólido';
+
+  @override
+  String get rlSolidExpl =>
+      'Amplia base de pruebas. Manipularlo sería laborioso y costoso.';
+
+  @override
+  String get rlSolidAdvice => 'Fiable para la mayoría de los casos.';
+
+  @override
+  String get rlDefaultExpl =>
+      'Algunas pruebas presentes, pero hay margen para más.';
+
+  @override
+  String get rlDefaultAdvice => 'Usa tu propio criterio.';
+
+  @override
+  String get rlMeetupProofs => 'Pruebas de meetup';
+
+  @override
+  String get rlMeetupGood =>
+      'Asistió a diferentes meetups con diferentes organizadores. Esto requiere presencia física en varios lugares.';
+
+  @override
+  String get rlMeetupMoreDiverse => 'Más diversidad sería más convincente.';
+
+  @override
+  String get rlMeetupNone =>
+      'Sin insignias de meetup. Este usuario aún no ha asistido a un meetup de Einundzwanzig — o usa la app desde hace poco.';
+
+  @override
+  String get rlAllBound => 'Todas vinculadas criptográficamente';
+
+  @override
+  String get rlGoodSpread => 'Buena distribución regional';
+
+  @override
+  String get rlLowSpread => 'Poca distribución';
+
+  @override
+  String rlPhysGoodDiversity(Object count) {
+    return 'Tiene insignias de meetup, pero solo de $count organizador(es). Más diversidad sería más convincente.';
+  }
+
+  @override
+  String rlBadgeCount(Object count) {
+    return '$count insignias';
+  }
+
+  @override
+  String rlBoundOf(Object bound, Object total) {
+    return '$bound de $total vinculadas';
+  }
+
+  @override
+  String rlDiffMeetups(Object count) {
+    return '$count meetups diferentes';
+  }
+
+  @override
+  String rlOrganizers(Object count) {
+    return '$count organizadores';
+  }
+
+  @override
+  String get rlConfirmedByDiff => 'Confirmado por distintas personas';
+
+  @override
+  String get rlOneOrgOnly =>
+      'Solo un organizador — poca confirmación independiente';
+
+  @override
+  String rlMemberSince(Object since) {
+    return 'Miembro desde $since';
+  }
+
+  @override
+  String rlDaysCount(Object count) {
+    return '$count días';
+  }
+
+  @override
+  String get rlLightningProof => 'Prueba Lightning';
+
+  @override
+  String get rlLnBoth =>
+      'Ha realizado y recibido pagos Lightning reales. Los bots no tienen carteras Lightning — una fuerte señal de autenticidad.';
+
+  @override
+  String get rlLnPaid =>
+      'Ha pagado vía Lightning al menos una vez. Prueba básica de que existe una cartera real.';
+
+  @override
+  String get rlLnActiveOnly =>
+      'Hay actividad Lightning, pero Proof of Humanity aún no activo.';
+
+  @override
+  String get rlLnNone =>
+      'Sin actividad Lightning. No significa que el usuario sea falso — quizás no usa Lightning vía Nostr. Pero falta una señal anti-bot importante.';
+
+  @override
+  String get rlHumanVerified => 'Humano verificado';
+
+  @override
+  String get rlRealLnPayment => 'Pago Lightning real demostrado';
+
+  @override
+  String rlZapsSent(Object count) {
+    return '$count zaps enviados';
+  }
+
+  @override
+  String rlToRecipients(Object count) {
+    return 'A $count destinatarios diferentes';
+  }
+
+  @override
+  String rlZapsReceived(Object count) {
+    return '$count zaps recibidos';
+  }
+
+  @override
+  String rlFromSenders(Object count) {
+    return 'De $count remitentes diferentes';
+  }
+
+  @override
+  String rlMonthsActive(Object count) {
+    return '$count meses activo';
+  }
+
+  @override
+  String get rlSocialTitle => 'Red social';
+
+  @override
+  String get rlSocMutualMany =>
+      'Os conocéis en Nostr y compartís muchos contactos. Conexión fuerte.';
+
+  @override
+  String get rlSocMutual => 'Seguimiento mutuo — os conocéis en Nostr.';
+
+  @override
+  String get rlSocCommon =>
+      'Muchos contactos en común — os movéis en la misma red.';
+
+  @override
+  String get rlSocOneSided => 'Conexión unilateral. Os conocéis de pasada.';
+
+  @override
+  String get rlSocOrgFollow =>
+      'Organizadores conocidos de Einundzwanzig siguen a este usuario. Es una señal positiva.';
+
+  @override
+  String get rlSocDefault => 'Hay conexiones en la red Nostr con este usuario.';
+
+  @override
+  String get rlSocNone =>
+      'No se encontró conexión en la red Nostr. Puede significar: nunca os habéis encontrado en Nostr, o el usuario es muy nuevo. Normal con desconocidos — señal de alerta con caras supuestamente conocidas.';
+
+  @override
+  String get rlMutualFollow => 'Seguimiento mutuo';
+
+  @override
+  String get rlYouFollow => 'Tú sigues';
+
+  @override
+  String get rlFollowsYou => 'Te sigue';
+
+  @override
+  String get rlNoFollow => 'Sin seguimiento';
+
+  @override
+  String get rlKnowOnNostr => 'Os conocéis en Nostr';
+
+  @override
+  String get rlNoDirectConn => 'Sin conexión directa';
+
+  @override
+  String rlCommonContacts(Object count) {
+    return '$count contactos en común';
+  }
+
+  @override
+  String get rlSameNetwork => 'Misma red';
+
+  @override
+  String get rlSomeOverlap => 'Algunas coincidencias';
+
+  @override
+  String get rlSeparateNetworks => 'Redes separadas';
+
+  @override
+  String rlOrgsFollow(Object count) {
+    return '$count organizadores siguen';
+  }
+
+  @override
+  String get rlEndorsement => 'Respaldo de admins conocidos';
+
+  @override
+  String get rlIdentityTitle => 'Prueba de identidad';
+
+  @override
+  String get rlIdNip05Plat =>
+      'Tiene una dirección NIP-05 y plataformas vinculadas. Esto liga la identidad Nostr a un dominio — más difícil de falsificar que una cuenta anónima.';
+
+  @override
+  String get rlIdNip05Only =>
+      'Tiene una dirección NIP-05. Esto liga la identidad Nostr a un dominio — más difícil de falsificar que una cuenta anónima.';
+
+  @override
+  String get rlIdPlatOnly =>
+      'Cuentas de plataforma vinculadas. Más plataformas = más esfuerzo para falsificadores.';
+
+  @override
+  String get rlIdNone =>
+      'Sin identificación de internet. Completamente anónimo. Bien para la privacidad, pero da menos indicios de confianza.';
+
+  @override
+  String get rlLinked => 'Vinculado';
+
+  @override
+  String get rlNoIdentification => 'Sin identificación';
+
+  @override
+  String get rlAnonymous => 'Anónimo';
+
+  @override
+  String get rlActive => '✓ activo';
+
+  @override
+  String get rlActiveShort => '✓ activo';
+
+  @override
+  String get rlMissingShort => '— falta';
+
+  @override
+  String qrReceivedCount(Object count) {
+    return '$count recibidos';
+  }
+
+  @override
+  String qrUniqueSenders(Object count) {
+    return '$count remitentes diferentes';
+  }
+
+  @override
+  String rlProofsOfFour(Object count) {
+    return '$count / 4 pruebas';
+  }
 }

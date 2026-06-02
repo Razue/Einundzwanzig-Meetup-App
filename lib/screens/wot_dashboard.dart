@@ -148,7 +148,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ABBRECHEN', style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).dialogCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cRed),
@@ -209,9 +209,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           dividerColor: cTileBorder,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 0.5),
           tabs: [
-            Tab(icon: const Icon(Icons.hub, size: 20), text: 'NETZWERK'),
+            Tab(icon: const Icon(Icons.hub, size: 20), text: AppLocalizations.of(context).wotTabNetwork),
             Tab(icon: const Icon(Icons.shield, size: 20), text: AppLocalizations.of(context).wotVouch),
-            Tab(icon: const Icon(Icons.report_outlined, size: 20), text: 'MELDUNGEN'),
+            Tab(icon: const Icon(Icons.report_outlined, size: 20), text: AppLocalizations.of(context).wotTabReports),
           ],
         ),
       ),
@@ -308,10 +308,10 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             ? Colors.orange
             : cRed;
     final healthLabel = health > 0.7
-        ? 'GESUND'
+        ? AppLocalizations.of(context).wotHealthGood
         : health > 0.4
-            ? 'AUFBAU'
-            : 'KRITISCH';
+            ? AppLocalizations.of(context).wotHealthBuilding
+            : AppLocalizations.of(context).wotHealthCritical;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1247,7 +1247,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ABBRECHEN', style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).dialogCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -1291,7 +1291,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ABBRECHEN', style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).dialogCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cRed),
@@ -1404,7 +1404,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('ABBRECHEN', style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context).dialogCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cPurple,

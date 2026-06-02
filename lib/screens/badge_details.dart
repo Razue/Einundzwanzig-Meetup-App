@@ -19,7 +19,7 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
   MeetupBadge get b => widget.badge;
 
   String _formatBlock(int h) {
-    if (h == 0) return 'unbekannt';
+    if (h == 0) return AppLocalizations.of(context).badgeUnknown;
     final s = h.toString();
     if (s.length <= 3) return s;
     final parts = <String>[];
@@ -32,9 +32,9 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
   }
 
   String _formatTimestamp(int ts) {
-    if (ts == 0) return 'unbekannt';
+    if (ts == 0) return AppLocalizations.of(context).badgeUnknown;
     final dt = DateTime.fromMillisecondsSinceEpoch(ts * 1000);
-    return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')} Uhr';
+    return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}  ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
   String _shortNpub(String npub) {
@@ -51,7 +51,7 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
   }
 
   String _sigLabelOf(BuildContext context) {
-    if (b.sigVersion == 2) return 'Schnorr (Nostr v2) ✓';
+    if (b.sigVersion == 2) return AppLocalizations.of(context).badgeSchnorrSig;
     if (b.sigVersion == 1) return 'HMAC (Legacy v1)';
     return AppLocalizations.of(context).badgeNoSignature;
   }
@@ -72,7 +72,7 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
 
 $reputationText
 
-Block: ${b.blockHeight > 0 ? _formatBlock(b.blockHeight) : 'unbekannt'}
+Block: ${b.blockHeight > 0 ? _formatBlock(b.blockHeight) : AppLocalizations.of(context).badgeUnknown}
 Delivery: ${_deliveryLabelOf(context)}
 Signatur: ${_sigLabelOf(context)}
 Hash: $hash
@@ -132,8 +132,8 @@ Verifizierbar über die Einundzwanzig Meetup App
               rows: [
                 _row(AppLocalizations.of(context).badgeMeetupDate,
                     '${b.date.day.toString().padLeft(2, '0')}.${b.date.month.toString().padLeft(2, '0')}.${b.date.year}'),
-                _row('₿ Blockhöhe beim Scan',
-                    b.blockHeight > 0 ? _formatBlock(b.blockHeight) : 'unbekannt',
+                _row(AppLocalizations.of(context).badgeBlockAtScan,
+                    b.blockHeight > 0 ? _formatBlock(b.blockHeight) : AppLocalizations.of(context).badgeUnknown,
                     mono: true,
                     valueColor: b.blockHeight > 0 ? cOrange : cTextTertiary),
                 if (b.claimTimestamp > 0)

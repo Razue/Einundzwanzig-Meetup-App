@@ -235,7 +235,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         if (mounted) setState(() { _localProfilePic = image.path; });
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Bild konnte nicht geladen werden: $e')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).homeImageLoadError(e.toString()))));
     }
   }
 
@@ -276,7 +276,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _resetApp() async { bool c = await showDialog(context: context, builder: (ctx) => AlertDialog(title: Text(AppLocalizations.of(context).resetTitle), content: Text(AppLocalizations.of(context).resetBody), actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context).resetCancel)), TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context).resetConfirm, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)))])) ?? false; if (!c) return; final p = await SharedPreferences.getInstance(); await p.clear(); myBadges.clear(); await MeetupBadge.saveBadges([]); try { await SecureKeyStore.deleteKeys(); } catch (_) {} await NostrProfileService.clearCache(); if (mounted) Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false); }
   void _scanAnyMeetup() async { final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0); await Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupVerificationScreen(meetup: d))); _loadBadges(); _calculateTrustScore(); }
   void _selectHomeMeetup() async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen())); _loadUser(); _loadNextHomeMeetup(); }
-  Future<void> _openUrl(String url) async { final uri = Uri.parse(url); if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Konnte $url nicht öffnen"))); } }
+  Future<void> _openUrl(String url) async { final uri = Uri.parse(url); if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).homeCouldNotOpen(url)))); } }
 
   Color get _levelColor { if (_trustScore == null) return cTextTertiary; switch (_trustScore!.level) { case 'VETERAN': return Colors.amber; case 'ETABLIERT': return Colors.green; case 'AKTIV': return cCyan; case 'STARTER': return cOrange; default: return cTextTertiary; } }
   IconData get _levelIcon { if (_trustScore == null) return Icons.fiber_new; switch (_trustScore!.level) { case 'VETERAN': return Icons.bolt; case 'ETABLIERT': return Icons.shield; case 'AKTIV': return Icons.local_fire_department; case 'STARTER': return Icons.eco; default: return Icons.fiber_new; } }
@@ -840,47 +840,47 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.4, expand: false,
         builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 20),
-          const Text("DEIN TRUST SCORE", style: TextStyle(color: cOrange, fontSize: 17, fontWeight: FontWeight.w800)), const SizedBox(height: 6),
-          const Text("Misst deine Vertrauenswürdigkeit. Basiert auf kryptographischen Beweisen — niemand kann ihn fälschen.", style: TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)),
+          Text(AppLocalizations.of(context).siTitle, style: const TextStyle(color: cOrange, fontSize: 17, fontWeight: FontWeight.w800)), const SizedBox(height: 6),
+          Text(AppLocalizations.of(context).siIntro, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)),
           // IDENTITY LAYER
-          const SizedBox(height: 24), const Text("IDENTITY LAYER", style: TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
-          Text("$idCount Verknüpfungen aktiv", style: const TextStyle(color: cTextTertiary, fontSize: 11)), const SizedBox(height: 12),
-          _idR(Icons.bolt_rounded, "Proof of Humanity", "Lightning Zap Verifikation", _humanityVerified, Colors.amber),
-          _idR(Icons.alternate_email, "NIP-05", "Nostr-Identität (name@domain)", _nip05Verified, cCyan),
-          ..._platformNames.map((n) => _idR(Icons.link_rounded, {'telegram': 'Telegram', 'twitter': 'X / Twitter', 'kleinanzeigen': 'Kleinanzeigen'}[n.toLowerCase()] ?? n, "Plattform aktiv", true, Colors.green)),
-          if (_platformProofCount == 0) _idR(Icons.link_off_rounded, "Plattformen", "Noch keine verknüpft", false, cTextTertiary),
+          const SizedBox(height: 24), Text(AppLocalizations.of(context).siIdentityLayer, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
+          Text(AppLocalizations.of(context).siLinksActive(idCount), style: const TextStyle(color: cTextTertiary, fontSize: 11)), const SizedBox(height: 12),
+          _idR(Icons.bolt_rounded, "Proof of Humanity", AppLocalizations.of(context).siHumanitySub, _humanityVerified, Colors.amber),
+          _idR(Icons.alternate_email, "NIP-05", AppLocalizations.of(context).siNip05Sub, _nip05Verified, cCyan),
+          ..._platformNames.map((n) => _idR(Icons.link_rounded, {'telegram': 'Telegram', 'twitter': 'X / Twitter', 'kleinanzeigen': 'Kleinanzeigen'}[n.toLowerCase()] ?? n, AppLocalizations.of(context).siPlatformActive, true, Colors.green)),
+          if (_platformProofCount == 0) _idR(Icons.link_off_rounded, AppLocalizations.of(context).siPlatforms, AppLocalizations.of(context).siNoneLinked, false, cTextTertiary),
           // TRUST LEVEL
           const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          const Text("TRUST LEVEL", style: TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _lvl(Icons.fiber_new, "NEU", "< 3", Colors.grey, "Startlevel. Besuche Meetups um Badges zu sammeln.", score?.level == 'NEU'),
-          _lvl(Icons.eco, "STARTER", "3–9", cOrange, "Deine ersten Badges zeigen Community-Teilnahme.", score?.level == 'STARTER'),
-          _lvl(Icons.local_fire_department, "AKTIV", "10–19", cCyan, "Regelmäßig dabei. Verschiedene Meetups und Organisatoren stärken dein Profil.", score?.level == 'AKTIV'),
-          _lvl(Icons.shield, "ETABLIERT", "20–39", Colors.green, "Vertrauenswürdiges Mitglied. Breit vernetzt und lange dabei.", score?.level == 'ETABLIERT'),
-          _lvl(Icons.bolt, "VETERAN", "40+", Colors.amber, "Höchstes Level. Reputation über Monate bewiesen.", score?.level == 'VETERAN'),
+          Text(AppLocalizations.of(context).siTrustLevel, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
+          _lvl(Icons.fiber_new, localizedLevel(context, 'NEU'), "< 3", Colors.grey, AppLocalizations.of(context).siLvlNew, score?.level == 'NEU'),
+          _lvl(Icons.eco, localizedLevel(context, 'STARTER'), "3–9", cOrange, AppLocalizations.of(context).siLvlStarter, score?.level == 'STARTER'),
+          _lvl(Icons.local_fire_department, localizedLevel(context, 'AKTIV'), "10–19", cCyan, AppLocalizations.of(context).siLvlActive, score?.level == 'AKTIV'),
+          _lvl(Icons.shield, localizedLevel(context, 'ETABLIERT'), "20–39", Colors.green, AppLocalizations.of(context).siLvlEstablished, score?.level == 'ETABLIERT'),
+          _lvl(Icons.bolt, localizedLevel(context, 'VETERAN'), "40+", Colors.amber, AppLocalizations.of(context).siLvlVeteran, score?.level == 'VETERAN'),
           // BERECHNUNG
           const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          const Text("BERECHNUNG", style: TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _fac(Icons.military_tech, cOrange, "Meetup-Badges", "Basiswert pro Badge. Gut besuchte Meetups wertvoller."),
-          _fac(Icons.location_on, cCyan, "Diversität", "Verschiedene Städte/Organisatoren = mehr Punkte."),
-          _fac(Icons.people_outline, cPurple, "Signers", "Unabhängige Organisatoren = höherer Trust."),
-          _fac(Icons.schedule, Colors.green, "Reife", "Account-Alter + Regelmäßigkeit = Bonus."),
-          _fac(Icons.speed, cRed, "Frequency Cap", "Max. 2 Badges/Woche. Anti-Farming."),
+          Text(AppLocalizations.of(context).siCalculation, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
+          _fac(Icons.military_tech, cOrange, AppLocalizations.of(context).siFacBadges, AppLocalizations.of(context).siFacBadgesDesc),
+          _fac(Icons.location_on, cCyan, AppLocalizations.of(context).siFacDiversity, AppLocalizations.of(context).siFacDiversityDesc),
+          _fac(Icons.people_outline, cPurple, AppLocalizations.of(context).siFacSigners, AppLocalizations.of(context).siFacSignersDesc),
+          _fac(Icons.schedule, Colors.green, AppLocalizations.of(context).siFacMaturity, AppLocalizations.of(context).siFacMaturityDesc),
+          _fac(Icons.speed, cRed, AppLocalizations.of(context).siFacFrequency, AppLocalizations.of(context).siFacFrequencyDesc),
           // ORGANISATOR
           const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          const Text("ORGANISATOR WERDEN", style: TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
-          const Text("Automatische Beförderung ab genügend Trust Score. Dann eigene NFC-Tags und QR-Codes erstellen.", style: TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)), const SizedBox(height: 14),
+          Text(AppLocalizations.of(context).siBecomeOrganizer, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
+          Text(AppLocalizations.of(context).siBecomeOrgDesc, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)), const SizedBox(height: 14),
           if (score != null && !score.meetsPromotionThreshold)
             Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cOrange.withOpacity(0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withOpacity(0.2))),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("FORTSCHRITT (${score.activeThresholds.name})", style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w800)), const SizedBox(height: 10), ...score.progress.entries.map((e) => _pRow(e.value))]))
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).siProgressLabel(score.activeThresholds.name), style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w800)), const SizedBox(height: 10), ...score.progress.entries.map((e) => _pRow(e.value))]))
           else if (score != null)
             Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.green.withOpacity(0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: Colors.green.withOpacity(0.2))),
-              child: Row(children: [const Icon(Icons.verified, color: Colors.green, size: 20), const SizedBox(width: 10), Expanded(child: Text("Du bist bereits Organisator!", style: TextStyle(color: Colors.green.shade300, fontSize: 12)))])),
+              child: Row(children: [const Icon(Icons.verified, color: Colors.green, size: 20), const SizedBox(width: 10), Expanded(child: Text(AppLocalizations.of(context).siAlreadyOrganizer, style: TextStyle(color: Colors.green.shade300, fontSize: 12)))])),
           // TIPPS
           const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          const Text("SCORE ERHÖHEN", style: TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _tip(Icons.event, "Regelmäßig verschiedene Meetups besuchen"), _tip(Icons.explore, "Badges bei Meetups in anderen Städten sammeln"),
-          _tip(Icons.group_add, "Badges von verschiedenen Organisatoren"), _tip(Icons.bolt, "Identität mit Lightning-Zap verifizieren"),
-          _tip(Icons.alternate_email, "NIP-05 einrichten"), _tip(Icons.link, "Plattformen verknüpfen"),
+          Text(AppLocalizations.of(context).siIncreaseScore, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
+          _tip(Icons.event, AppLocalizations.of(context).siTip1), _tip(Icons.explore, AppLocalizations.of(context).siTip2),
+          _tip(Icons.group_add, AppLocalizations.of(context).siTip3), _tip(Icons.bolt, AppLocalizations.of(context).siTip4),
+          _tip(Icons.alternate_email, AppLocalizations.of(context).siTip5), _tip(Icons.link, AppLocalizations.of(context).siTip6),
           const SizedBox(height: 20),
         ]))));
   }
@@ -889,7 +889,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _lvl(IconData i, String n, String r, Color c, String d, bool a) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: a ? c.withOpacity(0.06) : Colors.transparent, borderRadius: BorderRadius.circular(10), border: a ? Border.all(color: c.withOpacity(0.2)) : null), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: 32, height: 32, decoration: BoxDecoration(color: c.withOpacity(a ? 0.15 : 0.06), shape: BoxShape.circle), child: Icon(i, color: a ? c : c.withOpacity(0.3), size: 16)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(n, style: TextStyle(color: a ? c : cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)), const SizedBox(width: 8), Text(r, style: const TextStyle(color: cTextTertiary, fontSize: 10)), if (a) ...[const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: c.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: Text('DU', style: TextStyle(color: c, fontSize: 8, fontWeight: FontWeight.w800)))]]), const SizedBox(height: 3), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 10, height: 1.3))]))]));
   Widget _fac(IconData i, Color c, String t, String d) => Padding(padding: const EdgeInsets.only(bottom: 12), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)), const SizedBox(height: 2), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4))]))]));
   Widget _tip(IconData i, String t) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: cOrange.withOpacity(0.6), size: 16), const SizedBox(width: 10), Expanded(child: Text(t, style: const TextStyle(color: cTextSecondary, fontSize: 11, height: 1.4)))]));
-  Widget _pRow(PromotionProgress p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [Icon(p.met ? Icons.check_circle : Icons.radio_button_unchecked, color: p.met ? Colors.green : cTextTertiary, size: 16), const SizedBox(width: 8), Expanded(child: Text("${p.label}: ${p.current}/${p.required}", style: TextStyle(color: p.met ? Colors.green.shade300 : cTextSecondary, fontSize: 11, fontWeight: p.met ? FontWeight.w600 : FontWeight.normal))), SizedBox(width: 40, height: 4, child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(value: p.percentage, backgroundColor: cSurface, valueColor: AlwaysStoppedAnimation(p.met ? Colors.green : cOrange))))]));
+  Widget _pRow(PromotionProgress p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [Icon(p.met ? Icons.check_circle : Icons.radio_button_unchecked, color: p.met ? Colors.green : cTextTertiary, size: 16), const SizedBox(width: 8), Expanded(child: Text(AppLocalizations.of(context).siProgressRow(p.label, p.current, p.required), style: TextStyle(color: p.met ? Colors.green.shade300 : cTextSecondary, fontSize: 11, fontWeight: p.met ? FontWeight.w600 : FontWeight.normal))), SizedBox(width: 40, height: 4, child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(value: p.percentage, backgroundColor: cSurface, valueColor: AlwaysStoppedAnimation(p.met ? Colors.green : cOrange))))]));
 }
 
 // ============================================================

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
+import '../l10n/app_localizations.dart';
 import 'nfc_writer.dart';
 import 'rolling_qr_screen.dart';
 
@@ -11,7 +12,7 @@ class MeetupSessionWizard extends StatelessWidget {
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
-        title: const Text('MEETUP STARTEN'),
+        title: Text(AppLocalizations.of(context).mwStartMeetup),
         backgroundColor: cDark,
         surfaceTintColor: Colors.transparent,
         iconTheme: const IconThemeData(color: cTextSecondary),
@@ -35,14 +36,14 @@ class MeetupSessionWizard extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Titel
-            const Text('SCHRITT 1: NFC TAG',
-              style: TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+            Text(AppLocalizations.of(context).mwStep1Nfc,
+              style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
             const SizedBox(height: 10),
 
             // Beschreibung
-            const Text(
-              'Möchtest du physische NFC-Tags (NTAG215) für dieses Meetup auslegen? '
-              'Der kryptographische Beweis (Blockzeit & Signatur) wird darauf fixiert.',
+            Text(
+              AppLocalizations.of(context).mwNfcIntro1 +
+              AppLocalizations.of(context).mwNfcIntro2,
               style: TextStyle(color: cTextSecondary, fontSize: 13, height: 1.6)),
 
             const Spacer(),
@@ -58,8 +59,8 @@ class MeetupSessionWizard extends StatelessWidget {
                 onPressed: () => Navigator.push(
                   context, MaterialPageRoute(builder: (_) => const NFCWriterScreen())),
                 icon: const Icon(Icons.nfc_rounded, size: 18),
-                label: const Text('NFC TAG BESCHREIBEN',
-                  style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                label: Text(AppLocalizations.of(context).mwWriteNfcTag,
+                  style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5)),
               ),
             ),
             const SizedBox(height: 10),
@@ -71,8 +72,8 @@ class MeetupSessionWizard extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const RollingQRScreen()),
                   (route) => route.isFirst),
-                child: const Text('ÜBERSPRINGEN — NUR QR NUTZEN',
-                  style: TextStyle(color: cTextTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
+                child: Text(AppLocalizations.of(context).mwSkipQrOnly,
+                  style: const TextStyle(color: cTextTertiary, fontSize: 12, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -100,3 +101,6 @@ class MeetupSessionWizard extends StatelessWidget {
     ]);
   }
 }
+
+
+

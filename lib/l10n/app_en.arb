@@ -1089,5 +1089,449 @@
   "countryES": "Spain",
   "countryNL": "Netherlands",
   "countryIT": "Italy",
-  "countryFR": "France"
+  "countryFR": "France",
+  "siTitle": "YOUR TRUST SCORE",
+  "siIntro": "Measures your trustworthiness. Based on cryptographic proofs — nobody can forge it.",
+  "siIdentityLayer": "IDENTITY LAYER",
+  "siLinksActive": "{count} links active",
+  "@siLinksActive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "siHumanitySub": "Lightning zap verification",
+  "siNip05Sub": "Nostr identity (name@domain)",
+  "siPlatformActive": "Platform active",
+  "siPlatforms": "Platforms",
+  "siNoneLinked": "None linked yet",
+  "siTrustLevel": "TRUST LEVEL",
+  "siLvlNew": "Starting level. Visit meetups to collect badges.",
+  "siLvlStarter": "Your first badges show community participation.",
+  "siLvlActive": "Regularly active. Different meetups and organizers strengthen your profile.",
+  "siLvlEstablished": "Trusted member. Well-connected and long-standing.",
+  "siLvlVeteran": "Highest level. Reputation proven over months.",
+  "siCalculation": "CALCULATION",
+  "siFacBadges": "Meetup badges",
+  "siFacBadgesDesc": "Base value per badge. Well-attended meetups worth more.",
+  "siFacDiversity": "Diversity",
+  "siFacDiversityDesc": "Different cities/organizers = more points.",
+  "siFacSigners": "Signers",
+  "siFacSignersDesc": "Independent organizers = higher trust.",
+  "siFacMaturity": "Maturity",
+  "siFacMaturityDesc": "Account age + regularity = bonus.",
+  "siFacFrequency": "Frequency Cap",
+  "siFacFrequencyDesc": "Max. 2 badges/week. Anti-farming.",
+  "siBecomeOrganizer": "BECOME AN ORGANIZER",
+  "siBecomeOrgDesc": "Automatic promotion once you have enough Trust Score. Then create your own NFC tags and QR codes.",
+  "siProgressLabel": "PROGRESS ({name})",
+  "@siProgressLabel": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "siAlreadyOrganizer": "You are already an organizer!",
+  "siIncreaseScore": "INCREASE SCORE",
+  "siTip1": "Visit different meetups regularly",
+  "siTip2": "Collect badges at meetups in other cities",
+  "siTip3": "Badges from different organizers",
+  "siTip4": "Verify identity with a Lightning zap",
+  "siTip5": "Set up NIP-05",
+  "siTip6": "Link platforms",
+  "siProgressRow": "{label}: {current}/{required}",
+  "@siProgressRow": {
+    "placeholders": {
+      "label": {
+        "type": "Object"
+      },
+      "current": {
+        "type": "Object"
+      },
+      "required": {
+        "type": "Object"
+      }
+    }
+  },
+  "wotTabNetwork": "NETWORK",
+  "wotTabReports": "REPORTS",
+  "wotHealthGood": "HEALTHY",
+  "wotHealthBuilding": "BUILDING",
+  "wotHealthCritical": "CRITICAL",
+  "badgeUnknown": "unknown",
+  "badgeBlockAtScan": "₿ Block height at scan",
+  "mwStartMeetup": "START MEETUP",
+  "mwStep1Nfc": "STEP 1: NFC TAG",
+  "mwNfcIntro1": "Do you want to place physical NFC tags (NTAG215) for this meetup? ",
+  "mwNfcIntro2": "The cryptographic proof (block time & signature) is fixed onto them.",
+  "mwWriteNfcTag": "WRITE NFC TAG",
+  "mwSkipQrOnly": "SKIP — USE QR ONLY",
+  "repAllBound": "All {total} badges bound and verified",
+  "@repAllBound": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "repBoundOf": "{bound} of {total} badges identity-bound",
+  "@repBoundOf": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      },
+      "bound": {
+        "type": "Object"
+      }
+    }
+  },
+  "repBoundExtra": " ({verified} cryptographically verified)",
+  "@repBoundExtra": {
+    "placeholders": {
+      "verified": {
+        "type": "Object"
+      }
+    }
+  },
+  "repAllVerified": "All {total} badges cryptographically verified (not yet bound)",
+  "@repAllVerified": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "repVerifiedSchnorr": "{verified} of {total} badges with Schnorr proof",
+  "@repVerifiedSchnorr": {
+    "placeholders": {
+      "total": {
+        "type": "Object"
+      },
+      "verified": {
+        "type": "Object"
+      }
+    }
+  },
+  "repPlatformLinksActive": "{count} platform links active",
+  "@repPlatformLinksActive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "homeCouldNotOpen": "Could not open {url}",
+  "@homeCouldNotOpen": {
+    "placeholders": {
+      "url": {
+        "type": "Object"
+      }
+    }
+  },
+  "admWotLive": "✅ Your Web of Trust is live ({count} relays)!",
+  "@admWotLive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admDelegationSigned": "✅ Your delegation was cryptographically signed and published to the network!",
+  "admWotCurrent": "✅ Web of Trust up to date ({count} admins verified)",
+  "@admWotCurrent": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admNoVouchesFound": "✅ No published vouches found on the relays",
+  "admVouchesRestored": "✅ {count} vouches restored",
+  "@admVouchesRestored": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "admNoRelayReachable": "⚠️ No relay reachable — try again later",
+  "admAllVouchesRevoked": "✅ All vouches have been revoked in the network",
+  "apHowStep3": "3. Each scan = one badge for the participant\n",
+  "badgeSchnorrSig": "Schnorr (Nostr v2) ✓",
+  "msHomeMeetupSet": "✅ {city} set as home meetup",
+  "@msHomeMeetupSet": {
+    "placeholders": {
+      "city": {
+        "type": "Object"
+      }
+    }
+  },
+  "mvKnownOrganizer": "✓ Known organizer: {name}",
+  "@mvKnownOrganizer": {
+    "placeholders": {
+      "name": {
+        "type": "Object"
+      }
+    }
+  },
+  "mvUnknownSigner": "✗ UNKNOWN SIGNER!\nThis pubkey is not in the admin registry.",
+  "mvAdminCheckFailed": "! Admin status could not be verified (offline?)",
+  "mvLegacyBadge": "! Legacy badge (v1) — signer not verifiable",
+  "mvBadgeBound": "🔗 Badge bound",
+  "nwSelectHomeMeetup": "❌ Please select a home meetup in your profile first!",
+  "qrUniqueRecipients": "{count} different recipients",
+  "@qrUniqueRecipients": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "apHowStep1": "1. Start a new meetup (session).\n",
+  "apHowStep2": "2. Then write NFC tags or show the QR code.\n",
+  "apHowStep4": "4. Badges build reputation → more reputation = new organizers",
+  "ppHowStep1": "1. Choose a platform and enter your username\n",
+  "ppHowStep2": "2. The app creates a cryptographic proof\n",
+  "ppHowStep3": "3. The proof is automatically embedded in your reputation QR\n",
+  "ppHowStep4": "4. Others scan your QR and see the verified link",
+  "admErrorEmoji": "❌ Error: {msg}",
+  "@admErrorEmoji": {
+    "placeholders": {
+      "msg": {
+        "type": "Object"
+      }
+    }
+  },
+  "admNoNewUpdates": "⚠️ No new updates found",
+  "homeImageLoadError": "Image could not be loaded: {msg}",
+  "@homeImageLoadError": {
+    "placeholders": {
+      "msg": {
+        "type": "Object"
+      }
+    }
+  },
+  "qrSentCount": "{count} sent",
+  "@qrSentCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "repShareError": "Error sharing: {msg}",
+  "@repShareError": {
+    "placeholders": {
+      "msg": {
+        "type": "Object"
+      }
+    }
+  },
+  "rqNoHomeMeetup": "⚠️ No home meetup set",
+  "rqMeetupNotFound": "⚠️ Meetup not found",
+  "rlWhatMeans": "What does this mean?",
+  "rlWhyImportant": "Why this matters",
+  "rlWeakLabel": "Weak profile",
+  "rlWeakExpl": "Only one proof layer active. This user has few verifiable connections. For larger transactions: caution.",
+  "rlWeakAdvice": "Ask for more proofs (Lightning, NIP-05) or meet the person in person first.",
+  "rlLimitedLabel": "Limited",
+  "rlLimitedExpl": "There are meetup badges, but no other independent proofs. The user might be real — but confirmation from other layers is missing.",
+  "rlLimitedAdvice": "OK for tiny amounts. For larger amounts: wait until more layers are active.",
+  "rlBuildingLabel": "Building",
+  "rlBuildingExpl": "Two proof layers active. The user is building reputation but doesn't yet have full breadth.",
+  "rlBuildingAdvice": "Suitable for moderate transactions.",
+  "rlConnectedLabel": "Well connected",
+  "rlConnectedExpl": "Multiple independent proofs: meetups, Lightning activity and social connections. Hard to fake.",
+  "rlConnectedAdvice": "Trustworthy for most transactions.",
+  "rlSolidLabel": "Solid",
+  "rlSolidExpl": "Broad base of proofs. Manipulation would be laborious and expensive.",
+  "rlSolidAdvice": "Trustworthy for most purposes.",
+  "rlDefaultExpl": "Some proofs present, but room for more.",
+  "rlDefaultAdvice": "Use your own judgment.",
+  "rlMeetupProofs": "Meetup proofs",
+  "rlMeetupGood": "Attended different meetups with different organizers. This requires physical presence in multiple places.",
+  "rlMeetupMoreDiverse": "More diversity would be more convincing.",
+  "rlMeetupNone": "No meetup badges present. This user hasn't attended an Einundzwanzig meetup yet — or has only recently started using the app.",
+  "rlAllBound": "All cryptographically bound",
+  "rlGoodSpread": "Good regional spread",
+  "rlLowSpread": "Low spread",
+  "rlPhysGoodDiversity": "Has meetup badges, but only from {count} organizer(s). More diversity would be more convincing.",
+  "@rlPhysGoodDiversity": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlBadgeCount": "{count} badges",
+  "@rlBadgeCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlBoundOf": "{bound} of {total} bound",
+  "@rlBoundOf": {
+    "placeholders": {
+      "bound": {
+        "type": "Object"
+      },
+      "total": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlDiffMeetups": "{count} different meetups",
+  "@rlDiffMeetups": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlOrganizers": "{count} organizers",
+  "@rlOrganizers": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlConfirmedByDiff": "Confirmed by different people",
+  "rlOneOrgOnly": "Only one organizer — little independent confirmation",
+  "rlMemberSince": "Member since {since}",
+  "@rlMemberSince": {
+    "placeholders": {
+      "since": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlDaysCount": "{count} days",
+  "@rlDaysCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlLightningProof": "Lightning proof",
+  "rlLnBoth": "Has made and received real Lightning payments. Bots don't have Lightning wallets — a strong authenticity signal.",
+  "rlLnPaid": "Has paid via Lightning at least once. Basic proof that a real wallet exists.",
+  "rlLnActiveOnly": "Lightning activity present, but Proof of Humanity not yet active.",
+  "rlLnNone": "No Lightning activity. This doesn't mean the user is fake — maybe they don't use Lightning via Nostr. But an important anti-bot signal is missing.",
+  "rlHumanVerified": "Human verified",
+  "rlRealLnPayment": "Real Lightning payment proven",
+  "rlZapsSent": "{count} zaps sent",
+  "@rlZapsSent": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlToRecipients": "To {count} different recipients",
+  "@rlToRecipients": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlZapsReceived": "{count} zaps received",
+  "@rlZapsReceived": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlFromSenders": "From {count} different senders",
+  "@rlFromSenders": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlMonthsActive": "{count} months active",
+  "@rlMonthsActive": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlSocialTitle": "Social network",
+  "rlSocMutualMany": "You know each other on Nostr and share many contacts. Strong connection.",
+  "rlSocMutual": "Mutual follow — you know each other on Nostr.",
+  "rlSocCommon": "Many shared contacts — you move in the same network.",
+  "rlSocOneSided": "One-sided connection. You know each other vaguely.",
+  "rlSocOrgFollow": "Known Einundzwanzig organizers follow this user. That's a positive signal.",
+  "rlSocDefault": "There are connections in the Nostr network to this user.",
+  "rlSocNone": "No connection found in the Nostr network. This could mean: you've never met on Nostr, or the user is very new. Normal for strangers — a warning sign for supposedly familiar faces.",
+  "rlMutualFollow": "Mutual follow",
+  "rlYouFollow": "You follow",
+  "rlFollowsYou": "Follows you",
+  "rlNoFollow": "No follow",
+  "rlKnowOnNostr": "You know each other on Nostr",
+  "rlNoDirectConn": "No direct connection",
+  "rlCommonContacts": "{count} shared contacts",
+  "@rlCommonContacts": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlSameNetwork": "Same network",
+  "rlSomeOverlap": "Some overlap",
+  "rlSeparateNetworks": "Separate networks",
+  "rlOrgsFollow": "{count} organizers follow",
+  "@rlOrgsFollow": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlEndorsement": "Endorsement from known admins",
+  "rlIdentityTitle": "Identity proof",
+  "rlIdNip05Plat": "Has a NIP-05 address and linked platforms. This ties the Nostr identity to a domain — harder to fake than an anonymous account.",
+  "rlIdNip05Only": "Has a NIP-05 address. This ties the Nostr identity to a domain — harder to fake than an anonymous account.",
+  "rlIdPlatOnly": "Linked platform accounts. More platforms = more effort for forgers.",
+  "rlIdNone": "No internet identification. Completely anonymous. That's fine for privacy, but gives fewer trust indicators.",
+  "rlLinked": "Linked",
+  "rlNoIdentification": "No identification",
+  "rlAnonymous": "Anonymous",
+  "rlActive": "✓ active",
+  "rlActiveShort": "✓ active",
+  "rlMissingShort": "— missing",
+  "qrReceivedCount": "{count} received",
+  "@qrReceivedCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "qrUniqueSenders": "{count} different senders",
+  "@qrUniqueSenders": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "rlProofsOfFour": "{count} / 4 proofs",
+  "@rlProofsOfFour": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  }
 }

@@ -715,11 +715,11 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
             if (hasProof)
               _detailRow(Icons.verified_user, AppLocalizations.of(context).qrHumanVerified, AppLocalizations.of(context).qrLightningActive, Colors.green),
             if (hasZaps) ...[
-              _detailRow(Icons.arrow_upward, "${_zapStats!.sentCount} gesendet",
-                "${_zapStats!.uniqueRecipientCount} verschiedene Empfänger",
+              _detailRow(Icons.arrow_upward, AppLocalizations.of(context).qrSentCount(_zapStats!.sentCount),
+                AppLocalizations.of(context).qrUniqueRecipients(_zapStats!.uniqueRecipientCount),
                 _zapStats!.sentCount > 5 ? Colors.green : Colors.grey),
-              _detailRow(Icons.arrow_downward, "${_zapStats!.receivedCount} empfangen",
-                "${_zapStats!.uniqueSenderCount} verschiedene Sender",
+              _detailRow(Icons.arrow_downward, AppLocalizations.of(context).qrReceivedCount(_zapStats!.receivedCount),
+                AppLocalizations.of(context).qrUniqueSenders(_zapStats!.uniqueSenderCount),
                 _zapStats!.receivedCount > 0 ? Colors.green : Colors.grey),
               if (_zapStats!.activeMonths > 0)
                 _detailRow(Icons.schedule, "${_zapStats!.activeMonths} Monate aktiv",

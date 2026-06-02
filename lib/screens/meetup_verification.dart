@@ -429,17 +429,17 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           isKnownAdmin = adminResult.isAdmin;
           if (isKnownAdmin) {
             final adminName = adminResult.name ?? adminResult.meetup ?? AppLocalizations.of(context).verifyVerifiedAdmin;
-            adminCheckInfo = '✓ Bekannter Organisator: $adminName';
+            adminCheckInfo = AppLocalizations.of(context).mvKnownOrganizer(adminName);
           } else {
-            adminCheckInfo = '✗ UNBEKANNTER SIGNER!\nDieser Pubkey ist nicht in der Admin-Registry.';
+            adminCheckInfo = AppLocalizations.of(context).mvUnknownSigner;
           }
         } catch (e) {
           // Offline: Cache-Miss → Warnung anzeigen
-          adminCheckInfo = '! Admin-Status konnte nicht geprüft werden (offline?)';
+          adminCheckInfo = AppLocalizations.of(context).mvAdminCheckFailed;
         }
       } else if (verifyResult != null && verifyResult.version == 1) {
         // Legacy v1: Shared Secret, per Definition nicht vertrauenswürdig
-        adminCheckInfo = '! Legacy-Badge (v1) — Signer nicht prüfbar';
+        adminCheckInfo = AppLocalizations.of(context).mvLegacyBadge;
       }
 
       // Originalen signierten Content für Re-Verifikation
@@ -471,7 +471,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           claimEventId = claimResult.claimEventId;
           claimPubkey = claimResult.claimPubkey;
           claimTimestamp = claimResult.claimTimestamp;
-          claimInfo = '🔗 Badge gebunden';
+          claimInfo = AppLocalizations.of(context).mvBadgeBound;
         } else {
           claimInfo = '⚠ Binding: ${claimResult.message}';
         }
@@ -656,7 +656,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                 ),
               ),
               child: Text(
-                isAlreadyCollected ? 'SCHLIESSEN' : 'ABBRECHEN',
+                isAlreadyCollected ? 'SCHLIESSEN' : AppLocalizations.of(context).dialogCancel,
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.8),
               ),
             ),

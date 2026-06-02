@@ -119,7 +119,7 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text("✅ ${meetup.city} als Home-Meetup gesetzt"),
+                                  content: Text(AppLocalizations.of(context).msHomeMeetupSet(meetup.city)),
                                   backgroundColor: Colors.green,
                                 ),
                               );

@@ -321,10 +321,10 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                         ]),
                         const SizedBox(height: 10),
                         Text(
-                          "1. Wähle eine Plattform und gib deinen Usernamen ein\n"
-                          "2. Die App erstellt einen kryptographischen Beweis\n"
-                          "3. Der Beweis wird automatisch in deinen Reputation-QR eingebettet\n"
-                          "4. Andere scannen deinen QR und sehen die verifizierte Verknüpfung",
+                          AppLocalizations.of(context).ppHowStep1 +
+                          AppLocalizations.of(context).ppHowStep2 +
+                          AppLocalizations.of(context).ppHowStep3 +
+                          AppLocalizations.of(context).ppHowStep4,
                           style: TextStyle(color: Colors.grey.shade500, fontSize: 12, height: 1.6),
                         ),
                       ],
