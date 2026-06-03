@@ -204,7 +204,7 @@ class CommunityPortalScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: cCard,
               borderRadius: BorderRadius.circular(kTileRadius),
-              border: Border.all(color: item.color.withOpacity(0.18), width: 0.5),
+              border: Border.all(color: item.color.withValues(alpha: 0.18), width: 0.5),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -313,7 +313,7 @@ class CommunityPortalScreen extends StatelessWidget {
         Container(
           width: 40, height: 2,
           decoration: BoxDecoration(
-            color: cOrange.withOpacity(0.25),
+            color: cOrange.withValues(alpha: 0.25),
             borderRadius: BorderRadius.circular(1),
           ),
         ),
@@ -329,10 +329,10 @@ class CommunityPortalScreen extends StatelessWidget {
           onTap: () => _openUrl(context, _webBase),
           child: Text('einundzwanzig.space',
             style: TextStyle(
-              color: cOrange.withOpacity(0.5),
+              color: cOrange.withValues(alpha: 0.5),
               fontSize: 11,
               decoration: TextDecoration.underline,
-              decorationColor: cOrange.withOpacity(0.25),
+              decorationColor: cOrange.withValues(alpha: 0.25),
             )),
         ),
       ]),

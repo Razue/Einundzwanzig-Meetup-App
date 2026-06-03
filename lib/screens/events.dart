@@ -82,7 +82,7 @@ class _EventsScreenState extends State<EventsScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: cCyan.withOpacity(0.15),
+                          color: cCyan.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(Icons.event, color: cCyan, size: 32),
@@ -177,7 +177,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: cCyan.withOpacity(0.15),
+                    color: cCyan.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(

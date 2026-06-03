@@ -101,7 +101,7 @@ class _AppShellState extends State<AppShell> {
                   filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: cDark.withOpacity(0.92),
+                      color: cDark.withValues(alpha: 0.92),
                       border: const Border(top: BorderSide(color: cBorder, width: 0.5)),
                     ),
                     padding: EdgeInsets.only(bottom: bottomPad),
@@ -131,7 +131,7 @@ class _AppShellState extends State<AppShell> {
                       gradient: gradientOrange,
                       shape: BoxShape.circle,
                       border: Border.all(color: cDark, width: 3),
-                      boxShadow: [BoxShadow(color: cOrange.withOpacity(0.3), blurRadius: 20, spreadRadius: -2, offset: const Offset(0, 4))],
+                      boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 20, spreadRadius: -2, offset: const Offset(0, 4))],
                     ),
                     child: const Icon(Icons.qr_code_scanner_rounded, color: Colors.black, size: 26),
                   ),
@@ -237,7 +237,7 @@ class _ScanOption extends StatelessWidget {
         child: Row(children: [
           Container(
             width: 40, height: 40,
-            decoration: BoxDecoration(color: iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
             child: Icon(icon, color: iconColor, size: 20)),
           const SizedBox(width: 14),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

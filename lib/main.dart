@@ -147,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: cOrange.withOpacity(0.2),
+                      color: cOrange.withValues(alpha: 0.2),
                       blurRadius: 40,
                       spreadRadius: 0,
                     ),
@@ -167,3 +167,5 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
+

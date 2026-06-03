@@ -353,7 +353,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: cOrange, width: 4),
-                          boxShadow: [BoxShadow(color: cOrange.withOpacity(0.5), blurRadius: 40, spreadRadius: 10)],
+                          boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.5), blurRadius: 40, spreadRadius: 10)],
                         ),
                         child: const Center(child: Icon(Icons.nfc, size: 80, color: Colors.white)),
                       ),
@@ -378,7 +378,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                       decoration: BoxDecoration(
                         color: Colors.white12,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: cOrange.withOpacity(0.3)),
+                        border: Border.all(color: cOrange.withValues(alpha: 0.3)),
                       ),
                       child: Column(children: [
                         Text(AppLocalizations.of(context).writerYourHomeMeetup, style: const TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
@@ -394,9 +394,9 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                         margin: const EdgeInsets.symmetric(horizontal: 40),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
+                          color: Colors.green.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.green.withOpacity(0.3)),
+                          border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                         ),
                         child: Row(children: [
                           const Icon(Icons.check_circle, color: Colors.green, size: 18),
@@ -412,9 +412,9 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                       margin: const EdgeInsets.symmetric(horizontal: 40),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: cCyan.withOpacity(0.1),
+                        color: cCyan.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: cCyan.withOpacity(0.3)),
+                        border: Border.all(color: cCyan.withValues(alpha: 0.3)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

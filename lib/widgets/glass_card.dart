@@ -48,14 +48,14 @@ class GlassCard extends StatelessWidget {
         ),
         boxShadow: glowing ? [
           BoxShadow(
-            color: (borderColor ?? cOrange).withOpacity(0.08),
+            color: (borderColor ?? cOrange).withValues(alpha: 0.08),
             blurRadius: 24,
             spreadRadius: -4,
             offset: const Offset(0, 8),
           ),
         ] : [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -107,9 +107,9 @@ class StatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2), width: 0.5),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 0.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -180,7 +180,7 @@ class SectionHeader extends StatelessWidget {
               child: Text(
                 actionLabel!,
                 style: TextStyle(
-                  color: cOrange.withOpacity(0.7),
+                  color: cOrange.withValues(alpha: 0.7),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -191,3 +191,5 @@ class SectionHeader extends StatelessWidget {
     );
   }
 }
+
+

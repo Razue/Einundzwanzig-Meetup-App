@@ -19,6 +19,8 @@ import '../l10n/app_localizations.dart';
 import '../services/vouching_service.dart';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
+import 'trust_path_screen.dart';
+import 'network_analysis_screen.dart';
 import 'dart:math';
 
 class WotDashboardScreen extends StatefulWidget {
@@ -258,6 +260,10 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             const SizedBox(height: 16),
           ],
           _buildMyStatusCard(consensus),
+          const SizedBox(height: 16),
+          _buildTrustPathCard(),
+          const SizedBox(height: 12),
+          _buildNetworkAnalysisCard(),
           const SizedBox(height: 24),
           _buildSectionHeader(AppLocalizations.of(context).wotActiveOrganizers, Icons.verified_user),
           const SizedBox(height: 12),
@@ -289,11 +295,88 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     );
   }
 
+  Widget _buildTrustPathCard() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const TrustPathScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cCyan.withValues(alpha: 0.3), width: 0.5),
+        ),
+        child: Row(children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: cCyan.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.route_rounded, color: cCyan, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(AppLocalizations.of(context).tpTitle,
+                  style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 3),
+              Text(AppLocalizations.of(context).tpSubtitle,
+                  style: const TextStyle(color: cTextTertiary, fontSize: 12, height: 1.3)),
+            ]),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 22),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildNetworkAnalysisCard() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const NetworkAnalysisScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.5),
+        ),
+        child: Row(children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: cOrange.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.hub_rounded, color: cOrange, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(AppLocalizations.of(context).cnTitle,
+                  style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 3),
+              Text(AppLocalizations.of(context).cnSubtitle,
+                  style: const TextStyle(color: cTextTertiary, fontSize: 12, height: 1.3)),
+            ]),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 22),
+        ]),
+      ),
+    );
+  }
+
   Widget _buildNetworkHealthCard(NetworkConsensus? consensus) {
     final effectiveCount = consensus?.effectiveAdmins.length ?? 0;
     final totalVoters = consensus?.totalVoters ?? 0;
-    final isSunset = consensus?.isSunset ?? false;
-    final suspendedCount = consensus?.suspendedAdmins.length ?? 0;
+    final isSunset = consensus?.isSunset ?? false;    final suspendedCount = consensus?.suspendedAdmins.length ?? 0;
 
     double health = 0.0;
     if (consensus != null && effectiveCount > 0) {
@@ -318,7 +401,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       decoration: BoxDecoration(
         color: cCard,
         borderRadius: BorderRadius.circular(kTileRadius),
-        border: Border.all(color: healthColor.withOpacity(0.3)),
+        border: Border.all(color: healthColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,7 +411,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: healthColor.withOpacity(0.15),
+                  color: healthColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(kTileRadius),
                 ),
                 child: Icon(Icons.hub, color: healthColor, size: 28),
@@ -382,7 +465,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(kTileRadius),
         ),
         child: Column(
@@ -390,7 +473,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             Text(value, style: TextStyle(color: color, fontWeight: FontWeight.w800,
                 fontSize: 22, fontFamily: 'monospace')),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(color: color.withOpacity(0.7), fontSize: 10,
+            Text(label, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 10,
                 fontWeight: FontWeight.w600, letterSpacing: 0.3)),
           ],
         ),
@@ -481,7 +564,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       decoration: BoxDecoration(
         color: cCard,
         borderRadius: BorderRadius.circular(kTileRadius),
-        border: Border.all(color: statusColor.withOpacity(0.4)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,7 +625,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         color: cCard,
         borderRadius: BorderRadius.circular(kTileRadius),
         border: Border.all(
-          color: suspended ? cRed.withOpacity(0.3) : (isMe ? cOrange.withOpacity(0.3) : cBorder),
+          color: suspended ? cRed.withValues(alpha: 0.3) : (isMe ? cOrange.withValues(alpha: 0.3) : cBorder),
         ),
       ),
       child: ExpansionTile(
@@ -551,7 +634,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (suspended ? cRed : cPurple).withOpacity(0.12),
+            color: (suspended ? cRed : cPurple).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -572,7 +655,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: cOrange.withOpacity(0.15),
+                  color: cOrange.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text('DU', style: TextStyle(color: cOrange,
@@ -585,7 +668,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           children: [
             const SizedBox(height: 4),
             if (admin.meetup.isNotEmpty)
-              Text(admin.meetup, style: TextStyle(color: cOrange.withOpacity(0.8),
+              Text(admin.meetup, style: TextStyle(color: cOrange.withValues(alpha: 0.8),
                   fontSize: 11, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
             _buildVouchBar(admin.vouchCount, consensus.minVouches, suspended),
@@ -610,7 +693,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               children: admin.vouchers.map((v) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: cPurple.withOpacity(0.1),
+                  color: cPurple.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -659,7 +742,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
-          Icon(icon, color: color.withOpacity(0.6), size: 14),
+          Icon(icon, color: color.withValues(alpha: 0.6), size: 14),
           const SizedBox(width: 8),
           Text('$label: ', style: TextStyle(color: cTextTertiary, fontSize: 11)),
           Expanded(
@@ -811,9 +894,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(kTileRadius),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -901,7 +984,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               fontSize: 13, letterSpacing: 0.5),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: _myVouches.isEmpty ? cRed.withOpacity(0.8) : cOrange,
+          backgroundColor: _myVouches.isEmpty ? cRed.withValues(alpha: 0.8) : cOrange,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
@@ -920,14 +1003,14 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       decoration: BoxDecoration(
         color: cCard,
         borderRadius: BorderRadius.circular(kTileRadius),
-        border: Border.all(color: borderColor.withOpacity(isSuspended || hasWarnings ? 0.5 : 1.0)),
+        border: Border.all(color: borderColor.withValues(alpha: isSuspended || hasWarnings ? 0.5 : 1.0)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: (isSuspended ? cRed : cPurple).withOpacity(0.12),
+            color: (isSuspended ? cRed : cPurple).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(kTileRadius),
           ),
           child: Icon(
@@ -952,7 +1035,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: cRed.withOpacity(0.15),
+                  color: cRed.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: const Text('SUSPENDIERT', style: TextStyle(color: cRed,
@@ -1053,8 +1136,8 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         borderRadius: BorderRadius.circular(kTileRadius),
         border: Border.all(
           color: admin.isSuspended
-              ? cRed.withOpacity(0.4)
-              : (isNearSuspension ? Colors.orange.withOpacity(0.4) : cBorder),
+              ? cRed.withValues(alpha: 0.4)
+              : (isNearSuspension ? Colors.orange.withValues(alpha: 0.4) : cBorder),
         ),
       ),
       child: ExpansionTile(
@@ -1063,7 +1146,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (admin.isSuspended ? cRed : Colors.orange).withOpacity(0.12),
+            color: (admin.isSuspended ? cRed : Colors.orange).withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -1123,9 +1206,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               margin: const EdgeInsets.only(bottom: 6),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: cRed.withOpacity(0.05),
+                color: cRed.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: cRed.withOpacity(0.1)),
+                border: Border.all(color: cRed.withValues(alpha: 0.1)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1213,7 +1296,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                   const SizedBox(width: 8),
                   Container(
                     decoration: BoxDecoration(
-                      color: cCyan.withOpacity(0.15),
+                      color: cCyan.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -1236,7 +1319,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                   labelText: AppLocalizations.of(context).wotReasonRequired,
                   labelStyle: TextStyle(color: cTextTertiary),
                   hintText: AppLocalizations.of(context).wotReasonExample,
-                  hintStyle: TextStyle(color: cTextTertiary.withOpacity(0.5)),
+                  hintStyle: TextStyle(color: cTextTertiary.withValues(alpha: 0.5)),
                   filled: true, fillColor: cDark,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -1363,7 +1446,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                   const SizedBox(width: 8),
                   Container(
                     decoration: BoxDecoration(
-                      color: cCyan.withOpacity(0.15),
+                      color: cCyan.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -1524,9 +1607,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.06),
+        color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(kTileRadius),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1556,7 +1639,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(
         children: [
-          Icon(icon, size: 48, color: color.withOpacity(0.3)),
+          Icon(icon, size: 48, color: color.withValues(alpha: 0.3)),
           const SizedBox(height: 12),
           Text(title, style: TextStyle(color: color, fontSize: 14,
               fontWeight: FontWeight.w600)),
@@ -1622,7 +1705,7 @@ class _NpubScannerScreenState extends State<_NpubScannerScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.8),
+                color: Colors.black.withValues(alpha: 0.8),
                 borderRadius: BorderRadius.circular(kTileRadius),
                 border: Border.all(color: cPurple),
               ),

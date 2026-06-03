@@ -340,7 +340,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               decoration: BoxDecoration(
                 color: cDark,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.5)),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
               ),
               child: SelectableText(
                 nsec,
@@ -702,7 +702,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               decoration: BoxDecoration(
                 color: cCard,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.green.withOpacity(0.5)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -984,7 +984,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             color: cCard,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: done ? color.withOpacity(0.3) : Colors.white10,
+              color: done ? color.withValues(alpha: 0.3) : Colors.white10,
             ),
           ),
           child: Row(
@@ -992,7 +992,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               Container(
                 width: 38, height: 38,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(done ? 0.15 : 0.08),
+                  color: color.withValues(alpha: done ? 0.15 : 0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: done ? color : Colors.grey, size: 20),
@@ -1005,7 +1005,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 2),
                     Text(subtitle, style: TextStyle(
-                      color: done ? color.withOpacity(0.8) : Colors.grey.shade500,
+                      color: done ? color.withValues(alpha: 0.8) : Colors.grey.shade500,
                       fontSize: 12,
                     )),
                   ],
@@ -1098,3 +1098,5 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
     );
   }
 }
+
+

@@ -123,7 +123,7 @@ class _IntroScreenState extends State<IntroScreen>
                   center: Alignment.topCenter,
                   radius: 1.0,
                   colors: [
-                    cOrange.withOpacity(0.08),
+                    cOrange.withValues(alpha: 0.08),
                     Colors.transparent,
                   ],
                 ),
@@ -234,7 +234,7 @@ class _IntroScreenState extends State<IntroScreen>
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: _isLoading ? [] : [
                                   BoxShadow(
-                                    color: cOrange.withOpacity(0.25),
+                                    color: cOrange.withValues(alpha: 0.25),
                                     blurRadius: 20,
                                     offset: const Offset(0, 8),
                                   ),
@@ -272,11 +272,11 @@ class _IntroScreenState extends State<IntroScreen>
                           TextButton.icon(
                             onPressed: _isLoading ? null : _restoreAccount,
                             icon: Icon(Icons.restore_rounded,
-                                color: cOrange.withOpacity(0.7), size: 18),
+                                color: cOrange.withValues(alpha: 0.7), size: 18),
                             label: Text(
                               AppLocalizations.of(context).introLoadBackup,
                               style: TextStyle(
-                                color: cOrange.withOpacity(0.7),
+                                color: cOrange.withValues(alpha: 0.7),
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 1.0,
                                 fontSize: 13,
@@ -346,7 +346,7 @@ class _IntroScreenState extends State<IntroScreen>
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        color: selected ? cOrange.withOpacity(0.08) : Colors.transparent,
+        color: selected ? cOrange.withValues(alpha: 0.08) : Colors.transparent,
         child: Row(children: [
           Text(flag, style: const TextStyle(fontSize: 22)),
           const SizedBox(width: 16),

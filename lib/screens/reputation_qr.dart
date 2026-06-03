@@ -355,7 +355,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
           Container(
             width: 80, height: 80,
             decoration: BoxDecoration(
-              color: cOrange.withOpacity(0.1),
+              color: cOrange.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.workspace_premium, color: cOrange, size: 40),
@@ -386,7 +386,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
               icon: const Icon(Icons.qr_code_scanner),
               label: Text(AppLocalizations.of(context).reputationScanQr),
               style: ElevatedButton.styleFrom(
-                backgroundColor: cOrange.withOpacity(0.12),
+                backgroundColor: cOrange.withValues(alpha: 0.12),
                 foregroundColor: cOrange,
               ),
             ),
@@ -402,9 +402,9 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.red.shade900.withOpacity(0.2),
+          color: Colors.red.shade900.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.red.shade700.withOpacity(0.5)),
+          border: Border.all(color: Colors.red.shade700.withValues(alpha: 0.5)),
         ),
         child: Row(children: [
           Icon(Icons.warning_amber_rounded, color: Colors.red.shade400, size: 24),
@@ -429,7 +429,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       decoration: BoxDecoration(
         color: cCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [
@@ -437,7 +437,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
           Container(
             width: 36, height: 36,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
+              color: color.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 18),
@@ -483,7 +483,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: cOrange.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 8))],
+        boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 8))],
       ),
       child: Column(children: [
         // =============================================
@@ -564,7 +564,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(children: [
           Icon(icon, color: color, size: 20),
@@ -616,9 +616,9 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.08),
+        color: c.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.withOpacity(0.25)),
+        border: Border.all(color: c.withValues(alpha: 0.25)),
       ),
       child: Column(
         children: [
@@ -681,9 +681,9 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
               : const Icon(Icons.cloud_upload, size: 20),
           label: Text(_isPublishing ? AppLocalizations.of(context).reputationPublishing : AppLocalizations.of(context).reputationUpdateRelays),
           style: ElevatedButton.styleFrom(
-            backgroundColor: cCyan.withOpacity(0.15),
+            backgroundColor: cCyan.withValues(alpha: 0.15),
             foregroundColor: cCyan,
-            disabledBackgroundColor: cCyan.withOpacity(0.08),
+            disabledBackgroundColor: cCyan.withValues(alpha: 0.08),
           ),
         ),
       ),
@@ -719,14 +719,14 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
           decoration: BoxDecoration(
             color: cCard,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.2)),
+            border: Border.all(color: color.withValues(alpha: 0.2)),
           ),
           child: Column(
             children: [
               Container(
                 width: 40, height: 40,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: color, size: 20),

@@ -1655,5 +1655,63 @@
   "rcLabelSigners": "Avales",
   "rcLabelAge": "Días activo",
   "rcMember": "Miembro de Einundzwanzig",
-  "rcNoData": "Aún no hay reputación. ¡Consigue badges en los meetups!"
+  "rcNoData": "Aún no hay reputación. ¡Consigue badges en los meetups!",
+  "tpTitle": "Ruta de confianza",
+  "tpSubtitle": "¿Quién te conecta con esta persona?",
+  "tpEnterNpub": "Introduce el npub de la persona",
+  "tpScan": "Escanear npub",
+  "tpFind": "Buscar ruta",
+  "tpSearching": "Buscando en la red...",
+  "tpFound": "Conectado a través de {count} pasos",
+  "@tpFound": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "tpDirect": "Conectado directamente",
+  "tpYou": "Tú",
+  "tpTarget": "Destino",
+  "tpVouchesFor": "avala a",
+  "tpNoPath": "No se encontró ruta de confianza",
+  "tpNoPathSelf": "Aún no estás en la red de avales. Consigue avales de admins para ver rutas.",
+  "tpNoPathTarget": "Esta persona no está (aún) en la red de avales.",
+  "tpNoPathBetween": "Actualmente no hay cadena de avales conocida entre vosotros.",
+  "tpInvalidNpub": "npub no válido",
+  "tpUnknown": "Desconocido",
+  "tpHint": "Basado en la red pública de avales (Web of Trust). Solo muestra conexiones a través de miembros que avalan.",
+  "caOptInTitle": "¿Contribuir a la red de confianza?",
+  "caOptInBody": "Puedes confirmar tu asistencia a este meetup en la red pública de confianza. Otros verán que tu npub estuvo en este meetup — y cómo estáis conectados por meetups en común.\n\nEs voluntario. Recibes tu badge igualmente.",
+  "caOptInPrivacy": "Público y permanente en relays Nostr. Revela un patrón de movimiento y contactos. Piénsalo bien.",
+  "caOptInYes": "Sí, contribuir",
+  "caOptInNo": "No, mantener privado",
+  "caPublished": "Asistencia confirmada en la red",
+  "cnTitle": "Análisis de red",
+  "cnSubtitle": "¿Cómo está conectada esta persona por meetups en común?",
+  "cnEnterNpub": "Introduce el npub de la persona",
+  "cnScan": "Escanear",
+  "cnAnalyze": "Analizar",
+  "cnLoading": "Cargando red...",
+  "cnSharedMeetups": "Meetups en común",
+  "cnMutualContacts": "Contactos en común",
+  "cnReach": "Alcance de la persona",
+  "cnTotalMeetups": "Meetups asistidos",
+  "cnTotalContacts": "Personas conocidas",
+  "cnNoConnection": "No se encontró conexión",
+  "cnNoConnectionSub": "No habéis estado en meetups comunes ni tenéis contactos en común — o esta persona no participa en la red.",
+  "cnDirectMet": "¡Os habéis conocido directamente!",
+  "cnYou": "Tú",
+  "cnTarget": "Esta persona",
+  "cnViaShared": "por {count} meetups en común",
+  "@cnViaShared": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "cnTrustHint": "Más meetups y contactos en común significan más confianza orgánica.",
+  "cnInvalidNpub": "npub no válido",
+  "cnPrivacyNote": "Solo muestra personas que participan en la red (opt-in)."
 }

@@ -220,10 +220,10 @@ Verifizierbar über die Einundzwanzig Meetup App
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
       decoration: BoxDecoration(
         color: cCard,
-        border: Border.all(color: cOrange.withOpacity(0.5), width: 1.5),
+        border: Border.all(color: cOrange.withValues(alpha: 0.5), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: cOrange.withOpacity(0.15),
+            color: cOrange.withValues(alpha: 0.15),
             blurRadius: 30,
             offset: const Offset(0, 8),
           )
@@ -235,7 +235,7 @@ Verifizierbar über die Einundzwanzig Meetup App
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: cOrange.withOpacity(0.15),
+              color: cOrange.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.verified, size: 72, color: cOrange),
@@ -298,7 +298,7 @@ Verifizierbar über die Einundzwanzig Meetup App
       decoration: BoxDecoration(
         color: cCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

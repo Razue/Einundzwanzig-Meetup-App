@@ -67,7 +67,7 @@ class CreateMeetupScreen extends StatelessWidget {
           cursorColor: cOrange,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
             filled: true,
             fillColor: cCard, // Dunkelgrauer Hintergrund
             // Harter Rahmen, kein Radius

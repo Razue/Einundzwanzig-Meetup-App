@@ -283,7 +283,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 decoration: BoxDecoration(
                   color: cCard,
                   borderRadius: BorderRadius.circular(kTileRadius),
-                  border: Border.all(color: cGreen.withOpacity(0.3), width: 0.5),
+                  border: Border.all(color: cGreen.withValues(alpha: 0.3), width: 0.5),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,9 +412,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: cOrange.withOpacity(0.1),
+                color: cOrange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: cOrange.withOpacity(0.3)),
+                border: Border.all(color: cOrange.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,7 +445,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

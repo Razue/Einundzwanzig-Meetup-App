@@ -125,7 +125,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
         color: cCard,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: verified ? Colors.green.withOpacity(0.4) : Colors.amber.withOpacity(0.3),
+          color: verified ? Colors.green.withValues(alpha: 0.4) : Colors.amber.withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -134,7 +134,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
           Container(
             width: 72, height: 72,
             decoration: BoxDecoration(
-              color: (verified ? Colors.green : Colors.amber).withOpacity(0.1),
+              color: (verified ? Colors.green : Colors.amber).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -173,7 +173,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -225,9 +225,9 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.05),
+              color: Colors.amber.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.amber.withOpacity(0.2)),
+              border: Border.all(color: Colors.amber.withValues(alpha: 0.2)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +259,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
           Container(
             width: 24, height: 24,
             decoration: BoxDecoration(
-              color: cOrange.withOpacity(0.15),
+              color: cOrange.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -312,7 +312,7 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: verified ? Colors.grey.shade800 : Colors.amber,
               foregroundColor: verified ? Colors.white : Colors.black,
-              disabledBackgroundColor: Colors.amber.withOpacity(0.5),
+              disabledBackgroundColor: Colors.amber.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
           ),
@@ -332,10 +332,10 @@ class _HumanityProofScreenState extends State<HumanityProofScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: (_resultSuccess == true ? Colors.green : Colors.amber).withOpacity(0.08),
+              color: (_resultSuccess == true ? Colors.green : Colors.amber).withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: (_resultSuccess == true ? Colors.green : Colors.amber).withOpacity(0.3)),
+                color: (_resultSuccess == true ? Colors.green : Colors.amber).withValues(alpha: 0.3)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,

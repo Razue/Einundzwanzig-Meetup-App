@@ -237,7 +237,7 @@ class ReputationLayersWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: cCard,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: signal.color.withOpacity(0.4), width: 1.5),
+        border: Border.all(color: signal.color.withValues(alpha: 0.4), width: 1.5),
       ),
       child: Row(
         children: [
@@ -246,8 +246,8 @@ class ReputationLayersWidget extends StatelessWidget {
             width: 56, height: 56,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: signal.color.withOpacity(0.15),
-              border: Border.all(color: signal.color.withOpacity(0.3)),
+              color: signal.color.withValues(alpha: 0.15),
+              border: Border.all(color: signal.color.withValues(alpha: 0.3)),
             ),
             child: Icon(signal.icon, color: signal.color, size: 28),
           ),
@@ -272,7 +272,7 @@ class ReputationLayersWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -538,9 +538,9 @@ class ReputationLayersWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: signal.color.withOpacity(0.05),
+        color: signal.color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: signal.color.withOpacity(0.15)),
+        border: Border.all(color: signal.color.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,7 +583,7 @@ class ReputationLayersWidget extends StatelessWidget {
         color: cCard,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: hasData ? color.withOpacity(0.25) : Colors.white.withOpacity(0.05),
+          color: hasData ? color.withValues(alpha: 0.25) : Colors.white.withValues(alpha: 0.05),
         ),
       ),
       child: Theme(
@@ -596,7 +596,7 @@ class ReputationLayersWidget extends StatelessWidget {
           leading: Container(
             width: 40, height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(hasData ? 0.15 : 0.05),
+              color: color.withValues(alpha: hasData ? 0.15 : 0.05),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: hasData ? color : Colors.grey, size: 20),
@@ -619,8 +619,8 @@ class ReputationLayersWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: hasData
-                      ? color.withOpacity(0.12)
-                      : Colors.white.withOpacity(0.03),
+                      ? color.withValues(alpha: 0.12)
+                      : Colors.white.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -688,7 +688,7 @@ class ReputationLayersWidget extends StatelessWidget {
                 Text(
                   detail.label,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),

@@ -117,7 +117,7 @@ class BadgeArtPainter extends CustomPainter {
 
     // 3. FEINES RASTER (Grid-Overlay)
     final gridPaint = Paint()
-      ..color = Colors.white.withOpacity(0.03)
+      ..color = Colors.white.withValues(alpha: 0.03)
       ..strokeWidth = 0.5;
     final gridSize = 12.0 + (_byte(30) % 8);
     for (double x = 0; x < w; x += gridSize) {
@@ -336,7 +336,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.collections_bookmark_outlined,
-              size: 100, color: Colors.grey.withOpacity(0.3)),
+              size: 100, color: Colors.grey.withValues(alpha: 0.3)),
           const SizedBox(height: 20),
           Text(AppLocalizations.of(context).walletNoBadges,
               style: Theme.of(context)
@@ -371,10 +371,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cOrange.withOpacity(0.4)),
+          border: Border.all(color: cOrange.withValues(alpha: 0.4)),
           boxShadow: [
             BoxShadow(
-                color: cOrange.withOpacity(0.12),
+                color: cOrange.withValues(alpha: 0.12),
                 blurRadius: 12,
                 offset: const Offset(0, 4)),
           ],
@@ -394,8 +394,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                   stops: const [0.0, 0.35, 1.0],
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.15),
-                    Colors.black.withOpacity(0.8),
+                    Colors.black.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -414,10 +414,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           shape: BoxShape.circle,
                           border:
-                              Border.all(color: cOrange.withOpacity(0.5)),
+                              Border.all(color: cOrange.withValues(alpha: 0.5)),
                         ),
                         child: const Icon(Icons.verified,
                             color: cOrange, size: 20),
@@ -426,7 +426,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
+                          color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text("#${index + 1}",
@@ -491,7 +491,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                         child: Text(
                           "Block ${_formatBlock(badge.blockHeight)}",
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                             fontFamily: 'monospace',
@@ -527,7 +527,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: cOrange.withOpacity(0.3), width: 0.8),
+          border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.8),
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -541,8 +541,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                   stops: const [0.0, 0.5, 1.0],
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.8),
+                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -558,7 +558,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                       const Icon(Icons.verified, color: cOrange, size: 16),
                       Text("#${index + 1}",
                           style: TextStyle(
-                              color: cOrange.withOpacity(0.8),
+                              color: cOrange.withValues(alpha: 0.8),
                               fontSize: 9,
                               fontWeight: FontWeight.bold)),
                     ],

@@ -162,9 +162,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                       decoration: BoxDecoration(
-                                        color: cOrange.withOpacity(0.1),
+                                        color: cOrange.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: cOrange.withOpacity(0.3)),
+                                        border: Border.all(color: cOrange.withValues(alpha: 0.3)),
                                       ),
                                       child: Column(
                                         children: [

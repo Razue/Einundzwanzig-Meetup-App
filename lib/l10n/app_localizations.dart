@@ -5745,6 +5745,270 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Noch keine Reputation. Sammle Badges auf Meetups!'**
   String get rcNoData;
+
+  /// No description provided for @tpTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauenspfad'**
+  String get tpTitle;
+
+  /// No description provided for @tpSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Über wen bist du mit dieser Person verbunden?'**
+  String get tpSubtitle;
+
+  /// No description provided for @tpEnterNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'npub der Person eingeben'**
+  String get tpEnterNpub;
+
+  /// No description provided for @tpScan.
+  ///
+  /// In de, this message translates to:
+  /// **'npub scannen'**
+  String get tpScan;
+
+  /// No description provided for @tpFind.
+  ///
+  /// In de, this message translates to:
+  /// **'Pfad finden'**
+  String get tpFind;
+
+  /// No description provided for @tpSearching.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk wird durchsucht...'**
+  String get tpSearching;
+
+  /// No description provided for @tpFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden über {count} Stationen'**
+  String tpFound(Object count);
+
+  /// No description provided for @tpDirect.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkt verbunden'**
+  String get tpDirect;
+
+  /// No description provided for @tpYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get tpYou;
+
+  /// No description provided for @tpTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Zielperson'**
+  String get tpTarget;
+
+  /// No description provided for @tpVouchesFor.
+  ///
+  /// In de, this message translates to:
+  /// **'bürgt für'**
+  String get tpVouchesFor;
+
+  /// No description provided for @tpNoPath.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Vertrauenspfad gefunden'**
+  String get tpNoPath;
+
+  /// No description provided for @tpNoPathSelf.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist noch nicht im Bürgschafts-Netz. Lass dich von Admins bestätigen, um Pfade zu sehen.'**
+  String get tpNoPathSelf;
+
+  /// No description provided for @tpNoPathTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Person ist (noch) nicht im Bürgschafts-Netz erfasst.'**
+  String get tpNoPathTarget;
+
+  /// No description provided for @tpNoPathBetween.
+  ///
+  /// In de, this message translates to:
+  /// **'Es gibt aktuell keine bekannte Bürgschaftskette zwischen euch.'**
+  String get tpNoPathBetween;
+
+  /// No description provided for @tpInvalidNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiger npub'**
+  String get tpInvalidNpub;
+
+  /// No description provided for @tpUnknown.
+  ///
+  /// In de, this message translates to:
+  /// **'Unbekannt'**
+  String get tpUnknown;
+
+  /// No description provided for @tpHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Basiert auf dem öffentlichen Bürgschafts-Netz (Web of Trust). Zeigt nur Verbindungen über bürgende Mitglieder.'**
+  String get tpHint;
+
+  /// No description provided for @caOptInTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Vertrauensnetzwerk beitragen?'**
+  String get caOptInTitle;
+
+  /// No description provided for @caOptInBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst deine Teilnahme an diesem Meetup im öffentlichen Vertrauensnetzwerk bestätigen. Andere sehen dann, dass dein npub bei diesem Meetup war — und über gemeinsame Meetups, wie ihr vernetzt seid.\n\nDas ist freiwillig. Dein Badge bekommst du auch ohne Teilnahme am Netzwerk.'**
+  String get caOptInBody;
+
+  /// No description provided for @caOptInPrivacy.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffentlich & dauerhaft auf Nostr-Relays. Zeigt ein Bewegungs- und Kontaktmuster. Überleg es dir gut.'**
+  String get caOptInPrivacy;
+
+  /// No description provided for @caOptInYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja, beitragen'**
+  String get caOptInYes;
+
+  /// No description provided for @caOptInNo.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, privat bleiben'**
+  String get caOptInNo;
+
+  /// No description provided for @caPublished.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilnahme im Netzwerk bestätigt'**
+  String get caPublished;
+
+  /// No description provided for @cnTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk-Analyse'**
+  String get cnTitle;
+
+  /// No description provided for @cnSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie ist diese Person über gemeinsame Meetups vernetzt?'**
+  String get cnSubtitle;
+
+  /// No description provided for @cnEnterNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'npub der Person eingeben'**
+  String get cnEnterNpub;
+
+  /// No description provided for @cnScan.
+  ///
+  /// In de, this message translates to:
+  /// **'Scannen'**
+  String get cnScan;
+
+  /// No description provided for @cnAnalyze.
+  ///
+  /// In de, this message translates to:
+  /// **'Analysieren'**
+  String get cnAnalyze;
+
+  /// No description provided for @cnLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk wird geladen...'**
+  String get cnLoading;
+
+  /// No description provided for @cnSharedMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Gemeinsame Meetups'**
+  String get cnSharedMeetups;
+
+  /// No description provided for @cnMutualContacts.
+  ///
+  /// In de, this message translates to:
+  /// **'Gemeinsame Kontakte'**
+  String get cnMutualContacts;
+
+  /// No description provided for @cnReach.
+  ///
+  /// In de, this message translates to:
+  /// **'Vernetzung der Person'**
+  String get cnReach;
+
+  /// No description provided for @cnTotalMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups besucht'**
+  String get cnTotalMeetups;
+
+  /// No description provided for @cnTotalContacts.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen getroffen'**
+  String get cnTotalContacts;
+
+  /// No description provided for @cnNoConnection.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung gefunden'**
+  String get cnNoConnection;
+
+  /// No description provided for @cnNoConnectionSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr wart auf keinen gemeinsamen Meetups und habt keine gemeinsamen Kontakte im Netzwerk — oder die Person nimmt nicht am Netzwerk teil.'**
+  String get cnNoConnectionSub;
+
+  /// No description provided for @cnDirectMet.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr habt euch direkt getroffen!'**
+  String get cnDirectMet;
+
+  /// No description provided for @cnYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get cnYou;
+
+  /// No description provided for @cnTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Person'**
+  String get cnTarget;
+
+  /// No description provided for @cnViaShared.
+  ///
+  /// In de, this message translates to:
+  /// **'über {count} gemeinsame Meetups'**
+  String cnViaShared(Object count);
+
+  /// No description provided for @cnTrustHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Je mehr gemeinsame Meetups und Kontakte, desto stärker das organische Vertrauen.'**
+  String get cnTrustHint;
+
+  /// No description provided for @cnInvalidNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiger npub'**
+  String get cnInvalidNpub;
+
+  /// No description provided for @cnPrivacyNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in).'**
+  String get cnPrivacyNote;
 }
 
 class _AppLocalizationsDelegate

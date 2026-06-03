@@ -476,7 +476,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(height: 4),
         Text(AppLocalizations.of(context).tileTrustScore, style: const TextStyle(color: cText, fontSize: 12)),
         if (score != null && !score.meetsPromotionThreshold) ...[const SizedBox(height: 12),
-          ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: score.promotionProgress, backgroundColor: Colors.white.withOpacity(0.06), valueColor: AlwaysStoppedAnimation(_levelColor.withOpacity(0.6)), minHeight: 4))],
+          ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: score.promotionProgress, backgroundColor: Colors.white.withValues(alpha: 0.06), valueColor: AlwaysStoppedAnimation(_levelColor.withValues(alpha: 0.6)), minHeight: 4))],
         if (score != null && score.meetsPromotionThreshold) ...[const SizedBox(height: 10),
           Row(children: [Icon(Icons.verified_rounded, color: Colors.green.shade400, size: 14), const SizedBox(width: 4), Text(AppLocalizations.of(context).tileOrganizer, style: TextStyle(color: Colors.green.shade400, fontSize: 11, fontWeight: FontWeight.w600))])],
         ])));
@@ -515,13 +515,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(kTileRadius),
-            border: Border.all(color: cOrange.withOpacity(0.35), width: 1.5),
+            border: Border.all(color: cOrange.withValues(alpha: 0.35), width: 1.5),
             gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
-              colors: [cOrange.withOpacity(0.10), const Color(0xFF141416)]),
+              colors: [cOrange.withValues(alpha: 0.10), const Color(0xFF141416)]),
           ),
           child: Row(children: [
             Container(width: 54, height: 54,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: cOrange.withOpacity(0.14)),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: cOrange.withValues(alpha: 0.14)),
               child: const Icon(Icons.add_location_rounded, color: cOrange, size: 28)),
             const SizedBox(width: 16),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -544,22 +544,22 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(kTileRadius),
           gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
-            colors: [cOrange.withOpacity(0.20), cOrange.withOpacity(0.07), const Color(0xFF141416)],
+            colors: [cOrange.withValues(alpha: 0.20), cOrange.withValues(alpha: 0.07), const Color(0xFF141416)],
             stops: const [0.0, 0.45, 1.0]),
-          border: Border.all(color: cOrange.withOpacity(0.38), width: 1.2),
-          boxShadow: [BoxShadow(color: cOrange.withOpacity(0.08), blurRadius: 24, offset: const Offset(0, 6))],
+          border: Border.all(color: cOrange.withValues(alpha: 0.38), width: 1.2),
+          boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(0, 6))],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
           // ── Header: Label + Badge-Count ──
           Row(children: [
             Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: cOrange.withOpacity(0.22), borderRadius: BorderRadius.circular(6)),
+              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(6)),
               child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
             const Spacer(),
             if (bh > 0) Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.07), borderRadius: BorderRadius.circular(6)),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(6)),
               child: Row(children: [
                 const Icon(Icons.military_tech_rounded, color: cOrange, size: 11),
                 const SizedBox(width: 4),
@@ -573,7 +573,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
             // Meetup Bild oder Home-Icon
             Container(width: 52, height: 52,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: cOrange.withOpacity(0.14)),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: cOrange.withValues(alpha: 0.14)),
               child: _homeMeetup != null && _homeMeetup!.coverImagePath.isNotEmpty
                 ? ClipRRect(borderRadius: BorderRadius.circular(12),
                     child: Image.network(_homeMeetup!.coverImagePath, fit: BoxFit.cover,
@@ -602,7 +602,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Text(
                 days == 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
                 style: TextStyle(
-                  color: days == 0 ? cOrange : days <= 3 ? cOrange.withOpacity(0.8) : cTextSecondary,
+                  color: days == 0 ? cOrange : days <= 3 ? cOrange.withValues(alpha: 0.8) : cTextSecondary,
                   fontSize: 14, fontWeight: FontWeight.w800)),
               const SizedBox(width: 5),
               Expanded(child: Text(
@@ -628,20 +628,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Container(
                 height: 40,
                 decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(10),
-                  boxShadow: [BoxShadow(color: cOrange.withOpacity(0.25), blurRadius: 10, offset: const Offset(0, 3))]),
+                  boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.25), blurRadius: 10, offset: const Offset(0, 3))]),
                 child: Center(child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.8)))),
             )),
             const SizedBox(width: 8),
             if (_homeMeetup != null) GestureDetector(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: _homeMeetup!))),
               child: Container(width: 40, height: 40,
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(10)),
                 child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 17))),
             const SizedBox(width: 6),
             GestureDetector(
               onTap: _selectHomeMeetup,
               child: Container(width: 40, height: 40,
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.06), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(10)),
                 child: const Icon(Icons.swap_horiz_rounded, color: cTextSecondary, size: 17))),
           ]),
         ]),
@@ -703,13 +703,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, __) => GestureDetector(
     onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const RollingQRScreen())); _checkActiveSession(); },
-    child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cGreen.withOpacity(0.25), width: 0.5)),
-    child: Row(children: [Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withOpacity(0.5 + _pulseController.value * 0.5), boxShadow: [BoxShadow(color: Colors.green.withOpacity(0.3 * _pulseController.value), blurRadius: 8)])),
-      const SizedBox(width: 14), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: Text(AppLocalizations.of(context).statusLive, style: TextStyle(color: Colors.green.shade300, fontSize: 9, fontWeight: FontWeight.w800))),
+    child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cGreen.withValues(alpha: 0.25), width: 0.5)),
+    child: Row(children: [Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withValues(alpha: 0.5 + _pulseController.value * 0.5), boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.3 * _pulseController.value), blurRadius: 8)])),
+      const SizedBox(width: 14), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: Text(AppLocalizations.of(context).statusLive, style: TextStyle(color: Colors.green.shade300, fontSize: 9, fontWeight: FontWeight.w800))),
       const SizedBox(width: 10), Expanded(child: Text(_activeSession!.meetupName.isNotEmpty ? _activeSession!.meetupName : AppLocalizations.of(context).statusMeetupActive, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
-      const SizedBox(width: 8), Text(_sessionTimeLeft, style: TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: fontMono)), const SizedBox(width: 8), Icon(Icons.arrow_forward_ios_rounded, color: Colors.green.withOpacity(0.4), size: 14)]))));
+      const SizedBox(width: 8), Text(_sessionTimeLeft, style: TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: fontMono)), const SizedBox(width: 8), Icon(Icons.arrow_forward_ios_rounded, color: Colors.green.withValues(alpha: 0.4), size: 14)]))));
 
-  Widget _buildDeviceWarning() => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withOpacity(0.3), width: 0.5)),
+  Widget _buildDeviceWarning() => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.5)),
     child: Row(children: [const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 18), const SizedBox(width: 10), Expanded(child: Text(DeviceIntegrityService.warningMessage, style: TextStyle(color: Colors.orange.shade200, fontSize: 11))),
       GestureDetector(onTap: () => setState(() => _dismissedIntegrityWarning = true), child: Icon(Icons.close_rounded, color: Colors.orange.shade300, size: 16))]));
 
@@ -749,7 +749,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             contentPadding: const EdgeInsets.symmetric(horizontal: 4),
             leading: Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: cOrange.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
               child: const Icon(Icons.language_rounded, color: cOrange, size: 20)),
             title: Text(AppLocalizations.of(context).settingsLanguageTitle, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
             subtitle: Text('${_flagFor(current)}  ${LocaleController.displayName(current)}',
@@ -760,7 +760,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionNostr), _sT(Icons.hub_rounded, cCyan, AppLocalizations.of(context).settingsRelays, AppLocalizations.of(context).settingsRelaysSub, () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
         const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionControl),
-        ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: cOrange.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.vibration_rounded, color: cOrange, size: 20)),
+        ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.vibration_rounded, color: cOrange, size: 20)),
           title: Text(AppLocalizations.of(context).settingsHaptic, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
           subtitle: Text(haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
           trailing: Switch(value: haptic, activeColor: cOrange, onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
@@ -820,7 +820,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        color: selected ? cOrange.withOpacity(0.08) : Colors.transparent,
+        color: selected ? cOrange.withValues(alpha: 0.08) : Colors.transparent,
         child: Row(children: [
           Text(flag, style: const TextStyle(fontSize: 22)),
           const SizedBox(width: 16),
@@ -834,7 +834,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _sT(IconData i, Color c, String t, String s, VoidCallback onTap) => ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(i, color: c, size: 20)), title: Text(t, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)), subtitle: Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)), onTap: onTap, contentPadding: const EdgeInsets.symmetric(horizontal: 4));
+  Widget _sT(IconData i, Color c, String t, String s, VoidCallback onTap) => ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: c.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)), child: Icon(i, color: c, size: 20)), title: Text(t, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)), subtitle: Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)), onTap: onTap, contentPadding: const EdgeInsets.symmetric(horizontal: 4));
 
   void _showScoreInfoSheet() {
     final score = _trustScore; final idCount = _platformProofCount + (_humanityVerified ? 1 : 0) + (_nip05Verified ? 1 : 0);
@@ -872,10 +872,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(AppLocalizations.of(context).siBecomeOrganizer, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
           Text(AppLocalizations.of(context).siBecomeOrgDesc, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)), const SizedBox(height: 14),
           if (score != null && !score.meetsPromotionThreshold)
-            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cOrange.withOpacity(0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withOpacity(0.2))),
+            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withValues(alpha: 0.2))),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).siProgressLabel(score.activeThresholds.name), style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w800)), const SizedBox(height: 10), ...score.progress.entries.map((e) => _pRow(e.value))]))
           else if (score != null)
-            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.green.withOpacity(0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: Colors.green.withOpacity(0.2))),
+            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: Colors.green.withValues(alpha: 0.2))),
               child: Row(children: [const Icon(Icons.verified, color: Colors.green, size: 20), const SizedBox(width: 10), Expanded(child: Text(AppLocalizations.of(context).siAlreadyOrganizer, style: TextStyle(color: Colors.green.shade300, fontSize: 12)))])),
           // TIPPS
           const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
@@ -887,10 +887,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ]))));
   }
 
-  Widget _idR(IconData i, String l, String d, bool a, Color c) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Row(children: [Icon(i, color: a ? c : cTextTertiary.withOpacity(0.5), size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(l, style: TextStyle(color: a ? cText : cTextTertiary, fontSize: 12, fontWeight: FontWeight.w600)), Text(d, style: TextStyle(color: a ? cTextSecondary : cTextTertiary.withOpacity(0.5), fontSize: 10))])), Icon(a ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: a ? c : cTextTertiary.withOpacity(0.3), size: 18)]));
-  Widget _lvl(IconData i, String n, String r, Color c, String d, bool a) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: a ? c.withOpacity(0.06) : Colors.transparent, borderRadius: BorderRadius.circular(10), border: a ? Border.all(color: c.withOpacity(0.2)) : null), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: 32, height: 32, decoration: BoxDecoration(color: c.withOpacity(a ? 0.15 : 0.06), shape: BoxShape.circle), child: Icon(i, color: a ? c : c.withOpacity(0.3), size: 16)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(n, style: TextStyle(color: a ? c : cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)), const SizedBox(width: 8), Text(r, style: const TextStyle(color: cTextTertiary, fontSize: 10)), if (a) ...[const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: c.withOpacity(0.15), borderRadius: BorderRadius.circular(4)), child: Text('DU', style: TextStyle(color: c, fontSize: 8, fontWeight: FontWeight.w800)))]]), const SizedBox(height: 3), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 10, height: 1.3))]))]));
+  Widget _idR(IconData i, String l, String d, bool a, Color c) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Row(children: [Icon(i, color: a ? c : cTextTertiary.withValues(alpha: 0.5), size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(l, style: TextStyle(color: a ? cText : cTextTertiary, fontSize: 12, fontWeight: FontWeight.w600)), Text(d, style: TextStyle(color: a ? cTextSecondary : cTextTertiary.withValues(alpha: 0.5), fontSize: 10))])), Icon(a ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: a ? c : cTextTertiary.withValues(alpha: 0.3), size: 18)]));
+  Widget _lvl(IconData i, String n, String r, Color c, String d, bool a) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: a ? c.withValues(alpha: 0.06) : Colors.transparent, borderRadius: BorderRadius.circular(10), border: a ? Border.all(color: c.withValues(alpha: 0.2)) : null), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: 32, height: 32, decoration: BoxDecoration(color: c.withValues(alpha: a ? 0.15 : 0.06), shape: BoxShape.circle), child: Icon(i, color: a ? c : c.withValues(alpha: 0.3), size: 16)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(n, style: TextStyle(color: a ? c : cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)), const SizedBox(width: 8), Text(r, style: const TextStyle(color: cTextTertiary, fontSize: 10)), if (a) ...[const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: c.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: Text('DU', style: TextStyle(color: c, fontSize: 8, fontWeight: FontWeight.w800)))]]), const SizedBox(height: 3), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 10, height: 1.3))]))]));
   Widget _fac(IconData i, Color c, String t, String d) => Padding(padding: const EdgeInsets.only(bottom: 12), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)), const SizedBox(height: 2), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4))]))]));
-  Widget _tip(IconData i, String t) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: cOrange.withOpacity(0.6), size: 16), const SizedBox(width: 10), Expanded(child: Text(t, style: const TextStyle(color: cTextSecondary, fontSize: 11, height: 1.4)))]));
+  Widget _tip(IconData i, String t) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: cOrange.withValues(alpha: 0.6), size: 16), const SizedBox(width: 10), Expanded(child: Text(t, style: const TextStyle(color: cTextSecondary, fontSize: 11, height: 1.4)))]));
   Widget _pRow(PromotionProgress p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [Icon(p.met ? Icons.check_circle : Icons.radio_button_unchecked, color: p.met ? Colors.green : cTextTertiary, size: 16), const SizedBox(width: 8), Expanded(child: Text(AppLocalizations.of(context).siProgressRow(p.label, p.current, p.required), style: TextStyle(color: p.met ? Colors.green.shade300 : cTextSecondary, fontSize: 11, fontWeight: p.met ? FontWeight.w600 : FontWeight.normal))), SizedBox(width: 40, height: 4, child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(value: p.percentage, backgroundColor: cSurface, valueColor: AlwaysStoppedAnimation(p.met ? Colors.green : cOrange))))]));
 }
 

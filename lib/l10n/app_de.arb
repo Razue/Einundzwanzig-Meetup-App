@@ -1677,5 +1677,63 @@
   "rcLabelSigners": "Bürgen",
   "rcLabelAge": "Tage dabei",
   "rcMember": "Einundzwanzig Mitglied",
-  "rcNoData": "Noch keine Reputation. Sammle Badges auf Meetups!"
+  "rcNoData": "Noch keine Reputation. Sammle Badges auf Meetups!",
+  "tpTitle": "Vertrauenspfad",
+  "tpSubtitle": "Über wen bist du mit dieser Person verbunden?",
+  "tpEnterNpub": "npub der Person eingeben",
+  "tpScan": "npub scannen",
+  "tpFind": "Pfad finden",
+  "tpSearching": "Netzwerk wird durchsucht...",
+  "tpFound": "Verbunden über {count} Stationen",
+  "@tpFound": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "tpDirect": "Direkt verbunden",
+  "tpYou": "Du",
+  "tpTarget": "Zielperson",
+  "tpVouchesFor": "bürgt für",
+  "tpNoPath": "Kein Vertrauenspfad gefunden",
+  "tpNoPathSelf": "Du bist noch nicht im Bürgschafts-Netz. Lass dich von Admins bestätigen, um Pfade zu sehen.",
+  "tpNoPathTarget": "Diese Person ist (noch) nicht im Bürgschafts-Netz erfasst.",
+  "tpNoPathBetween": "Es gibt aktuell keine bekannte Bürgschaftskette zwischen euch.",
+  "tpInvalidNpub": "Ungültiger npub",
+  "tpUnknown": "Unbekannt",
+  "tpHint": "Basiert auf dem öffentlichen Bürgschafts-Netz (Web of Trust). Zeigt nur Verbindungen über bürgende Mitglieder.",
+  "caOptInTitle": "Zum Vertrauensnetzwerk beitragen?",
+  "caOptInBody": "Du kannst deine Teilnahme an diesem Meetup im öffentlichen Vertrauensnetzwerk bestätigen. Andere sehen dann, dass dein npub bei diesem Meetup war — und über gemeinsame Meetups, wie ihr vernetzt seid.\n\nDas ist freiwillig. Dein Badge bekommst du auch ohne Teilnahme am Netzwerk.",
+  "caOptInPrivacy": "Öffentlich & dauerhaft auf Nostr-Relays. Zeigt ein Bewegungs- und Kontaktmuster. Überleg es dir gut.",
+  "caOptInYes": "Ja, beitragen",
+  "caOptInNo": "Nein, privat bleiben",
+  "caPublished": "Teilnahme im Netzwerk bestätigt",
+  "cnTitle": "Netzwerk-Analyse",
+  "cnSubtitle": "Wie ist diese Person über gemeinsame Meetups vernetzt?",
+  "cnEnterNpub": "npub der Person eingeben",
+  "cnScan": "Scannen",
+  "cnAnalyze": "Analysieren",
+  "cnLoading": "Netzwerk wird geladen...",
+  "cnSharedMeetups": "Gemeinsame Meetups",
+  "cnMutualContacts": "Gemeinsame Kontakte",
+  "cnReach": "Vernetzung der Person",
+  "cnTotalMeetups": "Meetups besucht",
+  "cnTotalContacts": "Personen getroffen",
+  "cnNoConnection": "Keine Verbindung gefunden",
+  "cnNoConnectionSub": "Ihr wart auf keinen gemeinsamen Meetups und habt keine gemeinsamen Kontakte im Netzwerk — oder die Person nimmt nicht am Netzwerk teil.",
+  "cnDirectMet": "Ihr habt euch direkt getroffen!",
+  "cnYou": "Du",
+  "cnTarget": "Diese Person",
+  "cnViaShared": "über {count} gemeinsame Meetups",
+  "@cnViaShared": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "cnTrustHint": "Je mehr gemeinsame Meetups und Kontakte, desto stärker das organische Vertrauen.",
+  "cnInvalidNpub": "Ungültiger npub",
+  "cnPrivacyNote": "Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in)."
 }

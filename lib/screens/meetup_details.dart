@@ -184,7 +184,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                                         width: 100,
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: cOrange.withOpacity(0.12),
+                                          color: cOrange.withValues(alpha: 0.12),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
@@ -356,3 +356,5 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
     );
   }
 }
+
+

@@ -3180,4 +3180,150 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get rcNoData =>
       'Aún no hay reputación. ¡Consigue badges en los meetups!';
+
+  @override
+  String get tpTitle => 'Ruta de confianza';
+
+  @override
+  String get tpSubtitle => '¿Quién te conecta con esta persona?';
+
+  @override
+  String get tpEnterNpub => 'Introduce el npub de la persona';
+
+  @override
+  String get tpScan => 'Escanear npub';
+
+  @override
+  String get tpFind => 'Buscar ruta';
+
+  @override
+  String get tpSearching => 'Buscando en la red...';
+
+  @override
+  String tpFound(Object count) {
+    return 'Conectado a través de $count pasos';
+  }
+
+  @override
+  String get tpDirect => 'Conectado directamente';
+
+  @override
+  String get tpYou => 'Tú';
+
+  @override
+  String get tpTarget => 'Destino';
+
+  @override
+  String get tpVouchesFor => 'avala a';
+
+  @override
+  String get tpNoPath => 'No se encontró ruta de confianza';
+
+  @override
+  String get tpNoPathSelf =>
+      'Aún no estás en la red de avales. Consigue avales de admins para ver rutas.';
+
+  @override
+  String get tpNoPathTarget =>
+      'Esta persona no está (aún) en la red de avales.';
+
+  @override
+  String get tpNoPathBetween =>
+      'Actualmente no hay cadena de avales conocida entre vosotros.';
+
+  @override
+  String get tpInvalidNpub => 'npub no válido';
+
+  @override
+  String get tpUnknown => 'Desconocido';
+
+  @override
+  String get tpHint =>
+      'Basado en la red pública de avales (Web of Trust). Solo muestra conexiones a través de miembros que avalan.';
+
+  @override
+  String get caOptInTitle => '¿Contribuir a la red de confianza?';
+
+  @override
+  String get caOptInBody =>
+      'Puedes confirmar tu asistencia a este meetup en la red pública de confianza. Otros verán que tu npub estuvo en este meetup — y cómo estáis conectados por meetups en común.\n\nEs voluntario. Recibes tu badge igualmente.';
+
+  @override
+  String get caOptInPrivacy =>
+      'Público y permanente en relays Nostr. Revela un patrón de movimiento y contactos. Piénsalo bien.';
+
+  @override
+  String get caOptInYes => 'Sí, contribuir';
+
+  @override
+  String get caOptInNo => 'No, mantener privado';
+
+  @override
+  String get caPublished => 'Asistencia confirmada en la red';
+
+  @override
+  String get cnTitle => 'Análisis de red';
+
+  @override
+  String get cnSubtitle =>
+      '¿Cómo está conectada esta persona por meetups en común?';
+
+  @override
+  String get cnEnterNpub => 'Introduce el npub de la persona';
+
+  @override
+  String get cnScan => 'Escanear';
+
+  @override
+  String get cnAnalyze => 'Analizar';
+
+  @override
+  String get cnLoading => 'Cargando red...';
+
+  @override
+  String get cnSharedMeetups => 'Meetups en común';
+
+  @override
+  String get cnMutualContacts => 'Contactos en común';
+
+  @override
+  String get cnReach => 'Alcance de la persona';
+
+  @override
+  String get cnTotalMeetups => 'Meetups asistidos';
+
+  @override
+  String get cnTotalContacts => 'Personas conocidas';
+
+  @override
+  String get cnNoConnection => 'No se encontró conexión';
+
+  @override
+  String get cnNoConnectionSub =>
+      'No habéis estado en meetups comunes ni tenéis contactos en común — o esta persona no participa en la red.';
+
+  @override
+  String get cnDirectMet => '¡Os habéis conocido directamente!';
+
+  @override
+  String get cnYou => 'Tú';
+
+  @override
+  String get cnTarget => 'Esta persona';
+
+  @override
+  String cnViaShared(Object count) {
+    return 'por $count meetups en común';
+  }
+
+  @override
+  String get cnTrustHint =>
+      'Más meetups y contactos en común significan más confianza orgánica.';
+
+  @override
+  String get cnInvalidNpub => 'npub no válido';
+
+  @override
+  String get cnPrivacyNote =>
+      'Solo muestra personas que participan en la red (opt-in).';
 }

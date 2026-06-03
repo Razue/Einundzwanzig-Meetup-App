@@ -300,7 +300,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          color: cOrange.withOpacity(0.15),
+          color: cOrange.withValues(alpha: 0.15),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -316,7 +316,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -344,7 +344,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: cOrange.withOpacity(0.3), blurRadius: 20, spreadRadius: 5)],
+                    boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 20, spreadRadius: 5)],
                   ),
                   child: _qrData.isNotEmpty
                       ? QrImageView(
@@ -369,7 +369,7 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
                       child: CircularProgressIndicator(
                         value: progress,
                         strokeWidth: 4,
-                        backgroundColor: Colors.grey.withOpacity(0.3),
+                        backgroundColor: Colors.grey.withValues(alpha: 0.3),
                         color: _secondsLeft <= 3 ? Colors.red : cOrange,
                       ),
                     ),

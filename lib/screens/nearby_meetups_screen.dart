@@ -329,8 +329,8 @@ class _NearbyMeetupsScreenState extends State<NearbyMeetupsScreen> {
                 point: LatLng(_centerLat!, _centerLng!),
                 radius: _radiusKm * 1000, // Meter
                 useRadiusInMeter: true,
-                color: cOrange.withOpacity(0.08),
-                borderColor: cOrange.withOpacity(0.4),
+                color: cOrange.withValues(alpha: 0.08),
+                borderColor: cOrange.withValues(alpha: 0.4),
                 borderStrokeWidth: 1.5,
               ),
             ]),
@@ -414,7 +414,7 @@ class _NearbyMeetupsScreenState extends State<NearbyMeetupsScreen> {
             activeTrackColor: cOrange,
             inactiveTrackColor: cTileBorder,
             thumbColor: cOrange,
-            overlayColor: cOrange.withOpacity(0.2),
+            overlayColor: cOrange.withValues(alpha: 0.2),
             trackHeight: 3,
           ),
           child: Slider(
@@ -619,7 +619,7 @@ class _NearbyMeetupsScreenState extends State<NearbyMeetupsScreen> {
           Container(
             width: 42,
             height: 42,
-            decoration: BoxDecoration(color: cOrange.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
             child: const Icon(Icons.location_on, color: cOrange, size: 22),
           ),
           const SizedBox(width: 12),
@@ -686,9 +686,9 @@ class _NearbyMeetupsScreenState extends State<NearbyMeetupsScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 9),
             decoration: BoxDecoration(
-              color: cOrange.withOpacity(0.1),
+              color: cOrange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: cOrange.withOpacity(0.3), width: 0.5),
+              border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.5),
             ),
             child: Center(
               child: Text(t.nbDetails,

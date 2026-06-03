@@ -171,7 +171,7 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
         ]),
         const SizedBox(height: 4),
         Text(t.rcMember,
-            style: const TextStyle(color: cTextTertiary, fontSize: 10, letterSpacing: 1)),
+            style: const TextStyle(color: cTextSecondary, fontSize: 11, letterSpacing: 1)),
         const SizedBox(height: 20),
 
         // Name
@@ -216,7 +216,7 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
           boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 20)],
         ),
         child: Column(children: [
-          Text(score.displayScore.toStringAsFixed(1),
+          Text(score.totalScore.toStringAsFixed(1),
               style: const TextStyle(
                   color: Colors.black, fontSize: 48, fontWeight: FontWeight.w900, height: 1)),
           const SizedBox(height: 2),
@@ -273,7 +273,7 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
                 style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 2),
             Text(s[2] as String,
-                style: const TextStyle(color: cTextTertiary, fontSize: 9, letterSpacing: 0.5)),
+                style: const TextStyle(color: cTextSecondary, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.3)),
           ]),
         );
       }).toList(),

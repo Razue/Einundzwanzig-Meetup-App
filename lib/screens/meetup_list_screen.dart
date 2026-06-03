@@ -149,7 +149,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: cOrange.withOpacity(0.12),
+                                color: cOrange.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -199,7 +199,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
                 Container(
                   width: 42, height: 42,
                   decoration: BoxDecoration(
-                    color: cOrange.withOpacity(0.1),
+                    color: cOrange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.location_city, color: cOrange, size: 22),
@@ -236,7 +236,7 @@ class _MeetupListScreenState extends State<MeetupListScreen> {
                           Expanded(
                             child: Text(
                               meetup.telegramLink,
-                              style: TextStyle(color: cCyan.withOpacity(0.7), fontSize: 11),
+                              style: TextStyle(color: cCyan.withValues(alpha: 0.7), fontSize: 11),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),

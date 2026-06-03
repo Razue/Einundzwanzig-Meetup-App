@@ -30,6 +30,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nostr/nostr.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import '../services/coattendance_service.dart';
 import '../models/badge.dart';
 import '../models/meetup.dart';
 import '../models/user.dart';
@@ -535,10 +536,89 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       Navigator.pop(context, false);
       return;
     }
-    myBadges.add(_pendingBadge!);
+    final badge = _pendingBadge!;
+    myBadges.add(badge);
     await MeetupBadge.saveBadges(myBadges);
     ReputationPublisher.publishInBackground(myBadges);
+
+    // Opt-in fürs Co-Attendance-Netzwerk — nur bei echten, signierten Badges
+    if (badge.isNostrSigned && badge.meetupEventId.isNotEmpty && mounted) {
+      await _askCoAttendanceOptIn(badge);
+    }
+
     if (mounted) Navigator.pop(context, true);
+  }
+
+  /// Fragt den Nutzer, ob die Teilnahme zum Vertrauensnetzwerk beitragen soll.
+  /// Standard = Opt-in (muss aktiv zustimmen).
+  Future<void> _askCoAttendanceOptIn(MeetupBadge badge) async {
+    final t = AppLocalizations.of(context);
+    final agree = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.hub_rounded, color: cCyan, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(t.caOptInTitle,
+                style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(t.caOptInBody,
+                style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5)),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cOrange.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: cOrange.withValues(alpha: 0.25), width: 0.5),
+              ),
+              child: Row(children: [
+                const Icon(Icons.warning_amber_rounded, color: cOrange, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(t.caOptInPrivacy,
+                      style: const TextStyle(color: cOrange, fontSize: 11, height: 1.4)),
+                ),
+              ]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.caOptInNo, style: const TextStyle(color: cTextSecondary)),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: cCyan, foregroundColor: Colors.black),
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.hub_rounded, size: 16),
+            label: Text(t.caOptInYes),
+          ),
+        ],
+      ),
+    );
+
+    if (agree == true) {
+      final count = await CoAttendanceService.publishAttendance(badge);
+      if (mounted && count > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).caPublished),
+            backgroundColor: cGreen,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   // =============================================
@@ -583,8 +663,8 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             width: 80, height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: accentColor.withOpacity(0.1),
-              border: Border.all(color: accentColor.withOpacity(0.35), width: 1.5),
+              color: accentColor.withValues(alpha: 0.1),
+              border: Border.all(color: accentColor.withValues(alpha: 0.35), width: 1.5),
             ),
             child: Icon(icon, color: accentColor, size: 36),
           ),
@@ -607,7 +687,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             decoration: BoxDecoration(
               color: cCard,
               borderRadius: BorderRadius.circular(kTileRadius),
-              border: Border.all(color: accentColor.withOpacity(0.2), width: 0.5),
+              border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 0.5),
             ),
             child: Text(
               _statusText ?? AppLocalizations.of(context).verifyReadyToScan,
@@ -680,7 +760,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(color: cOrange, width: 4),
-                        boxShadow: [BoxShadow(color: cOrange.withOpacity(0.3), blurRadius: 30, spreadRadius: 5)],
+                        boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 5)],
                       ),
                       child: const Center(child: Icon(Icons.nfc, size: 80, color: Colors.white)),
                     ),
@@ -774,7 +854,7 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
           bottom: 60, left: 40, right: 40,
           child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(12)),
             child: Text(AppLocalizations.of(context).verifyScanQrInstruction,
               style: const TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
           ),

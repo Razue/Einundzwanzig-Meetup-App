@@ -116,7 +116,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    decoration: BoxDecoration(color: cCyan.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                    decoration: BoxDecoration(color: cCyan.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
                     child: IconButton(
                       icon: const Icon(Icons.qr_code_scanner, color: cCyan),
                       onPressed: () async {
@@ -404,7 +404,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                   decoration: BoxDecoration(
                     color: cCard,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: cPurple.withOpacity(0.3)),
+                    border: Border.all(color: cPurple.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,7 +436,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: _statusMessage.startsWith('✅') ? Colors.green.withOpacity(0.1) : Colors.white.withOpacity(0.05),
+                            color: _statusMessage.startsWith('✅') ? Colors.green.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -557,7 +557,7 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
                       leading: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: cPurple.withOpacity(0.15),
+                          color: cPurple.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(Icons.verified_user, color: cPurple, size: 24),
@@ -641,7 +641,7 @@ class _NpubScannerScreenState extends State<_NpubScannerScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.8), 
+                color: Colors.black.withValues(alpha: 0.8), 
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: cPurple),
               ),

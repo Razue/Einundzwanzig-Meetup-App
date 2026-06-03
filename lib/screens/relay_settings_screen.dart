@@ -63,7 +63,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
             hintText: AppLocalizations.of(context).rsRelayPlaceholder,
             hintStyle: TextStyle(color: Colors.grey.shade700),
             filled: true,
-            fillColor: Colors.white.withOpacity(0.05),
+            fillColor: Colors.white.withValues(alpha: 0.05),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
           ),
         ),
@@ -115,7 +115,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                     decoration: BoxDecoration(
                       color: cCard,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: cCyan.withOpacity(0.2)),
+                      border: Border.all(color: cCyan.withValues(alpha: 0.2)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +163,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: cOrange.withOpacity(0.15),
+                            color: cOrange.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Row(
@@ -209,9 +209,9 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: count > 0 ? Colors.green.withOpacity(0.08) : Colors.red.withOpacity(0.08),
+                          color: count > 0 ? Colors.green.withValues(alpha: 0.08) : Colors.red.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: count > 0 ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2)),
+                          border: Border.all(color: count > 0 ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           children: [
@@ -254,7 +254,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: enabled ? Colors.green.withOpacity(0.2) : Colors.white10),
+          border: Border.all(color: enabled ? Colors.green.withValues(alpha: 0.2) : Colors.white10),
         ),
         child: Row(
           children: [

@@ -3191,4 +3191,150 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get rcNoData => 'Noch keine Reputation. Sammle Badges auf Meetups!';
+
+  @override
+  String get tpTitle => 'Vertrauenspfad';
+
+  @override
+  String get tpSubtitle => 'Über wen bist du mit dieser Person verbunden?';
+
+  @override
+  String get tpEnterNpub => 'npub der Person eingeben';
+
+  @override
+  String get tpScan => 'npub scannen';
+
+  @override
+  String get tpFind => 'Pfad finden';
+
+  @override
+  String get tpSearching => 'Netzwerk wird durchsucht...';
+
+  @override
+  String tpFound(Object count) {
+    return 'Verbunden über $count Stationen';
+  }
+
+  @override
+  String get tpDirect => 'Direkt verbunden';
+
+  @override
+  String get tpYou => 'Du';
+
+  @override
+  String get tpTarget => 'Zielperson';
+
+  @override
+  String get tpVouchesFor => 'bürgt für';
+
+  @override
+  String get tpNoPath => 'Kein Vertrauenspfad gefunden';
+
+  @override
+  String get tpNoPathSelf =>
+      'Du bist noch nicht im Bürgschafts-Netz. Lass dich von Admins bestätigen, um Pfade zu sehen.';
+
+  @override
+  String get tpNoPathTarget =>
+      'Diese Person ist (noch) nicht im Bürgschafts-Netz erfasst.';
+
+  @override
+  String get tpNoPathBetween =>
+      'Es gibt aktuell keine bekannte Bürgschaftskette zwischen euch.';
+
+  @override
+  String get tpInvalidNpub => 'Ungültiger npub';
+
+  @override
+  String get tpUnknown => 'Unbekannt';
+
+  @override
+  String get tpHint =>
+      'Basiert auf dem öffentlichen Bürgschafts-Netz (Web of Trust). Zeigt nur Verbindungen über bürgende Mitglieder.';
+
+  @override
+  String get caOptInTitle => 'Zum Vertrauensnetzwerk beitragen?';
+
+  @override
+  String get caOptInBody =>
+      'Du kannst deine Teilnahme an diesem Meetup im öffentlichen Vertrauensnetzwerk bestätigen. Andere sehen dann, dass dein npub bei diesem Meetup war — und über gemeinsame Meetups, wie ihr vernetzt seid.\n\nDas ist freiwillig. Dein Badge bekommst du auch ohne Teilnahme am Netzwerk.';
+
+  @override
+  String get caOptInPrivacy =>
+      'Öffentlich & dauerhaft auf Nostr-Relays. Zeigt ein Bewegungs- und Kontaktmuster. Überleg es dir gut.';
+
+  @override
+  String get caOptInYes => 'Ja, beitragen';
+
+  @override
+  String get caOptInNo => 'Nein, privat bleiben';
+
+  @override
+  String get caPublished => 'Teilnahme im Netzwerk bestätigt';
+
+  @override
+  String get cnTitle => 'Netzwerk-Analyse';
+
+  @override
+  String get cnSubtitle =>
+      'Wie ist diese Person über gemeinsame Meetups vernetzt?';
+
+  @override
+  String get cnEnterNpub => 'npub der Person eingeben';
+
+  @override
+  String get cnScan => 'Scannen';
+
+  @override
+  String get cnAnalyze => 'Analysieren';
+
+  @override
+  String get cnLoading => 'Netzwerk wird geladen...';
+
+  @override
+  String get cnSharedMeetups => 'Gemeinsame Meetups';
+
+  @override
+  String get cnMutualContacts => 'Gemeinsame Kontakte';
+
+  @override
+  String get cnReach => 'Vernetzung der Person';
+
+  @override
+  String get cnTotalMeetups => 'Meetups besucht';
+
+  @override
+  String get cnTotalContacts => 'Personen getroffen';
+
+  @override
+  String get cnNoConnection => 'Keine Verbindung gefunden';
+
+  @override
+  String get cnNoConnectionSub =>
+      'Ihr wart auf keinen gemeinsamen Meetups und habt keine gemeinsamen Kontakte im Netzwerk — oder die Person nimmt nicht am Netzwerk teil.';
+
+  @override
+  String get cnDirectMet => 'Ihr habt euch direkt getroffen!';
+
+  @override
+  String get cnYou => 'Du';
+
+  @override
+  String get cnTarget => 'Diese Person';
+
+  @override
+  String cnViaShared(Object count) {
+    return 'über $count gemeinsame Meetups';
+  }
+
+  @override
+  String get cnTrustHint =>
+      'Je mehr gemeinsame Meetups und Kontakte, desto stärker das organische Vertrauen.';
+
+  @override
+  String get cnInvalidNpub => 'Ungültiger npub';
+
+  @override
+  String get cnPrivacyNote =>
+      'Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in).';
 }

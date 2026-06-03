@@ -134,7 +134,7 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: cOrange.withOpacity(0.15),
+                                    color: cOrange.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: const Icon(

@@ -318,7 +318,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
                   icon: const Icon(Icons.photo_library, size: 20),
                   label: Text(AppLocalizations.of(context).qrLoadFromGallery),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.15),
+                    backgroundColor: Colors.white.withValues(alpha: 0.15),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -330,7 +330,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -518,9 +518,9 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
           Container(
             width: double.infinity, padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.08),
+              color: statusColor.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: statusColor.withOpacity(0.4), width: 2),
+              border: Border.all(color: statusColor.withValues(alpha: 0.4), width: 2),
             ),
             child: Row(children: [
               Icon(widget.isValid ? Icons.verified : Icons.gpp_bad, color: statusColor, size: 36),
@@ -549,7 +549,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
               width: double.infinity, padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: cCard, borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: _levelColor.withOpacity(0.25)),
+                border: Border.all(color: _levelColor.withValues(alpha: 0.25)),
               ),
               child: Column(children: [
                 // Kompakte Row: Icon + Level + Score
@@ -557,7 +557,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
                   Container(
                     width: 40, height: 40,
                     decoration: BoxDecoration(
-                      color: _levelColor.withOpacity(0.12),
+                      color: _levelColor.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(_levelIcon(widget.trustLevel), color: _levelColor, size: 20),
@@ -700,7 +700,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: hasZaps ? Colors.amber.withOpacity(0.25) : Colors.white10),
+          border: Border.all(color: hasZaps ? Colors.amber.withValues(alpha: 0.25) : Colors.white10),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -748,7 +748,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.purple.withOpacity(0.25)),
+          border: Border.all(color: Colors.purple.withValues(alpha: 0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -797,7 +797,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: hasConnection ? cCyan.withOpacity(0.25) : Colors.white10),
+          border: Border.all(color: hasConnection ? cCyan.withValues(alpha: 0.25) : Colors.white10),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -858,7 +858,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
         Wrap(spacing: 8, runSpacing: 8, children: widget.meetupList.map((m) =>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(color: cCyan.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: cCyan.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
             child: Text(m, style: const TextStyle(color: cCyan, fontSize: 11)),
           )
         ).toList()),
@@ -876,8 +876,8 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
     return Container(
       width: double.infinity, padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.06), borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.withOpacity(0.25)),
+        color: c.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.withValues(alpha: 0.25)),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(allVerified ? Icons.verified : Icons.shield_outlined, color: c, size: 18),
@@ -905,7 +905,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
       width: double.infinity, padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: cCard, borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: widget.hasIdentity ? cPurple.withOpacity(0.4) : Colors.orange.withOpacity(0.4)),
+        border: Border.all(color: widget.hasIdentity ? cPurple.withValues(alpha: 0.4) : Colors.orange.withValues(alpha: 0.4)),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -929,7 +929,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.orange.withOpacity(0.08), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(8)),
             child: Row(children: [
               Icon(Icons.info_outline, color: Colors.orange.shade300, size: 14),
               const SizedBox(width: 8),
@@ -962,7 +962,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
       decoration: BoxDecoration(
         color: cCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(children: [
         Icon(icon, color: color, size: 16),
@@ -970,7 +970,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
         Expanded(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(title, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, fontWeight: FontWeight.w600)),
             Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 10)),
           ],
         )),
@@ -987,7 +987,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
         Expanded(child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 11, fontWeight: FontWeight.w600)),
+            Text(title, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 11, fontWeight: FontWeight.w600)),
             if (subtitle.isNotEmpty)
               Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 10)),
           ],
@@ -1020,7 +1020,7 @@ class _VerificationResultScreenState extends State<_VerificationResultScreen> {
   Widget _statBox(IconData icon, String value, String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withOpacity(0.3))),
+      decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withValues(alpha: 0.3))),
       child: Column(children: [
         Icon(icon, color: color, size: 22),
         const SizedBox(height: 6),

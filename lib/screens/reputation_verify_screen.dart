@@ -171,7 +171,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
               decoration: BoxDecoration(
                 color: cCard,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: cCyan.withOpacity(0.2)),
+                border: Border.all(color: cCyan.withValues(alpha: 0.2)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,7 +220,7 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
                     : const Icon(Icons.search, size: 20),
                 label: Text(_isVerifying ? AppLocalizations.of(context).rvChecking : AppLocalizations.of(context).rvTitle),
-                style: ElevatedButton.styleFrom(backgroundColor: cCyan, foregroundColor: Colors.black, disabledBackgroundColor: cCyan.withOpacity(0.5)),
+                style: ElevatedButton.styleFrom(backgroundColor: cCyan, foregroundColor: Colors.black, disabledBackgroundColor: cCyan.withValues(alpha: 0.5)),
               ),
             ),
 
@@ -304,14 +304,14 @@ class _ReputationVerifyScreenState extends State<ReputationVerifyScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.4), width: 2),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 2),
       ),
       child: Column(children: [
         Container(
           width: 56, height: 56,
-          decoration: BoxDecoration(color: color.withOpacity(0.15), shape: BoxShape.circle),
+          decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
           child: Icon(icon, color: color, size: 28),
         ),
         const SizedBox(height: 12),

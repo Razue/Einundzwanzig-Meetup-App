@@ -3156,4 +3156,149 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rcNoData => 'No reputation yet. Collect badges at meetups!';
+
+  @override
+  String get tpTitle => 'Trust Path';
+
+  @override
+  String get tpSubtitle => 'Who connects you to this person?';
+
+  @override
+  String get tpEnterNpub => 'Enter person\'s npub';
+
+  @override
+  String get tpScan => 'Scan npub';
+
+  @override
+  String get tpFind => 'Find path';
+
+  @override
+  String get tpSearching => 'Searching network...';
+
+  @override
+  String tpFound(Object count) {
+    return 'Connected through $count hops';
+  }
+
+  @override
+  String get tpDirect => 'Directly connected';
+
+  @override
+  String get tpYou => 'You';
+
+  @override
+  String get tpTarget => 'Target';
+
+  @override
+  String get tpVouchesFor => 'vouches for';
+
+  @override
+  String get tpNoPath => 'No trust path found';
+
+  @override
+  String get tpNoPathSelf =>
+      'You\'re not in the vouching network yet. Get vouched by admins to see paths.';
+
+  @override
+  String get tpNoPathTarget =>
+      'This person isn\'t in the vouching network (yet).';
+
+  @override
+  String get tpNoPathBetween =>
+      'There\'s currently no known vouching chain between you.';
+
+  @override
+  String get tpInvalidNpub => 'Invalid npub';
+
+  @override
+  String get tpUnknown => 'Unknown';
+
+  @override
+  String get tpHint =>
+      'Based on the public vouching network (Web of Trust). Only shows connections via vouching members.';
+
+  @override
+  String get caOptInTitle => 'Contribute to trust network?';
+
+  @override
+  String get caOptInBody =>
+      'You can confirm your attendance at this meetup in the public trust network. Others will then see that your npub was at this meetup — and how you\'re connected through shared meetups.\n\nThis is optional. You get your badge regardless.';
+
+  @override
+  String get caOptInPrivacy =>
+      'Public & permanent on Nostr relays. Reveals a movement and contact pattern. Consider carefully.';
+
+  @override
+  String get caOptInYes => 'Yes, contribute';
+
+  @override
+  String get caOptInNo => 'No, stay private';
+
+  @override
+  String get caPublished => 'Attendance confirmed in network';
+
+  @override
+  String get cnTitle => 'Network analysis';
+
+  @override
+  String get cnSubtitle =>
+      'How is this person connected through shared meetups?';
+
+  @override
+  String get cnEnterNpub => 'Enter person\'s npub';
+
+  @override
+  String get cnScan => 'Scan';
+
+  @override
+  String get cnAnalyze => 'Analyze';
+
+  @override
+  String get cnLoading => 'Loading network...';
+
+  @override
+  String get cnSharedMeetups => 'Shared meetups';
+
+  @override
+  String get cnMutualContacts => 'Mutual contacts';
+
+  @override
+  String get cnReach => 'Person\'s reach';
+
+  @override
+  String get cnTotalMeetups => 'Meetups attended';
+
+  @override
+  String get cnTotalContacts => 'People met';
+
+  @override
+  String get cnNoConnection => 'No connection found';
+
+  @override
+  String get cnNoConnectionSub =>
+      'You haven\'t been to shared meetups and have no mutual contacts — or this person doesn\'t participate in the network.';
+
+  @override
+  String get cnDirectMet => 'You\'ve met directly!';
+
+  @override
+  String get cnYou => 'You';
+
+  @override
+  String get cnTarget => 'This person';
+
+  @override
+  String cnViaShared(Object count) {
+    return 'via $count shared meetups';
+  }
+
+  @override
+  String get cnTrustHint =>
+      'More shared meetups and contacts mean stronger organic trust.';
+
+  @override
+  String get cnInvalidNpub => 'Invalid npub';
+
+  @override
+  String get cnPrivacyNote => 'Only shows people who opted into the network.';
 }

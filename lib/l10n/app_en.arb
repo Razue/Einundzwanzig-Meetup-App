@@ -1655,5 +1655,63 @@
   "rcLabelSigners": "Signers",
   "rcLabelAge": "Days active",
   "rcMember": "Einundzwanzig member",
-  "rcNoData": "No reputation yet. Collect badges at meetups!"
+  "rcNoData": "No reputation yet. Collect badges at meetups!",
+  "tpTitle": "Trust Path",
+  "tpSubtitle": "Who connects you to this person?",
+  "tpEnterNpub": "Enter person's npub",
+  "tpScan": "Scan npub",
+  "tpFind": "Find path",
+  "tpSearching": "Searching network...",
+  "tpFound": "Connected through {count} hops",
+  "@tpFound": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "tpDirect": "Directly connected",
+  "tpYou": "You",
+  "tpTarget": "Target",
+  "tpVouchesFor": "vouches for",
+  "tpNoPath": "No trust path found",
+  "tpNoPathSelf": "You're not in the vouching network yet. Get vouched by admins to see paths.",
+  "tpNoPathTarget": "This person isn't in the vouching network (yet).",
+  "tpNoPathBetween": "There's currently no known vouching chain between you.",
+  "tpInvalidNpub": "Invalid npub",
+  "tpUnknown": "Unknown",
+  "tpHint": "Based on the public vouching network (Web of Trust). Only shows connections via vouching members.",
+  "caOptInTitle": "Contribute to trust network?",
+  "caOptInBody": "You can confirm your attendance at this meetup in the public trust network. Others will then see that your npub was at this meetup — and how you're connected through shared meetups.\n\nThis is optional. You get your badge regardless.",
+  "caOptInPrivacy": "Public & permanent on Nostr relays. Reveals a movement and contact pattern. Consider carefully.",
+  "caOptInYes": "Yes, contribute",
+  "caOptInNo": "No, stay private",
+  "caPublished": "Attendance confirmed in network",
+  "cnTitle": "Network analysis",
+  "cnSubtitle": "How is this person connected through shared meetups?",
+  "cnEnterNpub": "Enter person's npub",
+  "cnScan": "Scan",
+  "cnAnalyze": "Analyze",
+  "cnLoading": "Loading network...",
+  "cnSharedMeetups": "Shared meetups",
+  "cnMutualContacts": "Mutual contacts",
+  "cnReach": "Person's reach",
+  "cnTotalMeetups": "Meetups attended",
+  "cnTotalContacts": "People met",
+  "cnNoConnection": "No connection found",
+  "cnNoConnectionSub": "You haven't been to shared meetups and have no mutual contacts — or this person doesn't participate in the network.",
+  "cnDirectMet": "You've met directly!",
+  "cnYou": "You",
+  "cnTarget": "This person",
+  "cnViaShared": "via {count} shared meetups",
+  "@cnViaShared": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "cnTrustHint": "More shared meetups and contacts mean stronger organic trust.",
+  "cnInvalidNpub": "Invalid npub",
+  "cnPrivacyNote": "Only shows people who opted into the network."
 }

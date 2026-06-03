@@ -101,10 +101,10 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isSelected ? cOrange.withOpacity(0.2) : Colors.white.withOpacity(0.05),
+                        color: isSelected ? cOrange.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: isSelected ? cOrange : (hasExisting ? Colors.green.withOpacity(0.3) : Colors.white10),
+                          color: isSelected ? cOrange : (hasExisting ? Colors.green.withValues(alpha: 0.3) : Colors.white10),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -141,7 +141,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                     hintText: AppLocalizations.of(context).ppPlatformName,
                     hintStyle: TextStyle(color: Colors.grey.shade700),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                   ),
                 ),
@@ -159,7 +159,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                     hintText: PlatformProofService.platforms[selectedPlatform]?.hint ?? AppLocalizations.of(context).ppYourUsername,
                     hintStyle: TextStyle(color: Colors.grey.shade700),
                     filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                     prefixIcon: const Icon(Icons.alternate_email, color: Colors.grey, size: 18),
                   ),
@@ -308,7 +308,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                     decoration: BoxDecoration(
                       color: cCard,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: cOrange.withOpacity(0.2)),
+                      border: Border.all(color: cOrange.withValues(alpha: 0.2)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,14 +375,14 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.green.withOpacity(0.2)),
+          border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
             Container(
               width: 40, height: 40,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(iconData, color: Colors.green, size: 20),
@@ -406,7 +406,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
             Container(
               width: 32, height: 32,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.qr_code, color: Colors.green, size: 16),
