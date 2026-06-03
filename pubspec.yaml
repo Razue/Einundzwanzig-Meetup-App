@@ -9,8 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:      # ← neu
-    sdk: flutter              # ← neu
+  flutter_localizations:
+    sdk: flutter
 
   # UI
   cupertino_icons: ^1.0.8
@@ -46,6 +46,11 @@ dependencies:
   path_provider: ^2.1.2
   intl: ^0.20.2
 
+  # Standort & Karte (Meetups in der Nähe)
+  geolocator: ^13.0.1
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -55,8 +60,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  generate: true              # ← neu (aktiviert die Übersetzungs-Generierung)
+  generate: true   # aktiviert gen-l10n (Mehrsprachigkeit)
   assets:
     - assets/images/logo.png
     - assets/images/einundzwanzig_logo.svg
     - assets/images/nostr_icon.png
+
+

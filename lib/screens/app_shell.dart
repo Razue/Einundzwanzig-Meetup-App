@@ -10,6 +10,7 @@ import 'calendar_screen.dart';
 import 'profile_edit.dart';
 import 'meetup_verification.dart';
 import 'reputation_qr.dart';
+import 'nearby_meetups_screen.dart';
 import '../models/meetup.dart';
 
 class AppShell extends StatefulWidget {
@@ -31,6 +32,15 @@ class _AppShellState extends State<AppShell> {
     if (index == 2) return;
     _doHaptic();
     setState(() => _currentIndex = index);
+  }
+
+  // Öffnet den "Meetups in der Nähe"-Screen als eigene Route
+  void _openNearby() async {
+    _doHaptic();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NearbyMeetupsScreen()),
+    );
   }
 
   // Öffnet das Scan-Auswahlmenü mit drei Optionen
@@ -102,6 +112,7 @@ class _AppShellState extends State<AppShell> {
                       children: [
                         _navItem(0, Icons.home_rounded, Icons.home_outlined, AppLocalizations.of(context).navHome),
                         _navItem(1, Icons.style_rounded, Icons.style_outlined, AppLocalizations.of(context).navWalletTab),
+                        _navAction(Icons.near_me_rounded, Icons.near_me_outlined, AppLocalizations.of(context).navNearby, _openNearby),
                         const SizedBox(width: 60),
                         _navItem(3, Icons.event_rounded, Icons.event_outlined, AppLocalizations.of(context).navEvents),
                         _navItem(4, Icons.person_rounded, Icons.person_outline_rounded, AppLocalizations.of(context).navProfileTab),
@@ -144,6 +155,17 @@ class _AppShellState extends State<AppShell> {
         Icon(active ? a : ia, color: active ? cText : cTextTertiary, size: 24),
         const SizedBox(height: 2),
         Text(l, style: TextStyle(color: active ? cText : cTextTertiary, fontSize: 10, fontWeight: active ? FontWeight.w600 : FontWeight.w400)),
+      ])));
+  }
+
+  // Leisten-Eintrag, der eine Route öffnet (kein Tab-State)
+  Widget _navAction(IconData a, IconData ia, String l, VoidCallback onTap) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque, onTap: onTap,
+      child: SizedBox(width: 60, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Icon(ia, color: cTextTertiary, size: 24),
+        const SizedBox(height: 2),
+        Text(l, style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w400)),
       ])));
   }
 }

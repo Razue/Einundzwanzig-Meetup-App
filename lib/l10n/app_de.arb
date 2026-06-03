@@ -1555,5 +1555,96 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "navNearby": "In der Nähe",
+  "nbTitle": "MEETUPS IN DER NÄHE",
+  "nbRequestingLocation": "Standort wird ermittelt...",
+  "nbLoading": "Meetups werden geladen...",
+  "nbLocationDenied": "Standortzugriff verweigert",
+  "nbLocationDeniedSub": "Ohne Standort zeigen wir alle Meetups nach Datum sortiert. Aktiviere den Standort in den Einstellungen für Entfernungen.",
+  "nbServiceDisabled": "Standortdienste sind deaktiviert",
+  "nbRetryLocation": "Standort erneut versuchen",
+  "nbContinueWithout": "Ohne Standort fortfahren",
+  "nbNoMeetups": "Keine Meetups für diesen Zeitraum",
+  "nbNoMeetupsSub": "Versuch einen anderen Filter oder ein anderes Datum.",
+  "nbFilterToday": "Heute",
+  "nbFilterWeek": "Diese Woche",
+  "nbFilterUpcoming": "Alle kommenden",
+  "nbFilterAll": "Alle",
+  "nbPickDate": "Datum wählen",
+  "nbKmAway": "{km} km entfernt",
+  "@nbKmAway": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbNoDate": "Kein Termin angekündigt",
+  "nbListHeader": "{count} Meetups",
+  "@nbListHeader": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbOpenInMaps": "In Karten öffnen",
+  "nbYourLocation": "Dein Standort",
+  "nbToday": "Heute",
+  "nbTomorrow": "Morgen",
+  "nbResetDate": "Filter zurücksetzen",
+  "nbModeHere": "Hier & jetzt",
+  "nbModePlanned": "Geplant",
+  "nbRadius": "Umkreis",
+  "nbRadiusValue": "{km} km",
+  "@nbRadiusValue": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbSearchPlace": "Ort suchen (z.B. Hamburg)",
+  "nbSearchingPlace": "Suche Orte...",
+  "nbNoPlaceFound": "Kein Ort gefunden",
+  "nbCenterHere": "Mein Standort",
+  "nbChangePlace": "Ort ändern",
+  "nbDateAny": "Jederzeit",
+  "nbDateSingle": "Datum",
+  "nbDateRange": "Zeitraum",
+  "nbPickDay": "Tag wählen",
+  "nbPickRange": "Zeitraum wählen",
+  "nbDateFromTo": "{from} – {to}",
+  "@nbDateFromTo": {
+    "placeholders": {
+      "from": {
+        "type": "Object"
+      },
+      "to": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbResultsHeader": "{count} Meetups im Umkreis",
+  "@nbResultsHeader": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbNoneInRadius": "Keine Meetups im Umkreis",
+  "nbNoneInRadiusSub": "Vergrößere den Umkreis oder ändere Ort/Datum.",
+  "nbApplySearch": "Suchen",
+  "nbMoreDates": "+{count} weitere Termine",
+  "@nbMoreDates": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbDirections": "Route",
+  "nbDetails": "Details"
 }

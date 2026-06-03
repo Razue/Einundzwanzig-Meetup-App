@@ -1533,5 +1533,96 @@
         "type": "Object"
       }
     }
-  }
+  },
+  "navNearby": "Cerca",
+  "nbTitle": "MEETUPS CERCA",
+  "nbRequestingLocation": "Obteniendo ubicación...",
+  "nbLoading": "Cargando meetups...",
+  "nbLocationDenied": "Acceso a ubicación denegado",
+  "nbLocationDeniedSub": "Sin ubicación mostramos todos los meetups por fecha. Activa la ubicación en ajustes para ver distancias.",
+  "nbServiceDisabled": "Los servicios de ubicación están desactivados",
+  "nbRetryLocation": "Reintentar ubicación",
+  "nbContinueWithout": "Continuar sin ubicación",
+  "nbNoMeetups": "No hay meetups para este periodo",
+  "nbNoMeetupsSub": "Prueba otro filtro u otra fecha.",
+  "nbFilterToday": "Hoy",
+  "nbFilterWeek": "Esta semana",
+  "nbFilterUpcoming": "Próximos",
+  "nbFilterAll": "Todos",
+  "nbPickDate": "Elegir fecha",
+  "nbKmAway": "a {km} km",
+  "@nbKmAway": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbNoDate": "Sin fecha anunciada",
+  "nbListHeader": "{count} meetups",
+  "@nbListHeader": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbOpenInMaps": "Abrir en mapas",
+  "nbYourLocation": "Tu ubicación",
+  "nbToday": "Hoy",
+  "nbTomorrow": "Mañana",
+  "nbResetDate": "Restablecer filtro",
+  "nbModeHere": "Aquí y ahora",
+  "nbModePlanned": "Planificado",
+  "nbRadius": "Radio",
+  "nbRadiusValue": "{km} km",
+  "@nbRadiusValue": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbSearchPlace": "Buscar lugar (p. ej. Hamburgo)",
+  "nbSearchingPlace": "Buscando lugares...",
+  "nbNoPlaceFound": "Lugar no encontrado",
+  "nbCenterHere": "Mi ubicación",
+  "nbChangePlace": "Cambiar lugar",
+  "nbDateAny": "Cualquier fecha",
+  "nbDateSingle": "Fecha",
+  "nbDateRange": "Periodo",
+  "nbPickDay": "Elegir día",
+  "nbPickRange": "Elegir periodo",
+  "nbDateFromTo": "{from} – {to}",
+  "@nbDateFromTo": {
+    "placeholders": {
+      "from": {
+        "type": "Object"
+      },
+      "to": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbResultsHeader": "{count} meetups en el radio",
+  "@nbResultsHeader": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbNoneInRadius": "Sin meetups en el radio",
+  "nbNoneInRadiusSub": "Amplía el radio o cambia lugar/fecha.",
+  "nbApplySearch": "Buscar",
+  "nbMoreDates": "+{count} fechas más",
+  "@nbMoreDates": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "nbDirections": "Ruta",
+  "nbDetails": "Detalles"
 }

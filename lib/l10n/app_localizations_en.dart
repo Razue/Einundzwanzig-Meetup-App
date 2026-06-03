@@ -2928,4 +2928,155 @@ class AppLocalizationsEn extends AppLocalizations {
   String rlProofsOfFour(Object count) {
     return '$count / 4 proofs';
   }
+
+  @override
+  String get navNearby => 'Nearby';
+
+  @override
+  String get nbTitle => 'MEETUPS NEARBY';
+
+  @override
+  String get nbRequestingLocation => 'Getting location...';
+
+  @override
+  String get nbLoading => 'Loading meetups...';
+
+  @override
+  String get nbLocationDenied => 'Location access denied';
+
+  @override
+  String get nbLocationDeniedSub =>
+      'Without location we show all meetups sorted by date. Enable location in settings to see distances.';
+
+  @override
+  String get nbServiceDisabled => 'Location services are disabled';
+
+  @override
+  String get nbRetryLocation => 'Try location again';
+
+  @override
+  String get nbContinueWithout => 'Continue without location';
+
+  @override
+  String get nbNoMeetups => 'No meetups for this period';
+
+  @override
+  String get nbNoMeetupsSub => 'Try a different filter or date.';
+
+  @override
+  String get nbFilterToday => 'Today';
+
+  @override
+  String get nbFilterWeek => 'This week';
+
+  @override
+  String get nbFilterUpcoming => 'All upcoming';
+
+  @override
+  String get nbFilterAll => 'All';
+
+  @override
+  String get nbPickDate => 'Pick date';
+
+  @override
+  String nbKmAway(Object km) {
+    return '$km km away';
+  }
+
+  @override
+  String get nbNoDate => 'No date announced';
+
+  @override
+  String nbListHeader(Object count) {
+    return '$count meetups';
+  }
+
+  @override
+  String get nbOpenInMaps => 'Open in maps';
+
+  @override
+  String get nbYourLocation => 'Your location';
+
+  @override
+  String get nbToday => 'Today';
+
+  @override
+  String get nbTomorrow => 'Tomorrow';
+
+  @override
+  String get nbResetDate => 'Reset filter';
+
+  @override
+  String get nbModeHere => 'Here & now';
+
+  @override
+  String get nbModePlanned => 'Planned';
+
+  @override
+  String get nbRadius => 'Radius';
+
+  @override
+  String nbRadiusValue(Object km) {
+    return '$km km';
+  }
+
+  @override
+  String get nbSearchPlace => 'Search place (e.g. Hamburg)';
+
+  @override
+  String get nbSearchingPlace => 'Searching places...';
+
+  @override
+  String get nbNoPlaceFound => 'No place found';
+
+  @override
+  String get nbCenterHere => 'My location';
+
+  @override
+  String get nbChangePlace => 'Change place';
+
+  @override
+  String get nbDateAny => 'Anytime';
+
+  @override
+  String get nbDateSingle => 'Date';
+
+  @override
+  String get nbDateRange => 'Range';
+
+  @override
+  String get nbPickDay => 'Pick day';
+
+  @override
+  String get nbPickRange => 'Pick range';
+
+  @override
+  String nbDateFromTo(Object from, Object to) {
+    return '$from – $to';
+  }
+
+  @override
+  String nbResultsHeader(Object count) {
+    return '$count meetups in range';
+  }
+
+  @override
+  String get nbNoneInRadius => 'No meetups in range';
+
+  @override
+  String get nbNoneInRadiusSub => 'Increase the radius or change place/date.';
+
+  @override
+  String get nbApplySearch => 'Search';
+
+  @override
+  String nbMoreDates(Object count) {
+    return '+$count more dates';
+  }
+
+  @override
+  String get nbDirections => 'Directions';
+
+  @override
+  String get nbDetails => 'Details';
 }

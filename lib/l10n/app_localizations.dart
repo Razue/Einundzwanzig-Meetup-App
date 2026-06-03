@@ -5325,6 +5325,282 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} / 4 Beweise'**
   String rlProofsOfFour(Object count);
+
+  /// No description provided for @navNearby.
+  ///
+  /// In de, this message translates to:
+  /// **'In der Nähe'**
+  String get navNearby;
+
+  /// No description provided for @nbTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'MEETUPS IN DER NÄHE'**
+  String get nbTitle;
+
+  /// No description provided for @nbRequestingLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort wird ermittelt...'**
+  String get nbRequestingLocation;
+
+  /// No description provided for @nbLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups werden geladen...'**
+  String get nbLoading;
+
+  /// No description provided for @nbLocationDenied.
+  ///
+  /// In de, this message translates to:
+  /// **'Standortzugriff verweigert'**
+  String get nbLocationDenied;
+
+  /// No description provided for @nbLocationDeniedSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Standort zeigen wir alle Meetups nach Datum sortiert. Aktiviere den Standort in den Einstellungen für Entfernungen.'**
+  String get nbLocationDeniedSub;
+
+  /// No description provided for @nbServiceDisabled.
+  ///
+  /// In de, this message translates to:
+  /// **'Standortdienste sind deaktiviert'**
+  String get nbServiceDisabled;
+
+  /// No description provided for @nbRetryLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort erneut versuchen'**
+  String get nbRetryLocation;
+
+  /// No description provided for @nbContinueWithout.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Standort fortfahren'**
+  String get nbContinueWithout;
+
+  /// No description provided for @nbNoMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Meetups für diesen Zeitraum'**
+  String get nbNoMeetups;
+
+  /// No description provided for @nbNoMeetupsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Versuch einen anderen Filter oder ein anderes Datum.'**
+  String get nbNoMeetupsSub;
+
+  /// No description provided for @nbFilterToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get nbFilterToday;
+
+  /// No description provided for @nbFilterWeek.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Woche'**
+  String get nbFilterWeek;
+
+  /// No description provided for @nbFilterUpcoming.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle kommenden'**
+  String get nbFilterUpcoming;
+
+  /// No description provided for @nbFilterAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get nbFilterAll;
+
+  /// No description provided for @nbPickDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Datum wählen'**
+  String get nbPickDate;
+
+  /// No description provided for @nbKmAway.
+  ///
+  /// In de, this message translates to:
+  /// **'{km} km entfernt'**
+  String nbKmAway(Object km);
+
+  /// No description provided for @nbNoDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Termin angekündigt'**
+  String get nbNoDate;
+
+  /// No description provided for @nbListHeader.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Meetups'**
+  String nbListHeader(Object count);
+
+  /// No description provided for @nbOpenInMaps.
+  ///
+  /// In de, this message translates to:
+  /// **'In Karten öffnen'**
+  String get nbOpenInMaps;
+
+  /// No description provided for @nbYourLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Standort'**
+  String get nbYourLocation;
+
+  /// No description provided for @nbToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get nbToday;
+
+  /// No description provided for @nbTomorrow.
+  ///
+  /// In de, this message translates to:
+  /// **'Morgen'**
+  String get nbTomorrow;
+
+  /// No description provided for @nbResetDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Filter zurücksetzen'**
+  String get nbResetDate;
+
+  /// No description provided for @nbModeHere.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier & jetzt'**
+  String get nbModeHere;
+
+  /// No description provided for @nbModePlanned.
+  ///
+  /// In de, this message translates to:
+  /// **'Geplant'**
+  String get nbModePlanned;
+
+  /// No description provided for @nbRadius.
+  ///
+  /// In de, this message translates to:
+  /// **'Umkreis'**
+  String get nbRadius;
+
+  /// No description provided for @nbRadiusValue.
+  ///
+  /// In de, this message translates to:
+  /// **'{km} km'**
+  String nbRadiusValue(Object km);
+
+  /// No description provided for @nbSearchPlace.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort suchen (z.B. Hamburg)'**
+  String get nbSearchPlace;
+
+  /// No description provided for @nbSearchingPlace.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche Orte...'**
+  String get nbSearchingPlace;
+
+  /// No description provided for @nbNoPlaceFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Ort gefunden'**
+  String get nbNoPlaceFound;
+
+  /// No description provided for @nbCenterHere.
+  ///
+  /// In de, this message translates to:
+  /// **'Mein Standort'**
+  String get nbCenterHere;
+
+  /// No description provided for @nbChangePlace.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort ändern'**
+  String get nbChangePlace;
+
+  /// No description provided for @nbDateAny.
+  ///
+  /// In de, this message translates to:
+  /// **'Jederzeit'**
+  String get nbDateAny;
+
+  /// No description provided for @nbDateSingle.
+  ///
+  /// In de, this message translates to:
+  /// **'Datum'**
+  String get nbDateSingle;
+
+  /// No description provided for @nbDateRange.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeitraum'**
+  String get nbDateRange;
+
+  /// No description provided for @nbPickDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Tag wählen'**
+  String get nbPickDay;
+
+  /// No description provided for @nbPickRange.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeitraum wählen'**
+  String get nbPickRange;
+
+  /// No description provided for @nbDateFromTo.
+  ///
+  /// In de, this message translates to:
+  /// **'{from} – {to}'**
+  String nbDateFromTo(Object from, Object to);
+
+  /// No description provided for @nbResultsHeader.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Meetups im Umkreis'**
+  String nbResultsHeader(Object count);
+
+  /// No description provided for @nbNoneInRadius.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Meetups im Umkreis'**
+  String get nbNoneInRadius;
+
+  /// No description provided for @nbNoneInRadiusSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Vergrößere den Umkreis oder ändere Ort/Datum.'**
+  String get nbNoneInRadiusSub;
+
+  /// No description provided for @nbApplySearch.
+  ///
+  /// In de, this message translates to:
+  /// **'Suchen'**
+  String get nbApplySearch;
+
+  /// No description provided for @nbMoreDates.
+  ///
+  /// In de, this message translates to:
+  /// **'+{count} weitere Termine'**
+  String nbMoreDates(Object count);
+
+  /// No description provided for @nbDirections.
+  ///
+  /// In de, this message translates to:
+  /// **'Route'**
+  String get nbDirections;
+
+  /// No description provided for @nbDetails.
+  ///
+  /// In de, this message translates to:
+  /// **'Details'**
+  String get nbDetails;
 }
 
 class _AppLocalizationsDelegate
