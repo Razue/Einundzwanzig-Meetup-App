@@ -114,7 +114,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Pflicht-Kacheln (nicht löschbar)
   static const _requiredTiles = {'trust_score', 'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['trust_score', 'home_meetup', 'reputation', 'community', 'nostr', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
+  static const _defaultOrder = ['trust_score', 'home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard'};
 
   late List<_TileDef> _tileDefs;
