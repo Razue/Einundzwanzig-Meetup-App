@@ -3102,4 +3102,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get nbDetails => 'Detalles';
+
+  @override
+  String get settingsSectionProfile => 'Perfil';
+
+  @override
+  String get settingsProfile => 'Editar perfil';
+
+  @override
+  String get settingsProfileSub => 'Nombre, clave Nostr y meetup principal';
 }

@@ -739,6 +739,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => StatefulBuilder(builder: (ctx, ss) => Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 40), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
+        _sG(AppLocalizations.of(context).settingsSectionProfile), _sT(Icons.person_rounded, cOrange, AppLocalizations.of(context).settingsProfile, AppLocalizations.of(context).settingsProfileSub, () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+        const SizedBox(height: 16),
         _sG(AppLocalizations.of(context).settingsSectionBackup), _sT(Icons.upload_rounded, Colors.blue, AppLocalizations.of(context).settingsBackup, AppLocalizations.of(context).settingsBackupSub, () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
         const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionLanguage),
         ValueListenableBuilder<Locale?>(

@@ -3079,4 +3079,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nbDetails => 'Details';
+
+  @override
+  String get settingsSectionProfile => 'Profile';
+
+  @override
+  String get settingsProfile => 'Edit profile';
+
+  @override
+  String get settingsProfileSub => 'Name, Nostr key & home meetup';
 }

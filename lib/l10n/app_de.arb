@@ -1646,5 +1646,8 @@
     }
   },
   "nbDirections": "Route",
-  "nbDetails": "Details"
+  "nbDetails": "Details",
+  "settingsSectionProfile": "Profil",
+  "settingsProfile": "Profil bearbeiten",
+  "settingsProfileSub": "Name, Nostr-Schlüssel & Home-Meetup"
 }

@@ -3114,4 +3114,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get nbDetails => 'Details';
+
+  @override
+  String get settingsSectionProfile => 'Profil';
+
+  @override
+  String get settingsProfile => 'Profil bearbeiten';
+
+  @override
+  String get settingsProfileSub => 'Name, Nostr-Schlüssel & Home-Meetup';
 }

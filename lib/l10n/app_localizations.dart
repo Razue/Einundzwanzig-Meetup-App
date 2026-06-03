@@ -5601,6 +5601,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Details'**
   String get nbDetails;
+
+  /// No description provided for @settingsSectionProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil'**
+  String get settingsSectionProfile;
+
+  /// No description provided for @settingsProfile.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil bearbeiten'**
+  String get settingsProfile;
+
+  /// No description provided for @settingsProfileSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Name, Nostr-Schlüssel & Home-Meetup'**
+  String get settingsProfileSub;
 }
 
 class _AppLocalizationsDelegate

@@ -7,7 +7,6 @@ import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'badge_wallet.dart';
 import 'calendar_screen.dart';
-import 'profile_edit.dart';
 import 'meetup_verification.dart';
 import 'reputation_qr.dart';
 import 'nearby_meetups_screen.dart';
@@ -87,7 +86,6 @@ class _AppShellState extends State<AppShell> {
           HomeScreen(key: _homeKey),
           BadgeWalletScreen(),
           const CalendarScreen(),
-          const ProfileEditScreen(),
         ],
       ),
       bottomNavigationBar: SizedBox(
@@ -112,10 +110,9 @@ class _AppShellState extends State<AppShell> {
                       children: [
                         _navItem(0, Icons.home_rounded, Icons.home_outlined, AppLocalizations.of(context).navHome),
                         _navItem(1, Icons.style_rounded, Icons.style_outlined, AppLocalizations.of(context).navWalletTab),
-                        _navAction(Icons.near_me_rounded, Icons.near_me_outlined, AppLocalizations.of(context).navNearby, _openNearby),
                         const SizedBox(width: 60),
                         _navItem(3, Icons.event_rounded, Icons.event_outlined, AppLocalizations.of(context).navEvents),
-                        _navItem(4, Icons.person_rounded, Icons.person_outline_rounded, AppLocalizations.of(context).navProfileTab),
+                        _navAction(Icons.near_me_rounded, Icons.near_me_outlined, AppLocalizations.of(context).navNearby, _openNearby),
                       ],
                     ),
                   ),

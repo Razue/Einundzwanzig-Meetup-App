@@ -1624,5 +1624,8 @@
     }
   },
   "nbDirections": "Ruta",
-  "nbDetails": "Detalles"
+  "nbDetails": "Detalles",
+  "settingsSectionProfile": "Perfil",
+  "settingsProfile": "Editar perfil",
+  "settingsProfileSub": "Nombre, clave Nostr y meetup principal"
 }

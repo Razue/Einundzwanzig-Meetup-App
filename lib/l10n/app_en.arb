@@ -1624,5 +1624,8 @@
     }
   },
   "nbDirections": "Directions",
-  "nbDetails": "Details"
+  "nbDetails": "Details",
+  "settingsSectionProfile": "Profile",
+  "settingsProfile": "Edit profile",
+  "settingsProfileSub": "Name, Nostr key & home meetup"
 }
