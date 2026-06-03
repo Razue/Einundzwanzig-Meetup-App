@@ -27,6 +27,7 @@ import '../services/reputation_publisher.dart';
 import '../services/platform_proof_service.dart';
 import 'package:crypto/crypto.dart';
 import 'qr_scanner.dart';
+import 'reputation_card_screen.dart';
 
 class ReputationQRScreen extends StatefulWidget {
   const ReputationQRScreen({super.key});
@@ -286,6 +287,14 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context).reputationTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share_rounded, color: cTextSecondary),
+            tooltip: AppLocalizations.of(context).rcShareImage,
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ReputationCardScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner, color: cTextSecondary),
             tooltip: AppLocalizations.of(context).reputationCheck,

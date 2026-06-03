@@ -1634,5 +1634,26 @@
   "apCreateEventBody": "Los eventos de meetup se gestionan de forma centralizada en el portal Einundzwanzig. La app abrirá ahora el portal en tu navegador — inicia sesión con tu clave Nostr y crea el evento. Después aparecerá aquí en el calendario automáticamente.",
   "apOpenPortal": "Abrir portal",
   "apNoHomeMeetupSet": "Selecciona primero tu meetup principal en el perfil, luego podrás crear eventos.",
-  "apPortalHint": "¿Por qué no directamente en la app? El portal es la fuente central de todos los eventos y requiere tu inicio de sesión. La creación directa desde la app está prevista en cuanto el portal lo permita."
+  "apPortalHint": "¿Por qué no directamente en la app? El portal es la fuente central de todos los eventos y requiere tu inicio de sesión. La creación directa desde la app está prevista en cuanto el portal lo permita.",
+  "rcTitle": "Perfil de reputación",
+  "rcShareImage": "Compartir como imagen",
+  "rcSaving": "Creando imagen...",
+  "rcShareError": "Error al compartir: {error}",
+  "@rcShareError": {
+    "placeholders": {
+      "error": {
+        "type": "Object"
+      }
+    }
+  },
+  "rcShareText": "Mi Trust Score y reputación de Einundzwanzig",
+  "rcLabelScore": "Trust Score",
+  "rcLabelLevel": "Nivel",
+  "rcLabelBadges": "Badges",
+  "rcLabelMeetups": "Meetups",
+  "rcLabelCities": "Ciudades",
+  "rcLabelSigners": "Avales",
+  "rcLabelAge": "Días activo",
+  "rcMember": "Miembro de Einundzwanzig",
+  "rcNoData": "Aún no hay reputación. ¡Consigue badges en los meetups!"
 }

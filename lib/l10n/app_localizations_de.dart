@@ -3147,4 +3147,48 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get apPortalHint =>
       'Warum nicht direkt in der App? Das Portal ist die zentrale Quelle für alle Termine und braucht deine Anmeldung. Eine direkte Eintragung aus der App ist geplant, sobald das Portal das unterstützt.';
+
+  @override
+  String get rcTitle => 'Reputations-Profil';
+
+  @override
+  String get rcShareImage => 'Als Bild teilen';
+
+  @override
+  String get rcSaving => 'Bild wird erstellt...';
+
+  @override
+  String rcShareError(Object error) {
+    return 'Teilen fehlgeschlagen: $error';
+  }
+
+  @override
+  String get rcShareText => 'Mein Einundzwanzig Trust Score & Reputation';
+
+  @override
+  String get rcLabelScore => 'Trust Score';
+
+  @override
+  String get rcLabelLevel => 'Level';
+
+  @override
+  String get rcLabelBadges => 'Badges';
+
+  @override
+  String get rcLabelMeetups => 'Meetups';
+
+  @override
+  String get rcLabelCities => 'Städte';
+
+  @override
+  String get rcLabelSigners => 'Bürgen';
+
+  @override
+  String get rcLabelAge => 'Tage dabei';
+
+  @override
+  String get rcMember => 'Einundzwanzig Mitglied';
+
+  @override
+  String get rcNoData => 'Noch keine Reputation. Sammle Badges auf Meetups!';
 }

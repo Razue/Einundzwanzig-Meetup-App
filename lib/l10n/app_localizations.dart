@@ -5661,6 +5661,90 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Warum nicht direkt in der App? Das Portal ist die zentrale Quelle für alle Termine und braucht deine Anmeldung. Eine direkte Eintragung aus der App ist geplant, sobald das Portal das unterstützt.'**
   String get apPortalHint;
+
+  /// No description provided for @rcTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputations-Profil'**
+  String get rcTitle;
+
+  /// No description provided for @rcShareImage.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Bild teilen'**
+  String get rcShareImage;
+
+  /// No description provided for @rcSaving.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild wird erstellt...'**
+  String get rcSaving;
+
+  /// No description provided for @rcShareError.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen fehlgeschlagen: {error}'**
+  String rcShareError(Object error);
+
+  /// No description provided for @rcShareText.
+  ///
+  /// In de, this message translates to:
+  /// **'Mein Einundzwanzig Trust Score & Reputation'**
+  String get rcShareText;
+
+  /// No description provided for @rcLabelScore.
+  ///
+  /// In de, this message translates to:
+  /// **'Trust Score'**
+  String get rcLabelScore;
+
+  /// No description provided for @rcLabelLevel.
+  ///
+  /// In de, this message translates to:
+  /// **'Level'**
+  String get rcLabelLevel;
+
+  /// No description provided for @rcLabelBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges'**
+  String get rcLabelBadges;
+
+  /// No description provided for @rcLabelMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get rcLabelMeetups;
+
+  /// No description provided for @rcLabelCities.
+  ///
+  /// In de, this message translates to:
+  /// **'Städte'**
+  String get rcLabelCities;
+
+  /// No description provided for @rcLabelSigners.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgen'**
+  String get rcLabelSigners;
+
+  /// No description provided for @rcLabelAge.
+  ///
+  /// In de, this message translates to:
+  /// **'Tage dabei'**
+  String get rcLabelAge;
+
+  /// No description provided for @rcMember.
+  ///
+  /// In de, this message translates to:
+  /// **'Einundzwanzig Mitglied'**
+  String get rcMember;
+
+  /// No description provided for @rcNoData.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Reputation. Sammle Badges auf Meetups!'**
+  String get rcNoData;
 }
 
 class _AppLocalizationsDelegate

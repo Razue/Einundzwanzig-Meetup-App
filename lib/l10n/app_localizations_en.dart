@@ -3112,4 +3112,48 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get apPortalHint =>
       'Why not directly in the app? The portal is the central source for all events and requires your login. Direct creation from the app is planned once the portal supports it.';
+
+  @override
+  String get rcTitle => 'Reputation Profile';
+
+  @override
+  String get rcShareImage => 'Share as image';
+
+  @override
+  String get rcSaving => 'Creating image...';
+
+  @override
+  String rcShareError(Object error) {
+    return 'Sharing failed: $error';
+  }
+
+  @override
+  String get rcShareText => 'My Einundzwanzig Trust Score & Reputation';
+
+  @override
+  String get rcLabelScore => 'Trust Score';
+
+  @override
+  String get rcLabelLevel => 'Level';
+
+  @override
+  String get rcLabelBadges => 'Badges';
+
+  @override
+  String get rcLabelMeetups => 'Meetups';
+
+  @override
+  String get rcLabelCities => 'Cities';
+
+  @override
+  String get rcLabelSigners => 'Signers';
+
+  @override
+  String get rcLabelAge => 'Days active';
+
+  @override
+  String get rcMember => 'Einundzwanzig member';
+
+  @override
+  String get rcNoData => 'No reputation yet. Collect badges at meetups!';
 }

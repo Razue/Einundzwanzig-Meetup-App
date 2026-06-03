@@ -3135,4 +3135,49 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get apPortalHint =>
       '¿Por qué no directamente en la app? El portal es la fuente central de todos los eventos y requiere tu inicio de sesión. La creación directa desde la app está prevista en cuanto el portal lo permita.';
+
+  @override
+  String get rcTitle => 'Perfil de reputación';
+
+  @override
+  String get rcShareImage => 'Compartir como imagen';
+
+  @override
+  String get rcSaving => 'Creando imagen...';
+
+  @override
+  String rcShareError(Object error) {
+    return 'Error al compartir: $error';
+  }
+
+  @override
+  String get rcShareText => 'Mi Trust Score y reputación de Einundzwanzig';
+
+  @override
+  String get rcLabelScore => 'Trust Score';
+
+  @override
+  String get rcLabelLevel => 'Nivel';
+
+  @override
+  String get rcLabelBadges => 'Badges';
+
+  @override
+  String get rcLabelMeetups => 'Meetups';
+
+  @override
+  String get rcLabelCities => 'Ciudades';
+
+  @override
+  String get rcLabelSigners => 'Avales';
+
+  @override
+  String get rcLabelAge => 'Días activo';
+
+  @override
+  String get rcMember => 'Miembro de Einundzwanzig';
+
+  @override
+  String get rcNoData =>
+      'Aún no hay reputación. ¡Consigue badges en los meetups!';
 }
