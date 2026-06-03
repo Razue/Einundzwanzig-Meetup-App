@@ -1759,5 +1759,12 @@
   "mnIndirectLabel": "Indirecto",
   "mnTrustHint": "Los contactos indirectos a través de encuentros reales aumentan gradualmente tu confianza, incluso sin haber conocido a la persona.",
   "mnPrivacyNote": "Solo muestra personas que participan en la red (opt-in al escanear badge).",
-  "mnCheckPerson": "Comprobar persona concreta"
+  "mnCheckPerson": "Comprobar persona concreta",
+  "settingsHeaderTitle": "Ajustes",
+  "settingsHeaderSub": "Gestionar app y cuenta",
+  "settingsSecAccount": "CUENTA",
+  "settingsSecData": "DATOS Y SEGURIDAD",
+  "settingsSecNetwork": "RED",
+  "settingsSecApp": "APP",
+  "settingsSecDanger": "ZONA DE PELIGRO"
 }

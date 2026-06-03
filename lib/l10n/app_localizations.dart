@@ -6201,6 +6201,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bestimmte Person prüfen'**
   String get mnCheckPerson;
+
+  /// No description provided for @settingsHeaderTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get settingsHeaderTitle;
+
+  /// No description provided for @settingsHeaderSub.
+  ///
+  /// In de, this message translates to:
+  /// **'App & Account verwalten'**
+  String get settingsHeaderSub;
+
+  /// No description provided for @settingsSecAccount.
+  ///
+  /// In de, this message translates to:
+  /// **'ACCOUNT'**
+  String get settingsSecAccount;
+
+  /// No description provided for @settingsSecData.
+  ///
+  /// In de, this message translates to:
+  /// **'DATEN & SICHERHEIT'**
+  String get settingsSecData;
+
+  /// No description provided for @settingsSecNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'NETZWERK'**
+  String get settingsSecNetwork;
+
+  /// No description provided for @settingsSecApp.
+  ///
+  /// In de, this message translates to:
+  /// **'APP'**
+  String get settingsSecApp;
+
+  /// No description provided for @settingsSecDanger.
+  ///
+  /// In de, this message translates to:
+  /// **'GEFAHRENZONE'**
+  String get settingsSecDanger;
 }
 
 class _AppLocalizationsDelegate

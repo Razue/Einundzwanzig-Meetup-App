@@ -1781,5 +1781,12 @@
   "mnIndirectLabel": "Indirekt",
   "mnTrustHint": "Indirekte Kontakte über echte Begegnungen erhöhen dein Vertrauen schrittweise — auch ohne dass du die Person selbst getroffen hast.",
   "mnPrivacyNote": "Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in beim Badge-Scan).",
-  "mnCheckPerson": "Bestimmte Person prüfen"
+  "mnCheckPerson": "Bestimmte Person prüfen",
+  "settingsHeaderTitle": "Einstellungen",
+  "settingsHeaderSub": "App & Account verwalten",
+  "settingsSecAccount": "ACCOUNT",
+  "settingsSecData": "DATEN & SICHERHEIT",
+  "settingsSecNetwork": "NETZWERK",
+  "settingsSecApp": "APP",
+  "settingsSecDanger": "GEFAHRENZONE"
 }

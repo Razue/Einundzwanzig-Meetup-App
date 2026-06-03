@@ -111,7 +111,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
 
     try {
-      await RollingQRService.getOrCreateSession(
+      final session = await RollingQRService.getOrCreateSession(
         meetupId: compactId,
         meetupName: meetupId,
         meetupCountry: '',
@@ -119,10 +119,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       );
 
       // Organisator nimmt automatisch am Co-Attendance-Netzwerk teil
-      // (kein Reputations-Badge, aber Marker-Badge + Netzwerk-Teilnahme)
+      // (kein Reputations-Badge, aber Marker-Badge + Netzwerk-Teilnahme).
+      // Blockhöhe aus der Session übernehmen (sie hat sie schon von Mempool geholt).
       await CoAttendanceService.recordOrganizerAttendance(
         meetupName: meetupId,
         date: DateTime.now(),
+        blockHeight: session?.blockHeight ?? 0,
       );
 
       if (mounted) {

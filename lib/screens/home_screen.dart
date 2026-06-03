@@ -739,40 +739,174 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final prefs = await SharedPreferences.getInstance();
     bool haptic = prefs.getBool('haptic_enabled') ?? true;
     if (!mounted) return;
-    showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => StatefulBuilder(builder: (ctx, ss) => Padding(padding: const EdgeInsets.fromLTRB(20, 20, 20, 40), child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
-        _sG(AppLocalizations.of(context).settingsSectionProfile), _sT(Icons.person_rounded, cOrange, AppLocalizations.of(context).settingsProfile, AppLocalizations.of(context).settingsProfileSub, () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
-        const SizedBox(height: 16),
-        _sG(AppLocalizations.of(context).settingsSectionBackup), _sT(Icons.upload_rounded, Colors.blue, AppLocalizations.of(context).settingsBackup, AppLocalizations.of(context).settingsBackupSub, () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
-        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionLanguage),
-        ValueListenableBuilder<Locale?>(
-          valueListenable: LocaleController.locale,
-          builder: (_, current, __) => ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.language_rounded, color: cOrange, size: 20)),
-            title: Text(AppLocalizations.of(context).settingsLanguageTitle, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
-            subtitle: Text('${_flagFor(current)}  ${LocaleController.displayName(current)}',
-              style: const TextStyle(color: cTextTertiary, fontSize: 11)),
-            trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 18),
-            onTap: () => _showLanguagePopup(ctx),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: cDark,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, ss) => DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, scrollCtrl) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Greifer
+              const SizedBox(height: 12),
+              Center(child: Container(width: 40, height: 4,
+                decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 20),
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      gradient: gradientOrange,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.settings_rounded, color: Colors.black, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(AppLocalizations.of(context).settingsHeaderTitle,
+                        style: const TextStyle(color: cText, fontSize: 20, fontWeight: FontWeight.w800)),
+                    Text(AppLocalizations.of(context).settingsHeaderSub,
+                        style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+                  ]),
+                ]),
+              ),
+              const SizedBox(height: 20),
+              // Scrollbarer Inhalt
+              Expanded(
+                child: ListView(
+                  controller: scrollCtrl,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+                  children: [
+                    // ACCOUNT
+                    _sGroup(AppLocalizations.of(context).settingsSecAccount, [
+                      _sRow(Icons.person_rounded, cOrange,
+                        AppLocalizations.of(context).settingsProfile,
+                        AppLocalizations.of(context).settingsProfileSub,
+                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+                    ]),
+                    const SizedBox(height: 18),
+                    // DATEN & SICHERHEIT
+                    _sGroup(AppLocalizations.of(context).settingsSecData, [
+                      _sRow(Icons.cloud_upload_rounded, cCyan,
+                        AppLocalizations.of(context).settingsBackup,
+                        AppLocalizations.of(context).settingsBackupSub,
+                        () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+                    ]),
+                    const SizedBox(height: 18),
+                    // NETZWERK
+                    _sGroup(AppLocalizations.of(context).settingsSecNetwork, [
+                      _sRow(Icons.hub_rounded, cPurple,
+                        AppLocalizations.of(context).settingsRelays,
+                        AppLocalizations.of(context).settingsRelaysSub,
+                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                    ]),
+                    const SizedBox(height: 18),
+                    // APP
+                    _sGroup(AppLocalizations.of(context).settingsSecApp, [
+                      // Sprache
+                      ValueListenableBuilder<Locale?>(
+                        valueListenable: LocaleController.locale,
+                        builder: (_, current, __) => _sRowCustom(
+                          Icons.language_rounded, cGreen,
+                          AppLocalizations.of(context).settingsLanguageTitle,
+                          '${_flagFor(current)}  ${LocaleController.displayName(current)}',
+                          trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 18),
+                          onTap: () => _showLanguagePopup(ctx),
+                        ),
+                      ),
+                      _sDivider(),
+                      // Haptik
+                      _sRowCustom(
+                        Icons.vibration_rounded, cGreen,
+                        AppLocalizations.of(context).settingsHaptic,
+                        haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff,
+                        trailing: Switch(value: haptic, activeColor: cOrange,
+                          onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
+                      ),
+                    ]),
+                    const SizedBox(height: 18),
+                    // GEFAHRENZONE
+                    _sGroup(AppLocalizations.of(context).settingsSecDanger, [
+                      _sRow(Icons.delete_forever_rounded, cRed,
+                        AppLocalizations.of(context).settingsReset,
+                        AppLocalizations.of(context).settingsResetSub,
+                        () { Navigator.pop(ctx); _resetApp(); }, danger: true),
+                    ]),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionNostr), _sT(Icons.hub_rounded, cCyan, AppLocalizations.of(context).settingsRelays, AppLocalizations.of(context).settingsRelaysSub, () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
-        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionControl),
-        ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.vibration_rounded, color: cOrange, size: 20)),
-          title: Text(AppLocalizations.of(context).settingsHaptic, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)),
-          subtitle: Text(haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
-          trailing: Switch(value: haptic, activeColor: cOrange, onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 4)),
-        const SizedBox(height: 16), _sG(AppLocalizations.of(context).settingsSectionAccount), _sT(Icons.delete_forever_rounded, Colors.red, AppLocalizations.of(context).settingsReset, AppLocalizations.of(context).settingsResetSub, () { Navigator.pop(ctx); _resetApp(); }),
-      ]))));
+      ),
+    );
   }
 
-  Widget _sG(String t) => Padding(padding: const EdgeInsets.only(bottom: 10, left: 4), child: Text(t, style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)));
+  /// Eine Gruppe: Label + Karten-Container mit den Items.
+  Widget _sGroup(String label, List<Widget> items) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 6, bottom: 8),
+        child: Text(label,
+          style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.4)),
+      ),
+      Container(
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: cTileBorder, width: 0.5),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(children: items),
+      ),
+    ]);
+  }
+
+  /// Eine Standard-Zeile (Icon, Titel, Sub, Pfeil rechts).
+  Widget _sRow(IconData i, Color c, String t, String s, VoidCallback onTap, {bool danger = false}) {
+    return _sRowCustom(i, c, t, s,
+      trailing: Icon(Icons.chevron_right_rounded, color: danger ? cRed.withValues(alpha: 0.5) : cTextTertiary, size: 18),
+      onTap: onTap, danger: danger);
+  }
+
+  /// Flexible Zeile mit beliebigem trailing-Widget (Switch, Pfeil, ...).
+  Widget _sRowCustom(IconData i, Color c, String t, String s, {Widget? trailing, VoidCallback? onTap, bool danger = false}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: c.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+            child: Icon(i, color: c, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(t, style: TextStyle(color: danger ? cRed : cText, fontSize: 14, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 2),
+              Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+            ]),
+          ),
+          if (trailing != null) trailing,
+        ]),
+      ),
+    );
+  }
+
+  /// Trennlinie zwischen Items in einer Gruppe.
+  Widget _sDivider() => Container(height: 0.5, color: cTileBorder, margin: const EdgeInsets.only(left: 56));
+
 
   // Flaggen-Emoji je Sprache (System = Globus)
   String _flagFor(Locale? loc) {
@@ -837,7 +971,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _sT(IconData i, Color c, String t, String s, VoidCallback onTap) => ListTile(leading: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: c.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)), child: Icon(i, color: c, size: 20)), title: Text(t, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600)), subtitle: Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)), onTap: onTap, contentPadding: const EdgeInsets.symmetric(horizontal: 4));
 
   void _showScoreInfoSheet() {
     final score = _trustScore; final idCount = _platformProofCount + (_humanityVerified ? 1 : 0) + (_nip05Verified ? 1 : 0);

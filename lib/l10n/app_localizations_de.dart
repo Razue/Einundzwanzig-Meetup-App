@@ -3444,4 +3444,25 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mnCheckPerson => 'Bestimmte Person prüfen';
+
+  @override
+  String get settingsHeaderTitle => 'Einstellungen';
+
+  @override
+  String get settingsHeaderSub => 'App & Account verwalten';
+
+  @override
+  String get settingsSecAccount => 'ACCOUNT';
+
+  @override
+  String get settingsSecData => 'DATEN & SICHERHEIT';
+
+  @override
+  String get settingsSecNetwork => 'NETZWERK';
+
+  @override
+  String get settingsSecApp => 'APP';
+
+  @override
+  String get settingsSecDanger => 'GEFAHRENZONE';
 }

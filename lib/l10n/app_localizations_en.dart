@@ -3406,4 +3406,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mnCheckPerson => 'Check specific person';
+
+  @override
+  String get settingsHeaderTitle => 'Settings';
+
+  @override
+  String get settingsHeaderSub => 'Manage app & account';
+
+  @override
+  String get settingsSecAccount => 'ACCOUNT';
+
+  @override
+  String get settingsSecData => 'DATA & SECURITY';
+
+  @override
+  String get settingsSecNetwork => 'NETWORK';
+
+  @override
+  String get settingsSecApp => 'APP';
+
+  @override
+  String get settingsSecDanger => 'DANGER ZONE';
 }

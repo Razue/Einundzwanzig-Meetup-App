@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/user.dart';
@@ -235,30 +236,50 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> {
       final n = c.bridges.length;
       detail = n == 1 ? t.mnViaOneContact : t.mnViaContacts(n);
     }
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: cTileBorder, width: 0.5)),
+    return InkWell(
+      onTap: () => _openNostrProfile(c.npub),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: cTileBorder, width: 0.5)),
+        ),
+        child: Row(children: [
+          Container(
+            width: 32, height: 32,
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(
+              c.degree == 1 ? Icons.person_rounded : Icons.person_outline_rounded,
+              color: color, size: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(NostrService.shortenNpub(c.npub),
+                  style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono)),
+              const SizedBox(height: 2),
+              Text(detail, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+            ]),
+          ),
+          Icon(Icons.open_in_new_rounded, color: cTextTertiary.withValues(alpha: 0.6), size: 15),
+        ]),
       ),
-      child: Row(children: [
-        Container(
-          width: 32, height: 32,
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-          child: Icon(
-            c.degree == 1 ? Icons.person_rounded : Icons.person_outline_rounded,
-            color: color, size: 16),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(NostrService.shortenNpub(c.npub),
-                style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono)),
-            const SizedBox(height: 2),
-            Text(detail, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
-          ]),
-        ),
-      ]),
     );
+  }
+
+  /// Öffnet das Nostr-Profil: erst per nostr:-Schema (installierte App),
+  /// Fallback auf njump.me im Browser.
+  Future<void> _openNostrProfile(String npub) async {
+    final nostrUri = Uri.parse('nostr:$npub');
+    final webUri = Uri.parse('https://njump.me/$npub');
+    try {
+      if (!await launchUrl(nostrUri, mode: LaunchMode.externalApplication)) {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      } catch (_) {}
+    }
   }
 }
 

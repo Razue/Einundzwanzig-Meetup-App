@@ -1759,5 +1759,12 @@
   "mnIndirectLabel": "Indirect",
   "mnTrustHint": "Indirect contacts through real encounters gradually increase your trust — even without having met the person yourself.",
   "mnPrivacyNote": "Only shows people who participate in the network (opt-in at badge scan).",
-  "mnCheckPerson": "Check specific person"
+  "mnCheckPerson": "Check specific person",
+  "settingsHeaderTitle": "Settings",
+  "settingsHeaderSub": "Manage app & account",
+  "settingsSecAccount": "ACCOUNT",
+  "settingsSecData": "DATA & SECURITY",
+  "settingsSecNetwork": "NETWORK",
+  "settingsSecApp": "APP",
+  "settingsSecDanger": "DANGER ZONE"
 }

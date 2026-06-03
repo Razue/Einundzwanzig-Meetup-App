@@ -7,6 +7,7 @@ import '../models/badge.dart';
 import 'signing_service.dart';
 import 'relay_config.dart';
 import 'nostr_service.dart';
+import 'mempool.dart';
 import 'app_logger.dart';
 
 /// Eine bestätigte Meetup-Teilnahme einer Person (von Relays geladen).
@@ -277,13 +278,20 @@ class CoAttendanceService {
       final meetupEventId =
           '${meetupName.toLowerCase().replaceAll(' ', '-')}-$dateStr';
 
+      // Blockhöhe sicherstellen: falls 0 übergeben (Session hatte sie nicht),
+      // selbst von Mempool holen — damit das Badge eine echte Blockzeit hat.
+      int finalBlockHeight = blockHeight;
+      if (finalBlockHeight <= 0) {
+        finalBlockHeight = await MempoolService.getBlockHeight();
+      }
+
       // 1. Organisator-Marker-Badge erstellen (zählt NICHT zum Trust Score)
       final badge = MeetupBadge(
         id: 'org-$meetupEventId',
         meetupName: meetupName,
         date: date,
         iconPath: '',
-        blockHeight: blockHeight,
+        blockHeight: finalBlockHeight,
         meetupEventId: meetupEventId,
         delivery: 'organizer',
         isOrganizer: true,
