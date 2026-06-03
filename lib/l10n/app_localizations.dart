@@ -6009,6 +6009,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in).'**
   String get cnPrivacyNote;
+
+  /// No description provided for @tileTrustNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauensnetzwerk'**
+  String get tileTrustNetwork;
+
+  /// No description provided for @tileTrustNetworkSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Vernetzung prüfen'**
+  String get tileTrustNetworkSub;
+
+  /// No description provided for @tnHubTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauensnetzwerk'**
+  String get tnHubTitle;
+
+  /// No description provided for @tnHubIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe, wie vertrauenswürdig eine Person im Einundzwanzig-Netzwerk ist — über Bürgschaften und gemeinsame Meetups.'**
+  String get tnHubIntro;
+
+  /// No description provided for @tnHubPathTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauenspfad'**
+  String get tnHubPathTitle;
+
+  /// No description provided for @tnHubPathSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Über wen bist du mit einer Person verbunden? (Bürgschaftskette)'**
+  String get tnHubPathSub;
+
+  /// No description provided for @tnHubNetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk-Analyse'**
+  String get tnHubNetTitle;
+
+  /// No description provided for @tnHubNetSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Gemeinsame Meetups & Kontakte einer Person'**
+  String get tnHubNetSub;
 }
 
 class _AppLocalizationsDelegate

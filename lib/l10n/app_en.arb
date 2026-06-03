@@ -1713,5 +1713,13 @@
   },
   "cnTrustHint": "More shared meetups and contacts mean stronger organic trust.",
   "cnInvalidNpub": "Invalid npub",
-  "cnPrivacyNote": "Only shows people who opted into the network."
+  "cnPrivacyNote": "Only shows people who opted into the network.",
+  "tileTrustNetwork": "Trust network",
+  "tileTrustNetworkSub": "Check connections",
+  "tnHubTitle": "Trust network",
+  "tnHubIntro": "Check how trustworthy a person is in the Einundzwanzig network — through vouches and shared meetups.",
+  "tnHubPathTitle": "Trust path",
+  "tnHubPathSub": "Who connects you to a person? (vouching chain)",
+  "tnHubNetTitle": "Network analysis",
+  "tnHubNetSub": "A person's shared meetups & contacts"
 }

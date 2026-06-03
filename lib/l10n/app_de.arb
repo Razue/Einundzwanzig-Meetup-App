@@ -1735,5 +1735,13 @@
   },
   "cnTrustHint": "Je mehr gemeinsame Meetups und Kontakte, desto stärker das organische Vertrauen.",
   "cnInvalidNpub": "Ungültiger npub",
-  "cnPrivacyNote": "Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in)."
+  "cnPrivacyNote": "Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in).",
+  "tileTrustNetwork": "Vertrauensnetzwerk",
+  "tileTrustNetworkSub": "Vernetzung prüfen",
+  "tnHubTitle": "Vertrauensnetzwerk",
+  "tnHubIntro": "Prüfe, wie vertrauenswürdig eine Person im Einundzwanzig-Netzwerk ist — über Bürgschaften und gemeinsame Meetups.",
+  "tnHubPathTitle": "Vertrauenspfad",
+  "tnHubPathSub": "Über wen bist du mit einer Person verbunden? (Bürgschaftskette)",
+  "tnHubNetTitle": "Netzwerk-Analyse",
+  "tnHubNetSub": "Gemeinsame Meetups & Kontakte einer Person"
 }

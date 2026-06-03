@@ -1713,5 +1713,13 @@
   },
   "cnTrustHint": "Más meetups y contactos en común significan más confianza orgánica.",
   "cnInvalidNpub": "npub no válido",
-  "cnPrivacyNote": "Solo muestra personas que participan en la red (opt-in)."
+  "cnPrivacyNote": "Solo muestra personas que participan en la red (opt-in).",
+  "tileTrustNetwork": "Red de confianza",
+  "tileTrustNetworkSub": "Comprobar conexiones",
+  "tnHubTitle": "Red de confianza",
+  "tnHubIntro": "Comprueba la confiabilidad de una persona en la red Einundzwanzig — mediante avales y meetups en común.",
+  "tnHubPathTitle": "Ruta de confianza",
+  "tnHubPathSub": "¿Quién te conecta con una persona? (cadena de avales)",
+  "tnHubNetTitle": "Análisis de red",
+  "tnHubNetSub": "Meetups y contactos en común de una persona"
 }

@@ -3301,4 +3301,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cnPrivacyNote => 'Only shows people who opted into the network.';
+
+  @override
+  String get tileTrustNetwork => 'Trust network';
+
+  @override
+  String get tileTrustNetworkSub => 'Check connections';
+
+  @override
+  String get tnHubTitle => 'Trust network';
+
+  @override
+  String get tnHubIntro =>
+      'Check how trustworthy a person is in the Einundzwanzig network — through vouches and shared meetups.';
+
+  @override
+  String get tnHubPathTitle => 'Trust path';
+
+  @override
+  String get tnHubPathSub => 'Who connects you to a person? (vouching chain)';
+
+  @override
+  String get tnHubNetTitle => 'Network analysis';
+
+  @override
+  String get tnHubNetSub => 'A person\'s shared meetups & contacts';
 }

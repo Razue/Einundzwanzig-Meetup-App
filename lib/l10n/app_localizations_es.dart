@@ -3326,4 +3326,30 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get cnPrivacyNote =>
       'Solo muestra personas que participan en la red (opt-in).';
+
+  @override
+  String get tileTrustNetwork => 'Red de confianza';
+
+  @override
+  String get tileTrustNetworkSub => 'Comprobar conexiones';
+
+  @override
+  String get tnHubTitle => 'Red de confianza';
+
+  @override
+  String get tnHubIntro =>
+      'Comprueba la confiabilidad de una persona en la red Einundzwanzig — mediante avales y meetups en común.';
+
+  @override
+  String get tnHubPathTitle => 'Ruta de confianza';
+
+  @override
+  String get tnHubPathSub =>
+      '¿Quién te conecta con una persona? (cadena de avales)';
+
+  @override
+  String get tnHubNetTitle => 'Análisis de red';
+
+  @override
+  String get tnHubNetSub => 'Meetups y contactos en común de una persona';
 }

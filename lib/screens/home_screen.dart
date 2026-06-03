@@ -42,6 +42,7 @@ import 'rolling_qr_screen.dart';
 import 'community_portal_screen.dart';
 import 'meetup_details.dart';
 import 'reputation_qr.dart';
+import 'trust_network_hub_screen.dart';
 import 'relay_settings_screen.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
@@ -136,6 +137,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _TileDef(id: 'reputation',   label: 'Reputation',       span: 1, removable: false, builder: _buildReputationTile),
       // ── Optionale Kacheln (removable: true) ──
       _TileDef(id: 'community',    label: 'Community',        span: 2, builder: _buildCommunityTile),
+      _TileDef(id: 'trust_network', label: 'Vertrauensnetzwerk', span: 2, builder: _buildTrustNetworkTile),
       _TileDef(id: 'events',       label: 'Events',           span: 1, builder: _buildEventsTile),
       _TileDef(id: 'shoutout',     label: 'Shoutout',         span: 1, builder: _buildShoutoutTile),
       _TileDef(id: 'podcast',      label: 'Podcast',          span: 1, builder: _buildPodcastTile),
@@ -651,6 +653,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
   Widget _buildReputationTile() => _tile(accentColor: Colors.amber, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileReputation, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? AppLocalizations.of(context).tileReputationShare : AppLocalizations.of(context).tileReputationCheck, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TrustNetworkHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildCommunityTile() => _tile(accentColor: cCyan, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityPortalScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildEventsTile() => _tile(accentColor: cTextTertiary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.event_rounded, color: cTextSecondary, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileEvents, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileEventsCalendar, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));

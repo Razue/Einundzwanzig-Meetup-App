@@ -3337,4 +3337,30 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get cnPrivacyNote =>
       'Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in).';
+
+  @override
+  String get tileTrustNetwork => 'Vertrauensnetzwerk';
+
+  @override
+  String get tileTrustNetworkSub => 'Vernetzung prüfen';
+
+  @override
+  String get tnHubTitle => 'Vertrauensnetzwerk';
+
+  @override
+  String get tnHubIntro =>
+      'Prüfe, wie vertrauenswürdig eine Person im Einundzwanzig-Netzwerk ist — über Bürgschaften und gemeinsame Meetups.';
+
+  @override
+  String get tnHubPathTitle => 'Vertrauenspfad';
+
+  @override
+  String get tnHubPathSub =>
+      'Über wen bist du mit einer Person verbunden? (Bürgschaftskette)';
+
+  @override
+  String get tnHubNetTitle => 'Netzwerk-Analyse';
+
+  @override
+  String get tnHubNetSub => 'Gemeinsame Meetups & Kontakte einer Person';
 }
