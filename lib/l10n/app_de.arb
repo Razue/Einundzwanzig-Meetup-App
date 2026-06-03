@@ -1788,5 +1788,40 @@
   "settingsSecData": "DATEN & SICHERHEIT",
   "settingsSecNetwork": "NETZWERK",
   "settingsSecApp": "APP",
-  "settingsSecDanger": "GEFAHRENZONE"
+  "settingsSecDanger": "GEFAHRENZONE",
+  "vpTitle": "Person prüfen",
+  "vpIntro": "Prüfe über echte Meetup-Begegnungen, ob und wie diese Person mit dir verbunden ist.",
+  "vpEnterNpub": "npub eingeben oder Reputations-QR scannen",
+  "vpScanQr": "QR scannen",
+  "vpCheck": "Prüfen",
+  "vpChecking": "Verbindung wird geprüft...",
+  "vpDirectTitle": "Direkt getroffen!",
+  "vpDirectSub": "Ihr wart gemeinsam auf {count} Meetups.",
+  "@vpDirectSub": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "vpDirectSubOne": "Ihr wart gemeinsam auf einem Meetup.",
+  "vpIndirectTitle": "Über {count} Ecken verbunden",
+  "@vpIndirectTitle": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "vpIndirectSub": "Diese Person ist über echte Meetup-Begegnungen mit dir verbunden.",
+  "vpNoneTitle": "Keine Verbindung gefunden",
+  "vpNoneSub": "Es gibt aktuell keine bekannte Meetup-Verbindung zu dir.",
+  "vpNotInNetwork": "Diese Person nimmt (noch) nicht am Netzwerk teil.",
+  "vpPathTitle": "Verbindungspfad",
+  "vpYou": "Du",
+  "vpTarget": "Diese Person",
+  "vpMetAt": "gemeinsames Meetup",
+  "vpInvalidNpub": "Ungültiger npub",
+  "vpTrustNote": "Je näher die Verbindung (kleinerer Grad), desto stärker das Vertrauen über physische Präsenz.",
+  "vpSelfTitle": "Das bist du selbst"
 }

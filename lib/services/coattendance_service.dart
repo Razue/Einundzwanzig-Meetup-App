@@ -254,6 +254,80 @@ class CoAttendanceService {
 
   static String npubToHex(String npub) => NostrService.npubToHex(npub);
 
+  /// Prüft die physische Verbindung zu EINER bestimmten Person ("Präsenz-Check").
+  ///
+  /// Berechnet den kürzesten Pfad über echte Meetup-Begegnungen:
+  ///   Grad 0 = das bin ich selbst (npub identisch)
+  ///   Grad 1 = direkt auf einem Meetup getroffen
+  ///   Grad 2 = jemand, den ich getroffen habe, hat die Person getroffen
+  ///   Grad 3+ = noch weiter über die Kette
+  /// Gibt den konkreten Pfad (Du -> ... -> Zielperson) zurück.
+  static Future<PresenceCheck> verifyPerson({
+    required String myNpub,
+    required String targetNpub,
+    int maxDepth = 6,
+  }) async {
+    final nodes = await _loadAllNodes();
+
+    final myMeetups = nodes[myNpub]?.meetups ?? <String>{};
+    final targetMeetups = nodes[targetNpub]?.meetups ?? <String>{};
+    final sharedMeetups = myMeetups.intersection(targetMeetups);
+
+    // Sonderfall: man selbst
+    if (myNpub == targetNpub) {
+      return PresenceCheck(
+        targetNpub: targetNpub,
+        degree: 0,
+        path: [myNpub],
+        sharedMeetups: sharedMeetups,
+        targetInNetwork: nodes.containsKey(targetNpub),
+        targetTotalMeetups: targetMeetups.length,
+      );
+    }
+
+    // Ungerichtete Adjazenz aufbauen (Kante = gemeinsames Meetup)
+    final adj = <String, Set<String>>{};
+    final entries = nodes.entries.toList();
+    for (int i = 0; i < entries.length; i++) {
+      for (int j = i + 1; j < entries.length; j++) {
+        if (entries[i].value.meetups.intersection(entries[j].value.meetups).isNotEmpty) {
+          adj.putIfAbsent(entries[i].key, () => <String>{}).add(entries[j].key);
+          adj.putIfAbsent(entries[j].key, () => <String>{}).add(entries[i].key);
+        }
+      }
+    }
+
+    final targetInNetwork = nodes.containsKey(targetNpub);
+
+    // BFS für kürzesten Pfad my -> target
+    List<String>? foundPath;
+    if (adj.containsKey(myNpub)) {
+      final visited = <String>{myNpub};
+      final queue = <List<String>>[[myNpub]];
+      while (queue.isNotEmpty) {
+        final cur = queue.removeAt(0);
+        if (cur.length - 1 > maxDepth) continue;
+        final last = cur.last;
+        if (last == targetNpub) { foundPath = cur; break; }
+        for (final n in (adj[last] ?? const <String>{})) {
+          if (!visited.contains(n)) {
+            visited.add(n);
+            queue.add([...cur, n]);
+          }
+        }
+      }
+    }
+
+    return PresenceCheck(
+      targetNpub: targetNpub,
+      degree: foundPath == null ? -1 : foundPath.length - 1,
+      path: foundPath ?? const [],
+      sharedMeetups: sharedMeetups,
+      targetInNetwork: targetInNetwork,
+      targetTotalMeetups: targetMeetups.length,
+    );
+  }
+
   /// Erfasst die Teilnahme des ORGANISATORS am eigenen Meetup.
   ///
   /// Anders als beim normalen Badge-Scan:
@@ -472,4 +546,27 @@ class MyNetwork {
   int get degree3Count => byDegree[3]?.length ?? 0;
   int get totalReach => degree1Count + degree2Count + degree3Count;
   bool get isEmpty => totalReach == 0;
+}
+
+/// Ergebnis eines Präsenz-Checks zu einer bestimmten Person.
+class PresenceCheck {
+  final String targetNpub;
+  final int degree;              // 0=ich, 1=direkt, 2/3...=über Ecken, -1=keine Verbindung
+  final List<String> path;       // konkreter Pfad [myNpub, ..., targetNpub]
+  final Set<String> sharedMeetups; // gemeinsame Meetups (bei Grad 1)
+  final bool targetInNetwork;    // nimmt die Zielperson überhaupt am Netzwerk teil?
+  final int targetTotalMeetups;  // wie viele Meetups die Zielperson besucht hat
+
+  PresenceCheck({
+    required this.targetNpub,
+    required this.degree,
+    required this.path,
+    required this.sharedMeetups,
+    required this.targetInNetwork,
+    required this.targetTotalMeetups,
+  });
+
+  bool get found => degree >= 0;
+  bool get isDirect => degree == 1;
+  bool get isSelf => degree == 0;
 }

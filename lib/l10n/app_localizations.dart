@@ -6243,6 +6243,132 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'GEFAHRENZONE'**
   String get settingsSecDanger;
+
+  /// No description provided for @vpTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Person prüfen'**
+  String get vpTitle;
+
+  /// No description provided for @vpIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe über echte Meetup-Begegnungen, ob und wie diese Person mit dir verbunden ist.'**
+  String get vpIntro;
+
+  /// No description provided for @vpEnterNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'npub eingeben oder Reputations-QR scannen'**
+  String get vpEnterNpub;
+
+  /// No description provided for @vpScanQr.
+  ///
+  /// In de, this message translates to:
+  /// **'QR scannen'**
+  String get vpScanQr;
+
+  /// No description provided for @vpCheck.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfen'**
+  String get vpCheck;
+
+  /// No description provided for @vpChecking.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung wird geprüft...'**
+  String get vpChecking;
+
+  /// No description provided for @vpDirectTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkt getroffen!'**
+  String get vpDirectTitle;
+
+  /// No description provided for @vpDirectSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr wart gemeinsam auf {count} Meetups.'**
+  String vpDirectSub(Object count);
+
+  /// No description provided for @vpDirectSubOne.
+  ///
+  /// In de, this message translates to:
+  /// **'Ihr wart gemeinsam auf einem Meetup.'**
+  String get vpDirectSubOne;
+
+  /// No description provided for @vpIndirectTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Über {count} Ecken verbunden'**
+  String vpIndirectTitle(Object count);
+
+  /// No description provided for @vpIndirectSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Person ist über echte Meetup-Begegnungen mit dir verbunden.'**
+  String get vpIndirectSub;
+
+  /// No description provided for @vpNoneTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung gefunden'**
+  String get vpNoneTitle;
+
+  /// No description provided for @vpNoneSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Es gibt aktuell keine bekannte Meetup-Verbindung zu dir.'**
+  String get vpNoneSub;
+
+  /// No description provided for @vpNotInNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Person nimmt (noch) nicht am Netzwerk teil.'**
+  String get vpNotInNetwork;
+
+  /// No description provided for @vpPathTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindungspfad'**
+  String get vpPathTitle;
+
+  /// No description provided for @vpYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get vpYou;
+
+  /// No description provided for @vpTarget.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Person'**
+  String get vpTarget;
+
+  /// No description provided for @vpMetAt.
+  ///
+  /// In de, this message translates to:
+  /// **'gemeinsames Meetup'**
+  String get vpMetAt;
+
+  /// No description provided for @vpInvalidNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültiger npub'**
+  String get vpInvalidNpub;
+
+  /// No description provided for @vpTrustNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Je näher die Verbindung (kleinerer Grad), desto stärker das Vertrauen über physische Präsenz.'**
+  String get vpTrustNote;
+
+  /// No description provided for @vpSelfTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das bist du selbst'**
+  String get vpSelfTitle;
 }
 
 class _AppLocalizationsDelegate

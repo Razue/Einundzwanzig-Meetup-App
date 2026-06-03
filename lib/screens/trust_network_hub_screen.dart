@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import 'trust_path_screen.dart';
-import 'network_analysis_screen.dart';
+import 'verify_person_screen.dart';
 
 /// Zentraler Einstieg ins Vertrauensnetzwerk — für ALLE Nutzer zugänglich.
 /// Bietet Vertrauenspfad und Netzwerk-Analyse als zwei Werkzeuge an.
@@ -43,7 +43,7 @@ class TrustNetworkHubScreen extends StatelessWidget {
             title: t.tnHubNetTitle,
             subtitle: t.tnHubNetSub,
             onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const NetworkAnalysisScreen())),
+                MaterialPageRoute(builder: (_) => const VerifyPersonScreen())),
           ),
         ],
       ),

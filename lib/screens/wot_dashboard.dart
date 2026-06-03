@@ -20,7 +20,7 @@ import '../services/vouching_service.dart';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
 import 'trust_path_screen.dart';
-import 'network_analysis_screen.dart';
+import 'verify_person_screen.dart';
 import 'dart:math';
 
 class WotDashboardScreen extends StatefulWidget {
@@ -338,7 +338,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const NetworkAnalysisScreen()),
+        MaterialPageRoute(builder: (_) => const VerifyPersonScreen()),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),

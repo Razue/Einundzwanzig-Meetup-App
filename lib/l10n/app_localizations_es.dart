@@ -3453,4 +3453,75 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsSecDanger => 'ZONA DE PELIGRO';
+
+  @override
+  String get vpTitle => 'Verificar persona';
+
+  @override
+  String get vpIntro =>
+      'Comprueba mediante encuentros reales en meetups si esta persona está conectada contigo.';
+
+  @override
+  String get vpEnterNpub => 'Introduce npub o escanea QR de reputación';
+
+  @override
+  String get vpScanQr => 'Escanear QR';
+
+  @override
+  String get vpCheck => 'Verificar';
+
+  @override
+  String get vpChecking => 'Comprobando conexión...';
+
+  @override
+  String get vpDirectTitle => '¡Conocido directamente!';
+
+  @override
+  String vpDirectSub(Object count) {
+    return 'Habéis estado en $count meetups juntos.';
+  }
+
+  @override
+  String get vpDirectSubOne => 'Habéis estado en un meetup juntos.';
+
+  @override
+  String vpIndirectTitle(Object count) {
+    return 'Conectado a través de $count pasos';
+  }
+
+  @override
+  String get vpIndirectSub =>
+      'Esta persona está conectada contigo mediante encuentros reales en meetups.';
+
+  @override
+  String get vpNoneTitle => 'No se encontró conexión';
+
+  @override
+  String get vpNoneSub =>
+      'Actualmente no hay conexión de meetup conocida contigo.';
+
+  @override
+  String get vpNotInNetwork => 'Esta persona no está (aún) en la red.';
+
+  @override
+  String get vpPathTitle => 'Ruta de conexión';
+
+  @override
+  String get vpYou => 'Tú';
+
+  @override
+  String get vpTarget => 'Esta persona';
+
+  @override
+  String get vpMetAt => 'meetup en común';
+
+  @override
+  String get vpInvalidNpub => 'npub no válido';
+
+  @override
+  String get vpTrustNote =>
+      'Cuanto más cercana la conexión (menor grado), mayor la confianza por presencia física.';
+
+  @override
+  String get vpSelfTitle => 'Eres tú mismo';
 }

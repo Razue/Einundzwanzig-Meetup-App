@@ -1766,5 +1766,40 @@
   "settingsSecData": "DATOS Y SEGURIDAD",
   "settingsSecNetwork": "RED",
   "settingsSecApp": "APP",
-  "settingsSecDanger": "ZONA DE PELIGRO"
+  "settingsSecDanger": "ZONA DE PELIGRO",
+  "vpTitle": "Verificar persona",
+  "vpIntro": "Comprueba mediante encuentros reales en meetups si esta persona está conectada contigo.",
+  "vpEnterNpub": "Introduce npub o escanea QR de reputación",
+  "vpScanQr": "Escanear QR",
+  "vpCheck": "Verificar",
+  "vpChecking": "Comprobando conexión...",
+  "vpDirectTitle": "¡Conocido directamente!",
+  "vpDirectSub": "Habéis estado en {count} meetups juntos.",
+  "@vpDirectSub": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "vpDirectSubOne": "Habéis estado en un meetup juntos.",
+  "vpIndirectTitle": "Conectado a través de {count} pasos",
+  "@vpIndirectTitle": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "vpIndirectSub": "Esta persona está conectada contigo mediante encuentros reales en meetups.",
+  "vpNoneTitle": "No se encontró conexión",
+  "vpNoneSub": "Actualmente no hay conexión de meetup conocida contigo.",
+  "vpNotInNetwork": "Esta persona no está (aún) en la red.",
+  "vpPathTitle": "Ruta de conexión",
+  "vpYou": "Tú",
+  "vpTarget": "Esta persona",
+  "vpMetAt": "meetup en común",
+  "vpInvalidNpub": "npub no válido",
+  "vpTrustNote": "Cuanto más cercana la conexión (menor grado), mayor la confianza por presencia física.",
+  "vpSelfTitle": "Eres tú mismo"
 }

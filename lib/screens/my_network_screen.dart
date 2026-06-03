@@ -6,7 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/user.dart';
 import '../services/nostr_service.dart';
 import '../services/coattendance_service.dart';
-import 'network_analysis_screen.dart';
+import 'verify_person_screen.dart';
 
 /// Automatische Übersicht des eigenen Co-Attendance-Netzwerks (Grad 1-3).
 /// Kein npub-Input — lädt direkt beim Öffnen.
@@ -57,7 +57,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> {
             icon: const Icon(Icons.person_search_rounded, color: cTextSecondary, size: 22),
             tooltip: t.mnCheckPerson,
             onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const NetworkAnalysisScreen())),
+                MaterialPageRoute(builder: (_) => const VerifyPersonScreen())),
           ),
         ],
       ),

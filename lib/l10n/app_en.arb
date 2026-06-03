@@ -1766,5 +1766,40 @@
   "settingsSecData": "DATA & SECURITY",
   "settingsSecNetwork": "NETWORK",
   "settingsSecApp": "APP",
-  "settingsSecDanger": "DANGER ZONE"
+  "settingsSecDanger": "DANGER ZONE",
+  "vpTitle": "Verify person",
+  "vpIntro": "Check via real meetup encounters whether and how this person is connected to you.",
+  "vpEnterNpub": "Enter npub or scan reputation QR",
+  "vpScanQr": "Scan QR",
+  "vpCheck": "Verify",
+  "vpChecking": "Checking connection...",
+  "vpDirectTitle": "Met directly!",
+  "vpDirectSub": "You've been to {count} meetups together.",
+  "@vpDirectSub": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "vpDirectSubOne": "You've been to a meetup together.",
+  "vpIndirectTitle": "Connected through {count} hops",
+  "@vpIndirectTitle": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "vpIndirectSub": "This person is connected to you through real meetup encounters.",
+  "vpNoneTitle": "No connection found",
+  "vpNoneSub": "There's currently no known meetup connection to you.",
+  "vpNotInNetwork": "This person isn't in the network (yet).",
+  "vpPathTitle": "Connection path",
+  "vpYou": "You",
+  "vpTarget": "This person",
+  "vpMetAt": "shared meetup",
+  "vpInvalidNpub": "Invalid npub",
+  "vpTrustNote": "The closer the connection (lower degree), the stronger the trust via physical presence.",
+  "vpSelfTitle": "That's you"
 }
