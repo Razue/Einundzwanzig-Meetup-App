@@ -1721,5 +1721,43 @@
   "tnHubPathTitle": "Trust path",
   "tnHubPathSub": "Who connects you to a person? (vouching chain)",
   "tnHubNetTitle": "Network analysis",
-  "tnHubNetSub": "A person's shared meetups & contacts"
+  "tnHubNetSub": "A person's shared meetups & contacts",
+  "orgBadgeCreated": "Organizer attendance recorded",
+  "orgBadgeLabel": "Organizer",
+  "orgBadgeSub": "You hosted this meetup",
+  "mnTitle": "My network",
+  "mnIntro": "Your trust network from real meetup encounters — and who's connected to you beyond that.",
+  "mnLoading": "Building network...",
+  "mnEmpty": "No connections yet",
+  "mnEmptySub": "Attend meetups and collect badges (with network participation) to build your trust network.",
+  "mnDegree1": "Met directly",
+  "mnDegree1Sub": "People you met live at meetups",
+  "mnDegree2": "Connected via contacts",
+  "mnDegree2Sub": "People your contacts met at meetups",
+  "mnDegree3": "Extended network",
+  "mnDegree3Sub": "One more level out in the network",
+  "mnSharedMeetups": "{count} shared meetups",
+  "@mnSharedMeetups": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mnOneSharedMeetup": "1 shared meetup",
+  "mnViaContacts": "via {count} contacts",
+  "@mnViaContacts": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mnViaOneContact": "via 1 contact",
+  "mnReachLabel": "Reach",
+  "mnDirectLabel": "Direct",
+  "mnIndirectLabel": "Indirect",
+  "mnTrustHint": "Indirect contacts through real encounters gradually increase your trust — even without having met the person yourself.",
+  "mnPrivacyNote": "Only shows people who participate in the network (opt-in at badge scan).",
+  "mnCheckPerson": "Check specific person"
 }

@@ -3352,4 +3352,84 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tnHubNetSub => 'Meetups y contactos en común de una persona';
+
+  @override
+  String get orgBadgeCreated => 'Asistencia de organizador registrada';
+
+  @override
+  String get orgBadgeLabel => 'Organizador';
+
+  @override
+  String get orgBadgeSub => 'Organizaste este meetup';
+
+  @override
+  String get mnTitle => 'Mi red';
+
+  @override
+  String get mnIntro =>
+      'Tu red de confianza de encuentros reales en meetups — y quién está conectado contigo más allá.';
+
+  @override
+  String get mnLoading => 'Construyendo red...';
+
+  @override
+  String get mnEmpty => 'Aún sin conexiones';
+
+  @override
+  String get mnEmptySub =>
+      'Asiste a meetups y colecciona badges (con participación en la red) para construir tu red de confianza.';
+
+  @override
+  String get mnDegree1 => 'Conocidos directamente';
+
+  @override
+  String get mnDegree1Sub => 'Personas que conociste en vivo en meetups';
+
+  @override
+  String get mnDegree2 => 'Conectados por contactos';
+
+  @override
+  String get mnDegree2Sub => 'Personas que tus contactos conocieron en meetups';
+
+  @override
+  String get mnDegree3 => 'Red extendida';
+
+  @override
+  String get mnDegree3Sub => 'Un nivel más en la red';
+
+  @override
+  String mnSharedMeetups(Object count) {
+    return '$count meetups en común';
+  }
+
+  @override
+  String get mnOneSharedMeetup => '1 meetup en común';
+
+  @override
+  String mnViaContacts(Object count) {
+    return 'por $count contactos';
+  }
+
+  @override
+  String get mnViaOneContact => 'por 1 contacto';
+
+  @override
+  String get mnReachLabel => 'Alcance';
+
+  @override
+  String get mnDirectLabel => 'Directo';
+
+  @override
+  String get mnIndirectLabel => 'Indirecto';
+
+  @override
+  String get mnTrustHint =>
+      'Los contactos indirectos a través de encuentros reales aumentan gradualmente tu confianza, incluso sin haber conocido a la persona.';
+
+  @override
+  String get mnPrivacyNote =>
+      'Solo muestra personas que participan en la red (opt-in al escanear badge).';
+
+  @override
+  String get mnCheckPerson => 'Comprobar persona concreta';
 }

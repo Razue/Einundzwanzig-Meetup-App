@@ -6057,6 +6057,150 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Gemeinsame Meetups & Kontakte einer Person'**
   String get tnHubNetSub;
+
+  /// No description provided for @orgBadgeCreated.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator-Teilnahme erfasst'**
+  String get orgBadgeCreated;
+
+  /// No description provided for @orgBadgeLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator'**
+  String get orgBadgeLabel;
+
+  /// No description provided for @orgBadgeSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast dieses Meetup veranstaltet'**
+  String get orgBadgeSub;
+
+  /// No description provided for @mnTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Vernetzung'**
+  String get mnTitle;
+
+  /// No description provided for @mnIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Vertrauensnetzwerk aus echten Meetup-Begegnungen — und wer darüber hinaus mit dir verbunden ist.'**
+  String get mnIntro;
+
+  /// No description provided for @mnLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk wird aufgebaut...'**
+  String get mnLoading;
+
+  /// No description provided for @mnEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Vernetzung'**
+  String get mnEmpty;
+
+  /// No description provided for @mnEmptySub.
+  ///
+  /// In de, this message translates to:
+  /// **'Besuche Meetups und sammle Badges (mit Netzwerk-Teilnahme), um dein Vertrauensnetzwerk aufzubauen.'**
+  String get mnEmptySub;
+
+  /// No description provided for @mnDegree1.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkt getroffen'**
+  String get mnDegree1;
+
+  /// No description provided for @mnDegree1Sub.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen, die du live auf Meetups getroffen hast'**
+  String get mnDegree1Sub;
+
+  /// No description provided for @mnDegree2.
+  ///
+  /// In de, this message translates to:
+  /// **'Über Kontakte verbunden'**
+  String get mnDegree2;
+
+  /// No description provided for @mnDegree2Sub.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen, die deine Kontakte auf Meetups getroffen haben'**
+  String get mnDegree2Sub;
+
+  /// No description provided for @mnDegree3.
+  ///
+  /// In de, this message translates to:
+  /// **'Erweitertes Netzwerk'**
+  String get mnDegree3;
+
+  /// No description provided for @mnDegree3Sub.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch eine Ebene weiter im Netzwerk'**
+  String get mnDegree3Sub;
+
+  /// No description provided for @mnSharedMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} gemeinsame Meetups'**
+  String mnSharedMeetups(Object count);
+
+  /// No description provided for @mnOneSharedMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'1 gemeinsames Meetup'**
+  String get mnOneSharedMeetup;
+
+  /// No description provided for @mnViaContacts.
+  ///
+  /// In de, this message translates to:
+  /// **'über {count} Kontakte'**
+  String mnViaContacts(Object count);
+
+  /// No description provided for @mnViaOneContact.
+  ///
+  /// In de, this message translates to:
+  /// **'über 1 Kontakt'**
+  String get mnViaOneContact;
+
+  /// No description provided for @mnReachLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Reichweite'**
+  String get mnReachLabel;
+
+  /// No description provided for @mnDirectLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkt'**
+  String get mnDirectLabel;
+
+  /// No description provided for @mnIndirectLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Indirekt'**
+  String get mnIndirectLabel;
+
+  /// No description provided for @mnTrustHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Indirekte Kontakte über echte Begegnungen erhöhen dein Vertrauen schrittweise — auch ohne dass du die Person selbst getroffen hast.'**
+  String get mnTrustHint;
+
+  /// No description provided for @mnPrivacyNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in beim Badge-Scan).'**
+  String get mnPrivacyNote;
+
+  /// No description provided for @mnCheckPerson.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestimmte Person prüfen'**
+  String get mnCheckPerson;
 }
 
 class _AppLocalizationsDelegate

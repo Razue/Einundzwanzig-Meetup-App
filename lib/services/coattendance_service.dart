@@ -252,4 +252,216 @@ class CoAttendanceService {
   }
 
   static String npubToHex(String npub) => NostrService.npubToHex(npub);
+
+  /// Erfasst die Teilnahme des ORGANISATORS am eigenen Meetup.
+  ///
+  /// Anders als beim normalen Badge-Scan:
+  ///  - Der Organisator darf sich kein selbst-signiertes Reputations-Badge
+  ///    geben (würde den Trust Score manipulieren — bleibt blockiert).
+  ///  - ABER: Er war nachweislich da (hat das Event signiert), also nimmt er
+  ///    automatisch am Co-Attendance-Netzwerk teil und bekommt ein
+  ///    Organisator-MARKER-Badge (isOrganizer = true, zählt NICHT zum Score).
+  ///
+  /// [meetupName] und [date] müssen identisch zu den Teilnehmer-Badges sein,
+  /// damit derselbe meetupEventId entsteht und alle im selben Knoten landen.
+  ///
+  /// Gibt das erstellte Organisator-Badge zurück (oder null bei Fehler).
+  static Future<MeetupBadge?> recordOrganizerAttendance({
+    required String meetupName,
+    required DateTime date,
+    int blockHeight = 0,
+  }) async {
+    try {
+      // Exakt dasselbe Format wie in meetup_verification.dart
+      final dateStr = date.toIso8601String().substring(0, 10);
+      final meetupEventId =
+          '${meetupName.toLowerCase().replaceAll(' ', '-')}-$dateStr';
+
+      // 1. Organisator-Marker-Badge erstellen (zählt NICHT zum Trust Score)
+      final badge = MeetupBadge(
+        id: 'org-$meetupEventId',
+        meetupName: meetupName,
+        date: date,
+        iconPath: '',
+        blockHeight: blockHeight,
+        meetupEventId: meetupEventId,
+        delivery: 'organizer',
+        isOrganizer: true,
+      );
+
+      // 2. Schon vorhanden? (nicht doppelt anlegen)
+      final existing = await MeetupBadge.loadBadges();
+      final already = existing.any((b) =>
+          b.isOrganizer && b.meetupEventId == meetupEventId);
+      if (!already) {
+        existing.add(badge);
+        await MeetupBadge.saveBadges(existing);
+      }
+
+      // 3. Co-Attendance veröffentlichen (Organisator nimmt automatisch teil).
+      //    Hier KEIN isNostrSigned-Check wie bei publishAttendance, weil die
+      //    Teilnahme durch die Organisator-Signatur der Session ohnehin belegt
+      //    ist (nur der Organisator besitzt den Schlüssel).
+      await _publishOrganizerAttendance(meetupEventId, meetupName, date);
+
+      return badge;
+    } catch (e) {
+      AppLogger.debug(_tag, 'Organisator-Teilnahme fehlgeschlagen: $e');
+      return null;
+    }
+  }
+
+  static Future<int> _publishOrganizerAttendance(
+      String meetupEventId, String meetupName, DateTime date) async {
+    try {
+      final content = jsonEncode({
+        'event': meetupEventId,
+        'meetup': meetupName,
+        't': date.millisecondsSinceEpoch ~/ 1000,
+        'role': 'organizer',
+      });
+      final signed = await SigningService.signEvent(
+        kind: kind,
+        tags: <List<String>>[
+          ['d', meetupEventId],
+          ['role', 'organizer'],
+          ['client', _client],
+        ],
+        content: content,
+      );
+      return await _publish(signed);
+    } catch (e) {
+      AppLogger.debug(_tag, 'Organisator-Publish fehlgeschlagen: $e');
+      return 0;
+    }
+  }
+
+  /// Baut das EIGENE Netzwerk auf — automatisch, ohne npub-Eingabe.
+  ///
+  /// Grad 1 = Leute, die ich auf Meetups getroffen habe (gemeinsamer Event).
+  /// Grad 2 = deren Kontakte, die ich selbst noch nicht getroffen habe.
+  /// Grad 3 = noch eine Ebene weiter.
+  ///
+  /// Für jeden Kontakt wird festgehalten, über WEN (Brücke, Grad-1-Kontakt)
+  /// er erreichbar ist — das ist die Grundlage des transitiven Vertrauens.
+  static Future<MyNetwork> buildMyNetwork({
+    required String myNpub,
+    int maxDepth = 3,
+  }) async {
+    final nodes = await _loadAllNodes();
+
+    // Ungerichtete Adjazenz: A--B wenn sie >=1 Meetup teilen
+    final adj = <String, Set<String>>{};
+    final entries = nodes.entries.toList();
+    for (int i = 0; i < entries.length; i++) {
+      for (int j = i + 1; j < entries.length; j++) {
+        final a = entries[i];
+        final b = entries[j];
+        if (a.value.meetups.intersection(b.value.meetups).isNotEmpty) {
+          adj.putIfAbsent(a.key, () => <String>{}).add(b.key);
+          adj.putIfAbsent(b.key, () => <String>{}).add(a.key);
+        }
+      }
+    }
+
+    final myMeetups = nodes[myNpub]?.meetups ?? <String>{};
+
+    // BFS: Grad pro npub + über welchen Grad-1-Kontakt erreichbar
+    final degree = <String, int>{myNpub: 0};
+    final bridges = <String, Set<String>>{}; // npub -> Grad-1-Brücken
+    final queue = <String>[myNpub];
+
+    while (queue.isNotEmpty) {
+      final current = queue.removeAt(0);
+      final curDeg = degree[current]!;
+      if (curDeg >= maxDepth) continue;
+      for (final neighbor in (adj[current] ?? const <String>{})) {
+        if (!degree.containsKey(neighbor)) {
+          degree[neighbor] = curDeg + 1;
+          queue.add(neighbor);
+        }
+        // Brücke merken: der Grad-1-Knoten auf dem Weg
+        if (curDeg == 0) {
+          // direkter Nachbar -> er ist seine eigene "Brücke" (Grad 1)
+        } else if (degree[neighbor] == curDeg + 1) {
+          final via = (curDeg == 1) ? current : null;
+          if (via != null) {
+            bridges.putIfAbsent(neighbor, () => <String>{}).add(via);
+          } else {
+            // tiefer: Brücken des current weiterreichen
+            final inherited = bridges[current];
+            if (inherited != null) {
+              bridges.putIfAbsent(neighbor, () => <String>{}).addAll(inherited);
+            }
+          }
+        }
+      }
+    }
+
+    // Kontakte nach Grad gruppieren
+    final byDegree = <int, List<NetworkContact>>{1: [], 2: [], 3: []};
+    for (final entry in degree.entries) {
+      final npub = entry.key;
+      final deg = entry.value;
+      if (deg == 0 || deg > maxDepth) continue;
+
+      Set<String> shared = <String>{};
+      if (deg == 1) {
+        shared = (nodes[npub]?.meetups ?? <String>{}).intersection(myMeetups);
+      }
+
+      byDegree.putIfAbsent(deg, () => []).add(NetworkContact(
+            npub: npub,
+            degree: deg,
+            sharedMeetupsWithMe: shared,
+            bridges: deg == 1 ? <String>{} : (bridges[npub] ?? <String>{}),
+          ));
+    }
+
+    // Sortierung: Grad 1 nach Anzahl gemeinsamer Meetups, sonst nach Brücken-Anzahl
+    byDegree[1]?.sort((a, b) =>
+        b.sharedMeetupsWithMe.length.compareTo(a.sharedMeetupsWithMe.length));
+    byDegree[2]?.sort((a, b) => b.bridges.length.compareTo(a.bridges.length));
+    byDegree[3]?.sort((a, b) => b.bridges.length.compareTo(a.bridges.length));
+
+    return MyNetwork(
+      myNpub: myNpub,
+      byDegree: byDegree,
+      myMeetupCount: myMeetups.length,
+    );
+  }
+}
+
+/// Ein Kontakt im eigenen Netzwerk.
+class NetworkContact {
+  final String npub;
+  final int degree;                    // 1, 2 oder 3
+  final Set<String> sharedMeetupsWithMe; // nur bei Grad 1 befüllt
+  final Set<String> bridges;           // Grad-1-Kontakte, über die ich diese Person erreiche (Grad 2+)
+
+  NetworkContact({
+    required this.npub,
+    required this.degree,
+    required this.sharedMeetupsWithMe,
+    required this.bridges,
+  });
+}
+
+/// Das gesamte eigene Netzwerk, nach Graden gruppiert.
+class MyNetwork {
+  final String myNpub;
+  final Map<int, List<NetworkContact>> byDegree;
+  final int myMeetupCount;
+
+  MyNetwork({
+    required this.myNpub,
+    required this.byDegree,
+    required this.myMeetupCount,
+  });
+
+  int get degree1Count => byDegree[1]?.length ?? 0;
+  int get degree2Count => byDegree[2]?.length ?? 0;
+  int get degree3Count => byDegree[3]?.length ?? 0;
+  int get totalReach => degree1Count + degree2Count + degree3Count;
+  bool get isEmpty => totalReach == 0;
 }

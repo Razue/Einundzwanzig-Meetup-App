@@ -53,6 +53,7 @@ class MeetupBadge {
   final String claimPubkey;     // Hex-Pubkey des Sammlers
   final int claimTimestamp;     // Unix-Timestamp des Claims
   final bool isRetroactive;     // true = nachträglich geclaimed (reduzierter Vertrauenswert)
+  final bool isOrganizer;       // true = Organisator-Marker-Badge (zählt NICHT zum Trust Score)
 
   MeetupBadge({
     required this.id,
@@ -75,6 +76,7 @@ class MeetupBadge {
     this.claimPubkey = '',
     this.claimTimestamp = 0,
     this.isRetroactive = false,
+    this.isOrganizer = false,
   });
 
   /// Hat dieses Badge einen kryptographischen Beweis (Organisator)?
@@ -146,6 +148,7 @@ class MeetupBadge {
       'claimPubkey': claimPubkey,
       'claimTimestamp': claimTimestamp,
       'isRetroactive': isRetroactive,
+      'isOrganizer': isOrganizer,
     };
   }
 
@@ -171,6 +174,7 @@ class MeetupBadge {
       claimPubkey: json['claimPubkey'] as String? ?? '',
       claimTimestamp: json['claimTimestamp'] as int? ?? 0,
       isRetroactive: json['isRetroactive'] as bool? ?? false,
+      isOrganizer: json['isOrganizer'] as bool? ?? false,
     );
   }
 
@@ -181,6 +185,7 @@ class MeetupBadge {
     required String claimPubkey,
     required int claimTimestamp,
     bool isRetroactive = false,
+    bool? isOrganizer,
   }) {
     return MeetupBadge(
       id: id,
@@ -202,6 +207,7 @@ class MeetupBadge {
       claimPubkey: claimPubkey,
       claimTimestamp: claimTimestamp,
       isRetroactive: isRetroactive,
+      isOrganizer: isOrganizer ?? this.isOrganizer,
     );
   }
 
@@ -458,3 +464,5 @@ class MeetupBadge {
 
 // Globale Badge-Liste (wird beim App-Start geladen)
 List<MeetupBadge> myBadges = [];
+
+

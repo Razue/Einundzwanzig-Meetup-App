@@ -3326,4 +3326,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tnHubNetSub => 'A person\'s shared meetups & contacts';
+
+  @override
+  String get orgBadgeCreated => 'Organizer attendance recorded';
+
+  @override
+  String get orgBadgeLabel => 'Organizer';
+
+  @override
+  String get orgBadgeSub => 'You hosted this meetup';
+
+  @override
+  String get mnTitle => 'My network';
+
+  @override
+  String get mnIntro =>
+      'Your trust network from real meetup encounters — and who\'s connected to you beyond that.';
+
+  @override
+  String get mnLoading => 'Building network...';
+
+  @override
+  String get mnEmpty => 'No connections yet';
+
+  @override
+  String get mnEmptySub =>
+      'Attend meetups and collect badges (with network participation) to build your trust network.';
+
+  @override
+  String get mnDegree1 => 'Met directly';
+
+  @override
+  String get mnDegree1Sub => 'People you met live at meetups';
+
+  @override
+  String get mnDegree2 => 'Connected via contacts';
+
+  @override
+  String get mnDegree2Sub => 'People your contacts met at meetups';
+
+  @override
+  String get mnDegree3 => 'Extended network';
+
+  @override
+  String get mnDegree3Sub => 'One more level out in the network';
+
+  @override
+  String mnSharedMeetups(Object count) {
+    return '$count shared meetups';
+  }
+
+  @override
+  String get mnOneSharedMeetup => '1 shared meetup';
+
+  @override
+  String mnViaContacts(Object count) {
+    return 'via $count contacts';
+  }
+
+  @override
+  String get mnViaOneContact => 'via 1 contact';
+
+  @override
+  String get mnReachLabel => 'Reach';
+
+  @override
+  String get mnDirectLabel => 'Direct';
+
+  @override
+  String get mnIndirectLabel => 'Indirect';
+
+  @override
+  String get mnTrustHint =>
+      'Indirect contacts through real encounters gradually increase your trust — even without having met the person yourself.';
+
+  @override
+  String get mnPrivacyNote =>
+      'Only shows people who participate in the network (opt-in at badge scan).';
+
+  @override
+  String get mnCheckPerson => 'Check specific person';
 }

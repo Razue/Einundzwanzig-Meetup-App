@@ -10,6 +10,7 @@ import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/meetup_service.dart';
+import '../services/coattendance_service.dart';
 import 'wot_dashboard.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
@@ -115,6 +116,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         meetupName: meetupId,
         meetupCountry: '',
         blockHeight: 0,
+      );
+
+      // Organisator nimmt automatisch am Co-Attendance-Netzwerk teil
+      // (kein Reputations-Badge, aber Marker-Badge + Netzwerk-Teilnahme)
+      await CoAttendanceService.recordOrganizerAttendance(
+        meetupName: meetupId,
+        date: DateTime.now(),
       );
 
       if (mounted) {

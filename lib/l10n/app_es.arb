@@ -1721,5 +1721,43 @@
   "tnHubPathTitle": "Ruta de confianza",
   "tnHubPathSub": "¿Quién te conecta con una persona? (cadena de avales)",
   "tnHubNetTitle": "Análisis de red",
-  "tnHubNetSub": "Meetups y contactos en común de una persona"
+  "tnHubNetSub": "Meetups y contactos en común de una persona",
+  "orgBadgeCreated": "Asistencia de organizador registrada",
+  "orgBadgeLabel": "Organizador",
+  "orgBadgeSub": "Organizaste este meetup",
+  "mnTitle": "Mi red",
+  "mnIntro": "Tu red de confianza de encuentros reales en meetups — y quién está conectado contigo más allá.",
+  "mnLoading": "Construyendo red...",
+  "mnEmpty": "Aún sin conexiones",
+  "mnEmptySub": "Asiste a meetups y colecciona badges (con participación en la red) para construir tu red de confianza.",
+  "mnDegree1": "Conocidos directamente",
+  "mnDegree1Sub": "Personas que conociste en vivo en meetups",
+  "mnDegree2": "Conectados por contactos",
+  "mnDegree2Sub": "Personas que tus contactos conocieron en meetups",
+  "mnDegree3": "Red extendida",
+  "mnDegree3Sub": "Un nivel más en la red",
+  "mnSharedMeetups": "{count} meetups en común",
+  "@mnSharedMeetups": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mnOneSharedMeetup": "1 meetup en común",
+  "mnViaContacts": "por {count} contactos",
+  "@mnViaContacts": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mnViaOneContact": "por 1 contacto",
+  "mnReachLabel": "Alcance",
+  "mnDirectLabel": "Directo",
+  "mnIndirectLabel": "Indirecto",
+  "mnTrustHint": "Los contactos indirectos a través de encuentros reales aumentan gradualmente tu confianza, incluso sin haber conocido a la persona.",
+  "mnPrivacyNote": "Solo muestra personas que participan en la red (opt-in al escanear badge).",
+  "mnCheckPerson": "Comprobar persona concreta"
 }

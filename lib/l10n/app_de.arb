@@ -1743,5 +1743,43 @@
   "tnHubPathTitle": "Vertrauenspfad",
   "tnHubPathSub": "Über wen bist du mit einer Person verbunden? (Bürgschaftskette)",
   "tnHubNetTitle": "Netzwerk-Analyse",
-  "tnHubNetSub": "Gemeinsame Meetups & Kontakte einer Person"
+  "tnHubNetSub": "Gemeinsame Meetups & Kontakte einer Person",
+  "orgBadgeCreated": "Organisator-Teilnahme erfasst",
+  "orgBadgeLabel": "Organisator",
+  "orgBadgeSub": "Du hast dieses Meetup veranstaltet",
+  "mnTitle": "Meine Vernetzung",
+  "mnIntro": "Dein Vertrauensnetzwerk aus echten Meetup-Begegnungen — und wer darüber hinaus mit dir verbunden ist.",
+  "mnLoading": "Netzwerk wird aufgebaut...",
+  "mnEmpty": "Noch keine Vernetzung",
+  "mnEmptySub": "Besuche Meetups und sammle Badges (mit Netzwerk-Teilnahme), um dein Vertrauensnetzwerk aufzubauen.",
+  "mnDegree1": "Direkt getroffen",
+  "mnDegree1Sub": "Personen, die du live auf Meetups getroffen hast",
+  "mnDegree2": "Über Kontakte verbunden",
+  "mnDegree2Sub": "Personen, die deine Kontakte auf Meetups getroffen haben",
+  "mnDegree3": "Erweitertes Netzwerk",
+  "mnDegree3Sub": "Noch eine Ebene weiter im Netzwerk",
+  "mnSharedMeetups": "{count} gemeinsame Meetups",
+  "@mnSharedMeetups": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mnOneSharedMeetup": "1 gemeinsames Meetup",
+  "mnViaContacts": "über {count} Kontakte",
+  "@mnViaContacts": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mnViaOneContact": "über 1 Kontakt",
+  "mnReachLabel": "Reichweite",
+  "mnDirectLabel": "Direkt",
+  "mnIndirectLabel": "Indirekt",
+  "mnTrustHint": "Indirekte Kontakte über echte Begegnungen erhöhen dein Vertrauen schrittweise — auch ohne dass du die Person selbst getroffen hast.",
+  "mnPrivacyNote": "Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in beim Badge-Scan).",
+  "mnCheckPerson": "Bestimmte Person prüfen"
 }

@@ -279,7 +279,7 @@ class TrustScoreService {
   }) {
     // --- PHASE BESTIMMEN (nur anhand vertrauenswürdiger Badges) ---
     // v1 Legacy Badges dürfen auch die Phase nicht beeinflussen
-    final trustedForPhase = badges.where((b) => b.isNostrSigned).toList();
+    final trustedForPhase = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList();
     final phase = _determinePhase(trustedForPhase);
     final thresholds = TrustConfig.phases[phase]!;
 
@@ -292,7 +292,7 @@ class TrustScoreService {
     // und dürfen NICHT zum Trust Score beitragen (Security Audit C1).
     // sigVersion == 2 → Schnorr-signiert (BIP-340)
     // sigVersion == 0 oder 1 → Legacy oder unsigniert → ignorieren
-    final trustedBadges = badges.where((b) => b.isNostrSigned).toList();
+    final trustedBadges = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList();
     
     if (trustedBadges.isEmpty) {
       return _emptyScore(phase, thresholds);
@@ -545,3 +545,5 @@ class TrustScoreService {
     );
   }
 }
+
+

@@ -3363,4 +3363,85 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get tnHubNetSub => 'Gemeinsame Meetups & Kontakte einer Person';
+
+  @override
+  String get orgBadgeCreated => 'Organisator-Teilnahme erfasst';
+
+  @override
+  String get orgBadgeLabel => 'Organisator';
+
+  @override
+  String get orgBadgeSub => 'Du hast dieses Meetup veranstaltet';
+
+  @override
+  String get mnTitle => 'Meine Vernetzung';
+
+  @override
+  String get mnIntro =>
+      'Dein Vertrauensnetzwerk aus echten Meetup-Begegnungen — und wer darüber hinaus mit dir verbunden ist.';
+
+  @override
+  String get mnLoading => 'Netzwerk wird aufgebaut...';
+
+  @override
+  String get mnEmpty => 'Noch keine Vernetzung';
+
+  @override
+  String get mnEmptySub =>
+      'Besuche Meetups und sammle Badges (mit Netzwerk-Teilnahme), um dein Vertrauensnetzwerk aufzubauen.';
+
+  @override
+  String get mnDegree1 => 'Direkt getroffen';
+
+  @override
+  String get mnDegree1Sub => 'Personen, die du live auf Meetups getroffen hast';
+
+  @override
+  String get mnDegree2 => 'Über Kontakte verbunden';
+
+  @override
+  String get mnDegree2Sub =>
+      'Personen, die deine Kontakte auf Meetups getroffen haben';
+
+  @override
+  String get mnDegree3 => 'Erweitertes Netzwerk';
+
+  @override
+  String get mnDegree3Sub => 'Noch eine Ebene weiter im Netzwerk';
+
+  @override
+  String mnSharedMeetups(Object count) {
+    return '$count gemeinsame Meetups';
+  }
+
+  @override
+  String get mnOneSharedMeetup => '1 gemeinsames Meetup';
+
+  @override
+  String mnViaContacts(Object count) {
+    return 'über $count Kontakte';
+  }
+
+  @override
+  String get mnViaOneContact => 'über 1 Kontakt';
+
+  @override
+  String get mnReachLabel => 'Reichweite';
+
+  @override
+  String get mnDirectLabel => 'Direkt';
+
+  @override
+  String get mnIndirectLabel => 'Indirekt';
+
+  @override
+  String get mnTrustHint =>
+      'Indirekte Kontakte über echte Begegnungen erhöhen dein Vertrauen schrittweise — auch ohne dass du die Person selbst getroffen hast.';
+
+  @override
+  String get mnPrivacyNote =>
+      'Zeigt nur Personen, die am Netzwerk teilnehmen (Opt-in beim Badge-Scan).';
+
+  @override
+  String get mnCheckPerson => 'Bestimmte Person prüfen';
 }
