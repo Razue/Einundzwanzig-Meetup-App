@@ -219,8 +219,15 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
     if (go == true) {
       final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${AppLocalizations.of(context).errorOpenLink}: $url'),
+              backgroundColor: cRed,
+            ),
+          );
+        }
       }
     }
   }

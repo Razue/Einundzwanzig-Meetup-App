@@ -20,6 +20,11 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="nostrsigner" />
         </intent>
+        <!-- Browser, um https-Links (Portal) öffnen zu können (Android 11+) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
     </queries>
 
     <application
