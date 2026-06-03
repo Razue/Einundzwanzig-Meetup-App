@@ -3088,4 +3088,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsProfileSub => 'Name, Nostr key & home meetup';
+
+  @override
+  String get apCreateEvent => 'Create event';
+
+  @override
+  String get apCreateEventSub => 'Add in the portal';
+
+  @override
+  String get apCreateEventTitle => 'Create event in portal';
+
+  @override
+  String get apCreateEventBody =>
+      'Meetup events are managed centrally in the Einundzwanzig portal. The app will now open the portal in your browser — log in there with your Nostr key and add the event. It then appears here in the calendar automatically.';
+
+  @override
+  String get apOpenPortal => 'Open portal';
+
+  @override
+  String get apNoHomeMeetupSet =>
+      'Select your home meetup in your profile first, then you can create events for it.';
+
+  @override
+  String get apPortalHint =>
+      'Why not directly in the app? The portal is the central source for all events and requires your login. Direct creation from the app is planned once the portal supports it.';
 }

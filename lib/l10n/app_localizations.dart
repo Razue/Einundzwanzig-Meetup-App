@@ -5619,6 +5619,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Name, Nostr-Schlüssel & Home-Meetup'**
   String get settingsProfileSub;
+
+  /// No description provided for @apCreateEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin erstellen'**
+  String get apCreateEvent;
+
+  /// No description provided for @apCreateEventSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Portal eintragen'**
+  String get apCreateEventSub;
+
+  /// No description provided for @apCreateEventTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin im Portal erstellen'**
+  String get apCreateEventTitle;
+
+  /// No description provided for @apCreateEventBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup-Termine werden zentral im Einundzwanzig-Portal verwaltet. Die App öffnet jetzt das Portal in deinem Browser — dort meldest du dich mit deinem Nostr-Schlüssel an und trägst den Termin ein. Er erscheint danach automatisch hier im Kalender.'**
+  String get apCreateEventBody;
+
+  /// No description provided for @apOpenPortal.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal öffnen'**
+  String get apOpenPortal;
+
+  /// No description provided for @apNoHomeMeetupSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle zuerst dein Home-Meetup im Profil, dann kannst du Termine dafür erstellen.'**
+  String get apNoHomeMeetupSet;
+
+  /// No description provided for @apPortalHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Warum nicht direkt in der App? Das Portal ist die zentrale Quelle für alle Termine und braucht deine Anmeldung. Eine direkte Eintragung aus der App ist geplant, sobald das Portal das unterstützt.'**
+  String get apPortalHint;
 }
 
 class _AppLocalizationsDelegate

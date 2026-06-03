@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/user.dart';
+import '../models/meetup.dart';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
 import '../services/rolling_qr_service.dart';
+import '../services/meetup_service.dart';
 import 'wot_dashboard.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
@@ -137,6 +140,89 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     setState(() {
       _sessionExpiry = null;
     });
+  }
+
+  // Öffnet das Einundzwanzig-Portal, damit der Organisator dort einen
+  // Termin eintragen kann. Aktuell der direkte Weg ins Portal (Login nötig);
+  // echte In-App-Erstellung folgt, sobald das Portal eine API bereitstellt.
+  Future<void> _openPortalForEvent() async {
+    final user = await UserProfile.load();
+
+    // Home-Meetup laden, um direkt auf dessen Portal-Seite zu landen
+    String url = 'https://portal.einundzwanzig.space/login';
+    if (user.homeMeetupId.isNotEmpty) {
+      try {
+        List<Meetup> meetups = await MeetupService.fetchMeetups();
+        if (meetups.isEmpty) meetups = allMeetups;
+        final hm = meetups.where((m) => m.city == user.homeMeetupId).firstOrNull;
+        if (hm != null && hm.portalLink.isNotEmpty) {
+          url = hm.portalLink;
+        }
+      } catch (_) {/* Fallback bleibt Login-Seite */}
+    }
+
+    if (!mounted) return;
+
+    // Transparenter Hinweis-Dialog vor dem Öffnen
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.event_available_rounded, color: cOrange, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(AppLocalizations.of(ctx).apCreateEventTitle,
+                style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(AppLocalizations.of(ctx).apCreateEventBody,
+                style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5)),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cSurface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: cTileBorder, width: 0.5),
+              ),
+              child: Row(children: [
+                const Icon(Icons.info_outline_rounded, color: cTextTertiary, size: 15),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(AppLocalizations.of(ctx).apPortalHint,
+                      style: const TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4)),
+                ),
+              ]),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(AppLocalizations.of(ctx).apCancel, style: const TextStyle(color: cTextSecondary)),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: cOrange, foregroundColor: Colors.black),
+            onPressed: () => Navigator.pop(ctx, true),
+            icon: const Icon(Icons.open_in_new_rounded, size: 16),
+            label: Text(AppLocalizations.of(ctx).apOpenPortal),
+          ),
+        ],
+      ),
+    );
+
+    if (go == true) {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    }
   }
 
   @override
@@ -296,6 +382,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   MaterialPageRoute(builder: (context) => const WotDashboardScreen()),
                 );
               },
+            ),
+
+            const SizedBox(height: 16),
+
+            _buildAdminTile(
+              context: context,
+              icon: Icons.event_available_rounded,
+              color: cOrange,
+              title: AppLocalizations.of(context).apCreateEvent,
+              subtitle: AppLocalizations.of(context).apCreateEventSub,
+              onTap: _openPortalForEvent,
             ),
 
             // Admin-Verwaltung (nur Super-Admin — Legacy)

@@ -1649,5 +1649,12 @@
   "nbDetails": "Details",
   "settingsSectionProfile": "Profil",
   "settingsProfile": "Profil bearbeiten",
-  "settingsProfileSub": "Name, Nostr-Schlüssel & Home-Meetup"
+  "settingsProfileSub": "Name, Nostr-Schlüssel & Home-Meetup",
+  "apCreateEvent": "Termin erstellen",
+  "apCreateEventSub": "Im Portal eintragen",
+  "apCreateEventTitle": "Termin im Portal erstellen",
+  "apCreateEventBody": "Meetup-Termine werden zentral im Einundzwanzig-Portal verwaltet. Die App öffnet jetzt das Portal in deinem Browser — dort meldest du dich mit deinem Nostr-Schlüssel an und trägst den Termin ein. Er erscheint danach automatisch hier im Kalender.",
+  "apOpenPortal": "Portal öffnen",
+  "apNoHomeMeetupSet": "Wähle zuerst dein Home-Meetup im Profil, dann kannst du Termine dafür erstellen.",
+  "apPortalHint": "Warum nicht direkt in der App? Das Portal ist die zentrale Quelle für alle Termine und braucht deine Anmeldung. Eine direkte Eintragung aus der App ist geplant, sobald das Portal das unterstützt."
 }

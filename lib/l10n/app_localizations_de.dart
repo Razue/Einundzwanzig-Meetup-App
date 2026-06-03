@@ -3123,4 +3123,28 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsProfileSub => 'Name, Nostr-Schlüssel & Home-Meetup';
+
+  @override
+  String get apCreateEvent => 'Termin erstellen';
+
+  @override
+  String get apCreateEventSub => 'Im Portal eintragen';
+
+  @override
+  String get apCreateEventTitle => 'Termin im Portal erstellen';
+
+  @override
+  String get apCreateEventBody =>
+      'Meetup-Termine werden zentral im Einundzwanzig-Portal verwaltet. Die App öffnet jetzt das Portal in deinem Browser — dort meldest du dich mit deinem Nostr-Schlüssel an und trägst den Termin ein. Er erscheint danach automatisch hier im Kalender.';
+
+  @override
+  String get apOpenPortal => 'Portal öffnen';
+
+  @override
+  String get apNoHomeMeetupSet =>
+      'Wähle zuerst dein Home-Meetup im Profil, dann kannst du Termine dafür erstellen.';
+
+  @override
+  String get apPortalHint =>
+      'Warum nicht direkt in der App? Das Portal ist die zentrale Quelle für alle Termine und braucht deine Anmeldung. Eine direkte Eintragung aus der App ist geplant, sobald das Portal das unterstützt.';
 }
