@@ -159,6 +159,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
 
     try {
+      // Eventuell noch laufende (alte) Session zuerst sauber beenden, damit
+      // garantiert eine FRISCHE Session mit dem aktuellen Namen/Standort
+      // erstellt wird (sonst könnte eine alte Session denselben Slot belegen).
+      await RollingQRService.endSession();
+
       final session = await RollingQRService.getOrCreateSession(
         meetupId: compactId,
         meetupName: meetupId,

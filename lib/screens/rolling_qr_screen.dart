@@ -18,9 +18,6 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
-import '../models/user.dart';
-import '../models/meetup.dart';
-import '../services/meetup_service.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/nostr_service.dart';
 import '../services/app_logger.dart';
@@ -35,7 +32,6 @@ class RollingQRScreen extends StatefulWidget {
 class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingObserver {
   String _qrData = '';
   String _meetupInfo = '';
-  Meetup? _homeMeetup;
   int _blockHeight = 0;
   int _secondsLeft = 10;
   String _adminNpub = '';
@@ -71,28 +67,12 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
   }
 
   Future<void> _initialize() async {
-    final user = await UserProfile.load();
     final npub = await NostrService.getNpub();
+    setState(() => _adminNpub = npub ?? '');
 
-    if (user.homeMeetupId.isEmpty) {
-      setState(() {
-        _isLoading = false;
-        _meetupInfo = AppLocalizations.of(context).rqNoHomeMeetup;
-      });
-      return;
-    }
-
-    List<Meetup> meetups = await MeetupService.fetchMeetups();
-    if (meetups.isEmpty) meetups = allMeetups;
-    final meetup = meetups.where((m) => m.city == user.homeMeetupId).firstOrNull;
-
-    setState(() {
-      _homeMeetup = meetup;
-      _meetupInfo = meetup != null ? "📍 ${meetup.city}, ${meetup.country}" : AppLocalizations.of(context).rqMeetupNotFound;
-      _adminNpub = npub ?? '';
-    });
-
-    // Wir prüfen nur noch auf eine bestehende Session, starten aber keine neue!
+    // Session hat IMMER Vorrang: ihr tatsächlicher Name wird angezeigt.
+    // (Kein Home-Meetup-Fallback mehr — der angezeigte Name kommt
+    // ausschließlich aus der laufenden Session, siehe _checkExistingSession.)
     await _checkExistingSession();
   }
 
@@ -106,6 +86,11 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
         _blockHeight = session.blockHeight;
         _isActive = true;
         _isLoading = false;
+        // Angezeigter Name = der TATSÄCHLICHE Session-Name (z.B. manuell
+        // eingegeben "im Garten"), NICHT das Home-Meetup aus dem Profil.
+        _meetupInfo = session.meetupCountry.isNotEmpty
+            ? "📍 ${session.meetupName}, ${session.meetupCountry}"
+            : "📍 ${session.meetupName}";
       });
       _startTimers();
       await _refreshQR();
