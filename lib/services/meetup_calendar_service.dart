@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:icalendar_parser/icalendar_parser.dart';
 import '../models/calendar_event.dart'; // Importiere das neue Modell
+import 'recurrence_expander.dart';
 import 'app_logger.dart';
 
 class MeetupCalendarService {
@@ -20,8 +21,12 @@ class MeetupCalendarService {
         if (iCalendar.data != null) {
           for (var item in iCalendar.data) {
             if (item['type'] == 'VEVENT') {
-              // Hier nutzen wir unsere neue "Waschstraße" für Daten
-              events.add(CalendarEvent.fromMap(item));
+              // Basis-Event parsen
+              final base = CalendarEvent.fromMap(item);
+              // Wiederkehrende Termine (RRULE) in einzelne Vorkommen expandieren.
+              // Ohne RRULE liefert expand() einfach nur [base].
+              final rrule = item['rrule']?.toString();
+              events.addAll(RecurrenceExpander.expand(base, rrule));
             }
           }
         }
@@ -42,3 +47,5 @@ class MeetupCalendarService {
     }
   }
 }
+
+

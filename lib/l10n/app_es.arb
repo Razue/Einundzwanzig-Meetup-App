@@ -1801,5 +1801,57 @@
   "vpMetAt": "meetup en común",
   "vpInvalidNpub": "npub no válido",
   "vpTrustNote": "Cuanto más cercana la conexión (menor grado), mayor la confianza por presencia física.",
-  "vpSelfTitle": "Eres tú mismo"
+  "vpSelfTitle": "Eres tú mismo",
+  "gpsRequired": "Ubicación requerida",
+  "gpsRequiredOrg": "Crear un meetup requiere tu ubicación. Define el lugar del meetup.",
+  "gpsRequiredScan": "Recoger este badge requiere tu ubicación — como prueba de que estás presente.",
+  "gpsDenied": "Acceso a ubicación denegado. Permítelo en ajustes.",
+  "gpsDisabled": "Los servicios de ubicación están desactivados. Actívalos.",
+  "gpsError": "No se pudo determinar la ubicación.",
+  "gpsRetry": "Reintentar",
+  "gpsPickMeetup": "¿Qué meetup?",
+  "gpsPickMeetupSub": "Hay varios meetups cerca. Elige el correcto.",
+  "gpsDistanceKm": "a {km} km",
+  "@gpsDistanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      }
+    }
+  },
+  "gpsNoMeetupNearby": "No se encontró ningún meetup conocido cerca.",
+  "gpsTooFar": "Demasiado lejos",
+  "gpsTooFarSub": "Estás a {km} km del lugar del meetup. Los badges solo se recogen in situ (máx {max} km).",
+  "@gpsTooFarSub": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      },
+      "max": {
+        "type": "Object"
+      }
+    }
+  },
+  "mapTitle": "Mi mapa mundial de badges",
+  "mapButton": "Ver en el mapa",
+  "mapStatMeetups": "Meetups",
+  "mapStatCities": "Ciudades",
+  "mapStatCountries": "Países",
+  "mapShareText": "¡Aquí he estado! 🌍 {count} meetups en mi mapa mundial de badges Einundzwanzig.",
+  "@mapShareText": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mapShareButton": "Compartir como imagen",
+  "mapEmpty": "Aún sin badges con ubicación",
+  "mapEmptySub": "Colecciona badges en meetups — aparecerán aquí en tu mapa mundial.",
+  "gpsNoMeetupTitle": "Ningún meetup cerca",
+  "gpsNoMeetupBody": "No hay ningún meetup conocido en un radio de 10 km. Aún puedes iniciar una sesión — dale un título a tu meetup. Tu ubicación actual se establece automáticamente como lugar en el mapa.",
+  "gpsMeetupNameLabel": "Título del meetup",
+  "gpsMeetupNameHint": "p. ej. Encuentro Bitcoin",
+  "gpsStartAnyway": "Iniciar sesión",
+  "gpsNameRequired": "Introduce un nombre."
 }

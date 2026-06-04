@@ -54,6 +54,8 @@ class MeetupBadge {
   final int claimTimestamp;     // Unix-Timestamp des Claims
   final bool isRetroactive;     // true = nachträglich geclaimed (reduzierter Vertrauenswert)
   final bool isOrganizer;       // true = Organisator-Marker-Badge (zählt NICHT zum Trust Score)
+  final double lat;             // GPS-Breitengrad des Erstellungsorts (0 = unbekannt)
+  final double lng;             // GPS-Längengrad des Erstellungsorts (0 = unbekannt)
 
   MeetupBadge({
     required this.id,
@@ -77,6 +79,8 @@ class MeetupBadge {
     this.claimTimestamp = 0,
     this.isRetroactive = false,
     this.isOrganizer = false,
+    this.lat = 0,
+    this.lng = 0,
   });
 
   /// Hat dieses Badge einen kryptographischen Beweis (Organisator)?
@@ -149,6 +153,8 @@ class MeetupBadge {
       'claimTimestamp': claimTimestamp,
       'isRetroactive': isRetroactive,
       'isOrganizer': isOrganizer,
+      'lat': lat,
+      'lng': lng,
     };
   }
 
@@ -175,6 +181,8 @@ class MeetupBadge {
       claimTimestamp: json['claimTimestamp'] as int? ?? 0,
       isRetroactive: json['isRetroactive'] as bool? ?? false,
       isOrganizer: json['isOrganizer'] as bool? ?? false,
+      lat: (json['lat'] as num?)?.toDouble() ?? 0,
+      lng: (json['lng'] as num?)?.toDouble() ?? 0,
     );
   }
 
@@ -186,6 +194,8 @@ class MeetupBadge {
     required int claimTimestamp,
     bool isRetroactive = false,
     bool? isOrganizer,
+    double? lat,
+    double? lng,
   }) {
     return MeetupBadge(
       id: id,
@@ -208,6 +218,60 @@ class MeetupBadge {
       claimTimestamp: claimTimestamp,
       isRetroactive: isRetroactive,
       isOrganizer: isOrganizer ?? this.isOrganizer,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+    );
+  }
+
+  /// Vollständige Kopie mit optionalen Überschreibungen.
+  /// Erhält ALLE Felder (inkl. aller Signatur-/Claim-Daten) unverändert,
+  /// sofern nicht explizit überschrieben. Wichtig: sig, sigId, adminPubkey,
+  /// sigVersion, sigContent, claimSig etc. bleiben kryptografisch intakt.
+  MeetupBadge copyWith({
+    String? id,
+    String? meetupName,
+    DateTime? date,
+    String? iconPath,
+    int? blockHeight,
+    String? signerNpub,
+    String? meetupEventId,
+    String? delivery,
+    String? sig,
+    String? sigId,
+    String? adminPubkey,
+    int? sigVersion,
+    String? sigContent,
+    String? claimSig,
+    String? claimEventId,
+    String? claimPubkey,
+    int? claimTimestamp,
+    bool? isRetroactive,
+    bool? isOrganizer,
+    double? lat,
+    double? lng,
+  }) {
+    return MeetupBadge(
+      id: id ?? this.id,
+      meetupName: meetupName ?? this.meetupName,
+      date: date ?? this.date,
+      iconPath: iconPath ?? this.iconPath,
+      blockHeight: blockHeight ?? this.blockHeight,
+      signerNpub: signerNpub ?? this.signerNpub,
+      meetupEventId: meetupEventId ?? this.meetupEventId,
+      delivery: delivery ?? this.delivery,
+      sig: sig ?? this.sig,
+      sigId: sigId ?? this.sigId,
+      adminPubkey: adminPubkey ?? this.adminPubkey,
+      sigVersion: sigVersion ?? this.sigVersion,
+      sigContent: sigContent ?? this.sigContent,
+      claimSig: claimSig ?? this.claimSig,
+      claimEventId: claimEventId ?? this.claimEventId,
+      claimPubkey: claimPubkey ?? this.claimPubkey,
+      claimTimestamp: claimTimestamp ?? this.claimTimestamp,
+      isRetroactive: isRetroactive ?? this.isRetroactive,
+      isOrganizer: isOrganizer ?? this.isOrganizer,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
     );
   }
 

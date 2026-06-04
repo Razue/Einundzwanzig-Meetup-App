@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
+import 'badge_world_map_screen.dart';
 import '../models/user.dart';
 import 'badge_details.dart';
 import 'reputation_qr.dart';
@@ -291,6 +292,14 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         title: Text(
             "BADGE WALLET${myBadges.isNotEmpty ? ' (${myBadges.length})' : ''}"),
         actions: [
+          // Weltkarte — nur wenn Badges mit Standort existieren
+          if (myBadges.any((b) => b.lat != 0 || b.lng != 0))
+            IconButton(
+              icon: const Icon(Icons.public_rounded),
+              tooltip: AppLocalizations.of(context).mapButton,
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => BadgeWorldMapScreen(badges: myBadges))),
+            ),
           // Toggle erst ab 7+ Badges anzeigen
           if (myBadges.length > 6)
             IconButton(

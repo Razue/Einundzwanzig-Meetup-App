@@ -1823,5 +1823,57 @@
   "vpMetAt": "gemeinsames Meetup",
   "vpInvalidNpub": "Ungültiger npub",
   "vpTrustNote": "Je näher die Verbindung (kleinerer Grad), desto stärker das Vertrauen über physische Präsenz.",
-  "vpSelfTitle": "Das bist du selbst"
+  "vpSelfTitle": "Das bist du selbst",
+  "gpsRequired": "Standort erforderlich",
+  "gpsRequiredOrg": "Zum Erstellen eines Meetups wird dein Standort benötigt. Er legt den Ort des Meetups fest.",
+  "gpsRequiredScan": "Zum Sammeln dieses Badges wird dein Standort benötigt — als Nachweis, dass du vor Ort bist.",
+  "gpsDenied": "Standortzugriff verweigert. Bitte in den Einstellungen erlauben.",
+  "gpsDisabled": "Standortdienste sind deaktiviert. Bitte aktivieren.",
+  "gpsError": "Standort konnte nicht ermittelt werden.",
+  "gpsRetry": "Erneut versuchen",
+  "gpsPickMeetup": "Welches Meetup?",
+  "gpsPickMeetupSub": "Mehrere Meetups sind in deiner Nähe. Bitte wähle das richtige.",
+  "gpsDistanceKm": "{km} km entfernt",
+  "@gpsDistanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      }
+    }
+  },
+  "gpsNoMeetupNearby": "Kein bekanntes Meetup in der Nähe gefunden.",
+  "gpsTooFar": "Zu weit entfernt",
+  "gpsTooFarSub": "Du bist {km} km vom Meetup-Ort entfernt. Badges können nur vor Ort gesammelt werden (max. {max} km).",
+  "@gpsTooFarSub": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      },
+      "max": {
+        "type": "Object"
+      }
+    }
+  },
+  "mapTitle": "Meine Badge-Weltkarte",
+  "mapButton": "Auf der Karte ansehen",
+  "mapStatMeetups": "Meetups",
+  "mapStatCities": "Städte",
+  "mapStatCountries": "Länder",
+  "mapShareText": "Hier war ich überall! 🌍 {count} Meetups auf meiner Einundzwanzig Badge-Weltkarte.",
+  "@mapShareText": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mapShareButton": "Als Bild teilen",
+  "mapEmpty": "Noch keine Badges mit Standort",
+  "mapEmptySub": "Sammle Badges auf Meetups — sie erscheinen dann hier auf deiner Weltkarte.",
+  "gpsNoMeetupTitle": "Kein Meetup in der Nähe",
+  "gpsNoMeetupBody": "Im Umkreis von 10 km ist kein bekanntes Meetup eingetragen. Du kannst trotzdem eine Session starten — gib deinem Meetup einen Titel. Dein aktueller Standort wird automatisch als Veranstaltungsort auf der Karte gesetzt.",
+  "gpsMeetupNameLabel": "Titel des Meetups",
+  "gpsMeetupNameHint": "z. B. Bitcoin Stammtisch",
+  "gpsStartAnyway": "Session starten",
+  "gpsNameRequired": "Bitte gib einen Namen ein."
 }

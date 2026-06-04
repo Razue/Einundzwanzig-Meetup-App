@@ -78,7 +78,15 @@ class NearbyMeetupService {
     final events = await eventsFuture;
 
     if (meetups.isEmpty) meetups = allMeetups; // Offline-Fallback
-    _meetupCache = meetups;
+    // Duplikate vermeiden: dasselbe Meetup (gleiche Stadt) nur einmal,
+    // sonst erscheint dieselbe Kachel mehrfach in der Trefferliste.
+    final seenCities = <String>{};
+    final deduped = <Meetup>[];
+    for (final m in meetups) {
+      final key = m.city.toLowerCase().trim();
+      if (key.isEmpty || seenCities.add(key)) deduped.add(m);
+    }
+    _meetupCache = deduped;
     _eventCache = events;
   }
 
@@ -110,7 +118,7 @@ class NearbyMeetupService {
           1000.0;
       if (distKm > radiusKm) continue;
 
-      final matching = _eventsFor(m, events).where((e) {
+      final matchingRaw = _eventsFor(m, events).where((e) {
         switch (dateMode) {
           case DateMode.any:
             return e.startTime.isAfter(now.subtract(const Duration(hours: 12)));
@@ -125,6 +133,15 @@ class NearbyMeetupService {
         }
       }).toList()
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
+
+      // Duplikate entfernen: derselbe Termin (Titel + Startzeit + Ort) kann
+      // aus dem Kalender-Feed mehrfach kommen (z.B. wiederkehrende Einträge).
+      final seen = <String>{};
+      final matching = <CalendarEvent>[];
+      for (final e in matchingRaw) {
+        final key = '${e.title}|${e.startTime.toIso8601String()}|${e.location}';
+        if (seen.add(key)) matching.add(e);
+      }
 
       // "any": auch Meetups OHNE Termin zeigen (sind ja in der Nähe).
       // Datums-Modi: nur Meetups MIT passendem Termin.

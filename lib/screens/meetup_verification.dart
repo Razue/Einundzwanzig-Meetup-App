@@ -31,6 +31,7 @@ import 'package:nostr/nostr.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/coattendance_service.dart';
+import '../services/meetup_location_service.dart';
 import '../models/badge.dart';
 import '../models/meetup.dart';
 import '../models/user.dart';
@@ -55,6 +56,10 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   bool _isUnknownSigner = false; // Flag für unbekannten Signer
   String? _statusText;
   MeetupBadge? _pendingBadge; // Badge wartet auf Bestätigung
+  // Organisator-Standort aus dem gescannten QR (unsignierte Felder la/lo).
+  // Referenzpunkt für den 5km-Präsenz-Check des Teilnehmers.
+  double _pendingOrgLat = 0;
+  double _pendingOrgLng = 0;
 
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -479,6 +484,13 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       }
 
       // Badge vorbereiten — noch NICHT speichern (erst nach Bestätigung)
+      // Organisator-Standort aus den unsignierten QR-Feldern la/lo lesen
+      // (Referenz für den 5km-Check beim Bestätigen).
+      _pendingOrgLat = (tagData['la'] as num?)?.toDouble()
+          ?? (normalized['la'] as num?)?.toDouble() ?? 0;
+      _pendingOrgLng = (tagData['lo'] as num?)?.toDouble()
+          ?? (normalized['lo'] as num?)?.toDouble() ?? 0;
+
       _pendingBadge = MeetupBadge(
         id: meetupId,
         meetupName: fullName,
@@ -521,6 +533,8 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     } else {
       msg = AppLocalizations.of(context).verifyAlreadyToday(fullName);
       _pendingBadge = null;
+      _pendingOrgLat = 0;
+      _pendingOrgLng = 0;
     }
 
     setState(() {
@@ -533,10 +547,50 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   // Badge in Wallet speichern (nach Bestätigung)
   Future<void> _confirmSaveBadge() async {
     if (_pendingBadge == null) {
-      Navigator.pop(context, false);
+      if (mounted) Navigator.pop(context, false);
       return;
     }
-    final badge = _pendingBadge!;
+    var badge = _pendingBadge!;
+
+    // ---- GPS-PFLICHT beim Sammeln: Standort als Präsenz-Nachweis ----
+    // Lade-Anzeige
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator(color: cOrange)),
+    );
+    final loc = await MeetupLocationService.resolveLocation();
+    if (mounted) Navigator.pop(context);
+
+    if (loc.status != GpsStatus.ok) {
+      if (mounted) _showScanGpsError(loc.status);
+      return; // hart: kein Badge ohne Standort
+    }
+
+    // Radius-Check: Teilnehmer muss nah am ERFASSTEN ORGANISATOR-STANDORT sein.
+    // Primäre Referenz: Organisator-Koordinaten aus dem QR (la/lo) — das ist
+    // der echte Veranstaltungsort. Fallback: Portal-Koordinaten DIESES Meetups
+    // (z.B. bei NFC-Tags ohne Standort). Ist für DIESES Meetup nichts bekannt,
+    // entfällt der Check bewusst — wir erfinden KEINE Referenz aus einem
+    // fremden, nur zufällig nahen Meetup (das würde echte Teilnehmer fälschlich
+    // ablehnen oder den Check sinnlos machen).
+    double refLat = _pendingOrgLat;
+    double refLng = _pendingOrgLng;
+    if (refLat == 0 && refLng == 0) {
+      refLat = widget.meetup.lat;
+      refLng = widget.meetup.lng;
+    }
+    if (!(refLat == 0 && refLng == 0)) {
+      final dist = MeetupLocationService.distanceKm(loc.lat, loc.lng, refLat, refLng);
+      if (dist > MeetupLocationService.participantRadiusKm) {
+        if (mounted) _showTooFar(dist);
+        return; // zu weit weg -> kein Badge
+      }
+    }
+
+    // Koordinaten ins Badge schreiben (Präsenz-Nachweis + Weltkarte)
+    badge = badge.copyWith(lat: loc.lat, lng: loc.lng);
+
     myBadges.add(badge);
     await MeetupBadge.saveBadges(myBadges);
     ReputationPublisher.publishInBackground(myBadges);
@@ -547,6 +601,50 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     }
 
     if (mounted) Navigator.pop(context, true);
+  }
+
+  void _showScanGpsError(GpsStatus status) {
+    final t = AppLocalizations.of(context);
+    String msg;
+    switch (status) {
+      case GpsStatus.denied: msg = t.gpsDenied; break;
+      case GpsStatus.serviceDisabled: msg = t.gpsDisabled; break;
+      default: msg = t.gpsError;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.location_off_rounded, color: cRed, size: 22),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.gpsRequired, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Text('${t.gpsRequiredScan}\n\n$msg', style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+        actions: [TextButton(onPressed: () { Navigator.pop(ctx); _confirmSaveBadge(); }, child: Text(t.gpsRetry, style: const TextStyle(color: cOrange)))],
+      ),
+    );
+  }
+
+  void _showTooFar(double distKm) {
+    final t = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.wrong_location_rounded, color: cRed, size: 22),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.gpsTooFar, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Text(
+          t.gpsTooFarSub(distKm.toStringAsFixed(1), MeetupLocationService.participantRadiusKm.toStringAsFixed(0)),
+          style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: Text('OK', style: const TextStyle(color: cOrange)))],
+      ),
+    );
   }
 
   /// Fragt den Nutzer, ob die Teilnahme zum Vertrauensnetzwerk beitragen soll.

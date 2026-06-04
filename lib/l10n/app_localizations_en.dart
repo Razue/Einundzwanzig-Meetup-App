@@ -3498,4 +3498,101 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vpSelfTitle => 'That\'s you';
+
+  @override
+  String get gpsRequired => 'Location required';
+
+  @override
+  String get gpsRequiredOrg =>
+      'Creating a meetup requires your location. It defines the meetup\'s place.';
+
+  @override
+  String get gpsRequiredScan =>
+      'Collecting this badge requires your location — as proof you\'re on site.';
+
+  @override
+  String get gpsDenied =>
+      'Location access denied. Please allow it in settings.';
+
+  @override
+  String get gpsDisabled =>
+      'Location services are disabled. Please enable them.';
+
+  @override
+  String get gpsError => 'Could not determine location.';
+
+  @override
+  String get gpsRetry => 'Try again';
+
+  @override
+  String get gpsPickMeetup => 'Which meetup?';
+
+  @override
+  String get gpsPickMeetupSub =>
+      'Several meetups are near you. Please pick the right one.';
+
+  @override
+  String gpsDistanceKm(Object km) {
+    return '$km km away';
+  }
+
+  @override
+  String get gpsNoMeetupNearby => 'No known meetup found nearby.';
+
+  @override
+  String get gpsTooFar => 'Too far away';
+
+  @override
+  String gpsTooFarSub(Object km, Object max) {
+    return 'You\'re $km km from the meetup location. Badges can only be collected on site (max $max km).';
+  }
+
+  @override
+  String get mapTitle => 'My badge world map';
+
+  @override
+  String get mapButton => 'View on map';
+
+  @override
+  String get mapStatMeetups => 'Meetups';
+
+  @override
+  String get mapStatCities => 'Cities';
+
+  @override
+  String get mapStatCountries => 'Countries';
+
+  @override
+  String mapShareText(Object count) {
+    return 'Here\'s where I\'ve been! 🌍 $count meetups on my Einundzwanzig badge world map.';
+  }
+
+  @override
+  String get mapShareButton => 'Share as image';
+
+  @override
+  String get mapEmpty => 'No badges with location yet';
+
+  @override
+  String get mapEmptySub =>
+      'Collect badges at meetups — they\'ll appear here on your world map.';
+
+  @override
+  String get gpsNoMeetupTitle => 'No meetup nearby';
+
+  @override
+  String get gpsNoMeetupBody =>
+      'No known meetup is registered within 10 km. You can still start a session — give your meetup a title. Your current location is automatically set as the venue on the map.';
+
+  @override
+  String get gpsMeetupNameLabel => 'Meetup title';
+
+  @override
+  String get gpsMeetupNameHint => 'e.g. Bitcoin meetup';
+
+  @override
+  String get gpsStartAnyway => 'Start session';
+
+  @override
+  String get gpsNameRequired => 'Please enter a name.';
 }

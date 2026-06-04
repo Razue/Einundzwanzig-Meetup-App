@@ -345,6 +345,8 @@ class CoAttendanceService {
     required String meetupName,
     required DateTime date,
     int blockHeight = 0,
+    double lat = 0,
+    double lng = 0,
   }) async {
     try {
       // Exakt dasselbe Format wie in meetup_verification.dart
@@ -369,6 +371,8 @@ class CoAttendanceService {
         meetupEventId: meetupEventId,
         delivery: 'organizer',
         isOrganizer: true,
+        lat: lat,
+        lng: lng,
       );
 
       // 2. Schon vorhanden? (nicht doppelt anlegen)

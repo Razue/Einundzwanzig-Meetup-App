@@ -11,6 +11,7 @@ import '../services/nostr_service.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/meetup_service.dart';
 import '../services/coattendance_service.dart';
+import '../services/meetup_location_service.dart';
 import 'wot_dashboard.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
@@ -100,10 +101,57 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   }
 
   Future<void> _startNewSession() async {
-    final user = await UserProfile.load();
-    final meetupId = user.homeMeetupId.isNotEmpty ? user.homeMeetupId : 'unknown-meetup';
+    // ---- GPS-PFLICHT: Standort ermitteln + Meetup zuordnen ----
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator(color: cOrange)),
+    );
+    final locResult = await MeetupLocationService.resolveLocation();
+    if (mounted) Navigator.pop(context); // Lade-Dialog schließen
+
+    if (locResult.status != GpsStatus.ok) {
+      if (mounted) _showGpsError(locResult.status);
+      return;
+    }
+
+    // Meetups im 10km-Radius um den erfassten Standort.
+    // Leer = entweder keines im Radius ODER Portal nicht erreichbar.
+    // Beide Fälle führen unten zur manuellen Namenseingabe.
+    final nearby = locResult.withinCreationRadius;
+
+    String meetupId;
+    String meetupCountry;
+    // Der ECHTE erfasste GPS-Standort des Organisators wird der Meetup-Ort
+    // (nicht die groben Portal-Koordinaten der Stadt).
+    final orgLat = locResult.lat;
+    final orgLng = locResult.lng;
+
+    if (nearby.isEmpty) {
+      // Kein bekanntes Portal-Meetup in der Nähe -> Organisator gibt den
+      // Namen manuell ein. Standort (orgLat/orgLng) wird trotzdem erfasst,
+      // damit der 5km-Teilnehmer-Check weiter funktioniert.
+      final manualName = await _askMeetupName();
+      if (manualName == null || manualName.trim().isEmpty) return; // abgebrochen
+      meetupId = manualName.trim();
+      meetupCountry = '';
+    } else {
+      // Eines im Radius -> automatisch. Mehrere -> Organisator wählt.
+      MeetupCandidate chosen;
+      if (nearby.length == 1) {
+        chosen = nearby.first;
+      } else {
+        final picked = await _pickMeetup(nearby);
+        if (picked == null) return; // abgebrochen
+        chosen = picked;
+      }
+      meetupId = chosen.meetup.city;
+      meetupCountry = chosen.meetup.country;
+    }
+
     final compactId = meetupId.toLowerCase().replaceAll(' ', '-');
 
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -114,17 +162,22 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       final session = await RollingQRService.getOrCreateSession(
         meetupId: compactId,
         meetupName: meetupId,
-        meetupCountry: '',
+        meetupCountry: meetupCountry,
         blockHeight: 0,
+        lat: orgLat,
+        lng: orgLng,
       );
 
       // Organisator nimmt automatisch am Co-Attendance-Netzwerk teil
       // (kein Reputations-Badge, aber Marker-Badge + Netzwerk-Teilnahme).
       // Blockhöhe aus der Session übernehmen (sie hat sie schon von Mempool geholt).
+      // GPS-Koordinaten des Erstellungsorts werden mitgegeben.
       await CoAttendanceService.recordOrganizerAttendance(
         meetupName: meetupId,
         date: DateTime.now(),
         blockHeight: session?.blockHeight ?? 0,
+        lat: orgLat,
+        lng: orgLng,
       );
 
       if (mounted) {
@@ -150,6 +203,134 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     setState(() {
       _sessionExpiry = null;
     });
+  }
+
+  void _showGpsError(GpsStatus status) {
+    final t = AppLocalizations.of(context);
+    String msg;
+    switch (status) {
+      case GpsStatus.denied: msg = t.gpsDenied; break;
+      case GpsStatus.serviceDisabled: msg = t.gpsDisabled; break;
+      default: msg = t.gpsError;
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.location_off_rounded, color: cRed, size: 22),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.gpsRequired, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Text('${t.gpsRequiredOrg}\n\n$msg', style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+        actions: [
+          TextButton(onPressed: () { Navigator.pop(ctx); _startNewSession(); }, child: Text(t.gpsRetry, style: const TextStyle(color: cOrange))),
+        ],
+      ),
+    );
+  }
+
+  /// Fragt den Meetup-Namen ab, wenn kein Portal-Meetup in der Nähe ist.
+  /// Der GPS-Standort wurde bereits erfasst und wird als Veranstaltungsort
+  /// genutzt — hier fehlt nur der Name.
+  Future<String?> _askMeetupName() {
+    final t = AppLocalizations.of(context);
+    final ctrl = TextEditingController();
+    String? errorText;
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          backgroundColor: cCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(children: [
+            const Icon(Icons.add_location_alt_rounded, color: cOrange, size: 22),
+            const SizedBox(width: 10),
+            Expanded(child: Text(t.gpsNoMeetupTitle,
+                style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+          ]),
+          content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(t.gpsNoMeetupBody, style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: ctrl,
+              autofocus: true,
+              style: const TextStyle(color: cText, fontSize: 14),
+              decoration: InputDecoration(
+                labelText: t.gpsMeetupNameLabel,
+                labelStyle: const TextStyle(color: cTextSecondary, fontSize: 13),
+                hintText: t.gpsMeetupNameHint,
+                hintStyle: const TextStyle(color: cTextTertiary, fontSize: 12),
+                errorText: errorText,
+                filled: true, fillColor: cSurface,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: cOrange, width: 1)),
+              ),
+            ),
+          ]),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(MaterialLocalizations.of(ctx).cancelButtonLabel, style: const TextStyle(color: cTextSecondary))),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: cOrange, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              onPressed: () {
+                if (ctrl.text.trim().isEmpty) {
+                  setLocal(() => errorText = t.gpsNameRequired);
+                  return;
+                }
+                Navigator.pop(ctx, ctrl.text.trim());
+              },
+              child: Text(t.gpsStartAnyway, style: const TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Lässt den Organisator bei mehreren nahen Meetups das richtige wählen.
+  Future<MeetupCandidate?> _pickMeetup(List<MeetupCandidate> candidates) {
+    final t = AppLocalizations.of(context);
+    return showModalBottomSheet<MeetupCandidate>(
+      context: context,
+      backgroundColor: cDark,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))),
+          const SizedBox(height: 20),
+          Text(t.gpsPickMeetup, style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 6),
+          Text(t.gpsPickMeetupSub, style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+          const SizedBox(height: 16),
+          ...candidates.take(5).map((c) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => Navigator.pop(ctx, c),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: cCard,
+                  borderRadius: BorderRadius.circular(kTileRadius),
+                  border: Border.all(color: cTileBorder, width: 0.5),
+                ),
+                child: Row(children: [
+                  const Icon(Icons.location_on_rounded, color: cOrange, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(c.meetup.city, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                    Text(t.gpsDistanceKm(c.distanceKm.toStringAsFixed(1)), style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+                  ])),
+                  const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 20),
+                ]),
+              ),
+            ),
+          )),
+        ]),
+      ),
+    );
   }
 
   // Öffnet das Einundzwanzig-Portal, damit der Organisator dort einen

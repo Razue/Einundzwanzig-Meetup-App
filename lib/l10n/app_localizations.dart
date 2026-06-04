@@ -6369,6 +6369,174 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Das bist du selbst'**
   String get vpSelfTitle;
+
+  /// No description provided for @gpsRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort erforderlich'**
+  String get gpsRequired;
+
+  /// No description provided for @gpsRequiredOrg.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Erstellen eines Meetups wird dein Standort benötigt. Er legt den Ort des Meetups fest.'**
+  String get gpsRequiredOrg;
+
+  /// No description provided for @gpsRequiredScan.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Sammeln dieses Badges wird dein Standort benötigt — als Nachweis, dass du vor Ort bist.'**
+  String get gpsRequiredScan;
+
+  /// No description provided for @gpsDenied.
+  ///
+  /// In de, this message translates to:
+  /// **'Standortzugriff verweigert. Bitte in den Einstellungen erlauben.'**
+  String get gpsDenied;
+
+  /// No description provided for @gpsDisabled.
+  ///
+  /// In de, this message translates to:
+  /// **'Standortdienste sind deaktiviert. Bitte aktivieren.'**
+  String get gpsDisabled;
+
+  /// No description provided for @gpsError.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort konnte nicht ermittelt werden.'**
+  String get gpsError;
+
+  /// No description provided for @gpsRetry.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut versuchen'**
+  String get gpsRetry;
+
+  /// No description provided for @gpsPickMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Welches Meetup?'**
+  String get gpsPickMeetup;
+
+  /// No description provided for @gpsPickMeetupSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Mehrere Meetups sind in deiner Nähe. Bitte wähle das richtige.'**
+  String get gpsPickMeetupSub;
+
+  /// No description provided for @gpsDistanceKm.
+  ///
+  /// In de, this message translates to:
+  /// **'{km} km entfernt'**
+  String gpsDistanceKm(Object km);
+
+  /// No description provided for @gpsNoMeetupNearby.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein bekanntes Meetup in der Nähe gefunden.'**
+  String get gpsNoMeetupNearby;
+
+  /// No description provided for @gpsTooFar.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu weit entfernt'**
+  String get gpsTooFar;
+
+  /// No description provided for @gpsTooFarSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist {km} km vom Meetup-Ort entfernt. Badges können nur vor Ort gesammelt werden (max. {max} km).'**
+  String gpsTooFarSub(Object km, Object max);
+
+  /// No description provided for @mapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Badge-Weltkarte'**
+  String get mapTitle;
+
+  /// No description provided for @mapButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf der Karte ansehen'**
+  String get mapButton;
+
+  /// No description provided for @mapStatMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get mapStatMeetups;
+
+  /// No description provided for @mapStatCities.
+  ///
+  /// In de, this message translates to:
+  /// **'Städte'**
+  String get mapStatCities;
+
+  /// No description provided for @mapStatCountries.
+  ///
+  /// In de, this message translates to:
+  /// **'Länder'**
+  String get mapStatCountries;
+
+  /// No description provided for @mapShareText.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier war ich überall! 🌍 {count} Meetups auf meiner Einundzwanzig Badge-Weltkarte.'**
+  String mapShareText(Object count);
+
+  /// No description provided for @mapShareButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Bild teilen'**
+  String get mapShareButton;
+
+  /// No description provided for @mapEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Badges mit Standort'**
+  String get mapEmpty;
+
+  /// No description provided for @mapEmptySub.
+  ///
+  /// In de, this message translates to:
+  /// **'Sammle Badges auf Meetups — sie erscheinen dann hier auf deiner Weltkarte.'**
+  String get mapEmptySub;
+
+  /// No description provided for @gpsNoMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Meetup in der Nähe'**
+  String get gpsNoMeetupTitle;
+
+  /// No description provided for @gpsNoMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Umkreis von 10 km ist kein bekanntes Meetup eingetragen. Du kannst trotzdem eine Session starten — gib deinem Meetup einen Titel. Dein aktueller Standort wird automatisch als Veranstaltungsort auf der Karte gesetzt.'**
+  String get gpsNoMeetupBody;
+
+  /// No description provided for @gpsMeetupNameLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel des Meetups'**
+  String get gpsMeetupNameLabel;
+
+  /// No description provided for @gpsMeetupNameHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z. B. Bitcoin Stammtisch'**
+  String get gpsMeetupNameHint;
+
+  /// No description provided for @gpsStartAnyway.
+  ///
+  /// In de, this message translates to:
+  /// **'Session starten'**
+  String get gpsStartAnyway;
+
+  /// No description provided for @gpsNameRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib einen Namen ein.'**
+  String get gpsNameRequired;
 }
 
 class _AppLocalizationsDelegate

@@ -1801,5 +1801,57 @@
   "vpMetAt": "shared meetup",
   "vpInvalidNpub": "Invalid npub",
   "vpTrustNote": "The closer the connection (lower degree), the stronger the trust via physical presence.",
-  "vpSelfTitle": "That's you"
+  "vpSelfTitle": "That's you",
+  "gpsRequired": "Location required",
+  "gpsRequiredOrg": "Creating a meetup requires your location. It defines the meetup's place.",
+  "gpsRequiredScan": "Collecting this badge requires your location — as proof you're on site.",
+  "gpsDenied": "Location access denied. Please allow it in settings.",
+  "gpsDisabled": "Location services are disabled. Please enable them.",
+  "gpsError": "Could not determine location.",
+  "gpsRetry": "Try again",
+  "gpsPickMeetup": "Which meetup?",
+  "gpsPickMeetupSub": "Several meetups are near you. Please pick the right one.",
+  "gpsDistanceKm": "{km} km away",
+  "@gpsDistanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      }
+    }
+  },
+  "gpsNoMeetupNearby": "No known meetup found nearby.",
+  "gpsTooFar": "Too far away",
+  "gpsTooFarSub": "You're {km} km from the meetup location. Badges can only be collected on site (max {max} km).",
+  "@gpsTooFarSub": {
+    "placeholders": {
+      "km": {
+        "type": "Object"
+      },
+      "max": {
+        "type": "Object"
+      }
+    }
+  },
+  "mapTitle": "My badge world map",
+  "mapButton": "View on map",
+  "mapStatMeetups": "Meetups",
+  "mapStatCities": "Cities",
+  "mapStatCountries": "Countries",
+  "mapShareText": "Here's where I've been! 🌍 {count} meetups on my Einundzwanzig badge world map.",
+  "@mapShareText": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
+  "mapShareButton": "Share as image",
+  "mapEmpty": "No badges with location yet",
+  "mapEmptySub": "Collect badges at meetups — they'll appear here on your world map.",
+  "gpsNoMeetupTitle": "No meetup nearby",
+  "gpsNoMeetupBody": "No known meetup is registered within 10 km. You can still start a session — give your meetup a title. Your current location is automatically set as the venue on the map.",
+  "gpsMeetupNameLabel": "Meetup title",
+  "gpsMeetupNameHint": "e.g. Bitcoin meetup",
+  "gpsStartAnyway": "Start session",
+  "gpsNameRequired": "Please enter a name."
 }

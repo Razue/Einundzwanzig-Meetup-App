@@ -89,6 +89,8 @@ class RollingQRService {
   static const String _keySessionMeetupCountry = 'rqr_session_meetup_country';
   static const String _keySessionBlockHeight = 'rqr_session_block_height';
   static const String _keySessionPubkey = 'rqr_session_pubkey';
+  static const String _keySessionLat = 'rqr_session_lat';
+  static const String _keySessionLng = 'rqr_session_lng';
   
   // Hier speichern wir den EINMALIG signierten Base-Payload
   static const String _keySessionBasePayload = 'rqr_session_base_payload';
@@ -170,6 +172,8 @@ class RollingQRService {
     required String meetupName,
     required String meetupCountry,
     required int blockHeight,
+    double lat = 0,
+    double lng = 0,
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -198,6 +202,8 @@ class RollingQRService {
       meetupName: meetupName,
       meetupCountry: meetupCountry,
       blockHeight: finalBlockHeight,
+      lat: lat,
+      lng: lng,
     );
   }
 
@@ -222,6 +228,8 @@ class RollingQRService {
       meetupCountry: prefs.getString(_keySessionMeetupCountry) ?? '',
       blockHeight: prefs.getInt(_keySessionBlockHeight) ?? 0,
       pubkey: prefs.getString(_keySessionPubkey) ?? '',
+      lat: prefs.getDouble(_keySessionLat) ?? 0,
+      lng: prefs.getDouble(_keySessionLng) ?? 0,
     );
 
     // Wenn abgelaufen, direkt bereinigen
@@ -240,6 +248,8 @@ class RollingQRService {
     required String meetupName,
     required String meetupCountry,
     required int blockHeight,
+    double lat = 0,
+    double lng = 0,
   }) async {
     // 1. Keys laden (nur pubkey für die Session-Metadaten)
     final pubkey = await NostrService.getNpub() ?? '';
@@ -289,6 +299,8 @@ class RollingQRService {
       meetupCountry: meetupCountry,
       blockHeight: blockHeight,
       pubkey: pubkey,
+      lat: lat,
+      lng: lng,
     );
 
     // 5. Session Seed in SecureStorage (Security Audit C3)
@@ -302,6 +314,9 @@ class RollingQRService {
     await prefs.setString(_keySessionMeetupCountry, meetupCountry);
     await prefs.setInt(_keySessionBlockHeight, blockHeight);
     await prefs.setString(_keySessionPubkey, pubkey);
+    // Erfasster Organisator-Standort (Veranstaltungsort) für den 5km-Check
+    await prefs.setDouble(_keySessionLat, lat);
+    await prefs.setDouble(_keySessionLng, lng);
     
     // Base-Payload in SecureStorage speichern (enthält Schnorr-Signatur)
     await _saveBasePayloadSecure(jsonEncode(basePayload));
@@ -321,6 +336,8 @@ class RollingQRService {
     await prefs.remove(_keySessionMeetupCountry);
     await prefs.remove(_keySessionBlockHeight);
     await prefs.remove(_keySessionPubkey);
+    await prefs.remove(_keySessionLat);
+    await prefs.remove(_keySessionLng);
     await _deleteBasePayloadSecure();
   }
 
@@ -385,6 +402,16 @@ class RollingQRService {
     payload['n'] = nonce;       // Rolling Nonce (16 hex)
     payload['ts'] = timeStep;   // Time-Step (für Validierung)
     payload['d'] = 'rolling_qr';// delivery methode
+
+    // 4. Organisator-Standort als UNSIGNIERTE Zusatzfelder anhängen.
+    //    Wie n/ts/d NICHT von der Schnorr-Signatur abgedeckt. Dient dem
+    //    5km-Präsenz-Check des Teilnehmers. Manipulation ist durch die
+    //    10s-Rolling-Gültigkeit praktisch wertlos: Wer einen frischen QR
+    //    hat, ist bereits vor Ort.
+    if (session.lat != 0 || session.lng != 0) {
+      payload['la'] = session.lat;
+      payload['lo'] = session.lng;
+    }
 
     return jsonEncode(payload);
   }
@@ -480,6 +507,8 @@ class MeetupSession {
   final String meetupCountry;
   final int blockHeight;
   final String pubkey;
+  final double lat;  // Erfasster Organisator-Standort (Veranstaltungsort)
+  final double lng;
 
   MeetupSession({
     required this.seed,
@@ -490,6 +519,8 @@ class MeetupSession {
     required this.meetupCountry,
     required this.blockHeight,
     required this.pubkey,
+    this.lat = 0,
+    this.lng = 0,
   });
 
   bool get isExpired {
