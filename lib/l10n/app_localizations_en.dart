@@ -3595,4 +3595,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gpsNameRequired => 'Please enter a name.';
+
+  @override
+  String get mnNodeDetailTitle => 'Connection';
+
+  @override
+  String get mnDegreeDirect => 'Directly connected';
+
+  @override
+  String get mnDegreeSecond => '2nd degree';
+
+  @override
+  String get mnDegreeThird => '3rd degree';
+
+  @override
+  String get mnSharedMeetupsList => 'Shared meetups';
+
+  @override
+  String get mnViaBridges => 'Connected via';
+
+  @override
+  String get mnNoSharedDetail => 'No direct shared meetups';
+
+  @override
+  String get mnOpenInNostr => 'Open in Nostr';
+
+  @override
+  String get mnTapHint => 'Tap a node for details';
+
+  @override
+  String get mnLegendDirect => 'Direct (1st)';
+
+  @override
+  String get mnLegendSecond => '2nd';
+
+  @override
+  String get mnLegendThird => '3rd';
 }

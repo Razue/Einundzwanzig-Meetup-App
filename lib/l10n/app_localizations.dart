@@ -6537,6 +6537,78 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Bitte gib einen Namen ein.'**
   String get gpsNameRequired;
+
+  /// No description provided for @mnNodeDetailTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verknüpfung'**
+  String get mnNodeDetailTitle;
+
+  /// No description provided for @mnDegreeDirect.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkt verbunden'**
+  String get mnDegreeDirect;
+
+  /// No description provided for @mnDegreeSecond.
+  ///
+  /// In de, this message translates to:
+  /// **'2. Grad'**
+  String get mnDegreeSecond;
+
+  /// No description provided for @mnDegreeThird.
+  ///
+  /// In de, this message translates to:
+  /// **'3. Grad'**
+  String get mnDegreeThird;
+
+  /// No description provided for @mnSharedMeetupsList.
+  ///
+  /// In de, this message translates to:
+  /// **'Gemeinsame Meetups'**
+  String get mnSharedMeetupsList;
+
+  /// No description provided for @mnViaBridges.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden über'**
+  String get mnViaBridges;
+
+  /// No description provided for @mnNoSharedDetail.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine direkten gemeinsamen Meetups'**
+  String get mnNoSharedDetail;
+
+  /// No description provided for @mnOpenInNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'In Nostr öffnen'**
+  String get mnOpenInNostr;
+
+  /// No description provided for @mnTapHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf einen Punkt für Details'**
+  String get mnTapHint;
+
+  /// No description provided for @mnLegendDirect.
+  ///
+  /// In de, this message translates to:
+  /// **'Direkt (1. Grad)'**
+  String get mnLegendDirect;
+
+  /// No description provided for @mnLegendSecond.
+  ///
+  /// In de, this message translates to:
+  /// **'2. Grad'**
+  String get mnLegendSecond;
+
+  /// No description provided for @mnLegendThird.
+  ///
+  /// In de, this message translates to:
+  /// **'3. Grad'**
+  String get mnLegendThird;
 }
 
 class _AppLocalizationsDelegate

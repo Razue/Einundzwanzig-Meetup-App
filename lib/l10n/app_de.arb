@@ -1875,5 +1875,17 @@
   "gpsMeetupNameLabel": "Titel des Meetups",
   "gpsMeetupNameHint": "z. B. Bitcoin Stammtisch",
   "gpsStartAnyway": "Session starten",
-  "gpsNameRequired": "Bitte gib einen Namen ein."
+  "gpsNameRequired": "Bitte gib einen Namen ein.",
+  "mnNodeDetailTitle": "Verknüpfung",
+  "mnDegreeDirect": "Direkt verbunden",
+  "mnDegreeSecond": "2. Grad",
+  "mnDegreeThird": "3. Grad",
+  "mnSharedMeetupsList": "Gemeinsame Meetups",
+  "mnViaBridges": "Verbunden über",
+  "mnNoSharedDetail": "Keine direkten gemeinsamen Meetups",
+  "mnOpenInNostr": "In Nostr öffnen",
+  "mnTapHint": "Tippe auf einen Punkt für Details",
+  "mnLegendDirect": "Direkt (1. Grad)",
+  "mnLegendSecond": "2. Grad",
+  "mnLegendThird": "3. Grad"
 }

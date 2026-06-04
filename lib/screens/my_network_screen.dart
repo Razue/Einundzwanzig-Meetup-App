@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
@@ -17,14 +19,25 @@ class MyNetworkScreen extends StatefulWidget {
   State<MyNetworkScreen> createState() => _MyNetworkScreenState();
 }
 
-class _MyNetworkScreenState extends State<MyNetworkScreen> {
+class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProviderStateMixin {
   bool _loading = true;
   MyNetwork? _net;
+  late AnimationController _pulse;
 
   @override
   void initState() {
     super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
     _load();
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -100,24 +113,50 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> {
             style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5)),
         const SizedBox(height: 20),
 
-        // Graph
+        // Interaktiver Netzwerk-Graph (geschwungene Verbindungen, antippbar)
         Container(
-          height: 280,
+          height: 320,
           decoration: BoxDecoration(
-            color: cCard,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft, end: Alignment.bottomRight,
+              colors: [Color(0xFF15171C), Color(0xFF0D0E12)],
+            ),
             borderRadius: BorderRadius.circular(kTileRadius),
             border: Border.all(color: cTileBorder, width: 0.5),
           ),
-          child: CustomPaint(
-            painter: _RadialNetworkPainter(
-              d1: net.degree1Count,
-              d2: net.degree2Count,
-              d3: net.degree3Count,
-              youLabel: t.mnReachLabel,
-            ),
-            child: const SizedBox.expand(),
+          clipBehavior: Clip.antiAlias,
+          child: LayoutBuilder(
+            builder: (ctx, constraints) {
+              final graphSize = Size(constraints.maxWidth, constraints.maxHeight);
+              final nodes = _computeNodes(net, graphSize);
+              return GestureDetector(
+                onTapUp: (details) => _handleGraphTap(details.localPosition, nodes, t),
+                child: AnimatedBuilder(
+                  animation: _pulse,
+                  builder: (_, __) => CustomPaint(
+                    painter: _NetworkGraphPainter(
+                      nodes: nodes,
+                      pulse: _pulse.value,
+                    ),
+                    child: const SizedBox.expand(),
+                  ),
+                ),
+              );
+            },
           ),
         ),
+        const SizedBox(height: 10),
+        // Legende
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          _legendDot(cGreen, t.mnLegendDirect),
+          const SizedBox(width: 14),
+          _legendDot(cCyan, t.mnLegendSecond),
+          const SizedBox(width: 14),
+          _legendDot(cOrange, t.mnLegendThird),
+        ]),
+        const SizedBox(height: 6),
+        Center(child: Text(t.mnTapHint,
+            style: const TextStyle(color: cTextTertiary, fontSize: 11, fontStyle: FontStyle.italic))),
         const SizedBox(height: 16),
 
         // Reichweiten-Kacheln
@@ -185,6 +224,145 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> {
           Text(value, style: TextStyle(color: color, fontSize: 24, fontWeight: FontWeight.w900)),
           const SizedBox(height: 2),
           Text(label, style: const TextStyle(color: cTextSecondary, fontSize: 11, fontWeight: FontWeight.w500)),
+        ]),
+      ),
+    );
+  }
+
+  Widget _legendDot(Color color, String label) {
+    return Row(mainAxisSize: MainAxisSize.min, children: [
+      Container(width: 9, height: 9, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+      const SizedBox(width: 5),
+      Text(label, style: const TextStyle(color: cTextSecondary, fontSize: 11)),
+    ]);
+  }
+
+  /// Berechnet die Position aller Knoten im Graph. Du = Zentrum, die Grade
+  /// auf konzentrischen Bahnen verteilt, leicht versetzt für organisches Bild.
+  List<_GraphNode> _computeNodes(MyNetwork net, Size size) {
+    final nodes = <_GraphNode>[];
+    final center = Offset(size.width / 2, size.height / 2);
+
+    // Zentrum = ich
+    nodes.add(_GraphNode(
+      pos: center, degree: 0, contact: null, radius: 13,
+    ));
+
+    final maxR = min(size.width, size.height) / 2 - 26;
+    final ring = {1: maxR * 0.40, 2: maxR * 0.70, 3: maxR * 1.0};
+    final colorFor = {1: cGreen, 2: cCyan, 3: cOrange};
+    final nodeR = {1: 7.0, 2: 5.5, 3: 4.5};
+
+    for (final deg in [1, 2, 3]) {
+      final contacts = net.byDegree[deg] ?? [];
+      if (contacts.isEmpty) continue;
+      final shown = contacts.take(deg == 1 ? 12 : (deg == 2 ? 16 : 18)).toList();
+      final r = ring[deg]!;
+      // Winkel-Offset pro Grad, damit Knoten nicht exakt übereinander liegen
+      final angleOffset = deg * 0.5;
+      for (int i = 0; i < shown.length; i++) {
+        final angle = (2 * pi * i / shown.length) - pi / 2 + angleOffset;
+        final pos = Offset(center.dx + r * cos(angle), center.dy + r * sin(angle));
+        nodes.add(_GraphNode(
+          pos: pos, degree: deg, contact: shown[i],
+          radius: nodeR[deg]!, color: colorFor[deg],
+        ));
+      }
+    }
+    return nodes;
+  }
+
+  /// Findet den angetippten Knoten (nächster innerhalb Toleranz) und zeigt Details.
+  void _handleGraphTap(Offset tap, List<_GraphNode> nodes, AppLocalizations t) {
+    _GraphNode? hit;
+    double best = 28; // Toleranz-Radius in px
+    for (final n in nodes) {
+      if (n.contact == null) continue; // Zentrum (ich) ignorieren
+      final d = (n.pos - tap).distance;
+      if (d < best) { best = d; hit = n; }
+    }
+    if (hit != null) {
+      HapticFeedback.selectionClick();
+      _showNodeDetail(t, hit.contact!);
+    }
+  }
+
+  /// Detail-Sheet zu einem angetippten Knoten: Grad, gemeinsame Meetups /
+  /// Brücken, npub, Nostr-Link.
+  void _showNodeDetail(AppLocalizations t, NetworkContact c) {
+    final color = c.degree == 1 ? cGreen : (c.degree == 2 ? cCyan : cOrange);
+    final degreeLabel = c.degree == 1 ? t.mnDegreeDirect : (c.degree == 2 ? t.mnDegreeSecond : t.mnDegreeThird);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cDark,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))),
+          const SizedBox(height: 18),
+          // Kopf: Avatar + Grad
+          Row(children: [
+            Container(
+              width: 46, height: 46,
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle, border: Border.all(color: color, width: 1.5)),
+              child: Icon(c.degree == 1 ? Icons.person_rounded : Icons.person_outline_rounded, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+                child: Text(degreeLabel, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(height: 4),
+              Text(NostrService.shortenNpub(c.npub),
+                  style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono)),
+            ])),
+          ]),
+          const SizedBox(height: 18),
+          // Grad-1: gemeinsame Meetups. Grad 2+: Brücken.
+          if (c.degree == 1) ...[
+            Text(t.mnSharedMeetupsList.toUpperCase(),
+                style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            if (c.sharedMeetupsWithMe.isEmpty)
+              Text(t.mnNoSharedDetail, style: const TextStyle(color: cTextSecondary, fontSize: 13))
+            else
+              ...c.sharedMeetupsWithMe.map((m) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(children: [
+                  const Icon(Icons.groups_rounded, color: cGreen, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(m, style: const TextStyle(color: cText, fontSize: 14))),
+                ]),
+              )),
+          ] else ...[
+            Text(t.mnViaBridges.toUpperCase(),
+                style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            ...c.bridges.take(8).map((b) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(children: [
+                Icon(Icons.hub_rounded, color: color, size: 16),
+                const SizedBox(width: 8),
+                Expanded(child: Text(NostrService.shortenNpub(b),
+                    style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono))),
+              ]),
+            )),
+          ],
+          const SizedBox(height: 20),
+          // Nostr öffnen
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(foregroundColor: cText, side: const BorderSide(color: cTileBorder), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              onPressed: () { Navigator.pop(ctx); _openNostrProfile(c.npub); },
+              icon: const Icon(Icons.open_in_new_rounded, size: 16),
+              label: Text(t.mnOpenInNostr),
+            ),
+          ),
         ]),
       ),
     );
@@ -284,59 +462,96 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> {
 }
 
 /// Zeichnet konzentrische Ringe: Ich (Mitte) -> Grad 1 -> 2 -> 3.
-class _RadialNetworkPainter extends CustomPainter {
-  final int d1, d2, d3;
-  final String youLabel;
-  _RadialNetworkPainter({required this.d1, required this.d2, required this.d3, required this.youLabel});
+/// Ein Knoten im Netzwerk-Graph mit Position und (optional) Kontaktdaten.
+class _GraphNode {
+  final Offset pos;
+  final int degree;          // 0 = ich, 1/2/3 = Verbindungsgrad
+  final NetworkContact? contact; // null beim Zentrum
+  final double radius;
+  final Color? color;
+  _GraphNode({required this.pos, required this.degree, required this.contact, required this.radius, this.color});
+}
+
+/// Zeichnet das Netzwerk: geschwungene Bezier-Verbindungen vom Zentrum (ich)
+/// zu jedem Knoten, farbcodiert nach Grad (grün/cyan/orange), mit sanftem Puls.
+class _NetworkGraphPainter extends CustomPainter {
+  final List<_GraphNode> nodes;
+  final double pulse; // 0..1 für sanfte Animation
+  _NetworkGraphPainter({required this.nodes, required this.pulse});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final maxR = min(size.width, size.height) / 2 - 30;
-    final r1 = maxR * 0.42;
-    final r2 = maxR * 0.72;
-    final r3 = maxR;
+    if (nodes.isEmpty) return;
+    final center = nodes.first.pos; // Zentrum ist immer das erste Element
 
-    final ringPaint = Paint()
+    // 1. Geschwungene Verbindungslinien (Zentrum -> Knoten)
+    for (final n in nodes) {
+      if (n.contact == null) continue;
+      final color = n.color ?? cOrange;
+      _drawCurvedConnection(canvas, center, n.pos, color);
+    }
+
+    // 2. Knoten zeichnen (nach Grad, damit nähere oben liegen)
+    for (final n in nodes.where((n) => n.contact != null)) {
+      final color = n.color ?? cOrange;
+      // Glow
+      final glow = Paint()
+        ..color = color.withValues(alpha: 0.35)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+      canvas.drawCircle(n.pos, n.radius + 2, glow);
+      // Kern
+      canvas.drawCircle(n.pos, n.radius, Paint()..color = color);
+      // heller Rand
+      canvas.drawCircle(n.pos, n.radius, Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = Colors.white.withValues(alpha: 0.5));
+    }
+
+    // 3. Zentrum (ich) — pulsierender weißer Hub
+    final pulseR = 13 + pulse * 3;
+    canvas.drawCircle(center, pulseR + 6, Paint()
+      ..color = cOrange.withValues(alpha: 0.18 + pulse * 0.12)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10));
+    canvas.drawCircle(center, 13, Paint()..color = Colors.white);
+    canvas.drawCircle(center, 13, Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    // Ringe
-    ringPaint.color = const Color(0xFF4ADE80).withValues(alpha: 0.25);
-    canvas.drawCircle(center, r1, ringPaint);
-    ringPaint.color = const Color(0xFF22D3EE).withValues(alpha: 0.20);
-    canvas.drawCircle(center, r2, ringPaint);
-    ringPaint.color = const Color(0xFFF7931A).withValues(alpha: 0.18);
-    canvas.drawCircle(center, r3, ringPaint);
-
-    // Knoten auf den Ringen verteilen
-    _drawRingNodes(canvas, center, r1, d1, const Color(0xFF4ADE80), 5);
-    _drawRingNodes(canvas, center, r2, d2, const Color(0xFF22D3EE), 4);
-    _drawRingNodes(canvas, center, r3, d3, const Color(0xFFF7931A), 3.5);
-
-    // Zentrum (ich)
-    final glow = Paint()
-      ..color = Colors.white.withValues(alpha: 0.2)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawCircle(center, 16, glow);
-    canvas.drawCircle(center, 11, Paint()..color = Colors.white);
+      ..strokeWidth = 2
+      ..color = cOrange);
+    // kleiner Blitz im Zentrum
+    final icon = Paint()..color = cOrange;
+    canvas.drawCircle(center, 4, icon);
   }
 
-  void _drawRingNodes(Canvas canvas, Offset center, double radius, int count, Color color, double nodeR) {
-    if (count <= 0) return;
-    final shown = min(count, 14);
-    final lp = Paint()
-      ..color = color.withValues(alpha: 0.15)
-      ..strokeWidth = 0.5;
-    for (int i = 0; i < shown; i++) {
-      final angle = (2 * pi * i / shown) - pi / 2;
-      final p = Offset(center.dx + radius * cos(angle), center.dy + radius * sin(angle));
-      canvas.drawLine(center, p, lp);
-      canvas.drawCircle(p, nodeR, Paint()..color = color);
-    }
+  /// Zeichnet eine geschwungene Verbindung (quadratische Bezier-Kurve) zwischen
+  /// zwei Punkten — der Kontrollpunkt wird seitlich versetzt für den Bogen-Look.
+  void _drawCurvedConnection(Canvas canvas, Offset from, Offset to, Color color) {
+    final mid = Offset((from.dx + to.dx) / 2, (from.dy + to.dy) / 2);
+    // Senkrechte zum Verbindungsvektor für den Bogen-Versatz
+    final dir = to - from;
+    final len = dir.distance;
+    if (len < 1) return;
+    final normal = Offset(-dir.dy / len, dir.dx / len);
+    final bow = len * 0.18; // Stärke der Krümmung
+    final control = mid + normal * bow;
+
+    final path = Path()
+      ..moveTo(from.dx, from.dy)
+      ..quadraticBezierTo(control.dx, control.dy, to.dx, to.dy);
+
+    // Farbverlauf entlang der Linie (am Knoten kräftiger, am Zentrum blasser)
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round
+      ..shader = ui.Gradient.linear(from, to, [
+        color.withValues(alpha: 0.15),
+        color.withValues(alpha: 0.65),
+      ]);
+    canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _RadialNetworkPainter old) =>
-      old.d1 != d1 || old.d2 != d2 || old.d3 != d3;
+  bool shouldRepaint(covariant _NetworkGraphPainter old) =>
+      old.pulse != pulse || old.nodes.length != nodes.length;
 }

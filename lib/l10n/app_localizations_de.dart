@@ -3634,4 +3634,40 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get gpsNameRequired => 'Bitte gib einen Namen ein.';
+
+  @override
+  String get mnNodeDetailTitle => 'Verknüpfung';
+
+  @override
+  String get mnDegreeDirect => 'Direkt verbunden';
+
+  @override
+  String get mnDegreeSecond => '2. Grad';
+
+  @override
+  String get mnDegreeThird => '3. Grad';
+
+  @override
+  String get mnSharedMeetupsList => 'Gemeinsame Meetups';
+
+  @override
+  String get mnViaBridges => 'Verbunden über';
+
+  @override
+  String get mnNoSharedDetail => 'Keine direkten gemeinsamen Meetups';
+
+  @override
+  String get mnOpenInNostr => 'In Nostr öffnen';
+
+  @override
+  String get mnTapHint => 'Tippe auf einen Punkt für Details';
+
+  @override
+  String get mnLegendDirect => 'Direkt (1. Grad)';
+
+  @override
+  String get mnLegendSecond => '2. Grad';
+
+  @override
+  String get mnLegendThird => '3. Grad';
 }

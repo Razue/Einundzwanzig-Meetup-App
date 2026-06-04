@@ -1853,5 +1853,17 @@
   "gpsMeetupNameLabel": "Título del meetup",
   "gpsMeetupNameHint": "p. ej. Encuentro Bitcoin",
   "gpsStartAnyway": "Iniciar sesión",
-  "gpsNameRequired": "Introduce un nombre."
+  "gpsNameRequired": "Introduce un nombre.",
+  "mnNodeDetailTitle": "Conexión",
+  "mnDegreeDirect": "Conexión directa",
+  "mnDegreeSecond": "2.º grado",
+  "mnDegreeThird": "3.er grado",
+  "mnSharedMeetupsList": "Meetups en común",
+  "mnViaBridges": "Conectado a través de",
+  "mnNoSharedDetail": "Sin meetups en común directos",
+  "mnOpenInNostr": "Abrir en Nostr",
+  "mnTapHint": "Toca un nodo para más detalles",
+  "mnLegendDirect": "Directo (1.º)",
+  "mnLegendSecond": "2.º",
+  "mnLegendThird": "3.er"
 }
