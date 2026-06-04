@@ -38,6 +38,7 @@ import '../models/user.dart';
 import '../services/badge_security.dart';
 import '../services/badge_claim_service.dart';               // NEU: Claim-Binding
 import '../services/reputation_publisher.dart';              // NEU: Auto-Publish
+import 'badge_wallet.dart';                                  // für direkten Sprung in die Wallet
 import '../services/nostr_service.dart';
 import '../services/mempool.dart';
 import '../services/rolling_qr_service.dart';
@@ -611,7 +612,16 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       await _askCoAttendanceOptIn(badge);
     }
 
-    if (mounted) Navigator.pop(context, true);
+    // Direkt in die Wallet wechseln. Wir verlassen uns NICHT auf den
+    // Aufrufer (der je nach Einstiegspunkt unterschiedlich reagierte) —
+    // dieser Screen ersetzt sich selbst durch die Wallet. So landet man
+    // IMMER zuverlässig dort, unabhängig vom Scan-Einstieg.
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const BadgeWalletScreen()),
+      );
+    }
   }
 
   void _showScanGpsError(GpsStatus status) {

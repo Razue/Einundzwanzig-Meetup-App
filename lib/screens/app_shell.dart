@@ -55,17 +55,14 @@ class _AppShellState extends State<AppShell> {
         onBadge: () async {
           Navigator.pop(ctx);
           final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0);
-          final saved = await Navigator.push<bool>(context, PageRouteBuilder(
+          await Navigator.push<bool>(context, PageRouteBuilder(
             pageBuilder: (_, __, ___) => MeetupVerificationScreen(meetup: d),
             transitionsBuilder: (_, a, __, c) => SlideTransition(
               position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
                 .animate(CurvedAnimation(parent: a, curve: Curves.easeOutCubic)), child: c)));
+          // Bei Erfolg wechselt der Verification-Screen selbst direkt in die
+          // Wallet (pushReplacement). Hier danach nur Home-Daten auffrischen.
           _homeKey.currentState?.refreshAfterScan();
-          // Nach erfolgreichem Badge-Erhalt direkt in die Wallet springen
-          if (saved == true && mounted) {
-            await Navigator.push(context, MaterialPageRoute(
-              builder: (_) => const BadgeWalletScreen()));
-          }
         },
         onReputation: () async {
           Navigator.pop(ctx);

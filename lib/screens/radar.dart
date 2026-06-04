@@ -51,14 +51,17 @@ class _RadarScreenState extends State<RadarScreen> {
       currentMeetup = Meetup(id: "err", city: widget.cityName, country: "DE", telegramLink: "", lat: 0, lng: 0);
     }
 
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => MeetupVerificationScreen(meetup: currentMeetup)),
     );
 
-    if (result == true) {
+    // Bei Erfolg wechselt der Verification-Screen direkt in die Wallet
+    // (pushReplacement); dieser await kehrt erst zurück, wenn der Nutzer
+    // wieder hier landet. Profil/UI dann unbedingt auffrischen.
+    if (mounted) {
       _refreshProfile();
-      setState(() {}); // UI neu laden für neue Badges
+      setState(() {});
     }
   }
 
