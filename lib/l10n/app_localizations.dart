@@ -6645,6 +6645,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Jetzt zurücksetzen'**
   String get resetNowConfirm;
+
+  /// No description provided for @verifyBadgeSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge gespeichert ✓'**
+  String get verifyBadgeSaved;
 }
 
 class _AppLocalizationsDelegate

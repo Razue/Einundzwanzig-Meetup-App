@@ -3650,4 +3650,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get resetNowConfirm => 'Reset now';
+
+  @override
+  String get verifyBadgeSaved => 'Badge saved ✓';
 }

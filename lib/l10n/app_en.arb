@@ -1871,5 +1871,6 @@
   "resetBackupCreate": "Create backup",
   "resetBackupSkip": "Reset without backup",
   "resetBackupDone": "Backup created. Reset now?",
-  "resetNowConfirm": "Reset now"
+  "resetNowConfirm": "Reset now",
+  "verifyBadgeSaved": "Badge saved ✓"
 }

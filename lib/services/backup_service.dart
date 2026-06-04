@@ -236,20 +236,10 @@ class BackupService {
           'telegramHandle': user.telegramHandle,
           'twitterHandle': user.twitterHandle,
         },
-        'badges': badges.map((b) => {
-          'id': b.id,
-          'meetupName': b.meetupName,
-          'date': b.date.toIso8601String(),
-          'blockHeight': b.blockHeight,
-          // Kryptographischen Beweis mitsichern
-          'sig': b.sig,
-          'sigId': b.sigId,
-          'adminPubkey': b.adminPubkey,
-          'sigVersion': b.sigVersion,
-          'sigContent': b.sigContent,
-          'signerNpub': b.signerNpub,
-          'delivery': b.delivery,
-        }).toList(),
+        // Badges vollständig über toJson sichern (enthält ALLE Felder:
+        // Signatur, Claim-Binding, iconPath, lat/lng, isOrganizer ...).
+        // So gehen beim Wiederherstellen keine Felder mehr verloren.
+        'badges': badges.map((b) => b.toJson()).toList(),
         'nostr': {
           'nsec': isAmber ? '' : (nsec ?? ''),
           'npub': activeNpub ?? npub ?? '',
@@ -454,21 +444,15 @@ class BackupService {
         List<dynamic> badgeList = data['badges'];
         List<MeetupBadge> restoredBadges = [];
         for (var b in badgeList) {
-          restoredBadges.add(MeetupBadge(
-            id: b['id'],
-            meetupName: b['meetupName'],
-            date: DateTime.parse(b['date']),
-            iconPath: "assets/badge_icon.png",
-            blockHeight: b['blockHeight'] ?? 0,
-            // Kryptographischen Beweis wiederherstellen (v4)
-            sig: b['sig'] as String? ?? '',
-            sigId: b['sigId'] as String? ?? '',
-            adminPubkey: b['adminPubkey'] as String? ?? '',
-            sigVersion: b['sigVersion'] as int? ?? 0,
-            sigContent: b['sigContent'] as String? ?? '',
-            signerNpub: b['signerNpub'] as String? ?? '',
-            delivery: b['delivery'] as String? ?? 'nfc',
-          ));
+          final map = Map<String, dynamic>.from(b as Map);
+          // iconPath für alte Backups absichern (wurde früher nicht
+          // mitgesichert -> fromJson würde sonst auf null fehlschlagen).
+          if (map['iconPath'] == null || (map['iconPath'] as String).isEmpty) {
+            map['iconPath'] = 'assets/badge_icon.png';
+          }
+          // Vollständig über fromJson rekonstruieren: stellt ALLE Felder
+          // wieder her, inkl. lat/lng (Weltkugel/Standort) und Claim-Binding.
+          restoredBadges.add(MeetupBadge.fromJson(map));
         }
         await MeetupBadge.saveBadges(restoredBadges);
 

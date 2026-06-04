@@ -1893,5 +1893,6 @@
   "resetBackupCreate": "Backup erstellen",
   "resetBackupSkip": "Ohne Backup zurücksetzen",
   "resetBackupDone": "Backup erstellt. Jetzt zurücksetzen?",
-  "resetNowConfirm": "Jetzt zurücksetzen"
+  "resetNowConfirm": "Jetzt zurücksetzen",
+  "verifyBadgeSaved": "Badge gespeichert ✓"
 }

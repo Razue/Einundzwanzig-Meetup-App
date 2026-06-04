@@ -3675,4 +3675,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get resetNowConfirm => 'Restablecer ahora';
+
+  @override
+  String get verifyBadgeSaved => 'Badge guardado ✓';
 }

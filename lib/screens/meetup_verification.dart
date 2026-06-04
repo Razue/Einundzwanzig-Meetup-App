@@ -595,6 +595,17 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     await MeetupBadge.saveBadges(myBadges);
     ReputationPublisher.publishInBackground(myBadges);
 
+    // Klares Erfolgs-Feedback (unabhängig vom Einstiegspunkt)
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).verifyBadgeSaved),
+          backgroundColor: cGreen,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
     // Opt-in fürs Co-Attendance-Netzwerk — nur bei echten, signierten Badges
     if (badge.isNostrSigned && badge.meetupEventId.isNotEmpty && mounted) {
       await _askCoAttendanceOptIn(badge);

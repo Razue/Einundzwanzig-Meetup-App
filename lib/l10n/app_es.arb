@@ -1871,5 +1871,6 @@
   "resetBackupCreate": "Crear copia",
   "resetBackupSkip": "Restablecer sin copia",
   "resetBackupDone": "Copia creada. ¿Restablecer ahora?",
-  "resetNowConfirm": "Restablecer ahora"
+  "resetNowConfirm": "Restablecer ahora",
+  "verifyBadgeSaved": "Badge guardado ✓"
 }
