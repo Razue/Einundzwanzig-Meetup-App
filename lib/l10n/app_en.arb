@@ -1865,5 +1865,11 @@
   "mnTapHint": "Tap a node for details",
   "mnLegendDirect": "Direct (1st)",
   "mnLegendSecond": "2nd",
-  "mnLegendThird": "3rd"
+  "mnLegendThird": "3rd",
+  "resetBackupTitle": "Back up data?",
+  "resetBackupBody": "Resetting permanently deletes ALL data — your badges, your key and your profile. Without a backup, badges CANNOT be restored (not even via Nostr). Create a backup first?",
+  "resetBackupCreate": "Create backup",
+  "resetBackupSkip": "Reset without backup",
+  "resetBackupDone": "Backup created. Reset now?",
+  "resetNowConfirm": "Reset now"
 }

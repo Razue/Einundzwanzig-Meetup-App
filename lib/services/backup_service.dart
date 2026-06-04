@@ -184,11 +184,11 @@ class BackupService {
   }
 
   // --- EXPORT (BACKUP ERSTELLEN) ---
-  static Future<void> createBackup(BuildContext context) async {
+  static Future<bool> createBackup(BuildContext context) async {
     try {
       // 1. Passwort abfragen
       final password = await _promptForPassword(context, isExport: true);
-      if (password == null) return; // User hat abgebrochen
+      if (password == null) return false; // User hat abgebrochen
 
       // Ladeindikator zeigen
       if (context.mounted) {
@@ -311,7 +311,13 @@ class BackupService {
       // Speichern
       final directory = await getTemporaryDirectory();
       String dateStr = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
-      final file = File('${directory.path}/21_backup_$dateStr.21bkp');
+      // Nickname für den Dateinamen bereinigen (nur sichere Zeichen),
+      // damit man bei mehreren Profilen die Backups auseinanderhält.
+      final safeNick = user.nickname.trim().isEmpty
+          ? 'Anon'
+          : user.nickname.trim().replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
+      // Format: Backup_<Datum>_21MeetupApp_<Nickname>.21bkp
+      final file = File('${directory.path}/Backup_${dateStr}_21MeetupApp_$safeNick.21bkp');
 
       await file.writeAsString(finalPayload);
 
@@ -323,6 +329,7 @@ class BackupService {
         subject: AppLocalizations.of(context).backupShareTitle,
         text: AppLocalizations.of(context).backupShareText,
       );
+      return true;
     } catch (e) {
       AppLogger.debug('App', "Backup Fehler: $e");
       if (context.mounted) {
@@ -331,6 +338,7 @@ class BackupService {
           SnackBar(content: Text(AppLocalizations.of(context).backupError(e.toString())), backgroundColor: Colors.red),
         );
       }
+      return false;
     }
   }
 

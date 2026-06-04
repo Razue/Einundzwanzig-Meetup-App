@@ -3656,4 +3656,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mnLegendThird => '3.er';
+
+  @override
+  String get resetBackupTitle => '¿Respaldar datos?';
+
+  @override
+  String get resetBackupBody =>
+      'Restablecer borra TODOS los datos de forma irreversible — tus badges, tu clave y tu perfil. Sin copia de seguridad, los badges NO se pueden recuperar (tampoco vía Nostr). ¿Crear una copia primero?';
+
+  @override
+  String get resetBackupCreate => 'Crear copia';
+
+  @override
+  String get resetBackupSkip => 'Restablecer sin copia';
+
+  @override
+  String get resetBackupDone => 'Copia creada. ¿Restablecer ahora?';
+
+  @override
+  String get resetNowConfirm => 'Restablecer ahora';
 }

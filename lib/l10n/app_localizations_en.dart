@@ -3631,4 +3631,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mnLegendThird => '3rd';
+
+  @override
+  String get resetBackupTitle => 'Back up data?';
+
+  @override
+  String get resetBackupBody =>
+      'Resetting permanently deletes ALL data — your badges, your key and your profile. Without a backup, badges CANNOT be restored (not even via Nostr). Create a backup first?';
+
+  @override
+  String get resetBackupCreate => 'Create backup';
+
+  @override
+  String get resetBackupSkip => 'Reset without backup';
+
+  @override
+  String get resetBackupDone => 'Backup created. Reset now?';
+
+  @override
+  String get resetNowConfirm => 'Reset now';
 }

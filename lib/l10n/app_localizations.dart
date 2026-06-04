@@ -6609,6 +6609,42 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'3. Grad'**
   String get mnLegendThird;
+
+  /// No description provided for @resetBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten sichern?'**
+  String get resetBackupTitle;
+
+  /// No description provided for @resetBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Zurücksetzen werden ALLE Daten unwiderruflich gelöscht — deine Badges, dein Schlüssel und dein Profil. Ohne Backup lassen sich Badges NICHT wiederherstellen (auch nicht über Nostr). Möchtest du zuerst ein Backup erstellen?'**
+  String get resetBackupBody;
+
+  /// No description provided for @resetBackupCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup erstellen'**
+  String get resetBackupCreate;
+
+  /// No description provided for @resetBackupSkip.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Backup zurücksetzen'**
+  String get resetBackupSkip;
+
+  /// No description provided for @resetBackupDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup erstellt. Jetzt zurücksetzen?'**
+  String get resetBackupDone;
+
+  /// No description provided for @resetNowConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Jetzt zurücksetzen'**
+  String get resetNowConfirm;
 }
 
 class _AppLocalizationsDelegate

@@ -1865,5 +1865,11 @@
   "mnTapHint": "Toca un nodo para más detalles",
   "mnLegendDirect": "Directo (1.º)",
   "mnLegendSecond": "2.º",
-  "mnLegendThird": "3.er"
+  "mnLegendThird": "3.er",
+  "resetBackupTitle": "¿Respaldar datos?",
+  "resetBackupBody": "Restablecer borra TODOS los datos de forma irreversible — tus badges, tu clave y tu perfil. Sin copia de seguridad, los badges NO se pueden recuperar (tampoco vía Nostr). ¿Crear una copia primero?",
+  "resetBackupCreate": "Crear copia",
+  "resetBackupSkip": "Restablecer sin copia",
+  "resetBackupDone": "Copia creada. ¿Restablecer ahora?",
+  "resetNowConfirm": "Restablecer ahora"
 }

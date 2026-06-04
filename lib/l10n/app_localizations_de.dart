@@ -3670,4 +3670,23 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mnLegendThird => '3. Grad';
+
+  @override
+  String get resetBackupTitle => 'Daten sichern?';
+
+  @override
+  String get resetBackupBody =>
+      'Beim Zurücksetzen werden ALLE Daten unwiderruflich gelöscht — deine Badges, dein Schlüssel und dein Profil. Ohne Backup lassen sich Badges NICHT wiederherstellen (auch nicht über Nostr). Möchtest du zuerst ein Backup erstellen?';
+
+  @override
+  String get resetBackupCreate => 'Backup erstellen';
+
+  @override
+  String get resetBackupSkip => 'Ohne Backup zurücksetzen';
+
+  @override
+  String get resetBackupDone => 'Backup erstellt. Jetzt zurücksetzen?';
+
+  @override
+  String get resetNowConfirm => 'Jetzt zurücksetzen';
 }

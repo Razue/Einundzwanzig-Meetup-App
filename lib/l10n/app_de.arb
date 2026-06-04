@@ -1887,5 +1887,11 @@
   "mnTapHint": "Tippe auf einen Punkt für Details",
   "mnLegendDirect": "Direkt (1. Grad)",
   "mnLegendSecond": "2. Grad",
-  "mnLegendThird": "3. Grad"
+  "mnLegendThird": "3. Grad",
+  "resetBackupTitle": "Daten sichern?",
+  "resetBackupBody": "Beim Zurücksetzen werden ALLE Daten unwiderruflich gelöscht — deine Badges, dein Schlüssel und dein Profil. Ohne Backup lassen sich Badges NICHT wiederherstellen (auch nicht über Nostr). Möchtest du zuerst ein Backup erstellen?",
+  "resetBackupCreate": "Backup erstellen",
+  "resetBackupSkip": "Ohne Backup zurücksetzen",
+  "resetBackupDone": "Backup erstellt. Jetzt zurücksetzen?",
+  "resetNowConfirm": "Jetzt zurücksetzen"
 }

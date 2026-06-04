@@ -275,7 +275,95 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
   Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.isAdmin = false; _user.isAdminVerified = false; _user.promotionSource = ''; }); } }
-  void _resetApp() async { bool c = await showDialog(context: context, builder: (ctx) => AlertDialog(title: Text(AppLocalizations.of(context).resetTitle), content: Text(AppLocalizations.of(context).resetBody), actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(AppLocalizations.of(context).resetCancel)), TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(AppLocalizations.of(context).resetConfirm, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)))])) ?? false; if (!c) return; final p = await SharedPreferences.getInstance(); await p.clear(); myBadges.clear(); await MeetupBadge.saveBadges([]); try { await SecureKeyStore.deleteKeys(); } catch (_) {} await NostrProfileService.clearCache(); if (mounted) Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false); }
+  void _resetApp() async {
+    final t = AppLocalizations.of(context);
+    // 1. Erste Bestätigung (wie bisher)
+    final c = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(t.resetTitle),
+        content: Text(t.resetBody),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t.resetCancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t.resetConfirm, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    ) ?? false;
+    if (!c) return;
+
+    // 2. Backup anbieten, BEVOR gelöscht wird
+    if (!mounted) return;
+    final choice = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.shield_outlined, color: cOrange, size: 22),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.resetBackupTitle, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Text(t.resetBackupBody, style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5)),
+        actionsOverflowDirection: VerticalDirection.down,
+        actions: [
+          // Empfohlen: Backup erstellen
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: cOrange, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            onPressed: () => Navigator.pop(ctx, 'backup'),
+            icon: const Icon(Icons.cloud_upload_rounded, size: 16),
+            label: Text(t.resetBackupCreate),
+          ),
+          // Ohne Backup (gefährlich)
+          TextButton(onPressed: () => Navigator.pop(ctx, 'skip'), child: Text(t.resetBackupSkip, style: const TextStyle(color: cRed))),
+          // Abbrechen
+          TextButton(onPressed: () => Navigator.pop(ctx, 'cancel'), child: Text(t.resetCancel, style: const TextStyle(color: cTextSecondary))),
+        ],
+      ),
+    );
+
+    if (choice == null || choice == 'cancel') return;
+
+    if (choice == 'backup') {
+      // Backup erstellen (gleiche Logik wie der manuelle Button)
+      final ok = await BackupService.createBackup(context);
+      if (!ok) return; // Backup abgebrochen/fehlgeschlagen -> NICHT zurücksetzen
+      // Nach erfolgreichem Backup nochmal bestätigen
+      if (!mounted) return;
+      final proceed = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: cCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(t.resetBackupTitle, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+          content: Text(t.resetBackupDone, style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5)),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t.resetCancel, style: const TextStyle(color: cTextSecondary))),
+            TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t.resetNowConfirm, style: const TextStyle(color: cRed, fontWeight: FontWeight.bold))),
+          ],
+        ),
+      ) ?? false;
+      if (!proceed) return;
+    }
+
+    // 3. Eigentlicher Reset (vollständige Löschung)
+    await _performReset();
+  }
+
+  /// Führt die vollständige Löschung durch. Nur nach Bestätigung +
+  /// (optionalem) Backup aufrufen.
+  Future<void> _performReset() async {
+    final p = await SharedPreferences.getInstance();
+    await p.clear();
+    myBadges.clear();
+    await MeetupBadge.saveBadges([]);
+    try { await SecureKeyStore.deleteKeys(); } catch (_) {}
+    await NostrProfileService.clearCache();
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false);
+    }
+  }
   void _scanAnyMeetup() async { final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0); await Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupVerificationScreen(meetup: d))); _loadBadges(); _calculateTrustScore(); }
   void _selectHomeMeetup() async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen())); _loadUser(); _loadNextHomeMeetup(); }
   Future<void> _openUrl(String url) async { final uri = Uri.parse(url); if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).homeCouldNotOpen(url)))); } }
