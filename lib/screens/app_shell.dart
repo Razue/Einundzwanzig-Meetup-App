@@ -31,6 +31,11 @@ class _AppShellState extends State<AppShell> {
     if (index == 2) return;
     _doHaptic();
     setState(() => _currentIndex = index);
+    // Beim Zurückwechseln auf den Home-Tab die Kachel-Daten auffrischen,
+    // damit ein neu angelegter/aktualisierter Termin sofort erscheint.
+    if (index == 0) {
+      _homeKey.currentState?.refreshAfterScan();
+    }
   }
 
   // Öffnet den "Meetups in der Nähe"-Screen als eigene Route

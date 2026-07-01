@@ -176,7 +176,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() { _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
-  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); }
+  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); }
 
   // ============================================================
   // BUSINESS LOGIC (1:1 dashboard.dart + Profilbild + Countdown)
@@ -250,8 +250,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_user.homeMeetupId.isEmpty) { if (mounted) setState(() => _countdownLoading = false); return; }
     try {
       final events = await MeetupCalendarService().fetchMeetups();
-      final now = DateTime.now(); final city = _user.homeMeetupId.toLowerCase();
-      final future = events.where((e) => e.startTime.isAfter(now) && (e.title.toLowerCase().contains(city) || e.location.toLowerCase().contains(city))).toList()
+      final now = DateTime.now();
+      // Abgleich-Begriffe: Stadtname des Home-Meetups + einzelne Wörter daraus.
+      // Der iCal-Titel enthält den Stadtnamen nicht immer wörtlich, daher
+      // prüfen wir Titel, Ort UND Beschreibung und akzeptieren auch Teilwörter.
+      final city = (_homeMeetup?.city ?? _user.homeMeetupId).toLowerCase().trim();
+      final terms = <String>{city, ...city.split(RegExp(r'[\s,/-]+'))}
+          .where((s) => s.length >= 3)
+          .toList();
+
+      bool matches(CalendarEvent e) {
+        final hay = '${e.title} ${e.location} ${e.description}'.toLowerCase();
+        return terms.any((term) => hay.contains(term));
+      }
+
+      final future = events.where((e) => e.startTime.isAfter(now) && matches(e)).toList()
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
       if (mounted) setState(() { _nextHomeMeetup = future.isNotEmpty ? future.first : null; _countdownLoading = false; });
     } catch (_) { if (mounted) setState(() => _countdownLoading = false); }
