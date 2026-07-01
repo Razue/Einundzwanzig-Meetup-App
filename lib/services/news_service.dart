@@ -18,6 +18,10 @@ import 'app_logger.dart';
 const String _tag = 'News';
 const int kArticleKind = 30023; // NIP-23 Longform
 
+/// Hashtag (NIP-23 t-Tag), nach dem gefiltert wird. Es werden nur Artikel
+/// angezeigt, die mit #einundzwanzig getaggt sind.
+const String kNewsHashtag = 'einundzwanzig';
+
 /// Ein einzelner Artikel (aus einem kind:30023-Event).
 class NewsArticle {
   final String id;          // Event-ID
@@ -138,8 +142,8 @@ class NewsService {
         onDone: () { if (!completer.isCompleted) completer.complete(results); },
       );
 
-      // REQ: nur Longform-Artikel, nach Datum begrenzt
-      ws.add(jsonEncode(['REQ', subId, {'kinds': [kArticleKind], 'limit': limit}]));
+      // REQ: nur Longform-Artikel mit dem #einundzwanzig-Hashtag (t-Tag)
+      ws.add(jsonEncode(['REQ', subId, {'kinds': [kArticleKind], '#t': [kNewsHashtag], 'limit': limit}]));
 
       final res = await completer.future.timeout(_timeout, onTimeout: () => results);
       return res;

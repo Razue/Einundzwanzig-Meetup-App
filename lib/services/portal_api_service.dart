@@ -221,12 +221,20 @@ class PortalApiService {
     try {
       final body = jsonDecode(r.body);
       if (body is Map) {
-        if (body['message'] is String && (body['message'] as String).isNotEmpty) {
-          return body['message'] as String;
-        }
+        // Alle Validierungsfehler sammeln (nicht nur den ersten)
         if (body['errors'] is Map) {
-          final first = (body['errors'] as Map).values.first;
-          if (first is List && first.isNotEmpty) return first.first.toString();
+          final msgs = <String>[];
+          for (final v in (body['errors'] as Map).values) {
+            if (v is List) {
+              msgs.addAll(v.map((e) => e.toString()));
+            } else {
+              msgs.add(v.toString());
+            }
+          }
+          if (msgs.isNotEmpty) return '${msgs.join(' · ')} (HTTP ${r.statusCode})';
+        }
+        if (body['message'] is String && (body['message'] as String).isNotEmpty) {
+          return '${body['message']} (HTTP ${r.statusCode})';
         }
       }
     } catch (_) {}
@@ -319,14 +327,16 @@ class PortalApiService {
     final payload = <String, dynamic>{
       'meetup_id': meetupId,
       'start': start,
-      'location': location,
-      'description': description,
-      'link': link,
-      'recurrence_type': recurrenceType,
-      'recurrence_day_of_week': recurrenceDayOfWeek,
-      'recurrence_day_position': recurrenceDayPosition,
-      'recurrence_interval': recurrenceInterval,
-      'recurrence_end_date': recurrenceEndDate,
+      // Nur gesetzte optionale Felder senden. Ein explizites null bei den
+      // recurrence-Feldern (enum) lehnt das Portal sonst mit 422/500 ab.
+      if (location != null && location.isNotEmpty) 'location': location,
+      if (description != null && description.isNotEmpty) 'description': description,
+      if (link != null && link.isNotEmpty) 'link': link,
+      if (recurrenceType != null) 'recurrence_type': recurrenceType,
+      if (recurrenceDayOfWeek != null) 'recurrence_day_of_week': recurrenceDayOfWeek,
+      if (recurrenceDayPosition != null) 'recurrence_day_position': recurrenceDayPosition,
+      if (recurrenceInterval != null) 'recurrence_interval': recurrenceInterval,
+      if (recurrenceEndDate != null) 'recurrence_end_date': recurrenceEndDate,
     };
     return _write('POST', '$_apiBase/meetup-events', payload);
   }

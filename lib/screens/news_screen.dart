@@ -1,7 +1,7 @@
 // NEWS-SCREEN — Einundzwanzig Artikel lesen
 // ============================================
 // Eine schlanke Ansicht:
-//   - Button: media.einundzwanzig.space im Browser öffnen.
+//   - Button: discover.einundzwanzig.space im Browser öffnen.
 //   - Darunter: Liste der NIP-23-Artikel (kind 30023) von den Relays,
 //     voll lesbar in der App (Markdown gerendert), im App-Design.
 // ============================================
@@ -14,7 +14,7 @@ import '../services/news_service.dart';
 import '../services/nostr_service.dart';
 import '../widgets/markdown_view.dart';
 
-const String _websiteUrl = 'https://media.einundzwanzig.space';
+const String _websiteUrl = 'https://discover.einundzwanzig.space';
 
 /// Wandelt einen Hex-Pubkey sicher in eine kurze npub-Anzeige um.
 String _authorLabel(String pubkeyHex) {
@@ -120,7 +120,7 @@ class _NewsScreenState extends State<NewsScreen> {
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(t.newsOpenWebsite, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
-          Text('media.einundzwanzig.space', style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+          Text('discover.einundzwanzig.space', style: const TextStyle(color: cTextTertiary, fontSize: 12)),
         ])),
         const Icon(Icons.open_in_new_rounded, color: cOrange, size: 18),
       ]),
