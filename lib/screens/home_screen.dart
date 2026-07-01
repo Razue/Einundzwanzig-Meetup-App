@@ -37,6 +37,9 @@ import 'badge_details.dart';
 import 'profile_edit.dart';
 import 'intro.dart';
 import 'admin_panel.dart';
+import 'converter_screen.dart';
+import 'news_screen.dart';
+import 'portal_meetups_screen.dart';
 import 'rolling_qr_screen.dart';
 import 'community_portal_screen.dart';
 import 'meetup_details.dart';
@@ -113,7 +116,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Pflicht-Kacheln (nicht löschbar)
   static const _requiredTiles = {'trust_score', 'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['trust_score', 'home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
+  static const _defaultOrder = ['trust_score', 'home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'news', 'portal', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard'};
 
   late List<_TileDef> _tileDefs;
@@ -141,6 +144,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _TileDef(id: 'shoutout',     label: 'Shoutout',         span: 1, builder: _buildShoutoutTile),
       _TileDef(id: 'podcast',      label: 'Podcast',          span: 1, builder: _buildPodcastTile),
       _TileDef(id: 'nostr',        label: 'Nostr',            span: 1, builder: _buildNostrTile),
+      _TileDef(id: 'converter',    label: 'Rechner',          span: 1, builder: _buildConverterTile),
+      _TileDef(id: 'news',         label: 'News',             span: 2, builder: _buildNewsTile),
+      _TileDef(id: 'portal',       label: 'Meine Meetups',    span: 2, builder: _buildPortalTile),
       _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin),
       // ── Admin-optionale Kacheln ──
       _TileDef(id: 'wot_dashboard', label: 'WoT Dashboard',  span: 3, builder: _buildWotDashboardTile, visible: () => _user.isAdmin),
@@ -743,6 +749,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildCommunityTile() => _tile(accentColor: cCyan, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityPortalScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildEventsTile() => _tile(accentColor: cTextTertiary, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.event_rounded, color: cTextSecondary, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileEvents, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileEventsCalendar, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildNewsTile() => _tile(accentColor: cOrange, opacity: 0.07, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())), child: Row(children: [const Icon(Icons.article_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileNews, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileNewsSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
+  Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.hub_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildNostrTile() => _tile(

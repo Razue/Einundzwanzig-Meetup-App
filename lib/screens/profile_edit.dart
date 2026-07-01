@@ -109,31 +109,133 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   // --- NOSTR KEY GENERIEREN ---
-  void _generateNostrKey() async {
-    final confirm = await showDialog<bool>(
+  /// Ausführlicher Erklär-Dialog (Onboarding) — erklärt Nostr-Neulingen,
+  /// was npub/nsec sind, wofür die Identität nutzbar ist und wie man sie
+  /// schützt. Gibt true zurück, wenn der Nutzer den Schlüssel erstellen will.
+  Future<bool?> _showKeyEducationDialog() {
+    final t = AppLocalizations.of(context);
+    return showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => Dialog(
         backgroundColor: cCard,
-        title: Text(AppLocalizations.of(context).profileCreateKey, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Text(
-          AppLocalizations.of(context).profileNewKeypairDesc +
-          AppLocalizations.of(context).profileBackupNsec,
-          style: const TextStyle(color: Colors.white70, height: 1.5),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Kopf
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
+              child: Row(children: [
+                Container(
+                  width: 42, height: 42,
+                  decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+                  child: const Icon(Icons.key_rounded, color: cOrange, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(t.keyEduTitle,
+                    style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800))),
+              ]),
+            ),
+            // Scrollbarer Inhalt
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(t.keyEduIntro, style: const TextStyle(color: cTextSecondary, fontSize: 13.5, height: 1.55)),
+                  const SizedBox(height: 18),
+                  _eduSection(Icons.public_rounded, cCyan, t.keyEduWhatNostrH, t.keyEduWhatNostrB),
+                  _eduSection(Icons.vpn_key_rounded, cOrange, t.keyEduPairH, t.keyEduPairB),
+                  _eduSection(Icons.badge_outlined, cGreen, t.keyEduNpubH, t.keyEduNpubB),
+                  // nsec = Warnung, rot hervorgehoben
+                  _eduSection(Icons.warning_amber_rounded, cRed, t.keyEduNsecH, t.keyEduNsecB, highlight: true),
+                  _eduSection(Icons.hub_rounded, cCyan, t.keyEduIdentityH, t.keyEduIdentityB),
+                  // Schutz-Checkliste
+                  const SizedBox(height: 4),
+                  Row(children: [
+                    const Icon(Icons.shield_rounded, color: cOrange, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(t.keyEduProtectH,
+                        style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700))),
+                  ]),
+                  const SizedBox(height: 10),
+                  _eduCheck(t.keyEduProtect1),
+                  _eduCheck(t.keyEduProtect2),
+                  _eduCheck(t.keyEduProtect3),
+                  _eduCheck(t.keyEduProtect4),
+                  const SizedBox(height: 20),
+                ]),
+              ),
+            ),
+            // Buttons
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+              child: Column(children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: cOrange,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () => Navigator.pop(ctx, true),
+                    icon: const Icon(Icons.check_rounded, color: Colors.white, size: 18),
+                    label: Text(t.keyEduUnderstood, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(t.keyEduCancel, style: const TextStyle(color: cTextSecondary)),
+                ),
+              ]),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(AppLocalizations.of(context).dialogCancel, style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: cOrange),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(AppLocalizations.of(context).dialogCreate, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
     );
+  }
 
+  /// Ein Abschnitt im Erklär-Dialog (Icon + Überschrift + Text).
+  Widget _eduSection(IconData icon, Color color, String title, String body, {bool highlight = false}) {
+    final content = Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 8),
+        Expanded(child: Text(title, style: TextStyle(color: highlight ? color : cText, fontSize: 15, fontWeight: FontWeight.w700))),
+      ]),
+      const SizedBox(height: 6),
+      Text(body, style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.55)),
+    ]);
+    if (highlight) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.35), width: 0.5),
+        ),
+        child: content,
+      );
+    }
+    return Padding(padding: const EdgeInsets.only(bottom: 16), child: content);
+  }
+
+  Widget _eduCheck(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Padding(
+        padding: EdgeInsets.only(top: 1, right: 8),
+        child: Icon(Icons.check_circle_rounded, color: cGreen, size: 16),
+      ),
+      Expanded(child: Text(text, style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.45))),
+    ]),
+  );
+
+  void _generateNostrKey() async {
+    final confirm = await _showKeyEducationDialog();
     if (confirm != true) return;
 
     setState(() => _isGeneratingKey = true);

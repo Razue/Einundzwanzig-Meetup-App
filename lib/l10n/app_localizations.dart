@@ -6651,6 +6651,750 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Badge gespeichert ✓'**
   String get verifyBadgeSaved;
+
+  /// No description provided for @tileConverter.
+  ///
+  /// In de, this message translates to:
+  /// **'Rechner'**
+  String get tileConverter;
+
+  /// No description provided for @tileConverterSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Währung ⇄ Sats'**
+  String get tileConverterSub;
+
+  /// No description provided for @convTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wechselrechner'**
+  String get convTitle;
+
+  /// No description provided for @convYouPay.
+  ///
+  /// In de, this message translates to:
+  /// **'Betrag'**
+  String get convYouPay;
+
+  /// No description provided for @convRateInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'1 BTC = {price} {cur}'**
+  String convRateInfo(Object price, Object cur);
+
+  /// No description provided for @convUpdated.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisiert: {time}'**
+  String convUpdated(Object time);
+
+  /// No description provided for @convRefresh.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurs aktualisieren'**
+  String get convRefresh;
+
+  /// No description provided for @convOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurs konnte nicht geladen werden. Bist du online?'**
+  String get convOffline;
+
+  /// No description provided for @convLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Kurs …'**
+  String get convLoading;
+
+  /// No description provided for @convSwap.
+  ///
+  /// In de, this message translates to:
+  /// **'Tauschen'**
+  String get convSwap;
+
+  /// No description provided for @convSelectCurrency.
+  ///
+  /// In de, this message translates to:
+  /// **'Währung wählen'**
+  String get convSelectCurrency;
+
+  /// No description provided for @convUnitSats.
+  ///
+  /// In de, this message translates to:
+  /// **'Satoshi'**
+  String get convUnitSats;
+
+  /// No description provided for @convUnitBtc.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitcoin'**
+  String get convUnitBtc;
+
+  /// No description provided for @convSource.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurs von mempool.space'**
+  String get convSource;
+
+  /// No description provided for @tileNews.
+  ///
+  /// In de, this message translates to:
+  /// **'News'**
+  String get tileNews;
+
+  /// No description provided for @tileNewsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Einundzwanzig Artikel lesen'**
+  String get tileNewsSub;
+
+  /// No description provided for @newsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'News'**
+  String get newsTitle;
+
+  /// No description provided for @newsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Artikel gefunden.'**
+  String get newsEmpty;
+
+  /// No description provided for @newsLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Artikel …'**
+  String get newsLoading;
+
+  /// No description provided for @newsRefresh.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisieren'**
+  String get newsRefresh;
+
+  /// No description provided for @newsSource.
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel via Nostr (NIP-23)'**
+  String get newsSource;
+
+  /// No description provided for @newsOpenWebsite.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf der Webseite öffnen'**
+  String get newsOpenWebsite;
+
+  /// No description provided for @keyEduTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Schlüssel zu Nostr'**
+  String get keyEduTitle;
+
+  /// No description provided for @keyEduWhatNostrH.
+  ///
+  /// In de, this message translates to:
+  /// **'Was ist Nostr?'**
+  String get keyEduWhatNostrH;
+
+  /// No description provided for @keyEduWhatNostrB.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr ist ein offenes, dezentrales Netzwerk – ähnlich wie das Internet selbst, aber für soziale Identität. Es gehört niemandem. Es gibt keine Firma, keinen Account und kein Passwort im klassischen Sinn. Statt dich bei einem Anbieter anzumelden, besitzt du einen kryptografischen Schlüssel, der dich überall im Netzwerk ausweist.'**
+  String get keyEduWhatNostrB;
+
+  /// No description provided for @keyEduPairH.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Schlüsselpaar'**
+  String get keyEduPairH;
+
+  /// No description provided for @keyEduPairB.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bekommst gleich zwei zusammengehörige Schlüssel. Sie funktionieren wie ein Briefkasten: Der öffentliche Schlüssel ist die Adresse, die du jedem geben darfst – der private Schlüssel ist der einzige Schlüssel, der den Briefkasten öffnet.'**
+  String get keyEduPairB;
+
+  /// No description provided for @keyEduNpubH.
+  ///
+  /// In de, this message translates to:
+  /// **'npub – dein öffentlicher Schlüssel'**
+  String get keyEduNpubH;
+
+  /// No description provided for @keyEduNpubB.
+  ///
+  /// In de, this message translates to:
+  /// **'Der npub (beginnt mit „npub1…“) ist deine öffentliche Identität. Du darfst ihn frei teilen – so finden dich andere, sehen deine Beiträge und können dir folgen. Er ist wie dein Benutzername, nur dass er dir wirklich gehört und niemand ihn dir wegnehmen kann.'**
+  String get keyEduNpubB;
+
+  /// No description provided for @keyEduNsecH.
+  ///
+  /// In de, this message translates to:
+  /// **'nsec – dein privater Schlüssel'**
+  String get keyEduNsecH;
+
+  /// No description provided for @keyEduNsecB.
+  ///
+  /// In de, this message translates to:
+  /// **'Der nsec (beginnt mit „nsec1…“) ist dein Geheimnis. Wer ihn besitzt, IST du – er kann in deinem Namen posten, deine Identität übernehmen und deine Reputation missbrauchen. Gib ihn NIEMALS weiter, tippe ihn nirgends ein, wo du unsicher bist, und mache niemals ein Foto davon in einer Cloud. Es gibt kein „Passwort vergessen“: Ist der nsec weg, ist die Identität für immer verloren.'**
+  String get keyEduNsecB;
+
+  /// No description provided for @keyEduIdentityH.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine Identität, viele Möglichkeiten'**
+  String get keyEduIdentityH;
+
+  /// No description provided for @keyEduIdentityB.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Schlüsselpaar ist nicht nur für diese App. Es ist deine Identität im gesamten Nostr-Netzwerk: dieselbe Identität kannst du in vielen anderen Nostr-Apps nutzen – für soziale Netzwerke, Blogs, Chats, Lightning-Zahlungen und mehr. In dieser App ist sie zusätzlich mit deiner Reputation, deinen Meetup-Badges und deinem Vertrauensnetzwerk verknüpft. Deshalb ist ihr Schutz so wichtig: Verlierst du den Schlüssel, verlierst du nicht nur einen Login, sondern alles, was du dir aufgebaut hast.'**
+  String get keyEduIdentityB;
+
+  /// No description provided for @keyEduProtectH.
+  ///
+  /// In de, this message translates to:
+  /// **'So schützt du deinen Schlüssel'**
+  String get keyEduProtectH;
+
+  /// No description provided for @keyEduProtect1.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichere den nsec sofort (z. B. in einem Passwort-Manager).'**
+  String get keyEduProtect1;
+
+  /// No description provided for @keyEduProtect2.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile nur den npub – niemals den nsec.'**
+  String get keyEduProtect2;
+
+  /// No description provided for @keyEduProtect3.
+  ///
+  /// In de, this message translates to:
+  /// **'Lege ein verschlüsseltes Backup an (in dieser App möglich).'**
+  String get keyEduProtect3;
+
+  /// No description provided for @keyEduProtect4.
+  ///
+  /// In de, this message translates to:
+  /// **'Für mehr Sicherheit: nutze eine Signer-App wie Amber.'**
+  String get keyEduProtect4;
+
+  /// No description provided for @keyEduUnderstood.
+  ///
+  /// In de, this message translates to:
+  /// **'Verstanden, Schlüssel erstellen'**
+  String get keyEduUnderstood;
+
+  /// No description provided for @keyEduCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get keyEduCancel;
+
+  /// No description provided for @keyEduIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Bevor du startest: Gleich erhältst du dein eigenes Schlüsselpaar. Nimm dir kurz Zeit – es lohnt sich zu verstehen, was du da bekommst.'**
+  String get keyEduIntro;
+
+  /// No description provided for @tilePortal.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get tilePortal;
+
+  /// No description provided for @tilePortalSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Termine im Portal verwalten'**
+  String get tilePortalSub;
+
+  /// No description provided for @portalTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get portalTitle;
+
+  /// No description provided for @portalNotConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit dem Portal verbinden'**
+  String get portalNotConnected;
+
+  /// No description provided for @portalConnectInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Melde dich mit deinem Nostr-Schlüssel am Einundzwanzig-Portal an, um deine Meetup-Termine direkt aus der App zu verwalten.'**
+  String get portalConnectInfo;
+
+  /// No description provided for @portalConnect.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmelden'**
+  String get portalConnect;
+
+  /// No description provided for @portalConnecting.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmeldung läuft …'**
+  String get portalConnecting;
+
+  /// No description provided for @portalLogout.
+  ///
+  /// In de, this message translates to:
+  /// **'Abmelden'**
+  String get portalLogout;
+
+  /// No description provided for @portalLoginFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Anmeldung fehlgeschlagen'**
+  String get portalLoginFailed;
+
+  /// No description provided for @portalLoadingMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade deine Meetups …'**
+  String get portalLoadingMeetups;
+
+  /// No description provided for @portalNoMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Du verwaltest noch keine Meetups im Portal.'**
+  String get portalNoMeetups;
+
+  /// No description provided for @portalLeader.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator'**
+  String get portalLeader;
+
+  /// No description provided for @portalNewEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin anlegen'**
+  String get portalNewEvent;
+
+  /// No description provided for @portalEventTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Termin'**
+  String get portalEventTitle;
+
+  /// No description provided for @portalFieldStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Datum & Uhrzeit'**
+  String get portalFieldStart;
+
+  /// No description provided for @portalPickDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Datum wählen'**
+  String get portalPickDate;
+
+  /// No description provided for @portalPickTime.
+  ///
+  /// In de, this message translates to:
+  /// **'Uhrzeit wählen'**
+  String get portalPickTime;
+
+  /// No description provided for @portalFieldLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort'**
+  String get portalFieldLocation;
+
+  /// No description provided for @portalFieldLocationHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Bitcoin-Treff Café (optional)'**
+  String get portalFieldLocationHint;
+
+  /// No description provided for @portalFieldDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'Beschreibung'**
+  String get portalFieldDescription;
+
+  /// No description provided for @portalFieldDescriptionHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Worum geht es? (optional)'**
+  String get portalFieldDescriptionHint;
+
+  /// No description provided for @portalFieldLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Link'**
+  String get portalFieldLink;
+
+  /// No description provided for @portalFieldLinkHint.
+  ///
+  /// In de, this message translates to:
+  /// **'https://… (optional)'**
+  String get portalFieldLinkHint;
+
+  /// No description provided for @portalSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin speichern'**
+  String get portalSave;
+
+  /// No description provided for @portalSaving.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird gespeichert …'**
+  String get portalSaving;
+
+  /// No description provided for @portalCreatedOk.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin angelegt ✓'**
+  String get portalCreatedOk;
+
+  /// No description provided for @portalNeedStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte Datum & Uhrzeit wählen.'**
+  String get portalNeedStart;
+
+  /// No description provided for @portalSource.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbunden mit portal.einundzwanzig.space'**
+  String get portalSource;
+
+  /// No description provided for @evCalendarButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Veranstaltungskalender'**
+  String get evCalendarButton;
+
+  /// No description provided for @evCalendarButtonSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Events im Überblick'**
+  String get evCalendarButtonSub;
+
+  /// No description provided for @calTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Veranstaltungskalender'**
+  String get calTitle;
+
+  /// No description provided for @calViewMonth.
+  ///
+  /// In de, this message translates to:
+  /// **'Monat'**
+  String get calViewMonth;
+
+  /// No description provided for @calViewYear.
+  ///
+  /// In de, this message translates to:
+  /// **'Jahr'**
+  String get calViewYear;
+
+  /// No description provided for @calViewList.
+  ///
+  /// In de, this message translates to:
+  /// **'Liste'**
+  String get calViewList;
+
+  /// No description provided for @calToday.
+  ///
+  /// In de, this message translates to:
+  /// **'Heute'**
+  String get calToday;
+
+  /// No description provided for @calNoEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Veranstaltungen an diesem Tag.'**
+  String get calNoEvents;
+
+  /// No description provided for @calNoEventsRange.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Veranstaltungen in diesem Zeitraum.'**
+  String get calNoEventsRange;
+
+  /// No description provided for @calLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Veranstaltungen …'**
+  String get calLoading;
+
+  /// No description provided for @calAddEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Event eintragen'**
+  String get calAddEvent;
+
+  /// No description provided for @calAllDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Ganztägig'**
+  String get calAllDay;
+
+  /// No description provided for @calSource.
+  ///
+  /// In de, this message translates to:
+  /// **'Events via Nostr (NIP-52)'**
+  String get calSource;
+
+  /// No description provided for @calNewEventTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Veranstaltung eintragen'**
+  String get calNewEventTitle;
+
+  /// No description provided for @calFieldTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel'**
+  String get calFieldTitle;
+
+  /// No description provided for @calFieldTitleHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. BTC Prag, Zitadelle …'**
+  String get calFieldTitleHint;
+
+  /// No description provided for @calFieldLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort'**
+  String get calFieldLocation;
+
+  /// No description provided for @calFieldLocationHint.
+  ///
+  /// In de, this message translates to:
+  /// **'z.B. Prag, Tschechien'**
+  String get calFieldLocationHint;
+
+  /// No description provided for @calFieldDescription.
+  ///
+  /// In de, this message translates to:
+  /// **'Beschreibung'**
+  String get calFieldDescription;
+
+  /// No description provided for @calFieldDescriptionHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Worum geht es? (optional)'**
+  String get calFieldDescriptionHint;
+
+  /// No description provided for @calFieldAllDay.
+  ///
+  /// In de, this message translates to:
+  /// **'Ganztägige Veranstaltung'**
+  String get calFieldAllDay;
+
+  /// No description provided for @calFieldStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Beginn'**
+  String get calFieldStart;
+
+  /// No description provided for @calFieldEnd.
+  ///
+  /// In de, this message translates to:
+  /// **'Ende (optional)'**
+  String get calFieldEnd;
+
+  /// No description provided for @calPickDateTime.
+  ///
+  /// In de, this message translates to:
+  /// **'Datum & Uhrzeit wählen'**
+  String get calPickDateTime;
+
+  /// No description provided for @calPickDate.
+  ///
+  /// In de, this message translates to:
+  /// **'Datum wählen'**
+  String get calPickDate;
+
+  /// No description provided for @calClearEnd.
+  ///
+  /// In de, this message translates to:
+  /// **'Ende entfernen'**
+  String get calClearEnd;
+
+  /// No description provided for @calPublish.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei Nostr veröffentlichen'**
+  String get calPublish;
+
+  /// No description provided for @calPublishing.
+  ///
+  /// In de, this message translates to:
+  /// **'Wird veröffentlicht …'**
+  String get calPublishing;
+
+  /// No description provided for @calPublishFail.
+  ///
+  /// In de, this message translates to:
+  /// **'Veröffentlichung fehlgeschlagen. Online & angemeldet?'**
+  String get calPublishFail;
+
+  /// No description provided for @calNeedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte gib einen Titel ein.'**
+  String get calNeedTitle;
+
+  /// No description provided for @calNeedStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte Beginn wählen.'**
+  String get calNeedStart;
+
+  /// No description provided for @calPublishInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Veranstaltung wird öffentlich bei Nostr eingetragen – jeder mit dieser App sieht sie in seinem Kalender.'**
+  String get calPublishInfo;
+
+  /// No description provided for @calMonth1.
+  ///
+  /// In de, this message translates to:
+  /// **'Januar'**
+  String get calMonth1;
+
+  /// No description provided for @calMonth2.
+  ///
+  /// In de, this message translates to:
+  /// **'Februar'**
+  String get calMonth2;
+
+  /// No description provided for @calMonth3.
+  ///
+  /// In de, this message translates to:
+  /// **'März'**
+  String get calMonth3;
+
+  /// No description provided for @calMonth4.
+  ///
+  /// In de, this message translates to:
+  /// **'April'**
+  String get calMonth4;
+
+  /// No description provided for @calMonth5.
+  ///
+  /// In de, this message translates to:
+  /// **'Mai'**
+  String get calMonth5;
+
+  /// No description provided for @calMonth6.
+  ///
+  /// In de, this message translates to:
+  /// **'Juni'**
+  String get calMonth6;
+
+  /// No description provided for @calMonth7.
+  ///
+  /// In de, this message translates to:
+  /// **'Juli'**
+  String get calMonth7;
+
+  /// No description provided for @calMonth8.
+  ///
+  /// In de, this message translates to:
+  /// **'August'**
+  String get calMonth8;
+
+  /// No description provided for @calMonth9.
+  ///
+  /// In de, this message translates to:
+  /// **'September'**
+  String get calMonth9;
+
+  /// No description provided for @calMonth10.
+  ///
+  /// In de, this message translates to:
+  /// **'Oktober'**
+  String get calMonth10;
+
+  /// No description provided for @calMonth11.
+  ///
+  /// In de, this message translates to:
+  /// **'November'**
+  String get calMonth11;
+
+  /// No description provided for @calMonth12.
+  ///
+  /// In de, this message translates to:
+  /// **'Dezember'**
+  String get calMonth12;
+
+  /// No description provided for @calWd0.
+  ///
+  /// In de, this message translates to:
+  /// **'Mo'**
+  String get calWd0;
+
+  /// No description provided for @calWd1.
+  ///
+  /// In de, this message translates to:
+  /// **'Di'**
+  String get calWd1;
+
+  /// No description provided for @calWd2.
+  ///
+  /// In de, this message translates to:
+  /// **'Mi'**
+  String get calWd2;
+
+  /// No description provided for @calWd3.
+  ///
+  /// In de, this message translates to:
+  /// **'Do'**
+  String get calWd3;
+
+  /// No description provided for @calWd4.
+  ///
+  /// In de, this message translates to:
+  /// **'Fr'**
+  String get calWd4;
+
+  /// No description provided for @calWd5.
+  ///
+  /// In de, this message translates to:
+  /// **'Sa'**
+  String get calWd5;
+
+  /// No description provided for @calWd6.
+  ///
+  /// In de, this message translates to:
+  /// **'So'**
+  String get calWd6;
+
+  /// No description provided for @calTypeMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup'**
+  String get calTypeMeetup;
+
+  /// No description provided for @calTypeEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Event'**
+  String get calTypeEvent;
+
+  /// No description provided for @calLegendMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get calLegendMeetup;
+
+  /// No description provided for @calLegendEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Veranstaltungen'**
+  String get calLegendEvent;
 }
 
 class _AppLocalizationsDelegate

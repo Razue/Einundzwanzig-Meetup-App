@@ -3692,4 +3692,392 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get verifyBadgeSaved => 'Badge gespeichert ✓';
+
+  @override
+  String get tileConverter => 'Rechner';
+
+  @override
+  String get tileConverterSub => 'Währung ⇄ Sats';
+
+  @override
+  String get convTitle => 'Wechselrechner';
+
+  @override
+  String get convYouPay => 'Betrag';
+
+  @override
+  String convRateInfo(Object price, Object cur) {
+    return '1 BTC = $price $cur';
+  }
+
+  @override
+  String convUpdated(Object time) {
+    return 'Aktualisiert: $time';
+  }
+
+  @override
+  String get convRefresh => 'Kurs aktualisieren';
+
+  @override
+  String get convOffline => 'Kurs konnte nicht geladen werden. Bist du online?';
+
+  @override
+  String get convLoading => 'Lade Kurs …';
+
+  @override
+  String get convSwap => 'Tauschen';
+
+  @override
+  String get convSelectCurrency => 'Währung wählen';
+
+  @override
+  String get convUnitSats => 'Satoshi';
+
+  @override
+  String get convUnitBtc => 'Bitcoin';
+
+  @override
+  String get convSource => 'Kurs von mempool.space';
+
+  @override
+  String get tileNews => 'News';
+
+  @override
+  String get tileNewsSub => 'Einundzwanzig Artikel lesen';
+
+  @override
+  String get newsTitle => 'News';
+
+  @override
+  String get newsEmpty => 'Keine Artikel gefunden.';
+
+  @override
+  String get newsLoading => 'Lade Artikel …';
+
+  @override
+  String get newsRefresh => 'Aktualisieren';
+
+  @override
+  String get newsSource => 'Artikel via Nostr (NIP-23)';
+
+  @override
+  String get newsOpenWebsite => 'Auf der Webseite öffnen';
+
+  @override
+  String get keyEduTitle => 'Dein Schlüssel zu Nostr';
+
+  @override
+  String get keyEduWhatNostrH => 'Was ist Nostr?';
+
+  @override
+  String get keyEduWhatNostrB =>
+      'Nostr ist ein offenes, dezentrales Netzwerk – ähnlich wie das Internet selbst, aber für soziale Identität. Es gehört niemandem. Es gibt keine Firma, keinen Account und kein Passwort im klassischen Sinn. Statt dich bei einem Anbieter anzumelden, besitzt du einen kryptografischen Schlüssel, der dich überall im Netzwerk ausweist.';
+
+  @override
+  String get keyEduPairH => 'Dein Schlüsselpaar';
+
+  @override
+  String get keyEduPairB =>
+      'Du bekommst gleich zwei zusammengehörige Schlüssel. Sie funktionieren wie ein Briefkasten: Der öffentliche Schlüssel ist die Adresse, die du jedem geben darfst – der private Schlüssel ist der einzige Schlüssel, der den Briefkasten öffnet.';
+
+  @override
+  String get keyEduNpubH => 'npub – dein öffentlicher Schlüssel';
+
+  @override
+  String get keyEduNpubB =>
+      'Der npub (beginnt mit „npub1…“) ist deine öffentliche Identität. Du darfst ihn frei teilen – so finden dich andere, sehen deine Beiträge und können dir folgen. Er ist wie dein Benutzername, nur dass er dir wirklich gehört und niemand ihn dir wegnehmen kann.';
+
+  @override
+  String get keyEduNsecH => 'nsec – dein privater Schlüssel';
+
+  @override
+  String get keyEduNsecB =>
+      'Der nsec (beginnt mit „nsec1…“) ist dein Geheimnis. Wer ihn besitzt, IST du – er kann in deinem Namen posten, deine Identität übernehmen und deine Reputation missbrauchen. Gib ihn NIEMALS weiter, tippe ihn nirgends ein, wo du unsicher bist, und mache niemals ein Foto davon in einer Cloud. Es gibt kein „Passwort vergessen“: Ist der nsec weg, ist die Identität für immer verloren.';
+
+  @override
+  String get keyEduIdentityH => 'Eine Identität, viele Möglichkeiten';
+
+  @override
+  String get keyEduIdentityB =>
+      'Dieses Schlüsselpaar ist nicht nur für diese App. Es ist deine Identität im gesamten Nostr-Netzwerk: dieselbe Identität kannst du in vielen anderen Nostr-Apps nutzen – für soziale Netzwerke, Blogs, Chats, Lightning-Zahlungen und mehr. In dieser App ist sie zusätzlich mit deiner Reputation, deinen Meetup-Badges und deinem Vertrauensnetzwerk verknüpft. Deshalb ist ihr Schutz so wichtig: Verlierst du den Schlüssel, verlierst du nicht nur einen Login, sondern alles, was du dir aufgebaut hast.';
+
+  @override
+  String get keyEduProtectH => 'So schützt du deinen Schlüssel';
+
+  @override
+  String get keyEduProtect1 =>
+      'Sichere den nsec sofort (z. B. in einem Passwort-Manager).';
+
+  @override
+  String get keyEduProtect2 => 'Teile nur den npub – niemals den nsec.';
+
+  @override
+  String get keyEduProtect3 =>
+      'Lege ein verschlüsseltes Backup an (in dieser App möglich).';
+
+  @override
+  String get keyEduProtect4 =>
+      'Für mehr Sicherheit: nutze eine Signer-App wie Amber.';
+
+  @override
+  String get keyEduUnderstood => 'Verstanden, Schlüssel erstellen';
+
+  @override
+  String get keyEduCancel => 'Abbrechen';
+
+  @override
+  String get keyEduIntro =>
+      'Bevor du startest: Gleich erhältst du dein eigenes Schlüsselpaar. Nimm dir kurz Zeit – es lohnt sich zu verstehen, was du da bekommst.';
+
+  @override
+  String get tilePortal => 'Meine Meetups';
+
+  @override
+  String get tilePortalSub => 'Termine im Portal verwalten';
+
+  @override
+  String get portalTitle => 'Meine Meetups';
+
+  @override
+  String get portalNotConnected => 'Mit dem Portal verbinden';
+
+  @override
+  String get portalConnectInfo =>
+      'Melde dich mit deinem Nostr-Schlüssel am Einundzwanzig-Portal an, um deine Meetup-Termine direkt aus der App zu verwalten.';
+
+  @override
+  String get portalConnect => 'Anmelden';
+
+  @override
+  String get portalConnecting => 'Anmeldung läuft …';
+
+  @override
+  String get portalLogout => 'Abmelden';
+
+  @override
+  String get portalLoginFailed => 'Anmeldung fehlgeschlagen';
+
+  @override
+  String get portalLoadingMeetups => 'Lade deine Meetups …';
+
+  @override
+  String get portalNoMeetups => 'Du verwaltest noch keine Meetups im Portal.';
+
+  @override
+  String get portalLeader => 'Organisator';
+
+  @override
+  String get portalNewEvent => 'Termin anlegen';
+
+  @override
+  String get portalEventTitle => 'Neuer Termin';
+
+  @override
+  String get portalFieldStart => 'Datum & Uhrzeit';
+
+  @override
+  String get portalPickDate => 'Datum wählen';
+
+  @override
+  String get portalPickTime => 'Uhrzeit wählen';
+
+  @override
+  String get portalFieldLocation => 'Ort';
+
+  @override
+  String get portalFieldLocationHint => 'z.B. Bitcoin-Treff Café (optional)';
+
+  @override
+  String get portalFieldDescription => 'Beschreibung';
+
+  @override
+  String get portalFieldDescriptionHint => 'Worum geht es? (optional)';
+
+  @override
+  String get portalFieldLink => 'Link';
+
+  @override
+  String get portalFieldLinkHint => 'https://… (optional)';
+
+  @override
+  String get portalSave => 'Termin speichern';
+
+  @override
+  String get portalSaving => 'Wird gespeichert …';
+
+  @override
+  String get portalCreatedOk => 'Termin angelegt ✓';
+
+  @override
+  String get portalNeedStart => 'Bitte Datum & Uhrzeit wählen.';
+
+  @override
+  String get portalSource => 'Verbunden mit portal.einundzwanzig.space';
+
+  @override
+  String get evCalendarButton => 'Veranstaltungskalender';
+
+  @override
+  String get evCalendarButtonSub => 'Alle Events im Überblick';
+
+  @override
+  String get calTitle => 'Veranstaltungskalender';
+
+  @override
+  String get calViewMonth => 'Monat';
+
+  @override
+  String get calViewYear => 'Jahr';
+
+  @override
+  String get calViewList => 'Liste';
+
+  @override
+  String get calToday => 'Heute';
+
+  @override
+  String get calNoEvents => 'Keine Veranstaltungen an diesem Tag.';
+
+  @override
+  String get calNoEventsRange => 'Keine Veranstaltungen in diesem Zeitraum.';
+
+  @override
+  String get calLoading => 'Lade Veranstaltungen …';
+
+  @override
+  String get calAddEvent => 'Event eintragen';
+
+  @override
+  String get calAllDay => 'Ganztägig';
+
+  @override
+  String get calSource => 'Events via Nostr (NIP-52)';
+
+  @override
+  String get calNewEventTitle => 'Veranstaltung eintragen';
+
+  @override
+  String get calFieldTitle => 'Titel';
+
+  @override
+  String get calFieldTitleHint => 'z.B. BTC Prag, Zitadelle …';
+
+  @override
+  String get calFieldLocation => 'Ort';
+
+  @override
+  String get calFieldLocationHint => 'z.B. Prag, Tschechien';
+
+  @override
+  String get calFieldDescription => 'Beschreibung';
+
+  @override
+  String get calFieldDescriptionHint => 'Worum geht es? (optional)';
+
+  @override
+  String get calFieldAllDay => 'Ganztägige Veranstaltung';
+
+  @override
+  String get calFieldStart => 'Beginn';
+
+  @override
+  String get calFieldEnd => 'Ende (optional)';
+
+  @override
+  String get calPickDateTime => 'Datum & Uhrzeit wählen';
+
+  @override
+  String get calPickDate => 'Datum wählen';
+
+  @override
+  String get calClearEnd => 'Ende entfernen';
+
+  @override
+  String get calPublish => 'Bei Nostr veröffentlichen';
+
+  @override
+  String get calPublishing => 'Wird veröffentlicht …';
+
+  @override
+  String get calPublishFail =>
+      'Veröffentlichung fehlgeschlagen. Online & angemeldet?';
+
+  @override
+  String get calNeedTitle => 'Bitte gib einen Titel ein.';
+
+  @override
+  String get calNeedStart => 'Bitte Beginn wählen.';
+
+  @override
+  String get calPublishInfo =>
+      'Diese Veranstaltung wird öffentlich bei Nostr eingetragen – jeder mit dieser App sieht sie in seinem Kalender.';
+
+  @override
+  String get calMonth1 => 'Januar';
+
+  @override
+  String get calMonth2 => 'Februar';
+
+  @override
+  String get calMonth3 => 'März';
+
+  @override
+  String get calMonth4 => 'April';
+
+  @override
+  String get calMonth5 => 'Mai';
+
+  @override
+  String get calMonth6 => 'Juni';
+
+  @override
+  String get calMonth7 => 'Juli';
+
+  @override
+  String get calMonth8 => 'August';
+
+  @override
+  String get calMonth9 => 'September';
+
+  @override
+  String get calMonth10 => 'Oktober';
+
+  @override
+  String get calMonth11 => 'November';
+
+  @override
+  String get calMonth12 => 'Dezember';
+
+  @override
+  String get calWd0 => 'Mo';
+
+  @override
+  String get calWd1 => 'Di';
+
+  @override
+  String get calWd2 => 'Mi';
+
+  @override
+  String get calWd3 => 'Do';
+
+  @override
+  String get calWd4 => 'Fr';
+
+  @override
+  String get calWd5 => 'Sa';
+
+  @override
+  String get calWd6 => 'So';
+
+  @override
+  String get calTypeMeetup => 'Meetup';
+
+  @override
+  String get calTypeEvent => 'Event';
+
+  @override
+  String get calLegendMeetup => 'Meetups';
+
+  @override
+  String get calLegendEvent => 'Veranstaltungen';
 }

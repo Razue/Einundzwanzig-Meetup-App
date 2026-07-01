@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/meetup.dart';
 import '../services/meetup_service.dart';
 import 'meetup_details.dart';
+import 'event_calendar_screen.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -103,6 +104,43 @@ class _EventsScreenState extends State<EventsScreen> {
                     ],
                   ),
                 ),
+
+                // Veranstaltungskalender-Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventCalendarScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft, end: Alignment.bottomRight,
+                          colors: [cCyan.withValues(alpha: 0.18), cCard],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: cCyan.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(children: [
+                        Container(
+                          width: 46, height: 46,
+                          decoration: BoxDecoration(color: cCyan.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+                          child: const Icon(Icons.calendar_month_rounded, color: cCyan, size: 24),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(AppLocalizations.of(context).evCalendarButton,
+                              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w800)),
+                          const SizedBox(height: 2),
+                          Text(AppLocalizations.of(context).evCalendarButtonSub,
+                              style: const TextStyle(color: cTextSecondary, fontSize: 12)),
+                        ])),
+                        const Icon(Icons.chevron_right_rounded, color: cCyan, size: 20),
+                      ]),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
 
                 // Suchfeld
                 Padding(

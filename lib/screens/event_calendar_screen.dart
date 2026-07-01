@@ -1,0 +1,691 @@
+// VERANSTALTUNGSKALENDER
+// ============================================
+// Übersichtlicher Kalender über alle Nostr-Events (NIP-52) + Meetups.
+// Drei Ansichten: Monat (Grid), Jahr (12 Monate), Liste (chronologisch).
+// Eigenes Kalender-Grid (keine externe Abhängigkeit).
+// Button zum Eintragen eigener Veranstaltungen, die bei Nostr publiziert
+// werden und so für alle sichtbar sind.
+// ============================================
+
+import 'package:flutter/material.dart';
+import '../theme.dart';
+import '../l10n/app_localizations.dart';
+import '../services/calendar_event_service.dart';
+import '../services/meetup_calendar_service.dart';
+import '../models/calendar_event.dart' as ical;
+
+enum _CalView { month, year, list }
+
+/// Vereinheitlichter Kalender-Eintrag — vereint Nostr-Events (NIP-52) und
+/// die Portal-/iCal-Meetups in einer gemeinsamen Darstellung.
+/// isMeetup steuert die Farbe (Meetup = orange, Nostr-Event = cyan/gold).
+class _CalItem {
+  final String title;
+  final String description;
+  final String location;
+  final DateTime start;
+  final DateTime? end;
+  final bool allDay;
+  final bool isMeetup;
+
+  _CalItem({
+    required this.title,
+    required this.description,
+    required this.location,
+    required this.start,
+    required this.end,
+    required this.allDay,
+    required this.isMeetup,
+  });
+
+  DateTime get day => DateTime(start.year, start.month, start.day);
+  Color get color => isMeetup ? cOrange : cCyan;
+
+  factory _CalItem.fromNostr(NostrCalendarEvent e) => _CalItem(
+        title: e.title,
+        description: e.description,
+        location: e.location,
+        start: e.start,
+        end: e.end,
+        allDay: e.allDay,
+        isMeetup: false,
+      );
+
+  factory _CalItem.fromMeetup(ical.CalendarEvent e) => _CalItem(
+        title: e.title,
+        description: e.description,
+        location: e.location,
+        start: e.startTime,
+        end: null,
+        allDay: false,
+        isMeetup: true,
+      );
+}
+
+class EventCalendarScreen extends StatefulWidget {
+  const EventCalendarScreen({super.key});
+
+  @override
+  State<EventCalendarScreen> createState() => _EventCalendarScreenState();
+}
+
+class _EventCalendarScreenState extends State<EventCalendarScreen> {
+  _CalView _view = _CalView.month;
+  DateTime _focused = DateTime.now();      // aktuell angezeigter Monat/Jahr
+  DateTime _selected = DateTime.now();     // gewählter Tag (Monatsansicht)
+  bool _loading = true;
+  List<_CalItem> _events = [];
+  // Events nach Tag gruppiert (für schnelle Marker)
+  Map<DateTime, List<_CalItem>> _byDay = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    // Beide Quellen laden: Nostr-Events (NIP-52) + Portal-/iCal-Meetups.
+    // Getrennt awaiten, damit die Typen sauber erhalten bleiben.
+    final nostrFuture = CalendarEventService.fetchEvents();
+    final meetupFuture = MeetupCalendarService().fetchMeetups();
+    final List<NostrCalendarEvent> nostrEvents = await nostrFuture;
+    final List<ical.CalendarEvent> meetups = await meetupFuture;
+    if (!mounted) return;
+
+    final items = <_CalItem>[];
+    for (final e in nostrEvents) {
+      items.add(_CalItem.fromNostr(e));
+    }
+    for (final m in meetups) {
+      items.add(_CalItem.fromMeetup(m));
+    }
+    items.sort((a, b) => a.start.compareTo(b.start));
+
+    final map = <DateTime, List<_CalItem>>{};
+    for (final e in items) {
+      map.putIfAbsent(e.day, () => []).add(e);
+    }
+    setState(() { _events = items; _byDay = map; _loading = false; });
+  }
+
+  List<_CalItem> _eventsOn(DateTime day) =>
+      _byDay[DateTime(day.year, day.month, day.day)] ?? const [];
+
+  String _monthName(AppLocalizations t, int m) {
+    switch (m) {
+      case 1: return t.calMonth1; case 2: return t.calMonth2; case 3: return t.calMonth3;
+      case 4: return t.calMonth4; case 5: return t.calMonth5; case 6: return t.calMonth6;
+      case 7: return t.calMonth7; case 8: return t.calMonth8; case 9: return t.calMonth9;
+      case 10: return t.calMonth10; case 11: return t.calMonth11; default: return t.calMonth12;
+    }
+  }
+
+  String _wd(AppLocalizations t, int i) {
+    switch (i) {
+      case 0: return t.calWd0; case 1: return t.calWd1; case 2: return t.calWd2;
+      case 3: return t.calWd3; case 4: return t.calWd4; case 5: return t.calWd5; default: return t.calWd6;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: cDark,
+      appBar: AppBar(
+        backgroundColor: cDark,
+        elevation: 0,
+        title: Text(t.calTitle, style: const TextStyle(color: cText, fontWeight: FontWeight.w700)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: cTextSecondary),
+            onPressed: _loading ? null : _load,
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: cOrange,
+        onPressed: _openEditor,
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: Text(t.calAddEvent, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+      ),
+      body: SafeArea(
+        child: Column(children: [
+          _viewSwitcher(t),
+          _legend(t),
+          Expanded(
+            child: _loading
+                ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    const CircularProgressIndicator(color: cOrange),
+                    const SizedBox(height: 14),
+                    Text(t.calLoading, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
+                  ]))
+                : RefreshIndicator(
+                    color: cOrange, backgroundColor: cCard,
+                    onRefresh: _load,
+                    child: _viewBody(t),
+                  ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  // ── Ansichts-Umschalter (Monat / Jahr / Liste) ──
+  Widget _viewSwitcher(AppLocalizations t) => Container(
+    margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+    child: Row(children: [
+      _segBtn(t.calViewMonth, _CalView.month),
+      _segBtn(t.calViewYear, _CalView.year),
+      _segBtn(t.calViewList, _CalView.list),
+    ]),
+  );
+
+  Widget _segBtn(String label, _CalView v) {
+    final sel = _view == v;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _view = v),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(color: sel ? cOrange : Colors.transparent, borderRadius: BorderRadius.circular(kTileRadius - 2)),
+          alignment: Alignment.center,
+          child: Text(label, style: TextStyle(color: sel ? Colors.white : cTextSecondary, fontSize: 13, fontWeight: FontWeight.w700)),
+        ),
+      ),
+    );
+  }
+
+  // ── Farb-Legende ──
+  Widget _legend(AppLocalizations t) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
+    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+      _legendDot(cOrange, t.calLegendMeetup),
+      const SizedBox(width: 18),
+      _legendDot(cCyan, t.calLegendEvent),
+    ]),
+  );
+
+  Widget _legendDot(Color color, String label) => Row(mainAxisSize: MainAxisSize.min, children: [
+    Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+    const SizedBox(width: 6),
+    Text(label, style: const TextStyle(color: cTextSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+  ]);
+
+  Widget _viewBody(AppLocalizations t) {
+    switch (_view) {
+      case _CalView.month: return _monthView(t);
+      case _CalView.year:  return _yearView(t);
+      case _CalView.list:  return _listView(t);
+    }
+  }
+
+  // ── MONATSANSICHT ──
+  Widget _monthView(AppLocalizations t) {
+    final selectedEvents = _eventsOn(_selected);
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      children: [
+        _monthHeader(t, _focused, () => setState(() => _focused = DateTime(_focused.year, _focused.month - 1)),
+            () => setState(() => _focused = DateTime(_focused.year, _focused.month + 1))),
+        const SizedBox(height: 12),
+        _weekdayRow(t),
+        const SizedBox(height: 6),
+        _monthGrid(t),
+        const SizedBox(height: 20),
+        // Events des gewählten Tages
+        Row(children: [
+          Text('${_selected.day}. ${_monthName(t, _selected.month)}',
+              style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+          const Spacer(),
+          if (_isToday(_selected))
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+              child: Text(t.calToday, style: const TextStyle(color: cOrange, fontSize: 11, fontWeight: FontWeight.w700)),
+            ),
+        ]),
+        const SizedBox(height: 10),
+        if (selectedEvents.isEmpty)
+          Padding(padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Text(t.calNoEvents, style: const TextStyle(color: cTextSecondary, fontSize: 13)))
+        else
+          ...selectedEvents.map((e) => _eventCard(t, e)),
+        const SizedBox(height: 12),
+        Center(child: Text(t.calSource, style: const TextStyle(color: cTextTertiary, fontSize: 11))),
+      ],
+    );
+  }
+
+  Widget _monthHeader(AppLocalizations t, DateTime month, VoidCallback onPrev, VoidCallback onNext) => Row(
+    children: [
+      IconButton(icon: const Icon(Icons.chevron_left_rounded, color: cTextSecondary), onPressed: onPrev),
+      Expanded(child: Center(child: Text('${_monthName(t, month.month)} ${month.year}',
+          style: const TextStyle(color: cText, fontSize: 17, fontWeight: FontWeight.w800)))),
+      IconButton(icon: const Icon(Icons.chevron_right_rounded, color: cTextSecondary), onPressed: onNext),
+    ],
+  );
+
+  Widget _weekdayRow(AppLocalizations t) => Row(
+    children: List.generate(7, (i) => Expanded(
+      child: Center(child: Text(_wd(t, i), style: const TextStyle(color: cTextTertiary, fontSize: 11, fontWeight: FontWeight.w700))),
+    )),
+  );
+
+  Widget _monthGrid(AppLocalizations t) {
+    final first = DateTime(_focused.year, _focused.month, 1);
+    // Montag=1 ... Sonntag=7 -> Offset auf Montag-basiertes Grid
+    final leading = (first.weekday + 6) % 7;
+    final daysInMonth = DateTime(_focused.year, _focused.month + 1, 0).day;
+    final cells = <Widget>[];
+
+    for (int i = 0; i < leading; i++) {
+      cells.add(const SizedBox.shrink());
+    }
+    for (int d = 1; d <= daysInMonth; d++) {
+      final day = DateTime(_focused.year, _focused.month, d);
+      final events = _eventsOn(day);
+      final isSel = _sameDay(day, _selected);
+      final isToday = _isToday(day);
+      cells.add(GestureDetector(
+        onTap: () => setState(() => _selected = day),
+        child: Container(
+          margin: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: isSel ? cOrange : (isToday ? cOrange.withValues(alpha: 0.12) : Colors.transparent),
+            borderRadius: BorderRadius.circular(8),
+            border: isToday && !isSel ? Border.all(color: cOrange, width: 1) : null,
+          ),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text('$d', style: TextStyle(
+              color: isSel ? Colors.white : cText,
+              fontSize: 13,
+              fontWeight: isSel || isToday ? FontWeight.w800 : FontWeight.w500,
+            )),
+            const SizedBox(height: 2),
+            // Event-Punkte (max 3), eingefärbt nach Typ (orange=Meetup, cyan=Event)
+            if (events.isNotEmpty)
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                for (int k = 0; k < (events.length > 3 ? 3 : events.length); k++)
+                  Container(width: 4, height: 4, margin: const EdgeInsets.symmetric(horizontal: 1),
+                      decoration: BoxDecoration(color: isSel ? Colors.white : events[k].color, shape: BoxShape.circle)),
+              ])
+            else
+              const SizedBox(height: 4),
+          ]),
+        ),
+      ));
+    }
+
+    // In Wochenzeilen zu je 7 aufteilen
+    final rows = <Widget>[];
+    for (int i = 0; i < cells.length; i += 7) {
+      final week = cells.sublist(i, (i + 7 > cells.length) ? cells.length : i + 7);
+      while (week.length < 7) {
+        week.add(const SizedBox.shrink());
+      }
+      rows.add(Row(children: week.map((c) => Expanded(child: AspectRatio(aspectRatio: 1, child: c))).toList()));
+    }
+    return Column(children: rows);
+  }
+
+  // ── JAHRESANSICHT ──
+  Widget _yearView(AppLocalizations t) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      children: [
+        Row(children: [
+          IconButton(icon: const Icon(Icons.chevron_left_rounded, color: cTextSecondary),
+              onPressed: () => setState(() => _focused = DateTime(_focused.year - 1, _focused.month))),
+          Expanded(child: Center(child: Text('${_focused.year}',
+              style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800)))),
+          IconButton(icon: const Icon(Icons.chevron_right_rounded, color: cTextSecondary),
+              onPressed: () => setState(() => _focused = DateTime(_focused.year + 1, _focused.month))),
+        ]),
+        const SizedBox(height: 8),
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1.1,
+          children: List.generate(12, (i) => _yearMonthCell(t, i + 1)),
+        ),
+      ],
+    );
+  }
+
+  Widget _yearMonthCell(AppLocalizations t, int month) {
+    // Anzahl Events in diesem Monat
+    int count = 0;
+    for (final e in _events) {
+      if (e.start.year == _focused.year && e.start.month == month) count++;
+    }
+    return GestureDetector(
+      onTap: () => setState(() { _focused = DateTime(_focused.year, month); _view = _CalView.month; }),
+      child: Container(
+        decoration: BoxDecoration(
+          color: cCard, borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: count > 0 ? cOrange.withValues(alpha: 0.4) : cTileBorder, width: 0.5),
+        ),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Text(_monthName(t, month), style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 6),
+          if (count > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
+              child: Text('$count', style: const TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.w800)),
+            )
+          else
+            Text('–', style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+        ]),
+      ),
+    );
+  }
+
+  // ── LISTENANSICHT ──
+  Widget _listView(AppLocalizations t) {
+    final now = DateTime.now();
+    final upcoming = _events.where((e) => e.start.isAfter(now.subtract(const Duration(days: 1)))).toList();
+    if (upcoming.isEmpty) {
+      return ListView(children: [
+        const SizedBox(height: 100),
+        const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 44),
+        const SizedBox(height: 12),
+        Center(child: Text(t.calNoEventsRange, style: const TextStyle(color: cTextSecondary, fontSize: 14))),
+      ]);
+    }
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+      children: [
+        ...upcoming.map((e) => _eventCard(t, e, showDate: true)),
+        const SizedBox(height: 12),
+        Center(child: Text(t.calSource, style: const TextStyle(color: cTextTertiary, fontSize: 11))),
+      ],
+    );
+  }
+
+  // ── Event-Karte ──
+  Widget _eventCard(AppLocalizations t, _CalItem e, {bool showDate = false}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cCard, borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(color: cTileBorder, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Container(width: 8, height: 8, decoration: BoxDecoration(color: e.color, shape: BoxShape.circle)),
+          const SizedBox(width: 8),
+          Expanded(child: Text(e.title, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700))),
+          // Typ-Badge (Meetup = orange, Veranstaltung = cyan)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(color: e.color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+            child: Text(e.isMeetup ? t.calTypeMeetup : t.calTypeEvent,
+                style: TextStyle(color: e.color, fontSize: 10, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        const SizedBox(height: 8),
+        Row(children: [
+          const Icon(Icons.schedule_rounded, color: cTextTertiary, size: 13),
+          const SizedBox(width: 5),
+          Text(_fmtWhen(t, e, showDate), style: const TextStyle(color: cTextSecondary, fontSize: 12)),
+        ]),
+        if (e.location.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Row(children: [
+            const Icon(Icons.place_rounded, color: cTextTertiary, size: 13),
+            const SizedBox(width: 5),
+            Expanded(child: Text(e.location, style: const TextStyle(color: cTextSecondary, fontSize: 12))),
+          ]),
+        ],
+        if (e.description.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(e.description, maxLines: 3, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+        ],
+      ]),
+    );
+  }
+
+  String _fmtWhen(AppLocalizations t, _CalItem e, bool showDate) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    final d = e.start;
+    final datePart = showDate ? '${d.day}. ${_monthName(t, d.month)} ${d.year}' : '';
+    if (e.allDay) {
+      return showDate ? '$datePart · ${t.calAllDay}' : t.calAllDay;
+    }
+    final time = '${two(d.hour)}:${two(d.minute)}';
+    return showDate ? '$datePart · $time' : time;
+  }
+
+  bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+  bool _isToday(DateTime d) => _sameDay(d, DateTime.now());
+
+  Future<void> _openEditor() async {
+    final published = await Navigator.push<bool>(
+      context, MaterialPageRoute(builder: (_) => const EventEditorScreen()),
+    );
+    if (published == true && mounted) {
+      _load(); // neu laden, damit das eigene Event erscheint
+    }
+  }
+}
+
+// ============================================
+//  EVENT-EDITOR (eintragen + bei Nostr publishen)
+// ============================================
+class EventEditorScreen extends StatefulWidget {
+  const EventEditorScreen({super.key});
+
+  @override
+  State<EventEditorScreen> createState() => _EventEditorScreenState();
+}
+
+class _EventEditorScreenState extends State<EventEditorScreen> {
+  final _titleCtrl = TextEditingController();
+  final _locationCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  bool _allDay = false;
+  DateTime? _start;
+  DateTime? _end;
+  bool _publishing = false;
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _locationCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickStart() async {
+    final picked = await _pickDateTime(_start);
+    if (picked != null) setState(() => _start = picked);
+  }
+
+  Future<void> _pickEnd() async {
+    final picked = await _pickDateTime(_end ?? _start);
+    if (picked != null) setState(() => _end = picked);
+  }
+
+  Future<DateTime?> _pickDateTime(DateTime? initial) async {
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial ?? now,
+      firstDate: now.subtract(const Duration(days: 1)),
+      lastDate: now.add(const Duration(days: 365 * 5)),
+    );
+    if (date == null) return null;
+    if (_allDay) {
+      return DateTime(date.year, date.month, date.day);
+    }
+    if (!mounted) return null;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial ?? now),
+    );
+    return DateTime(date.year, date.month, date.day, time?.hour ?? 19, time?.minute ?? 0);
+  }
+
+  Future<void> _publish() async {
+    final t = AppLocalizations.of(context);
+    if (_titleCtrl.text.trim().isEmpty) { _snack(t.calNeedTitle, cRed); return; }
+    if (_start == null) { _snack(t.calNeedStart, cRed); return; }
+    setState(() => _publishing = true);
+    final count = await CalendarEventService.publishEvent(
+      title: _titleCtrl.text.trim(),
+      description: _descCtrl.text.trim(),
+      location: _locationCtrl.text.trim(),
+      start: _start!,
+      end: _end,
+      allDay: _allDay,
+    );
+    if (!mounted) return;
+    setState(() => _publishing = false);
+    if (count > 0) {
+      Navigator.pop(context, true);
+    } else {
+      _snack(t.calPublishFail, cRed);
+    }
+  }
+
+  void _snack(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: color, behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  String _fmt(DateTime? d, AppLocalizations t) {
+    if (d == null) return _allDay ? t.calPickDate : t.calPickDateTime;
+    String two(int n) => n.toString().padLeft(2, '0');
+    final date = '${two(d.day)}.${two(d.month)}.${d.year}';
+    return _allDay ? date : '$date  ${two(d.hour)}:${two(d.minute)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: cDark,
+      appBar: AppBar(
+        backgroundColor: cDark, elevation: 0,
+        title: Text(t.calNewEventTitle, style: const TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            _label(t.calFieldTitle),
+            _input(_titleCtrl, t.calFieldTitleHint),
+            const SizedBox(height: 16),
+            _label(t.calFieldLocation),
+            _input(_locationCtrl, t.calFieldLocationHint),
+            const SizedBox(height: 16),
+            // Ganztägig-Schalter
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+              child: Row(children: [
+                const Icon(Icons.event_available_rounded, color: cTextSecondary, size: 18),
+                const SizedBox(width: 10),
+                Expanded(child: Text(t.calFieldAllDay, style: const TextStyle(color: cText, fontSize: 14))),
+                Switch(
+                  value: _allDay,
+                  activeTrackColor: cOrange,
+                  onChanged: (v) => setState(() {
+                    _allDay = v;
+                    // bei Umschaltung Zeiten zurücksetzen, um Inkonsistenz zu vermeiden
+                    _start = null; _end = null;
+                  }),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 16),
+            _label(t.calFieldStart),
+            _dateButton(_fmt(_start, t), _start != null, _pickStart),
+            const SizedBox(height: 16),
+            _label(t.calFieldEnd),
+            _dateButton(_fmt(_end, t), _end != null, _pickEnd),
+            if (_end != null)
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(onPressed: () => setState(() => _end = null),
+                    child: Text(t.calClearEnd, style: const TextStyle(color: cTextSecondary, fontSize: 12))),
+              ),
+            const SizedBox(height: 16),
+            _label(t.calFieldDescription),
+            _input(_descCtrl, t.calFieldDescriptionHint, maxLines: 4),
+            const SizedBox(height: 16),
+            // Hinweis: öffentlich bei Nostr
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: cCyan.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cCyan.withValues(alpha: 0.3), width: 0.5)),
+              child: Row(children: [
+                const Icon(Icons.public_rounded, color: cCyan, size: 18),
+                const SizedBox(width: 10),
+                Expanded(child: Text(t.calPublishInfo, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.45))),
+              ]),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: _publishing ? null : _publish,
+                icon: _publishing
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                label: Text(_publishing ? t.calPublishing : t.calPublish,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                style: ElevatedButton.styleFrom(backgroundColor: cOrange, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kTileRadius))),
+              ),
+            ),
+            const SizedBox(height: 30),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _label(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Text(text.toUpperCase(), style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.0)),
+  );
+
+  Widget _dateButton(String label, bool active, VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: active ? cOrange : cTileBorder, width: active ? 1 : 0.5)),
+      child: Row(children: [
+        Icon(Icons.event_rounded, color: active ? cOrange : cTextTertiary, size: 18),
+        const SizedBox(width: 10),
+        Text(label, style: TextStyle(color: active ? cText : cTextTertiary, fontSize: 15, fontWeight: FontWeight.w600)),
+      ]),
+    ),
+  );
+
+  Widget _input(TextEditingController c, String hint, {int maxLines = 1}) => TextField(
+    controller: c,
+    maxLines: maxLines,
+    style: const TextStyle(color: cText, fontSize: 15),
+    decoration: InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: cTextTertiary, fontSize: 14),
+      filled: true, fillColor: cCard,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cOrange, width: 1.5)),
+    ),
+  );
+}
