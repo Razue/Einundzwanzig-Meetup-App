@@ -190,9 +190,9 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
       SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: () => _openEditor(m),
-          icon: const Icon(Icons.add_rounded, color: cOrange, size: 18),
-          label: Text(t.portalNewEvent, style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+          onPressed: () => _openManageEvents(m),
+          icon: const Icon(Icons.event_note_rounded, color: cOrange, size: 18),
+          label: Text(t.portalManageEvents, style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
           style: OutlinedButton.styleFrom(
             side: const BorderSide(color: cOrange, width: 1),
             padding: const EdgeInsets.symmetric(vertical: 11),
@@ -203,23 +203,167 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
     ]),
   );
 
-  Future<void> _openEditor(PortalMeetup meetup) async {
-    final created = await Navigator.push<bool>(
+  Future<void> _openManageEvents(PortalMeetup meetup) async {
+    await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => _EventEditor(meetup: meetup)),
+      MaterialPageRoute(builder: (_) => _ManageEventsScreen(meetup: meetup)),
     );
-    if (created == true && mounted) {
-      _snack(AppLocalizations.of(context).portalCreatedOk, cGreen);
-    }
+    // nach Rückkehr nichts nachzuladen — die Verwaltungsseite lädt selbst
   }
 }
 
 // ============================================
-//  EVENT-EDITOR (Termin anlegen)
+//  TERMINE VERWALTEN (Liste + anlegen + bearbeiten)
+// ============================================
+class _ManageEventsScreen extends StatefulWidget {
+  final PortalMeetup meetup;
+  const _ManageEventsScreen({required this.meetup});
+
+  @override
+  State<_ManageEventsScreen> createState() => _ManageEventsScreenState();
+}
+
+class _ManageEventsScreenState extends State<_ManageEventsScreen> {
+  bool _loading = true;
+  List<PortalMeetupEvent> _events = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    final all = await PortalApiService.getMyMeetupEvents();
+    if (!mounted) return;
+    // nur Termine dieses Meetups, chronologisch
+    final mine = all.where((e) => e.meetupId == widget.meetup.id).toList()
+      ..sort((a, b) => a.start.compareTo(b.start));
+    setState(() { _events = mine; _loading = false; });
+  }
+
+  void _snack(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: color, behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  Future<void> _newEvent() async {
+    final ok = await Navigator.push<bool>(
+      context, MaterialPageRoute(builder: (_) => _EventEditor(meetup: widget.meetup)),
+    );
+    if (ok == true && mounted) {
+      _snack(AppLocalizations.of(context).portalCreatedOk, cGreen);
+      _load();
+    }
+  }
+
+  Future<void> _editEvent(PortalMeetupEvent ev) async {
+    final ok = await Navigator.push<bool>(
+      context, MaterialPageRoute(builder: (_) => _EventEditor(meetup: widget.meetup, existing: ev)),
+    );
+    if (ok == true && mounted) {
+      _snack(AppLocalizations.of(context).portalUpdatedOk, cGreen);
+      _load();
+    }
+  }
+
+  String _fmtStart(String iso) {
+    final d = DateTime.tryParse(iso)?.toLocal();
+    if (d == null) return iso;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(d.day)}.${two(d.month)}.${d.year}  ${two(d.hour)}:${two(d.minute)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: cDark,
+      appBar: AppBar(
+        backgroundColor: cDark, elevation: 0,
+        title: Text(widget.meetup.name, style: const TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: cOrange,
+        onPressed: _newEvent,
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: Text(t.portalNewEvent, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+      ),
+      body: SafeArea(
+        child: _loading
+            ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const CircularProgressIndicator(color: cOrange),
+                const SizedBox(height: 14),
+                Text(t.portalLoadingEvents, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
+              ]))
+            : RefreshIndicator(
+                color: cOrange, backgroundColor: cCard,
+                onRefresh: _load,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                  children: [
+                    Text(t.portalExistingEvents.toUpperCase(),
+                        style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.0)),
+                    const SizedBox(height: 10),
+                    if (_events.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 40),
+                        child: Column(children: [
+                          const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 40),
+                          const SizedBox(height: 12),
+                          Text(t.portalNoEvents, textAlign: TextAlign.center,
+                              style: const TextStyle(color: cTextSecondary, fontSize: 14)),
+                        ]),
+                      )
+                    else
+                      ..._events.map((ev) => _eventRow(t, ev)),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _eventRow(AppLocalizations t, PortalMeetupEvent ev) => GestureDetector(
+    onTap: () => _editEvent(ev),
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cCard, borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(color: cTileBorder, width: 0.5),
+      ),
+      child: Row(children: [
+        Container(
+          width: 42, height: 42,
+          decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+          child: const Icon(Icons.event_rounded, color: cOrange, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(_fmtStart(ev.start), style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 2),
+          if (ev.location != null && ev.location!.isNotEmpty)
+            Text(ev.location!, maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: cTextSecondary, fontSize: 12))
+          else
+            Text(t.portalTapToEdit, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+        ])),
+        const Icon(Icons.edit_rounded, color: cTextTertiary, size: 16),
+      ]),
+    ),
+  );
+}
+
+// ============================================
+//  EVENT-EDITOR (Termin anlegen ODER bearbeiten)
 // ============================================
 class _EventEditor extends StatefulWidget {
   final PortalMeetup meetup;
-  const _EventEditor({required this.meetup});
+  final PortalMeetupEvent? existing; // null = anlegen, sonst bearbeiten
+  const _EventEditor({required this.meetup, this.existing});
 
   @override
   State<_EventEditor> createState() => _EventEditorState();
@@ -231,6 +375,21 @@ class _EventEditorState extends State<_EventEditor> {
   final _linkCtrl = TextEditingController();
   DateTime? _start;
   bool _saving = false;
+
+  bool get _isEdit => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    // Bearbeiten-Modus: Felder vorbelegen
+    final ex = widget.existing;
+    if (ex != null) {
+      _locationCtrl.text = ex.location ?? '';
+      _descriptionCtrl.text = ex.description ?? '';
+      _linkCtrl.text = ex.link ?? '';
+      _start = DateTime.tryParse(ex.start)?.toLocal();
+    }
+  }
 
   @override
   void dispose() {
@@ -265,13 +424,26 @@ class _EventEditorState extends State<_EventEditor> {
     setState(() => _saving = true);
     // Portal erwartet RFC-3339 in UTC (z.B. 2026-07-21T17:32:28Z)
     final startIso = _start!.toUtc().toIso8601String();
-    final res = await PortalApiService.createMeetupEvent(
-      meetupId: widget.meetup.id,
-      start: startIso,
-      location: _emptyToNull(_locationCtrl.text),
-      description: _emptyToNull(_descriptionCtrl.text),
-      link: _emptyToNull(_linkCtrl.text),
-    );
+    final PortalResult res;
+    if (_isEdit) {
+      final eid = widget.existing!.id;
+      if (eid == null) { setState(() => _saving = false); _snack('Fehler: Termin ohne ID', cRed); return; }
+      res = await PortalApiService.updateMeetupEvent(
+        eventId: eid,
+        start: startIso,
+        location: _emptyToNull(_locationCtrl.text),
+        description: _emptyToNull(_descriptionCtrl.text),
+        link: _emptyToNull(_linkCtrl.text),
+      );
+    } else {
+      res = await PortalApiService.createMeetupEvent(
+        meetupId: widget.meetup.id,
+        start: startIso,
+        location: _emptyToNull(_locationCtrl.text),
+        description: _emptyToNull(_descriptionCtrl.text),
+        link: _emptyToNull(_linkCtrl.text),
+      );
+    }
     if (!mounted) return;
     setState(() => _saving = false);
     if (res.ok) {
@@ -301,7 +473,7 @@ class _EventEditorState extends State<_EventEditor> {
       backgroundColor: cDark,
       appBar: AppBar(
         backgroundColor: cDark, elevation: 0,
-        title: Text(t.portalEventTitle, style: const TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
+        title: Text(_isEdit ? t.portalEditEvent : t.portalEventTitle, style: const TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -357,7 +529,7 @@ class _EventEditorState extends State<_EventEditor> {
                 icon: _saving
                     ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : const Icon(Icons.check_rounded, color: Colors.white, size: 18),
-                label: Text(_saving ? t.portalSaving : t.portalSave,
+                label: Text(_saving ? t.portalSaving : (_isEdit ? t.portalUpdate : t.portalSave),
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: cOrange,

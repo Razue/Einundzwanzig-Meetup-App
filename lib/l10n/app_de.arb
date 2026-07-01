@@ -2029,5 +2029,13 @@
   "calTypeMeetup": "Meetup",
   "calTypeEvent": "Event",
   "calLegendMeetup": "Meetups",
-  "calLegendEvent": "Veranstaltungen"
+  "calLegendEvent": "Veranstaltungen",
+  "portalManageEvents": "Termine verwalten",
+  "portalExistingEvents": "Bestehende Termine",
+  "portalLoadingEvents": "Lade Termine …",
+  "portalNoEvents": "Noch keine Termine für dieses Meetup.",
+  "portalEditEvent": "Termin bearbeiten",
+  "portalUpdatedOk": "Termin aktualisiert ✓",
+  "portalUpdate": "Änderungen speichern",
+  "portalTapToEdit": "Zum Bearbeiten antippen"
 }

@@ -4064,4 +4064,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get calLegendEvent => 'Eventos';
+
+  @override
+  String get portalManageEvents => 'Gestionar eventos';
+
+  @override
+  String get portalExistingEvents => 'Eventos existentes';
+
+  @override
+  String get portalLoadingEvents => 'Cargando eventos …';
+
+  @override
+  String get portalNoEvents => 'Aún no hay eventos para este meetup.';
+
+  @override
+  String get portalEditEvent => 'Editar evento';
+
+  @override
+  String get portalUpdatedOk => 'Evento actualizado ✓';
+
+  @override
+  String get portalUpdate => 'Guardar cambios';
+
+  @override
+  String get portalTapToEdit => 'Toca para editar';
 }

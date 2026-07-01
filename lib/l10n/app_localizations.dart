@@ -7395,6 +7395,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Veranstaltungen'**
   String get calLegendEvent;
+
+  /// No description provided for @portalManageEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Termine verwalten'**
+  String get portalManageEvents;
+
+  /// No description provided for @portalExistingEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestehende Termine'**
+  String get portalExistingEvents;
+
+  /// No description provided for @portalLoadingEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Termine …'**
+  String get portalLoadingEvents;
+
+  /// No description provided for @portalNoEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Termine für dieses Meetup.'**
+  String get portalNoEvents;
+
+  /// No description provided for @portalEditEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin bearbeiten'**
+  String get portalEditEvent;
+
+  /// No description provided for @portalUpdatedOk.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin aktualisiert ✓'**
+  String get portalUpdatedOk;
+
+  /// No description provided for @portalUpdate.
+  ///
+  /// In de, this message translates to:
+  /// **'Änderungen speichern'**
+  String get portalUpdate;
+
+  /// No description provided for @portalTapToEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Bearbeiten antippen'**
+  String get portalTapToEdit;
 }
 
 class _AppLocalizationsDelegate

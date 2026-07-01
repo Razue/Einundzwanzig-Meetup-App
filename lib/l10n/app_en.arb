@@ -2007,5 +2007,13 @@
   "calTypeMeetup": "Meetup",
   "calTypeEvent": "Event",
   "calLegendMeetup": "Meetups",
-  "calLegendEvent": "Events"
+  "calLegendEvent": "Events",
+  "portalManageEvents": "Manage events",
+  "portalExistingEvents": "Existing events",
+  "portalLoadingEvents": "Loading events …",
+  "portalNoEvents": "No events for this meetup yet.",
+  "portalEditEvent": "Edit event",
+  "portalUpdatedOk": "Event updated ✓",
+  "portalUpdate": "Save changes",
+  "portalTapToEdit": "Tap to edit"
 }
