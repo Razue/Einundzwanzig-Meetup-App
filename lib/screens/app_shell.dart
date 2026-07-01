@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'badge_wallet.dart';
 import 'calendar_screen.dart';
+import 'events_hub_screen.dart';
 import 'meetup_verification.dart';
 import 'reputation_qr.dart';
 import 'nearby_meetups_screen.dart';
@@ -92,7 +93,7 @@ class _AppShellState extends State<AppShell> {
         children: [
           HomeScreen(key: _homeKey),
           BadgeWalletScreen(),
-          const CalendarScreen(),
+          const EventsHubScreen(),
         ],
       ),
       bottomNavigationBar: SizedBox(

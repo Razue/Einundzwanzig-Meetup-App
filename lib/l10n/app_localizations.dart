@@ -7443,6 +7443,138 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zum Bearbeiten antippen'**
   String get portalTapToEdit;
+
+  /// No description provided for @hubTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Events'**
+  String get hubTitle;
+
+  /// No description provided for @hubMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get hubMeetups;
+
+  /// No description provided for @hubMeetupsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups suchen & entdecken'**
+  String get hubMeetupsSub;
+
+  /// No description provided for @hubCalendar.
+  ///
+  /// In de, this message translates to:
+  /// **'Veranstaltungskalender'**
+  String get hubCalendar;
+
+  /// No description provided for @hubCalendarSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Termine im Überblick, farblich sortiert'**
+  String get hubCalendarSub;
+
+  /// No description provided for @hubExternal.
+  ///
+  /// In de, this message translates to:
+  /// **'Externe Termine'**
+  String get hubExternal;
+
+  /// No description provided for @hubExternalSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Konferenzen & Events der Community'**
+  String get hubExternalSub;
+
+  /// No description provided for @extTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Externe Termine'**
+  String get extTitle;
+
+  /// No description provided for @extIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Von der Community eingetragene Veranstaltungen (keine Meetups) – z.B. Konferenzen wie die BTC Prag oder die Zitadelle.'**
+  String get extIntro;
+
+  /// No description provided for @extLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade externe Termine …'**
+  String get extLoading;
+
+  /// No description provided for @extNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine externen Termine eingetragen.'**
+  String get extNone;
+
+  /// No description provided for @extAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Event eintragen'**
+  String get extAdd;
+
+  /// No description provided for @calFilterAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get calFilterAll;
+
+  /// No description provided for @calFilterMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get calFilterMeetups;
+
+  /// No description provided for @calFilterExternal.
+  ///
+  /// In de, this message translates to:
+  /// **'Externe'**
+  String get calFilterExternal;
+
+  /// No description provided for @calFilterLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort/Land suchen …'**
+  String get calFilterLocation;
+
+  /// No description provided for @calFilterActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Filter aktiv'**
+  String get calFilterActive;
+
+  /// No description provided for @calFilterClear.
+  ///
+  /// In de, this message translates to:
+  /// **'Filter zurücksetzen'**
+  String get calFilterClear;
+
+  /// No description provided for @calFilterNoMatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Events für diesen Filter.'**
+  String get calFilterNoMatch;
+
+  /// No description provided for @calWorldwide.
+  ///
+  /// In de, this message translates to:
+  /// **'Weltweit'**
+  String get calWorldwide;
+
+  /// No description provided for @calCommunityOnly.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Community'**
+  String get calCommunityOnly;
+
+  /// No description provided for @calWorldwideHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Weltweit zeigt alle Nostr-Events – auch fremde.'**
+  String get calWorldwideHint;
 }
 
 class _AppLocalizationsDelegate

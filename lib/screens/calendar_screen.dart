@@ -3,7 +3,6 @@ import '../services/meetup_calendar_service.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
-import 'event_calendar_screen.dart';
 
 class CalendarScreen extends StatefulWidget {
   // Wir erlauben einen optionalen Suchbegriff beim Start (z.B. vom Dashboard kommend)
@@ -118,41 +117,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
       body: Column(
         children: [
-          // VERANSTALTUNGSKALENDER-BUTTON (Monat/Jahr/Liste + Events eintragen)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: GestureDetector(
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventCalendarScreen())),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                    colors: [cCyan.withValues(alpha: 0.18), cCard],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: cCyan.withValues(alpha: 0.4)),
-                ),
-                child: Row(children: [
-                  Container(
-                    width: 46, height: 46,
-                    decoration: BoxDecoration(color: cCyan.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                    child: const Icon(Icons.calendar_month_rounded, color: cCyan, size: 24),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(AppLocalizations.of(context).evCalendarButton,
-                        style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w800)),
-                    const SizedBox(height: 2),
-                    Text(AppLocalizations.of(context).evCalendarButtonSub,
-                        style: const TextStyle(color: cTextSecondary, fontSize: 12)),
-                  ])),
-                  const Icon(Icons.chevron_right_rounded, color: cCyan, size: 20),
-                ]),
-              ),
-            ),
-          ),
-
           // SUCHLEISTE
           Padding(
             padding: const EdgeInsets.all(16.0),

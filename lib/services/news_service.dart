@@ -18,9 +18,23 @@ import 'app_logger.dart';
 const String _tag = 'News';
 const int kArticleKind = 30023; // NIP-23 Longform
 
-/// Hashtag (NIP-23 t-Tag), nach dem gefiltert wird. Es werden nur Artikel
-/// angezeigt, die mit #einundzwanzig getaggt sind.
-const String kNewsHashtag = 'einundzwanzig';
+/// News-Kuratierung nach dem Discover-Prinzip (EINUNDZWANZIG STANDUP):
+/// Ein Artikel wird angezeigt, wenn er ENTWEDER einen der Tags trägt ODER
+/// von einem Autor der Watchlist stammt.
+///
+/// 1) TAGS (NIP-23 t-Tag): breite, themenbasierte Erfassung.
+const List<String> kNewsTags = ['einundzwanzig', 'bitcoin', '21', 'meetup'];
+
+/// 2) AUTOREN-WATCHLIST (Hex-Pubkeys): gezielt die Blogs, die auf Discover
+///    kuratiert sind. Wartbar: neue Discover-Autoren hier als Hex ergänzen
+///    (npub -> hex z.B. über njump.me/<npub>). NUR bestätigte Pubkeys.
+const List<String> kNewsAuthors = [
+  // markusturm (Einundzwanzig News)
+  'f240be2b684f85cc81566f2081386af81d7427ea86250c8bde6b7a8500c761ba',
+  // Weitere Discover-Autoren hier ergänzen:
+  // '<hex-pubkey>',  // <name>
+];
+
 
 /// Ein einzelner Artikel (aus einem kind:30023-Event).
 class NewsArticle {
@@ -122,7 +136,15 @@ class NewsService {
 
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
-      final subId = 'news-$subIdHex';
+      // Zwei Subscriptions: eine nach Tags, eine nach Autoren (ODER-Verknüpfung).
+      final subTags = 'news-t-$subIdHex';
+      final subAuthors = 'news-a-$subIdHex';
+
+      // Wie viele EOSE erwarten wir? (nur aktive Subscriptions zählen)
+      var pending = 0;
+      if (kNewsTags.isNotEmpty) pending++;
+      if (kNewsAuthors.isNotEmpty) pending++;
+      if (pending == 0) pending = 1; // Fallback: unbegrenzt (siehe unten)
 
       ws.listen(
         (data) {
@@ -134,7 +156,8 @@ class NewsService {
               final article = NewsArticle.fromEvent(eventData);
               if (article != null) results.add(article);
             } else if (type == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(results);
+              pending--;
+              if (pending <= 0 && !completer.isCompleted) completer.complete(results);
             }
           } catch (_) {/* einzelne fehlerhafte Events ignorieren */}
         },
@@ -142,8 +165,18 @@ class NewsService {
         onDone: () { if (!completer.isCompleted) completer.complete(results); },
       );
 
-      // REQ: nur Longform-Artikel mit dem #einundzwanzig-Hashtag (t-Tag)
-      ws.add(jsonEncode(['REQ', subId, {'kinds': [kArticleKind], '#t': [kNewsHashtag], 'limit': limit}]));
+      // REQ 1: Longform-Artikel mit einem der News-Tags (t-Tag).
+      if (kNewsTags.isNotEmpty) {
+        ws.add(jsonEncode(['REQ', subTags, {'kinds': [kArticleKind], '#t': kNewsTags, 'limit': limit}]));
+      }
+      // REQ 2: Longform-Artikel der kuratierten Autoren (Watchlist).
+      if (kNewsAuthors.isNotEmpty) {
+        ws.add(jsonEncode(['REQ', subAuthors, {'kinds': [kArticleKind], 'authors': kNewsAuthors, 'limit': limit}]));
+      }
+      // Falls beides leer wäre: alle Longform-Artikel (Sicherheitsnetz).
+      if (kNewsTags.isEmpty && kNewsAuthors.isEmpty) {
+        ws.add(jsonEncode(['REQ', subTags, {'kinds': [kArticleKind], 'limit': limit}]));
+      }
 
       final res = await completer.future.timeout(_timeout, onTimeout: () => results);
       return res;

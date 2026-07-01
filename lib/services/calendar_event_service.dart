@@ -34,6 +34,7 @@ class NostrCalendarEvent {
   final DateTime? end;
   final bool allDay;
   final int kind;
+  final bool fromApp; // true, wenn via dieser App erstellt (client-Tag)
 
   NostrCalendarEvent({
     required this.id,
@@ -46,6 +47,7 @@ class NostrCalendarEvent {
     required this.end,
     required this.allDay,
     required this.kind,
+    this.fromApp = false,
   });
 
   /// Tag (ohne Uhrzeit) für die Kalender-Gruppierung.
@@ -86,6 +88,9 @@ class NostrCalendarEvent {
       }
       if (start == null) return null;
 
+      final client = tagVal('client');
+      final fromApp = client == 'einundzwanzig-meetup-app';
+
       return NostrCalendarEvent(
         id: (e['id'] ?? '').toString(),
         pubkey: (e['pubkey'] ?? '').toString(),
@@ -97,6 +102,7 @@ class NostrCalendarEvent {
         end: end,
         allDay: allDay,
         kind: kind,
+        fromApp: fromApp,
       );
     } catch (_) {
       return null;
@@ -107,18 +113,32 @@ class NostrCalendarEvent {
 class CalendarEventService {
   static const Duration _timeout = Duration(seconds: 8);
 
-  /// Lädt Kalender-Events (NIP-52) von allen aktiven Relays.
-  /// Dedupliziert (pubkey:dTag -> neueste Version) und nach Startdatum sortiert.
-  static Future<List<NostrCalendarEvent>> fetchEvents({int limit = 200}) async {
-    final relays = await RelayConfig.getActiveRelays();
-    final byKey = <String, NostrCalendarEvent>{};
+  /// Das Community-Relay für App-Events. Im Community-Modus werden nur
+  /// Events von diesem Relay geladen (überschaubar). Im Weltweit-Modus
+  /// werden alle aktiven Relays abgefragt.
+  static const String kCommunityRelay = 'wss://nostr.einundzwanzig.space';
 
+  /// Lädt Kalender-Events (NIP-52).
+  /// [worldwide]=false (Standard): nur das Community-Relay, und nur Events,
+  ///   die über diese App erstellt wurden (client-Tag) -> überschaubar.
+  /// [worldwide]=true: alle aktiven Relays, alle Events (die ganze Nostr-Welt).
+  /// Dedupliziert (pubkey:dTag -> neueste Version) und nach Startdatum sortiert.
+  static Future<List<NostrCalendarEvent>> fetchEvents({int limit = 200, bool worldwide = false}) async {
+    final List<String> relays;
+    if (worldwide) {
+      relays = await RelayConfig.getActiveRelays();
+    } else {
+      relays = [kCommunityRelay];
+    }
+
+    final byKey = <String, NostrCalendarEvent>{};
     for (final relayUrl in relays) {
       final list = await _fetchFromRelay(relayUrl, limit);
       if (list == null) continue;
       for (final ev in list) {
+        // Community-Modus: nur Events, die über die App erstellt wurden.
+        if (!worldwide && !ev.fromApp) continue;
         final key = '${ev.pubkey}:${ev.dTag}:${ev.kind}';
-        // Bei gleichem Key gewinnt der zuletzt gesehene (Relays liefern neueste)
         byKey[key] = ev;
       }
     }
@@ -215,7 +235,10 @@ class CalendarEventService {
   }
 
   static Future<int> _publish(SignedEvent event) async {
-    final relays = await RelayConfig.getActiveRelays();
+    final active = await RelayConfig.getActiveRelays();
+    // Community-Relay IMMER einschließen, damit App-Events dort landen und
+    // im Community-Modus auffindbar sind (auch wenn der Nutzer es abgewählt hat).
+    final relays = <String>{...active, kCommunityRelay}.toList();
     if (relays.isEmpty) return 0;
 
     final eventJson = jsonEncode([

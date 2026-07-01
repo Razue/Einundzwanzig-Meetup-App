@@ -4065,4 +4065,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get portalTapToEdit => 'Tap to edit';
+
+  @override
+  String get hubTitle => 'Events';
+
+  @override
+  String get hubMeetups => 'Meetups';
+
+  @override
+  String get hubMeetupsSub => 'Search & discover meetups';
+
+  @override
+  String get hubCalendar => 'Event calendar';
+
+  @override
+  String get hubCalendarSub => 'All events at a glance, color-coded';
+
+  @override
+  String get hubExternal => 'External events';
+
+  @override
+  String get hubExternalSub => 'Community conferences & events';
+
+  @override
+  String get extTitle => 'External events';
+
+  @override
+  String get extIntro =>
+      'Community-submitted events (not meetups) – e.g. conferences like BTC Prague or Zitadelle.';
+
+  @override
+  String get extLoading => 'Loading external events …';
+
+  @override
+  String get extNone => 'No external events yet.';
+
+  @override
+  String get extAdd => 'Add event';
+
+  @override
+  String get calFilterAll => 'All';
+
+  @override
+  String get calFilterMeetups => 'Meetups';
+
+  @override
+  String get calFilterExternal => 'External';
+
+  @override
+  String get calFilterLocation => 'Search place/country …';
+
+  @override
+  String get calFilterActive => 'Filter active';
+
+  @override
+  String get calFilterClear => 'Clear filter';
+
+  @override
+  String get calFilterNoMatch => 'No events for this filter.';
+
+  @override
+  String get calWorldwide => 'Worldwide';
+
+  @override
+  String get calCommunityOnly => 'Community only';
+
+  @override
+  String get calWorldwideHint =>
+      'Worldwide shows all Nostr events – including external ones.';
 }

@@ -39,7 +39,7 @@ class _CalItem {
   });
 
   DateTime get day => DateTime(start.year, start.month, start.day);
-  Color get color => isMeetup ? cOrange : cCyan;
+  Color get color => isMeetup ? cOrange : cNostr;
 
   factory _CalItem.fromNostr(NostrCalendarEvent e) => _CalItem(
         title: e.title,
@@ -74,9 +74,22 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   DateTime _focused = DateTime.now();      // aktuell angezeigter Monat/Jahr
   DateTime _selected = DateTime.now();     // gewählter Tag (Monatsansicht)
   bool _loading = true;
-  List<_CalItem> _events = [];
+  List<_CalItem> _allItems = [];       // alle geladenen (ungefiltert)
+  List<_CalItem> _events = [];         // aktuell angezeigte (gefiltert)
   // Events nach Tag gruppiert (für schnelle Marker)
   Map<DateTime, List<_CalItem>> _byDay = {};
+
+  // Filter
+  int _typeFilter = 0;                 // 0=Alle, 1=Meetups, 2=Externe
+  bool _worldwide = false;             // false=nur Community-Relay, true=alle
+  final TextEditingController _locationCtrl = TextEditingController();
+  String _locationQuery = '';
+
+  @override
+  void dispose() {
+    _locationCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -88,7 +101,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     setState(() => _loading = true);
     // Beide Quellen laden: Nostr-Events (NIP-52) + Portal-/iCal-Meetups.
     // Getrennt awaiten, damit die Typen sauber erhalten bleiben.
-    final nostrFuture = CalendarEventService.fetchEvents();
+    final nostrFuture = CalendarEventService.fetchEvents(worldwide: _worldwide);
     final meetupFuture = MeetupCalendarService().fetchMeetups();
     final List<NostrCalendarEvent> nostrEvents = await nostrFuture;
     final List<ical.CalendarEvent> meetups = await meetupFuture;
@@ -103,11 +116,39 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     }
     items.sort((a, b) => a.start.compareTo(b.start));
 
+    _allItems = items;
+    if (mounted) setState(() => _loading = false);
+    _applyFilter();
+  }
+
+  /// Wendet Typ- und Ortsfilter auf _allItems an und füllt _events + _byDay.
+  void _applyFilter() {
+    final q = _locationQuery.trim().toLowerCase();
+    final filtered = _allItems.where((e) {
+      // Typ-Filter: 0=Alle, 1=Meetups, 2=Externe
+      if (_typeFilter == 1 && !e.isMeetup) return false;
+      if (_typeFilter == 2 && e.isMeetup) return false;
+      // Orts-Filter: leerer Ort bleibt IMMER sichtbar (nichts verstecken)
+      if (q.isNotEmpty) {
+        final loc = e.location.trim().toLowerCase();
+        if (loc.isNotEmpty && !loc.contains(q)) return false;
+      }
+      return true;
+    }).toList();
+
     final map = <DateTime, List<_CalItem>>{};
-    for (final e in items) {
+    for (final e in filtered) {
       map.putIfAbsent(e.day, () => []).add(e);
     }
-    setState(() { _events = items; _byDay = map; _loading = false; });
+    if (mounted) setState(() { _events = filtered; _byDay = map; });
+  }
+
+  bool get _filterActive => _typeFilter != 0 || _locationQuery.trim().isNotEmpty;
+
+  void _clearFilter() {
+    _locationCtrl.clear();
+    setState(() { _typeFilter = 0; _locationQuery = ''; });
+    _applyFilter();
   }
 
   List<_CalItem> _eventsOn(DateTime day) =>
@@ -155,6 +196,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
         child: Column(children: [
           _viewSwitcher(t),
           _legend(t),
+          _filterBar(t),
           Expanded(
             child: _loading
                 ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -206,7 +248,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       _legendDot(cOrange, t.calLegendMeetup),
       const SizedBox(width: 18),
-      _legendDot(cCyan, t.calLegendEvent),
+      _legendDot(cNostr, t.calLegendEvent),
     ]),
   );
 
@@ -215,6 +257,101 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     const SizedBox(width: 6),
     Text(label, style: const TextStyle(color: cTextSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
   ]);
+
+  // ── Filterleiste: Typ-Umschalter + Ortssuche ──
+  Widget _filterBar(AppLocalizations t) => Padding(
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+    child: Column(children: [
+      // Typ-Umschalter
+      Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+        child: Row(children: [
+          _typeBtn(t.calFilterAll, 0, cOrange),
+          _typeBtn(t.calFilterMeetups, 1, cOrange),
+          _typeBtn(t.calFilterExternal, 2, cNostr),
+        ]),
+      ),
+      const SizedBox(height: 8),
+      // Ortssuche
+      Row(children: [
+        Expanded(
+          child: TextField(
+            controller: _locationCtrl,
+            onChanged: (v) { _locationQuery = v; _applyFilter(); },
+            style: const TextStyle(color: cText, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: t.calFilterLocation,
+              hintStyle: const TextStyle(color: cTextTertiary, fontSize: 13),
+              prefixIcon: const Icon(Icons.place_rounded, color: cTextTertiary, size: 18),
+              isDense: true,
+              filled: true, fillColor: cCard,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cOrange, width: 1.2)),
+            ),
+          ),
+        ),
+        if (_filterActive) ...[
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: _clearFilter,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+              child: const Icon(Icons.close_rounded, color: cTextSecondary, size: 18),
+            ),
+          ),
+        ],
+      ]),
+      const SizedBox(height: 8),
+      // Community / Weltweit-Umschalter
+      GestureDetector(
+        onTap: () { setState(() => _worldwide = !_worldwide); _load(); },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: _worldwide ? cNostr.withValues(alpha: 0.12) : cCard,
+            borderRadius: BorderRadius.circular(kTileRadius),
+            border: Border.all(color: _worldwide ? cNostr.withValues(alpha: 0.5) : cTileBorder, width: _worldwide ? 1 : 0.5),
+          ),
+          child: Row(children: [
+            Icon(_worldwide ? Icons.public_rounded : Icons.groups_rounded,
+                color: _worldwide ? cNostr : cOrange, size: 18),
+            const SizedBox(width: 10),
+            Expanded(child: Text(_worldwide ? t.calWorldwide : t.calCommunityOnly,
+                style: TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w700))),
+            Switch(
+              value: _worldwide,
+              activeTrackColor: cNostr,
+              onChanged: (v) { setState(() => _worldwide = v); _load(); },
+            ),
+          ]),
+        ),
+      ),
+      if (_worldwide)
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Text(t.calWorldwideHint, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+        ),
+    ]),
+  );
+
+  Widget _typeBtn(String label, int value, Color activeColor) {
+    final sel = _typeFilter == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () { setState(() => _typeFilter = value); _applyFilter(); },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          decoration: BoxDecoration(color: sel ? activeColor : Colors.transparent, borderRadius: BorderRadius.circular(kTileRadius - 2)),
+          alignment: Alignment.center,
+          child: Text(label, style: TextStyle(color: sel ? Colors.white : cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)),
+        ),
+      ),
+    );
+  }
 
   Widget _viewBody(AppLocalizations t) {
     switch (_view) {
@@ -629,9 +766,9 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
             // Hinweis: öffentlich bei Nostr
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: cCyan.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cCyan.withValues(alpha: 0.3), width: 0.5)),
+              decoration: BoxDecoration(color: cNostr.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cNostr.withValues(alpha: 0.3), width: 0.5)),
               child: Row(children: [
-                const Icon(Icons.public_rounded, color: cCyan, size: 18),
+                const Icon(Icons.public_rounded, color: cNostr, size: 18),
                 const SizedBox(width: 10),
                 Expanded(child: Text(t.calPublishInfo, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.45))),
               ]),

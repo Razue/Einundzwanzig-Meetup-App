@@ -4104,4 +4104,72 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get portalTapToEdit => 'Zum Bearbeiten antippen';
+
+  @override
+  String get hubTitle => 'Events';
+
+  @override
+  String get hubMeetups => 'Meetups';
+
+  @override
+  String get hubMeetupsSub => 'Meetups suchen & entdecken';
+
+  @override
+  String get hubCalendar => 'Veranstaltungskalender';
+
+  @override
+  String get hubCalendarSub => 'Alle Termine im Überblick, farblich sortiert';
+
+  @override
+  String get hubExternal => 'Externe Termine';
+
+  @override
+  String get hubExternalSub => 'Konferenzen & Events der Community';
+
+  @override
+  String get extTitle => 'Externe Termine';
+
+  @override
+  String get extIntro =>
+      'Von der Community eingetragene Veranstaltungen (keine Meetups) – z.B. Konferenzen wie die BTC Prag oder die Zitadelle.';
+
+  @override
+  String get extLoading => 'Lade externe Termine …';
+
+  @override
+  String get extNone => 'Noch keine externen Termine eingetragen.';
+
+  @override
+  String get extAdd => 'Event eintragen';
+
+  @override
+  String get calFilterAll => 'Alle';
+
+  @override
+  String get calFilterMeetups => 'Meetups';
+
+  @override
+  String get calFilterExternal => 'Externe';
+
+  @override
+  String get calFilterLocation => 'Ort/Land suchen …';
+
+  @override
+  String get calFilterActive => 'Filter aktiv';
+
+  @override
+  String get calFilterClear => 'Filter zurücksetzen';
+
+  @override
+  String get calFilterNoMatch => 'Keine Events für diesen Filter.';
+
+  @override
+  String get calWorldwide => 'Weltweit';
+
+  @override
+  String get calCommunityOnly => 'Nur Community';
+
+  @override
+  String get calWorldwideHint =>
+      'Weltweit zeigt alle Nostr-Events – auch fremde.';
 }
