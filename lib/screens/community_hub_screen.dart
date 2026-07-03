@@ -56,7 +56,7 @@ class CommunityHubScreen extends StatelessWidget {
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())))),
               const SizedBox(width: 14),
               Expanded(child: _smallCard(context, icon: Icons.flutter_dash, color: cNostr, title: t.chNostr, subtitle: t.chNostrSub,
-                  onTap: () => _openUrl('https://njump.me/npub1einundzwanzig'))),
+                  onTap: () => _openUrl('https://njump.me/npub1qv02xpsc3lhxxx5x7xswf88w3u7kykft9ea7t78tz7ywxf7mxs9qrxujnc'))),
             ]),
             const SizedBox(height: 14),
             Row(children: [
@@ -163,7 +163,7 @@ class PortalAreaScreen extends StatelessWidget {
             _row(context, Icons.groups_rounded, cOrange, t.paMeetups, t.paMeetupsSub,
                 () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()))),
             _row(context, Icons.event_available_rounded, cGreen, t.paEvents, t.paEventsSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalEventsScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()))),
             _row(context, Icons.school_rounded, cNostr, t.paCourses, t.paCoursesSub,
                 () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesScreen()))),
             _row(context, Icons.map_rounded, cCyan, t.paMap, t.paMapSub,
@@ -454,7 +454,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
           final e = items[i];
           final name = (e['name'] ?? e['title'] ?? '').toString();
           final desc = (e['description'] ?? e['intro'] ?? e['bio'] ?? '').toString();
-          return Container(
+          return GestureDetector(
+            onTap: () => _showDetails(context, name, desc, isCourse),
+            child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
@@ -473,9 +475,49 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       style: const TextStyle(color: cTextSecondary, fontSize: 12.5, height: 1.4)),
                 ],
               ])),
+              const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
             ]),
+          ),
           );
         },
+      ),
+    );
+  }
+
+  /// Detail-Sheet für Kurs/Dozent: voller Text + klickbare Links.
+  void _showDetails(BuildContext context, String name, String desc, bool isCourse) {
+    final links = RegExp(r'https?://[^\s\)\]>,]+').allMatches(desc).map((m) => m.group(0)!).toSet().toList();
+    showModalBottomSheet(
+      context: context, backgroundColor: cCard, isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => DraggableScrollableSheet(
+        expand: false, initialChildSize: 0.5, maxChildSize: 0.9, minChildSize: 0.3,
+        builder: (_, scroll) => SingleChildScrollView(
+          controller: scroll,
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 32),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Icon(isCourse ? Icons.school_rounded : Icons.person_rounded, color: cNostr, size: 20),
+              const SizedBox(width: 10),
+              Expanded(child: Text(name, style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800))),
+            ]),
+            const SizedBox(height: 12),
+            Text(desc.isNotEmpty ? desc : '—', style: const TextStyle(color: cTextSecondary, fontSize: 14, height: 1.5)),
+            for (final url in links)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: GestureDetector(
+                  onTap: () => _openUrl(url),
+                  child: Row(children: [
+                    const Icon(Icons.link_rounded, color: cOrange, size: 15),
+                    const SizedBox(width: 7),
+                    Expanded(child: Text(url, maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: cOrange, fontSize: 13, fontWeight: FontWeight.w600))),
+                  ]),
+                ),
+              ),
+          ]),
+        ),
       ),
     );
   }

@@ -261,7 +261,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_user.homeMeetupId.isEmpty) { if (mounted) setState(() => _countdownLoading = false); return; }
     try {
       final events = await MeetupCalendarService().fetchMeetupsPortalFirst();
-      final now = DateTime.now();
       // Abgleich-Begriffe: Stadtname des Home-Meetups + einzelne Wörter daraus.
       // Der iCal-Titel enthält den Stadtnamen nicht immer wörtlich, daher
       // prüfen wir Titel, Ort UND Beschreibung und akzeptieren auch Teilwörter.
@@ -275,7 +274,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return terms.any((term) => hay.contains(term));
       }
 
-      final future = events.where((e) => e.startTime.isAfter(now) && matches(e)).toList()
+      // KULANZ wie in der Terminliste: Ein Meetup zählt noch 6 Stunden nach
+      // Beginn als "nächstes" (ein laufendes Meetup ist heute, nicht vorbei).
+      final cutoff = DateTime.now().subtract(const Duration(hours: 6));
+      final future = events.where((e) => e.startTime.isAfter(cutoff) && matches(e)).toList()
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
       if (mounted) setState(() { _nextHomeMeetup = future.isNotEmpty ? future.first : null; _countdownLoading = false; });
     } catch (_) { if (mounted) setState(() => _countdownLoading = false); }
@@ -313,7 +315,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// WoT-Bürgen und Seed-Admins bleiben davon unberührt.
   Future<void> _checkPortalOrganizer() async {
     try {
-      if (!await PortalApiService.hasToken()) return; // kein Portal-Login
+      // Token muss zum AKTUELLEN Schlüssel gehören (kein geerbter Login!)
+      if (!await PortalApiService.tokenMatchesCurrentKey()) return;
       // Rohabfrage: null = Fehler/offline (nichts tun), Liste = Fakt.
       final body = await PortalApiService.rawGet('/my-meetups');
       if (body == null || !mounted) return;

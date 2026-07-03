@@ -27,6 +27,7 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'app_logger.dart';
+import 'secure_key_store.dart';
 import 'signing_service.dart';
 
 const String _tag = 'PortalAPI';
@@ -99,6 +100,7 @@ class PortalApiService {
   static const String baseUrl = 'https://portal.einundzwanzig.space';
   static const String _apiBase = '$baseUrl/api';
   static const String _tokenKey = 'portal_api_token';
+  static const String _tokenNpubKey = 'portal_api_token_npub';
 
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -123,6 +125,10 @@ class PortalApiService {
 
   static Future<void> storeToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
+    // Token an den aktuellen Schlüssel BINDEN: verhindert, dass ein neuer
+    // Account den Portal-Login (und Organisator-Status!) des alten erbt.
+    final ownNpub = await SecureKeyStore.getNpub();
+    if (ownNpub != null) await _storage.write(key: _tokenNpubKey, value: ownNpub);
   }
 
   /// Manuelles Setzen eines Tokens (z.B. ein im Portal erzeugter persönlicher
@@ -186,7 +192,7 @@ class PortalApiService {
   }
 
   static Future<void> deleteToken() async {
-    try { await _storage.delete(key: _tokenKey); } catch (_) {}
+    try { await _storage.delete(key: _tokenKey); await _storage.delete(key: _tokenNpubKey); } catch (_) {}
   }
 
   /// Logout: Token serverseitig widerrufen (best effort) und lokal löschen.
@@ -408,6 +414,16 @@ class PortalApiService {
 
   // ═══════════════ COMPANION-FUNKTIONEN (lesend + RSVP) ═══════════════
   // Pfade 1:1 aus der Open-Source-Companion-App übernommen.
+
+  /// Gehört der gespeicherte Portal-Token zum AKTUELLEN Nostr-Schlüssel?
+  /// (Schutz gegen geerbte Logins nach Account-Wechsel.)
+  static Future<bool> tokenMatchesCurrentKey() async {
+    final t = await getToken();
+    if (t == null) return false;
+    final stored = await _storage.read(key: _tokenNpubKey);
+    final cur = await SecureKeyStore.getNpub();
+    return stored != null && cur != null && stored == cur;
+  }
 
   /// Roh-GET für Aufrufer, die Fehler (null) von leeren Daten unterscheiden
   /// müssen — z.B. der sichere Admin-Entzug (kein Entzug bei offline).
