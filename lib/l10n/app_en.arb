@@ -2073,5 +2073,16 @@
   "crsNone": "No courses found.",
   "crsCourses": "Courses",
   "crsLecturers": "Lecturers",
-  "rsvpCancel": "Cancel RSVP"
+  "rsvpCancel": "Cancel RSVP",
+  "crsAbout": "About the course",
+  "crsUpcoming": "Upcoming dates",
+  "crsLecturer": "Lecturer",
+  "lecAbout": "About the lecturer",
+  "lecLinks": "Links",
+  "crsOpenPortal": "Open in portal",
+  "rsvpImComing": "I'm coming",
+  "rsvpMaybe": "Maybe",
+  "evOpenLink": "Open link",
+  "evShare": "Share",
+  "evToCalendar": "Add to calendar"
 }

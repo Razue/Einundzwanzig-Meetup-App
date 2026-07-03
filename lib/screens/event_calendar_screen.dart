@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/calendar_event_service.dart';
@@ -687,6 +688,28 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                   ),
                 ),
             ],
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: () {
+                cal.Add2Calendar.addEvent2Cal(cal.Event(
+                  title: e.title,
+                  description: e.description,
+                  location: e.location,
+                  startDate: e.start,
+                  endDate: e.end ?? e.start.add(const Duration(hours: 2)),
+                  allDay: e.allDay,
+                ));
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(11), border: Border.all(color: cTileBorder, width: 0.5)),
+                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  const Icon(Icons.event_available_rounded, color: cTextSecondary, size: 16),
+                  const SizedBox(width: 8),
+                  Text(t.evToCalendar, style: const TextStyle(color: cText, fontSize: 13.5, fontWeight: FontWeight.w600)),
+                ]),
+              ),
+            ),
           ]),
         ),
       ),

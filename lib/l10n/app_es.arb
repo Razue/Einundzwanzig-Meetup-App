@@ -2073,5 +2073,16 @@
   "crsNone": "No hay cursos.",
   "crsCourses": "Cursos",
   "crsLecturers": "Docentes",
-  "rsvpCancel": "Cancelar"
+  "rsvpCancel": "Cancelar",
+  "crsAbout": "Sobre el curso",
+  "crsUpcoming": "Próximas fechas",
+  "crsLecturer": "Docente",
+  "lecAbout": "Sobre el docente",
+  "lecLinks": "Enlaces",
+  "crsOpenPortal": "Abrir en el portal",
+  "rsvpImComing": "Voy a ir",
+  "rsvpMaybe": "Quizás",
+  "evOpenLink": "Abrir enlace",
+  "evShare": "Compartir",
+  "evToCalendar": "Añadir al calendario"
 }

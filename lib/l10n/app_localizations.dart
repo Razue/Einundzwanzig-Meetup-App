@@ -7791,6 +7791,72 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Absagen'**
   String get rsvpCancel;
+
+  /// No description provided for @crsAbout.
+  ///
+  /// In de, this message translates to:
+  /// **'Über den Kurs'**
+  String get crsAbout;
+
+  /// No description provided for @crsUpcoming.
+  ///
+  /// In de, this message translates to:
+  /// **'Kommende Termine'**
+  String get crsUpcoming;
+
+  /// No description provided for @crsLecturer.
+  ///
+  /// In de, this message translates to:
+  /// **'Referent'**
+  String get crsLecturer;
+
+  /// No description provided for @lecAbout.
+  ///
+  /// In de, this message translates to:
+  /// **'Über den Referenten'**
+  String get lecAbout;
+
+  /// No description provided for @lecLinks.
+  ///
+  /// In de, this message translates to:
+  /// **'Links'**
+  String get lecLinks;
+
+  /// No description provided for @crsOpenPortal.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Portal öffnen'**
+  String get crsOpenPortal;
+
+  /// No description provided for @rsvpImComing.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich komme'**
+  String get rsvpImComing;
+
+  /// No description provided for @rsvpMaybe.
+  ///
+  /// In de, this message translates to:
+  /// **'Vielleicht'**
+  String get rsvpMaybe;
+
+  /// No description provided for @evOpenLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Link öffnen'**
+  String get evOpenLink;
+
+  /// No description provided for @evShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get evShare;
+
+  /// No description provided for @evToCalendar.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Kalender'**
+  String get evToCalendar;
 }
 
 class _AppLocalizationsDelegate

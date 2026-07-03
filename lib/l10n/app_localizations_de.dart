@@ -4281,4 +4281,37 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get rsvpCancel => 'Absagen';
+
+  @override
+  String get crsAbout => 'Über den Kurs';
+
+  @override
+  String get crsUpcoming => 'Kommende Termine';
+
+  @override
+  String get crsLecturer => 'Referent';
+
+  @override
+  String get lecAbout => 'Über den Referenten';
+
+  @override
+  String get lecLinks => 'Links';
+
+  @override
+  String get crsOpenPortal => 'Im Portal öffnen';
+
+  @override
+  String get rsvpImComing => 'Ich komme';
+
+  @override
+  String get rsvpMaybe => 'Vielleicht';
+
+  @override
+  String get evOpenLink => 'Link öffnen';
+
+  @override
+  String get evShare => 'Teilen';
+
+  @override
+  String get evToCalendar => 'Zum Kalender';
 }

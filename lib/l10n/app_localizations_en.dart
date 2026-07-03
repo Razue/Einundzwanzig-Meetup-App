@@ -4242,4 +4242,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rsvpCancel => 'Cancel RSVP';
+
+  @override
+  String get crsAbout => 'About the course';
+
+  @override
+  String get crsUpcoming => 'Upcoming dates';
+
+  @override
+  String get crsLecturer => 'Lecturer';
+
+  @override
+  String get lecAbout => 'About the lecturer';
+
+  @override
+  String get lecLinks => 'Links';
+
+  @override
+  String get crsOpenPortal => 'Open in portal';
+
+  @override
+  String get rsvpImComing => 'I\'m coming';
+
+  @override
+  String get rsvpMaybe => 'Maybe';
+
+  @override
+  String get evOpenLink => 'Open link';
+
+  @override
+  String get evShare => 'Share';
+
+  @override
+  String get evToCalendar => 'Add to calendar';
 }

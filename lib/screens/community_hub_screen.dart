@@ -455,7 +455,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
           final name = (e['name'] ?? e['title'] ?? '').toString();
           final desc = (e['description'] ?? e['intro'] ?? e['bio'] ?? '').toString();
           return GestureDetector(
-            onTap: () => _showDetails(context, name, desc, isCourse),
+            onTap: () { final id = e['id']; if (id is int) { Navigator.push(context, MaterialPageRoute(builder: (_) => isCourse ? CourseDetailScreen(id: id, fallback: e) : LecturerDetailScreen(id: id, fallback: e))); } else { _showDetails(context, name, desc, isCourse); } },
             child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(14),
@@ -522,3 +522,194 @@ class _CoursesScreenState extends State<CoursesScreen> {
     );
   }
 }
+
+
+// ── Tolerante Helfer für Portal-Felder (flach "a.b" ODER verschachtelt) ──
+String pv(Map e, String key) {
+  final v = e[key];
+  if (v != null && v is! Map && v is! List) return v.toString();
+  if (key.contains('.')) {
+    final parts = key.split('.');
+    final n = e[parts[0]];
+    if (n is Map && n[parts[1]] != null) return n[parts[1]].toString();
+  }
+  return '';
+}
+String pImg(Map e) {
+  for (final k in ['image', 'logo', 'avatar', 'picture', 'cover']) {
+    final v = pv(e, k);
+    if (v.startsWith('http')) return v;
+  }
+  return '';
+}
+
+class CourseDetailScreen extends StatefulWidget {
+  final int id; final Map<String, dynamic> fallback;
+  const CourseDetailScreen({super.key, required this.id, required this.fallback});
+  @override State<CourseDetailScreen> createState() => _CourseDetailScreenState();
+}
+
+class _CourseDetailScreenState extends State<CourseDetailScreen> {
+  Map<String, dynamic>? _d;
+  @override void initState() { super.initState(); _load(); }
+  Future<void> _load() async {
+    final d = await PortalApiService.getCourse(widget.id);
+    if (mounted) setState(() => _d = d ?? widget.fallback);
+  }
+
+  @override Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final e = _d ?? widget.fallback;
+    final name = pv(e, 'name').isNotEmpty ? pv(e, 'name') : pv(e, 'title');
+    final desc = pv(e, 'description');
+    final img = pImg(e);
+    final lecName = pv(e, 'lecturer.name');
+    final lecId = (e['lecturer'] is Map && (e['lecturer'] as Map)['id'] is int) ? (e['lecturer'] as Map)['id'] as int : null;
+    final events = (e['events'] is List) ? (e['events'] as List).whereType<Map<String, dynamic>>().toList()
+                 : (e['course_events'] is List) ? (e['course_events'] as List).whereType<Map<String, dynamic>>().toList() : <Map<String, dynamic>>[];
+    final portal = pv(e, 'portalLink');
+    final links = RegExp(r'https?://[^\s\)\]>,]+').allMatches(desc).map((m) => m.group(0)!).toSet().toList();
+    return Scaffold(
+      backgroundColor: cDark,
+      appBar: AppBar(backgroundColor: cDark, elevation: 0,
+        title: Text(t.crsCourses, style: const TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 17))),
+      body: SafeArea(child: ListView(padding: const EdgeInsets.all(16), children: [
+        _headerCard(img, name, lecName, Icons.school_rounded),
+        if (portal.startsWith('http'))
+          Padding(padding: const EdgeInsets.only(top: 10),
+            child: _linkRow(Icons.open_in_new_rounded, t.crsOpenPortal, () => _openUrl(portal))),
+        if (events.isNotEmpty) ...[
+          _section(t.crsUpcoming),
+          for (final ev in events.take(10)) _eventRow(ev),
+        ],
+        if (desc.isNotEmpty) ...[_section(t.crsAbout),
+          Text(desc, style: const TextStyle(color: cTextSecondary, fontSize: 14, height: 1.55))],
+        for (final u in links) Padding(padding: const EdgeInsets.only(top: 8), child: _linkRow(Icons.link_rounded, u, () => _openUrl(u))),
+        if (lecName.isNotEmpty) ...[
+          _section(t.crsLecturer),
+          GestureDetector(
+            onTap: lecId == null ? null : () => Navigator.push(context, MaterialPageRoute(
+                builder: (_) => LecturerDetailScreen(id: lecId, fallback: (e['lecturer'] as Map).cast<String, dynamic>()))),
+            child: _rowCard(pImg((e['lecturer'] as Map?) ?? {}), lecName, pv(e, 'lecturer.intro'), Icons.person_rounded)),
+        ],
+      ])),
+    );
+  }
+
+  Widget _eventRow(Map<String, dynamic> ev) {
+    final from = pv(ev, 'from').isNotEmpty ? pv(ev, 'from') : pv(ev, 'start');
+    final loc = pv(ev, 'location').isNotEmpty ? pv(ev, 'location') : pv(ev, 'venue.name');
+    final link = pv(ev, 'link');
+    final d = DateTime.tryParse(from);
+    String two(int n) => n.toString().padLeft(2, '0');
+    final when = d == null ? from : '${two(d.day)}.${two(d.month)}.${d.year} · ${two(d.hour)}:${two(d.minute)}';
+    return Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+      child: Row(children: [
+        const Icon(Icons.event_rounded, color: cOrange, size: 18), const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(when, style: const TextStyle(color: cText, fontSize: 13.5, fontWeight: FontWeight.w700)),
+          if (loc.isNotEmpty) Text(loc, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+        ])),
+        if (link.startsWith('http')) GestureDetector(onTap: () => _openUrl(link), child: const Icon(Icons.link_rounded, color: cOrange, size: 18)),
+      ]));
+  }
+}
+
+class LecturerDetailScreen extends StatefulWidget {
+  final int id; final Map<String, dynamic> fallback;
+  const LecturerDetailScreen({super.key, required this.id, required this.fallback});
+  @override State<LecturerDetailScreen> createState() => _LecturerDetailScreenState();
+}
+
+class _LecturerDetailScreenState extends State<LecturerDetailScreen> {
+  Map<String, dynamic>? _d;
+  @override void initState() { super.initState(); _load(); }
+  Future<void> _load() async {
+    final d = await PortalApiService.getLecturer(widget.id);
+    if (mounted) setState(() => _d = d ?? widget.fallback);
+  }
+
+  @override Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final e = _d ?? widget.fallback;
+    final name = pv(e, 'name');
+    final intro = pv(e, 'intro');
+    final bio = pv(e, 'description').isNotEmpty ? pv(e, 'description') : pv(e, 'bio');
+    final courses = (e['courses'] is List) ? (e['courses'] as List).whereType<Map<String, dynamic>>().toList() : <Map<String, dynamic>>[];
+    final linkPairs = <String, String>{
+      'Website': pv(e, 'website'), 'X (Twitter)': pv(e, 'twitter').isNotEmpty ? pv(e, 'twitter') : pv(e, 'twitter_username'),
+      'Nostr': pv(e, 'nostr'), 'Portal': pv(e, 'portalLink'),
+    }..removeWhere((_, v) => v.isEmpty);
+    return Scaffold(
+      backgroundColor: cDark,
+      appBar: AppBar(backgroundColor: cDark, elevation: 0,
+        title: Text(t.crsLecturer, style: const TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 17))),
+      body: SafeArea(child: ListView(padding: const EdgeInsets.all(16), children: [
+        _headerCard(pImg(e), name, intro, Icons.person_rounded),
+        if (bio.isNotEmpty) ...[_section(t.lecAbout),
+          Text(bio, style: const TextStyle(color: cTextSecondary, fontSize: 14, height: 1.55))],
+        if (courses.isNotEmpty) ...[
+          _section(t.crsCourses),
+          for (final c in courses.take(15))
+            GestureDetector(
+              onTap: (c['id'] is int) ? () => Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => CourseDetailScreen(id: c['id'] as int, fallback: c))) : null,
+              child: _rowCard(pImg(c), pv(c, 'name'), '', Icons.school_rounded)),
+        ],
+        if (linkPairs.isNotEmpty) ...[
+          _section(t.lecLinks),
+          for (final kv in linkPairs.entries)
+            Padding(padding: const EdgeInsets.only(bottom: 8),
+              child: _linkRow(Icons.link_rounded, '${kv.key}: ${kv.value}', () {
+                final v = kv.value;
+                _openUrl(v.startsWith('http') ? v : (kv.key == 'X (Twitter)' ? 'https://x.com/$v' : 'https://$v'));
+              })),
+        ],
+      ])),
+    );
+  }
+}
+
+// ── gemeinsame kleine Bausteine der Detailseiten ──
+Widget _headerCard(String img, String title, String sub, IconData fb) => Container(
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius + 2), border: Border.all(color: cTileBorder, width: 0.5)),
+  child: Row(children: [
+    ClipRRect(borderRadius: BorderRadius.circular(12),
+      child: img.isNotEmpty
+          ? Image.network(img, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _fbIcon(fb))
+          : _fbIcon(fb)),
+    const SizedBox(width: 14),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(title, style: const TextStyle(color: cText, fontSize: 17, fontWeight: FontWeight.w800)),
+      if (sub.isNotEmpty) ...[const SizedBox(height: 3),
+        Text(sub, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextSecondary, fontSize: 12.5))],
+    ])),
+  ]));
+Widget _fbSmall(IconData i) => Container(width: 40, height: 40,
+  decoration: BoxDecoration(color: cNostr.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(9)),
+  child: Icon(i, color: cNostr, size: 19));
+Widget _fbIcon(IconData i) => Container(width: 64, height: 64,
+  decoration: BoxDecoration(color: cNostr.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+  child: Icon(i, color: cNostr, size: 28));
+Widget _section(String s) => Padding(padding: const EdgeInsets.only(top: 18, bottom: 10),
+  child: Text(s, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w800)));
+Widget _rowCard(String img, String title, String sub, IconData fb) => Container(
+  margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+  child: Row(children: [
+    ClipRRect(borderRadius: BorderRadius.circular(9),
+      child: img.isNotEmpty ? Image.network(img, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _fbSmall(fb)) : _fbSmall(fb)),
+    const SizedBox(width: 11),
+    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(title, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+      if (sub.isNotEmpty) Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 11.5)),
+    ])),
+    const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
+  ]));
+Widget _linkRow(IconData i, String label, VoidCallback onTap) => GestureDetector(onTap: onTap,
+  child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+    decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10), border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.5)),
+    child: Row(children: [Icon(i, color: cOrange, size: 15), const SizedBox(width: 8),
+      Expanded(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cOrange, fontSize: 13, fontWeight: FontWeight.w600)))])));

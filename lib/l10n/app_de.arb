@@ -2095,5 +2095,16 @@
   "crsNone": "Keine Kurse gefunden.",
   "crsCourses": "Kurse",
   "crsLecturers": "Dozenten",
-  "rsvpCancel": "Absagen"
+  "rsvpCancel": "Absagen",
+  "crsAbout": "Über den Kurs",
+  "crsUpcoming": "Kommende Termine",
+  "crsLecturer": "Referent",
+  "lecAbout": "Über den Referenten",
+  "lecLinks": "Links",
+  "crsOpenPortal": "Im Portal öffnen",
+  "rsvpImComing": "Ich komme",
+  "rsvpMaybe": "Vielleicht",
+  "evOpenLink": "Link öffnen",
+  "evShare": "Teilen",
+  "evToCalendar": "Zum Kalender"
 }

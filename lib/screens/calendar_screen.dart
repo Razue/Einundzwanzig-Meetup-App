@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../services/meetup_calendar_service.dart';
 import '../services/meetup_service.dart';
 import '../services/portal_api_service.dart';
@@ -67,7 +70,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           events.add(ev);
           final logo = mv('logo');
           if (logo.isNotEmpty) _eventLogo[ev] = logo;
-          if (e['id'] is int) { _eventPortalId[ev] = e['id'] as int; _rsvp[e['id'] as int] = {'count': (e['attendees'] is int) ? e['attendees'] : 0}; }
+          if (e['id'] is int) { _eventPortalId[ev] = e['id'] as int; _rsvp[e['id'] as int] = {'count': (e['attendees'] is int) ? e['attendees'] : 0, 'might': (e['might_attendees'] is int) ? e['might_attendees'] : 0}; }
         }
         if (events.isNotEmpty) {
           events.sort((a, b) => a.startTime.compareTo(b.startTime));
@@ -265,53 +268,102 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   // Zeigt Details in einem schönen "Bottom Sheet" statt der hässlichen Box
   void _showEventDetails(CalendarEvent event) {
+    final t = AppLocalizations.of(context);
+    final id = _eventPortalId[event];
+    String two(int n) => n.toString().padLeft(2, '0');
+    final d = event.startTime;
+    final when = '${two(d.day)}.${two(d.month)}.${d.year} · ${two(d.hour)}:${two(d.minute)}';
     showModalBottomSheet(
-      context: context,
-      backgroundColor: cCard,
-      isScrollControlled: true, // Damit es größer werden kann
+      context: context, backgroundColor: cCard, isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(100),
-          height: 500, // Feste Höhe oder dynamisch
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(child: Container(width: 40, height: 4, color: Colors.grey, margin: const EdgeInsets.only(bottom: 20))),
-                Text(event.title, style: const TextStyle(color: cOrange, fontSize: 24, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_today, color: Colors.white70, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      "${_twoDigits(event.startTime.day)}.${_twoDigits(event.startTime.month)}.${event.startTime.year}, ${_twoDigits(event.startTime.hour)}:${_twoDigits(event.startTime.minute)} Uhr",
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on, color: Colors.white70, size: 16),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(event.location, style: const TextStyle(color: Colors.white70, fontSize: 16))),
-                  ],
-                ),
-                const Divider(color: Colors.white24, height: 40),
-                Text(AppLocalizations.of(context).sectionDescription, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Text(event.description, style: const TextStyle(color: Colors.white, fontSize: 15, height: 1.5)),
+      builder: (_) => StatefulBuilder(builder: (ctx, setSheet) {
+        final r = id == null ? null : _rsvp[id];
+        final st = (r?['status'] ?? '').toString();
+        final count = _rsvpCount(r);
+        final might = (r?['might'] ?? r?['might_attendees']) is int ? (r?['might'] ?? r?['might_attendees']) as int : -1;
+        Future<void> doStatus(String status) async {
+          if (id == null) return;
+          await _doRsvp(id, status: status);
+          setSheet(() {});
+        }
+        Widget btn(String label, IconData ic, bool active, VoidCallback onTap) => Expanded(
+          child: GestureDetector(onTap: onTap, child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            decoration: BoxDecoration(
+              color: active ? cGreen.withValues(alpha: 0.16) : cSurface,
+              borderRadius: BorderRadius.circular(11),
+              border: Border.all(color: active ? cGreen : cTileBorder, width: active ? 1.2 : 0.5)),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(ic, color: active ? cGreen : cTextSecondary, size: 16), const SizedBox(width: 7),
+              Text(label, style: TextStyle(color: active ? cGreen : cText, fontSize: 13.5, fontWeight: FontWeight.w700)),
+            ]))));
+        Widget action(String label, IconData ic, VoidCallback onTap) => Expanded(
+          child: GestureDetector(onTap: onTap, child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 11),
+            decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(11), border: Border.all(color: cTileBorder, width: 0.5)),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(ic, color: cTextSecondary, size: 15), const SizedBox(width: 7),
+              Text(label, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600)),
+            ]))));
+        return SafeArea(child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            Center(child: Container(width: 44, height: 4, decoration: BoxDecoration(color: cTileBorder, borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Row(children: [
+              _crest(event), const SizedBox(width: 12),
+              Expanded(child: Text(event.title, style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800))),
+            ]),
+            const SizedBox(height: 14),
+            Row(children: [const Icon(Icons.event_rounded, color: cTextTertiary, size: 15), const SizedBox(width: 8),
+              Text(when, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w600))]),
+            if (event.location.isNotEmpty) ...[const SizedBox(height: 7),
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Icon(Icons.place_rounded, color: cTextTertiary, size: 15), const SizedBox(width: 8),
+                Expanded(child: Text(event.location, style: const TextStyle(color: cTextSecondary, fontSize: 13.5)))])],
+            if (event.description.isNotEmpty) ...[const SizedBox(height: 12),
+              Text(event.description, style: const TextStyle(color: cTextSecondary, fontSize: 13.5, height: 1.5))],
+            if (id != null) ...[
+              const SizedBox(height: 14),
+              Text('${count >= 0 ? count : 0} ${t.rsvpCount}${might >= 0 ? ' · $might ${t.rsvpMaybe}' : ''}',
+                  style: const TextStyle(color: cTextTertiary, fontSize: 12.5)),
+              const SizedBox(height: 10),
+              Row(children: [
+                btn(t.rsvpImComing, Icons.check_rounded, st == 'attending', () => doStatus(st == 'attending' ? 'none' : 'attending')),
+                const SizedBox(width: 10),
+                btn(t.rsvpMaybe, Icons.help_outline_rounded, st == 'maybe', () => doStatus(st == 'maybe' ? 'none' : 'maybe')),
+              ]),
+            ],
+            const SizedBox(height: 12),
+            Row(children: [
+              if (event.url.isNotEmpty) ...[
+                action(t.evOpenLink, Icons.link_rounded, () async {
+                  try { await launchUrl(Uri.parse(event.url), mode: LaunchMode.externalApplication); } catch (_) {}
+                }),
+                const SizedBox(width: 10),
               ],
-            ),
-          ),
-        );
-      },
+              action(t.evShare, Icons.share_rounded, () {
+                Share.share('${event.title} · $when${event.location.isNotEmpty ? '\n${event.location}' : ''}${event.url.isNotEmpty ? '\n${event.url}' : ''}');
+              }),
+            ]),
+            const SizedBox(height: 10),
+            Row(children: [
+              action(t.evToCalendar, Icons.event_available_rounded, () {
+                cal.Add2Calendar.addEvent2Cal(cal.Event(
+                  title: event.title,
+                  description: event.description,
+                  location: event.location,
+                  startDate: event.startTime,
+                  endDate: event.startTime.add(const Duration(hours: 2)),
+                ));
+              }),
+            ]),
+          ]),
+        ));
+      }),
     );
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark, // Dunkler Hintergrund

@@ -496,6 +496,20 @@ class PortalApiService {
     return data.whereType<Map<String, dynamic>>().toList();
   }
 
+  /// Kurs-Detail. GET /api/courses/{id}
+  static Future<Map<String, dynamic>?> getCourse(int id) async {
+    final b = await _get('/courses/$id');
+    final d = (b is Map) ? (b['data'] ?? b) : null;
+    return (d is Map<String, dynamic>) ? d : null;
+  }
+
+  /// Dozenten-Detail. GET /api/lecturers/{id}
+  static Future<Map<String, dynamic>?> getLecturer(int id) async {
+    final b = await _get('/lecturers/$id');
+    final d = (b is Map) ? (b['data'] ?? b) : null;
+    return (d is Map<String, dynamic>) ? d : null;
+  }
+
   /// Dozenten. GET /api/lecturers
   static Future<List<Map<String, dynamic>>> getLecturers() async {
     final body = await _get('/lecturers');

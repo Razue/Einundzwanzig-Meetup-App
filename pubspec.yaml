@@ -41,6 +41,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
 
   # Backup & Sharing
+  add_2_calendar: ^3.0.1
   share_plus: ^10.1.4
   file_picker: ^8.0.0
   path_provider: ^2.1.2
