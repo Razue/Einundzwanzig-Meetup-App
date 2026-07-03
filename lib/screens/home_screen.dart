@@ -719,29 +719,31 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// MEETUP-WAPPEN im "Cover-Flow"-Stil (iTunes): quadratisches Wappen,
   /// linke Kante fest, kippt perspektivisch nach rechts hinten und blendet
   /// dorthin weich aus. Bewusst einfach gehalten (robust auf allen Geräten).
-  Widget _homeCrestCoverFlow() {
+  Widget _homeCrestCoverFlow({double size = 56}) {
     String url = MeetupCalendarService.logoFor(_homeMeetup?.city ?? _user.homeMeetupId);
     if (url.isEmpty && _homeMeetup != null) {
       url = _homeMeetup!.logoUrl.isNotEmpty ? _homeMeetup!.logoUrl : _homeMeetup!.coverImagePath;
     }
     if (url.isEmpty) return const SizedBox.shrink();
     return SizedBox(
-      width: 62, height: 56,
+      width: size * 1.12, height: size,
       child: Transform(
         alignment: Alignment.centerLeft,
         transform: Matrix4.identity()
-          ..setEntry(3, 2, 0.0026)
+          ..setEntry(3, 2, 0.0024)
           ..rotateY(-0.55),
         child: ShaderMask(
+          // Weiches Auslaufen nach rechts, damit sich das Wappen wie ein
+          // Wasserzeichen in die Kachel einbindet (linke Kante voll sichtbar).
           shaderCallback: (r) => const LinearGradient(
             begin: Alignment.centerLeft, end: Alignment.centerRight,
-            colors: [Colors.white, Colors.white, Colors.transparent],
-            stops: [0.0, 0.5, 1.0],
+            colors: [Colors.white, Colors.white70, Colors.white24, Colors.transparent],
+            stops: [0.0, 0.35, 0.7, 1.0],
           ).createShader(r),
           blendMode: BlendMode.dstIn,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(url, width: 56, height: 56, fit: BoxFit.cover,
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink()),
           ),
         ),
@@ -752,7 +754,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildHomeMeetupTile() {
     final hasHome = _user.homeMeetupId.isNotEmpty;
     final cityName = _homeMeetup?.city ?? _user.homeMeetupId;
-    final bh = _homeMeetup != null ? myBadges.where((b) => b.meetupName == _homeMeetup!.city).length : 0;
 
     if (!hasHome) {
       // Call-to-Action: noch kein Home Meetup gewählt
@@ -799,24 +800,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-          // ── Header: Label + Wappen (Cover-Flow) + Badge-Count ──
+          // ── Header: Label (größer, ohne Badges/Wappen) ──
           Row(children: [
-            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(6)),
-              child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
-            const Spacer(),
-            _homeCrestCoverFlow(),
-            if (bh > 0) ...[
-              const SizedBox(width: 10),
-              Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(6)),
-              child: Row(children: [
-                const Icon(Icons.military_tech_rounded, color: cOrange, size: 11),
-                const SizedBox(width: 4),
-                Text(AppLocalizations.of(context).homeMeetupBadges(bh), style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w700)),
-              ])),
-            ],
+            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(7)),
+              child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.3))),
           ]),
 
           const SizedBox(height: 16),
@@ -824,14 +812,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // ── City Name — PROMINANT ──
           Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
             // Meetup Bild oder Home-Icon
-            Container(width: 52, height: 52,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: cOrange.withValues(alpha: 0.14)),
-              child: _homeMeetup != null && _homeMeetup!.coverImagePath.isNotEmpty
-                ? ClipRRect(borderRadius: BorderRadius.circular(12),
-                    child: Image.network(_homeMeetup!.coverImagePath, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.home_rounded, color: cOrange, size: 26)))
-                : const Icon(Icons.home_rounded, color: cOrange, size: 26)),
-            const SizedBox(width: 16),
+            _homeCrestCoverFlow(size: 78),
+            const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(cityName.toUpperCase(),
                 style: const TextStyle(color: cText, fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -0.5, height: 1.05)),
@@ -889,12 +871,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: Container(width: 40, height: 40,
                 decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(10)),
                 child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 17))),
-            const SizedBox(width: 6),
-            GestureDetector(
-              onTap: _selectHomeMeetup,
-              child: Container(width: 40, height: 40,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.swap_horiz_rounded, color: cTextSecondary, size: 17))),
           ]),
         ]),
       ),
