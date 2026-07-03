@@ -667,7 +667,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             alignment: Alignment.center,
             child: Text((score?.totalScore ?? 0.0).toStringAsFixed(1),
-                style: const TextStyle(color: Colors.black, fontSize: 19, fontWeight: FontWeight.w900, fontFamily: fontMono)),
+                style: TextStyle(color: Colors.black, fontSize: 19, fontWeight: FontWeight.w900, fontFamily: fontMono)),
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
