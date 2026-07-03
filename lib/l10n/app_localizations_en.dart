@@ -4239,4 +4239,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get crsLecturers => 'Lecturers';
+
+  @override
+  String get rsvpCancel => 'Cancel RSVP';
 }

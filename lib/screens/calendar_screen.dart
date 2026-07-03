@@ -101,7 +101,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
-  Future<void> _doRsvp(int id) async {
+  Future<void> _doRsvp(int id, {String status = 'attending'}) async {
     final t = AppLocalizations.of(context);
     if (!await PortalApiService.hasToken()) {
       if (!mounted) return;
@@ -110,7 +110,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       return;
     }
     setState(() => _rsvpBusy.add(id));
-    final res = await PortalApiService.rsvp(id);
+    final res = await PortalApiService.rsvp(id, status: status);
     if (!mounted) return;
     setState(() => _rsvpBusy.remove(id));
     if (res.ok) {
@@ -151,7 +151,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Text('$count ${t.rsvpCount}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
         const Spacer(),
         going
-            ? Text(t.rsvpYouGo, style: const TextStyle(color: cGreen, fontSize: 13, fontWeight: FontWeight.w700))
+            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                Text(t.rsvpYouGo, style: const TextStyle(color: cGreen, fontSize: 13, fontWeight: FontWeight.w700)),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: _rsvpBusy.contains(id) ? null : () => _doRsvp(id, status: 'none'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: cRed.withValues(alpha: 0.6), width: 1),
+                    ),
+                    child: Text(t.rsvpCancel, style: const TextStyle(color: cRed, fontSize: 12, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ])
             : SizedBox(
                 height: 32,
                 child: OutlinedButton(
@@ -219,12 +233,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
     final fallback = Container(
       width: 42, height: 42,
-      decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.10), shape: BoxShape.circle,
+      decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(9),
           border: Border.all(color: cOrange.withValues(alpha: 0.25))),
       child: const Icon(Icons.groups_rounded, color: cOrange, size: 20),
     );
     if (url.isEmpty) return fallback;
-    return ClipOval(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(9),
       child: Image.network(
         url, width: 42, height: 42, fit: BoxFit.cover,
         errorBuilder: (_, __, ___) => fallback,

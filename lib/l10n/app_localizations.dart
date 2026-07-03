@@ -7785,6 +7785,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dozenten'**
   String get crsLecturers;
+
+  /// No description provided for @rsvpCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'Absagen'**
+  String get rsvpCancel;
 }
 
 class _AppLocalizationsDelegate

@@ -4278,4 +4278,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get crsLecturers => 'Dozenten';
+
+  @override
+  String get rsvpCancel => 'Absagen';
 }

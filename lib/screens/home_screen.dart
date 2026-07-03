@@ -42,6 +42,8 @@ import 'news_screen.dart';
 import 'portal_meetups_screen.dart';
 import 'rolling_qr_screen.dart';
 import 'community_hub_screen.dart';
+import 'reputation_card_screen.dart';
+import '../services/portal_api_service.dart';
 import 'meetup_details.dart';
 import 'reputation_qr.dart';
 import 'my_network_screen.dart';
@@ -185,7 +187,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() { _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
-  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); }
+  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); }
 
   // ============================================================
   // BUSINESS LOGIC (1:1 dashboard.dart + Profilbild + Countdown)
@@ -299,8 +301,37 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _syncOrganicAdminsInBackground() async { try { await PromotionClaimService.syncOrganicAdmins(); } catch (_) {} }
   void _checkDeviceIntegrity() async { try { final r = await DeviceIntegrityService.check(); if (r.isCompromised && mounted) setState(() => _deviceCompromised = true); } catch (_) {} }
   Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
-  Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); }
+  Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); _checkPortalOrganizer(); }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
+  /// PORTAL-ORGANISATOR = APP-ADMIN: Ist der Nutzer im Portal angemeldet
+  /// (Nostr-Login, Community-Bereich) und verwaltet dort mindestens ein
+  /// Meetup ("my-meetups"), bekommt er automatisch Admin-Rechte in der App
+  /// (Rolling QR, Tags). Das Portal ist die Quelle der Wahrheit dafür,
+  /// WER ein Meetup organisiert — kein manuelles Nostr-Admin-Register nötig.
+  /// WoT-Bürgen als zweiter Weg bleibt unverändert bestehen.
+  Future<void> _checkPortalOrganizer() async {
+    try {
+      if (_user.isAdmin) return; // schon Admin (Seed/TrustScore/WoT)
+      if (!await PortalApiService.hasToken()) return; // kein Portal-Login
+      final my = await PortalApiService.getMyMeetups();
+      if (my.isEmpty || !mounted) return;
+      setState(() {
+        _user.isAdmin = true;
+        _user.isAdminVerified = true;
+        _user.promotionSource = 'portal_organizer';
+      });
+      await _user.save();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context).organizerPromoted),
+          backgroundColor: Colors.green.shade700,
+          duration: const Duration(seconds: 5),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+    } catch (_) {/* still: kein Netz o.ä. -> beim nächsten Start erneut */}
+  }
+
   Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.isAdmin = false; _user.isAdminVerified = false; _user.promotionSource = ''; }); } }
   void _resetApp() async {
     final t = AppLocalizations.of(context);
@@ -591,28 +622,59 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // ============================================================
   Widget _buildTrustScoreTile() {
     final score = _trustScore;
+    final t = AppLocalizations.of(context);
+    // KOMPAKT & DEZENT: kleine Score-Plakette links (Mini-Version der
+    // Reputations-Karte), Level + Fortschritt rechts. Antippen öffnet
+    // das volle Reputations-Profil ("Als Bild teilen"-Ansicht).
     return GestureDetector(
-      onTap: _showScoreInfoSheet,
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationCardScreen())),
       onLongPress: _showReorderSheet,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(kTileRadius),
           border: Border.all(color: cTileBorder, width: 0.5),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Row(children: [Icon(_levelIcon, color: _levelColor, size: 14), const SizedBox(width: 6),
-            Text(score?.level == null ? AppLocalizations.of(context).levelNew : localizedLevel(context, score!.level), style: TextStyle(color: _levelColor, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8))]),
-          const SizedBox(height: 12),
-        Text((score?.totalScore ?? 0.0).toStringAsFixed(1), style: TextStyle(color: cText, fontSize: 38, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)),
-        const SizedBox(height: 4),
-        Text(AppLocalizations.of(context).tileTrustScore, style: const TextStyle(color: cText, fontSize: 12)),
-        if (score != null && !score.meetsPromotionThreshold) ...[const SizedBox(height: 12),
-          ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: score.promotionProgress, backgroundColor: Colors.white.withValues(alpha: 0.06), valueColor: AlwaysStoppedAnimation(_levelColor.withValues(alpha: 0.6)), minHeight: 4))],
-        if (score != null && score.meetsPromotionThreshold) ...[const SizedBox(height: 10),
-          Row(children: [Icon(Icons.verified_rounded, color: Colors.green.shade400, size: 14), const SizedBox(width: 4), Text(AppLocalizations.of(context).tileOrganizer, style: TextStyle(color: Colors.green.shade400, fontSize: 11, fontWeight: FontWeight.w600))])],
-        ])));
+        child: Row(children: [
+          // Score-Plakette
+          Container(
+            width: 52, height: 52,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  colors: [cOrange, cOrange.withValues(alpha: 0.75)]),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: Text((score?.totalScore ?? 0.0).toStringAsFixed(1),
+                style: const TextStyle(color: Colors.black, fontSize: 19, fontWeight: FontWeight.w900, fontFamily: fontMono)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            Text(t.tileTrustScore, style: const TextStyle(color: cText, fontSize: 13.5, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Row(children: [
+              Icon(_levelIcon, color: _levelColor, size: 12),
+              const SizedBox(width: 5),
+              Text(score?.level == null ? t.levelNew : localizedLevel(context, score!.level),
+                  style: TextStyle(color: _levelColor, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6)),
+              if (score != null && score.meetsPromotionThreshold) ...[
+                const SizedBox(width: 8),
+                Icon(Icons.verified_rounded, color: Colors.green.shade400, size: 12),
+              ],
+            ]),
+            if (score != null && !score.meetsPromotionThreshold) ...[
+              const SizedBox(height: 7),
+              ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(
+                  value: score.promotionProgress,
+                  backgroundColor: Colors.white.withValues(alpha: 0.06),
+                  valueColor: AlwaysStoppedAnimation(_levelColor.withValues(alpha: 0.6)), minHeight: 3.5)),
+            ],
+          ])),
+          const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 18),
+        ]),
+      ),
+    );
   }
 
   Widget _buildCountdownTile() {

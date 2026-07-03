@@ -243,14 +243,14 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
     }
   }
 
-  Future<void> _doRsvp(int id) async {
+  Future<void> _doRsvp(int id, {String status = 'attending'}) async {
     final t = AppLocalizations.of(context);
     if (!await PortalApiService.hasToken()) {
       _snack(t.rsvpNeedLogin, cRed);
       return;
     }
     setState(() => _busy.add(id));
-    final res = await PortalApiService.rsvp(id);
+    final res = await PortalApiService.rsvp(id, status: status);
     if (!mounted) return;
     setState(() => _busy.remove(id));
     if (res.ok) {
@@ -350,7 +350,21 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
           const Spacer(),
           if (id > 0)
             going
-                ? Text(t.rsvpYouGo, style: const TextStyle(color: cGreen, fontSize: 13, fontWeight: FontWeight.w700))
+                ? Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text(t.rsvpYouGo, style: const TextStyle(color: cGreen, fontSize: 13, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: _busy.contains(id) ? null : () => _doRsvp(id, status: 'none'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: cRed.withValues(alpha: 0.6), width: 1),
+                        ),
+                        child: Text(t.rsvpCancel, style: const TextStyle(color: cRed, fontSize: 12, fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                  ])
                 : SizedBox(
                     height: 34,
                     child: OutlinedButton(

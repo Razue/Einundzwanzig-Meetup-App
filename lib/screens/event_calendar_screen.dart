@@ -569,7 +569,8 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             if (logo.isEmpty) return const SizedBox.shrink();
             return Padding(
               padding: const EdgeInsets.only(left: 8),
-              child: ClipOval(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
                 child: Image.network(logo, width: 26, height: 26, fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => const SizedBox.shrink()),
               ),

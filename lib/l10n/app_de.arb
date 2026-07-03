@@ -2094,5 +2094,6 @@
   "crsLoading": "Lade Kurse …",
   "crsNone": "Keine Kurse gefunden.",
   "crsCourses": "Kurse",
-  "crsLecturers": "Dozenten"
+  "crsLecturers": "Dozenten",
+  "rsvpCancel": "Absagen"
 }
