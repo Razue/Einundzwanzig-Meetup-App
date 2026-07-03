@@ -716,49 +716,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Text(_user.homeMeetupId.isNotEmpty ? 'Kein Termin in Sicht.\nWird Zeit, das zu ändern!' : 'Erst Home Meetup\nwählen!', style: const TextStyle(color: cTextSecondary, fontSize: 10, height: 1.3))]));
   }
 
-  /// MEETUP-WAPPEN im "Cover-Flow"-Stil (wie früher bei iTunes):
-  /// Das quadratische Wappen kippt perspektivisch nach hinten — die linke
-  /// Kante steht fest und ist voll sichtbar, nach rechts hin läuft es in
-  /// die Tiefe und blendet weich aus. Plus dezente Spiegelung darunter.
+  /// MEETUP-WAPPEN im "Cover-Flow"-Stil (iTunes): quadratisches Wappen,
+  /// linke Kante fest, kippt perspektivisch nach rechts hinten und blendet
+  /// dorthin weich aus. Bewusst einfach gehalten (robust auf allen Geräten).
   Widget _homeCrestCoverFlow() {
-    final m = _homeMeetup;
-    // Beste Quelle: Wappen-Registry aus den Portal-Terminen (Meetup-Name),
-    // dann logoUrl/Cover aus /api/meetups.
-    String url = MeetupCalendarService.logoFor(m?.city ?? _user.homeMeetupId);
-    if (url.isEmpty && m != null) {
-      url = m.logoUrl.isNotEmpty ? m.logoUrl : m.coverImagePath;
+    String url = MeetupCalendarService.logoFor(_homeMeetup?.city ?? _user.homeMeetupId);
+    if (url.isEmpty && _homeMeetup != null) {
+      url = _homeMeetup!.logoUrl.isNotEmpty ? _homeMeetup!.logoUrl : _homeMeetup!.coverImagePath;
     }
     if (url.isEmpty) return const SizedBox.shrink();
-
-    Widget img(double size) => ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const SizedBox.shrink()),
-    );
-
-    return Transform(
-      alignment: Alignment.centerLeft,
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.0028) // Perspektive (Tiefe)
-        ..rotateY(-0.62),        // linke Kante fest, rechts kippt nach hinten
-      child: ShaderMask(
-        // Nach rechts hin weich ausblenden ("verschwimmt" in die Tiefe)
-        shaderCallback: (r) => const LinearGradient(
-          begin: Alignment.centerLeft, end: Alignment.centerRight,
-          colors: [Colors.white, Colors.white, Colors.white24, Colors.transparent],
-          stops: [0.0, 0.45, 0.8, 1.0],
-        ).createShader(r),
-        blendMode: BlendMode.dstIn,
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          img(52),
-          // Spiegelung (Cover-Flow-Signatur), stark abgeschwächt
-          Transform(
-            alignment: Alignment.topCenter,
-            transform: Matrix4.identity()..scale(1.0, -1.0),
-            child: Opacity(opacity: 0.18, child: SizedBox(height: 14, child: OverflowBox(
-              maxHeight: 52, alignment: Alignment.topCenter, child: img(52)))),
+    return SizedBox(
+      width: 62, height: 56,
+      child: Transform(
+        alignment: Alignment.centerLeft,
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.0026)
+          ..rotateY(-0.55),
+        child: ShaderMask(
+          shaderCallback: (r) => const LinearGradient(
+            begin: Alignment.centerLeft, end: Alignment.centerRight,
+            colors: [Colors.white, Colors.white, Colors.transparent],
+            stops: [0.0, 0.5, 1.0],
+          ).createShader(r),
+          blendMode: BlendMode.dstIn,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(url, width: 56, height: 56, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
           ),
-        ]),
+        ),
       ),
     );
   }

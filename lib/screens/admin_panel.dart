@@ -589,15 +589,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
 
             const SizedBox(height: 16),
 
-            _buildAdminTile(
-              context: context,
-              icon: Icons.event_available_rounded,
-              color: cOrange,
-              title: AppLocalizations.of(context).apCreateEvent,
-              subtitle: AppLocalizations.of(context).apCreateEventSub,
-              onTap: _openPortalForEvent,
-            ),
-
             // Admin-Verwaltung (nur Super-Admin — Legacy)
             if (_isSuperAdmin) ...[
               const SizedBox(height: 16),
