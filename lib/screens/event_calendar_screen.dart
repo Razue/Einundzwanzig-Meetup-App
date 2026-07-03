@@ -563,6 +563,18 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           Container(width: 8, height: 8, decoration: BoxDecoration(color: e.color, shape: BoxShape.circle)),
+          // Meetup-Wappen (aus der Portal-Registry), falls vorhanden
+          Builder(builder: (_) {
+            final logo = e.isMeetup ? MeetupCalendarService.logoFor(e.title) : '';
+            if (logo.isEmpty) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: ClipOval(
+                child: Image.network(logo, width: 26, height: 26, fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+              ),
+            );
+          }),
           const SizedBox(width: 8),
           Expanded(child: Text(e.title, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700))),
           // Typ-Badge (Meetup = orange, Veranstaltung = cyan)

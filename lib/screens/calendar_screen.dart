@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/meetup_service.dart';
+import '../services/portal_api_service.dart';
 import '../models/calendar_event.dart';
 import '../models/meetup.dart';
 import '../theme.dart';
@@ -27,6 +28,137 @@ class _CalendarScreenState extends State<CalendarScreen> {
   // WAPPEN: Meetups aus dem Portal (mit logoUrl) + Zuordnungs-Cache
   List<Meetup> _meetups = [];
   final Map<String, Meetup?> _crestCache = {};
+
+  // PORTAL-MODUS: Termine direkt aus dem Portal (exakte Meetup-Zuordnung).
+  // _eventLogo = Wappen-URL je Termin, _eventPortalId = Event-ID (für RSVP).
+  final Map<CalendarEvent, String> _eventLogo = {};
+  final Map<CalendarEvent, int> _eventPortalId = {};
+  final Map<int, Map<String, dynamic>> _rsvp = {};
+  final Set<int> _rsvpBusy = {};
+
+  void _loadEvents() async {
+    // 1) PORTAL ZUERST: /api/meetup-events liefert jeden Termin MIT seinem
+    //    Meetup (Name + Wappen-URL) -> exakte Zuordnung, RSVP möglich.
+    try {
+      final portal = await PortalApiService.getAllMeetupEvents();
+      if (portal.isNotEmpty) {
+        final cutoff = DateTime.now().subtract(const Duration(hours: 6));
+        final events = <CalendarEvent>[];
+        _eventLogo.clear(); _eventPortalId.clear();
+        for (final e in portal) {
+          final start = DateTime.tryParse((e['start'] ?? '').toString())?.toLocal();
+          if (start == null || start.isBefore(cutoff)) continue;
+          final meetup = (e['meetup'] is Map) ? e['meetup'] as Map : const {};
+          final ev = CalendarEvent(
+            title: (meetup['name'] ?? 'Meetup').toString(),
+            description: (e['description'] ?? '').toString(),
+            location: (e['location'] ?? '').toString(),
+            startTime: start,
+            url: (e['link'] ?? meetup['portalLink'] ?? '').toString(),
+          );
+          events.add(ev);
+          final logo = (meetup['logo'] ?? '').toString();
+          if (logo.isNotEmpty) _eventLogo[ev] = logo;
+          if (e['id'] is int) { _eventPortalId[ev] = e['id'] as int; _rsvp[e['id'] as int] = {'count': (e['attendees'] is int) ? e['attendees'] : 0}; }
+        }
+        if (events.isNotEmpty) {
+          events.sort((a, b) => a.startTime.compareTo(b.startTime));
+          if (mounted) {
+            setState(() { _allEvents = events; _isLoading = false; _filterEvents(); });
+          }
+          _loadRsvpStatuses();
+          return;
+        }
+      }
+    } catch (_) {/* Portal nicht erreichbar -> iCal-Fallback */}
+
+    // 2) FALLBACK: iCal-Feed wie bisher (Wappen dann per Stadtnamen-Matching)
+    final events = await _calendarService.fetchMeetups();
+    if (mounted) {
+      setState(() {
+        _allEvents = events;
+        _isLoading = false;
+        _filterEvents(); // Direkt filtern nach dem Laden
+      });
+    }
+  }
+
+  /// RSVP-Status der ersten 25 sichtbaren Portal-Termine nachladen (sparsam).
+  void _loadRsvpStatuses() async {
+    final ids = _eventPortalId.values.take(25).toList();
+    for (final id in ids) {
+      final r = await PortalApiService.getRsvp(id);
+      if (!mounted) return;
+      if (r != null) setState(() => _rsvp[id] = {...?_rsvp[id], ...r});
+    }
+  }
+
+  Future<void> _doRsvp(int id) async {
+    final t = AppLocalizations.of(context);
+    if (!await PortalApiService.hasToken()) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.rsvpNeedLogin), backgroundColor: cRed, behavior: SnackBarBehavior.floating));
+      return;
+    }
+    setState(() => _rsvpBusy.add(id));
+    final res = await PortalApiService.rsvp(id);
+    if (!mounted) return;
+    setState(() => _rsvpBusy.remove(id));
+    if (res.ok) {
+      final r = await PortalApiService.getRsvp(id);
+      if (mounted && r != null) setState(() => _rsvp[id] = r);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${t.rsvpFailed}: ${res.error ?? ''}'), backgroundColor: cRed, behavior: SnackBarBehavior.floating));
+    }
+  }
+
+  bool _isGoing(Map<String, dynamic>? r) {
+    if (r == null) return false;
+    final v = r['going'] ?? r['is_going'] ?? r['rsvped'] ?? r['attending'];
+    return v == true;
+  }
+
+  int _rsvpCount(Map<String, dynamic>? r) {
+    if (r == null) return -1;
+    final v = r['count'] ?? r['attendees'] ?? r['total'] ?? r['rsvps'];
+    return (v is int) ? v : -1;
+  }
+
+  /// Zusagen-Zeile unter dem Termin (nur im Portal-Modus verfügbar).
+  Widget _rsvpRow(CalendarEvent event) {
+    final id = _eventPortalId[event];
+    if (id == null) return const SizedBox.shrink();
+    final t = AppLocalizations.of(context);
+    final r = _rsvp[id];
+    final going = _isGoing(r);
+    final count = _rsvpCount(r);
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(children: [
+        if (count >= 0)
+          Text('$count ${t.rsvpCount}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        const Spacer(),
+        going
+            ? Text(t.rsvpYouGo, style: const TextStyle(color: cGreen, fontSize: 13, fontWeight: FontWeight.w700))
+            : SizedBox(
+                height: 32,
+                child: OutlinedButton(
+                  onPressed: _rsvpBusy.contains(id) ? null : () => _doRsvp(id),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: cGreen, width: 1),
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                  ),
+                  child: _rsvpBusy.contains(id)
+                      ? const SizedBox(width: 13, height: 13, child: CircularProgressIndicator(color: cGreen, strokeWidth: 2))
+                      : Text(t.rsvpGoing, style: const TextStyle(color: cGreen, fontSize: 12.5, fontWeight: FontWeight.w700)),
+                ),
+              ),
+      ]),
+    );
+  }
 
   @override
   void initState() {
@@ -67,10 +199,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return best;
   }
 
-  /// Rundes Meetup-Wappen (Logo bevorzugt, sonst Cover); Fallback: Icon.
+  /// Rundes Meetup-Wappen. Im Portal-Modus exakt (Logo hängt am Termin),
+  /// im iCal-Fallback per Stadtnamen-Matching. Fallback: Icon.
   Widget _crest(CalendarEvent event) {
-    final m = _matchMeetup(event);
-    final url = m == null ? '' : (m.logoUrl.isNotEmpty ? m.logoUrl : m.coverImagePath);
+    String url = _eventLogo[event] ?? '';
+    if (url.isEmpty) {
+      final m = _matchMeetup(event);
+      url = m == null ? '' : (m.logoUrl.isNotEmpty ? m.logoUrl : m.coverImagePath);
+    }
     final fallback = Container(
       width: 42, height: 42,
       decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.10), shape: BoxShape.circle,
@@ -84,17 +220,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         errorBuilder: (_, __, ___) => fallback,
       ),
     );
-  }
-
-  void _loadEvents() async {
-    final events = await _calendarService.fetchMeetups();
-    if (mounted) {
-      setState(() {
-        _allEvents = events;
-        _isLoading = false;
-        _filterEvents(); // Direkt filtern nach dem Laden
-      });
-    }
   }
 
   // Diese Funktion filtert die Liste basierend auf dem Suchtext
@@ -210,7 +335,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               borderRadius: BorderRadius.circular(12),
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
-                                child: Row(
+                                child: Column(
+                                  children: [
+                                    Row(
                                   children: [
                                     // DATUMS-BOX (Links)
                                     Container(
@@ -270,6 +397,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                       ),
                                     ),
                                     const Icon(Icons.chevron_right, color: Colors.grey),
+                                  ],
+                                ),
+                                    _rsvpRow(event),
                                   ],
                                 ),
                               ),

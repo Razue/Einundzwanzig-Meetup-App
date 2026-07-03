@@ -640,7 +640,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// die Tiefe und blendet weich aus. Plus dezente Spiegelung darunter.
   Widget _homeCrestCoverFlow() {
     final m = _homeMeetup;
-    final url = m == null ? '' : (m.logoUrl.isNotEmpty ? m.logoUrl : m.coverImagePath);
+    // Beste Quelle: Wappen-Registry aus den Portal-Terminen (Meetup-Name),
+    // dann logoUrl/Cover aus /api/meetups.
+    String url = MeetupCalendarService.logoFor(m?.city ?? _user.homeMeetupId);
+    if (url.isEmpty && m != null) {
+      url = m.logoUrl.isNotEmpty ? m.logoUrl : m.coverImagePath;
+    }
     if (url.isEmpty) return const SizedBox.shrink();
 
     Widget img(double size) => ClipRRect(

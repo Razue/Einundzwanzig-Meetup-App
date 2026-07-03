@@ -428,12 +428,28 @@ class PortalApiService {
     }
   }
 
-  /// Alle kommenden Meetup-Events (Portal-weit). GET /api/meetup-events
+  /// Kommende Meetup-Events. WICHTIG: Der Endpunkt braucht ein DATUM
+  /// (GET /api/meetup-events/{yyyy-mm-dd}) und liefert monatsweise ab
+  /// diesem Tag. Wir holen: heute + die zwei Folgemonate und mergen.
   static Future<List<Map<String, dynamic>>> getAllMeetupEvents() async {
-    final body = await _get('/meetup-events');
-    final data = (body is Map) ? body['data'] : body;
-    if (data is! List) return [];
-    return data.whereType<Map<String, dynamic>>().toList();
+    String d(DateTime x) =>
+        '${x.year}-${x.month.toString().padLeft(2, '0')}-${x.day.toString().padLeft(2, '0')}';
+    final now = DateTime.now();
+    final dates = [
+      d(now),
+      d(DateTime(now.year, now.month + 1, 1)),
+      d(DateTime(now.year, now.month + 2, 1)),
+    ];
+    final byId = <String, Map<String, dynamic>>{};
+    for (final date in dates) {
+      final body = await _get('/meetup-events/$date');
+      final data = (body is Map) ? body['data'] : body;
+      if (data is! List) continue;
+      for (final e in data.whereType<Map<String, dynamic>>()) {
+        byId['${e['id'] ?? e.hashCode}'] = e;
+      }
+    }
+    return byId.values.toList();
   }
 
   /// RSVP-Status eines Events. GET /api/meetup-events/{id}/rsvp

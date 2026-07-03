@@ -7,6 +7,21 @@ import 'portal_api_service.dart';
 import 'app_logger.dart';
 
 class MeetupCalendarService {
+  /// WAPPEN-REGISTRY: Meetup-Name -> Logo-URL, gefüllt beim Portal-Laden.
+  /// So können Home-Kachel & Co. das Wappen zum Termin/Meetup finden.
+  static final Map<String, String> portalLogos = {};
+
+  /// Liefert das Wappen zu einem Titel/Stadtnamen (exakter Name oder enthalten).
+  static String logoFor(String titleOrCity) {
+    final q = titleOrCity.trim().toLowerCase();
+    if (q.isEmpty) return '';
+    for (final entry in portalLogos.entries) {
+      final name = entry.key.toLowerCase();
+      if (name == q || name.contains(q) || q.contains(name)) return entry.value;
+    }
+    return '';
+  }
+
   /// ZENTRALE QUELLE für Meetup-Termine (Anzeige): PORTAL ZUERST
   /// (/api/meetup-events — exakte Meetup-Namen, saubere Daten),
   /// Fallback iCal-Feed. Alle Screens sollen DIESE Methode nutzen,
@@ -17,15 +32,18 @@ class MeetupCalendarService {
       final cutoff = DateTime.now().subtract(const Duration(hours: 6));
       final events = <CalendarEvent>[];
       for (final e in portal) {
-        final start = DateTime.tryParse((e['start'] ?? '').toString())?.toLocal();
+        final start = DateTime.tryParse((e['start'] ?? '').toString());
         if (start == null || start.isBefore(cutoff)) continue;
         final meetup = (e['meetup'] is Map) ? e['meetup'] as Map : const {};
+        final name = (meetup['name'] ?? 'Meetup').toString();
+        final logo = (meetup['logo'] ?? '').toString();
+        if (logo.isNotEmpty) portalLogos[name] = logo;
         events.add(CalendarEvent(
-          title: (meetup['name'] ?? 'Meetup').toString(),
+          title: name,
           description: (e['description'] ?? '').toString(),
           location: (e['location'] ?? '').toString(),
           startTime: start,
-          url: (e['link'] ?? meetup['portal'] ?? '').toString(),
+          url: (e['link'] ?? meetup['portalLink'] ?? '').toString(),
         ));
       }
       if (events.isNotEmpty) {
