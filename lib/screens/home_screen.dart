@@ -117,7 +117,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   static const _requiredTiles = {'trust_score', 'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
   static const _defaultOrder = ['trust_score', 'home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'news', 'portal', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
-  static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal'};
+  static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events'};
 
   late List<_TileDef> _tileDefs;
 
@@ -157,6 +157,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getStringList('tile_order');
     final savedHidden = prefs.getStringList('tile_hidden')?.toSet() ?? Set.from(_defaultHidden);
+
+    // EINMALIGE MIGRATION (Struktur C): Events-Kachel ausblenden, da der
+    // Events-Tab unten alles abdeckt. Bleibt über "Kacheln anpassen"
+    // jederzeit wieder einblendbar.
+    if (!(prefs.getBool('mig_hide_events_v1') ?? false)) {
+      savedHidden.add('events');
+      await prefs.setBool('mig_hide_events_v1', true);
+      await prefs.setStringList('tile_hidden', List<String>.from(savedHidden));
+    }
 
     if (saved != null && saved.isNotEmpty) {
       // Merge: gespeicherte Reihenfolge + neue Tiles die noch nicht drin sind
@@ -249,7 +258,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _loadNextHomeMeetup() async {
     if (_user.homeMeetupId.isEmpty) { if (mounted) setState(() => _countdownLoading = false); return; }
     try {
-      final events = await MeetupCalendarService().fetchMeetups();
+      final events = await MeetupCalendarService().fetchMeetupsPortalFirst();
       final now = DateTime.now();
       // Abgleich-Begriffe: Stadtname des Home-Meetups + einzelne Wörter daraus.
       // Der iCal-Titel enthält den Stadtnamen nicht immer wörtlich, daher
@@ -625,6 +634,48 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Text(_user.homeMeetupId.isNotEmpty ? 'Kein Termin in Sicht.\nWird Zeit, das zu ändern!' : 'Erst Home Meetup\nwählen!', style: const TextStyle(color: cTextSecondary, fontSize: 10, height: 1.3))]));
   }
 
+  /// MEETUP-WAPPEN im "Cover-Flow"-Stil (wie früher bei iTunes):
+  /// Das quadratische Wappen kippt perspektivisch nach hinten — die linke
+  /// Kante steht fest und ist voll sichtbar, nach rechts hin läuft es in
+  /// die Tiefe und blendet weich aus. Plus dezente Spiegelung darunter.
+  Widget _homeCrestCoverFlow() {
+    final m = _homeMeetup;
+    final url = m == null ? '' : (m.logoUrl.isNotEmpty ? m.logoUrl : m.coverImagePath);
+    if (url.isEmpty) return const SizedBox.shrink();
+
+    Widget img(double size) => ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+    );
+
+    return Transform(
+      alignment: Alignment.centerLeft,
+      transform: Matrix4.identity()
+        ..setEntry(3, 2, 0.0028) // Perspektive (Tiefe)
+        ..rotateY(-0.62),        // linke Kante fest, rechts kippt nach hinten
+      child: ShaderMask(
+        // Nach rechts hin weich ausblenden ("verschwimmt" in die Tiefe)
+        shaderCallback: (r) => const LinearGradient(
+          begin: Alignment.centerLeft, end: Alignment.centerRight,
+          colors: [Colors.white, Colors.white, Colors.white24, Colors.transparent],
+          stops: [0.0, 0.45, 0.8, 1.0],
+        ).createShader(r),
+        blendMode: BlendMode.dstIn,
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          img(52),
+          // Spiegelung (Cover-Flow-Signatur), stark abgeschwächt
+          Transform(
+            alignment: Alignment.topCenter,
+            transform: Matrix4.identity()..scale(1.0, -1.0),
+            child: Opacity(opacity: 0.18, child: SizedBox(height: 14, child: OverflowBox(
+              maxHeight: 52, alignment: Alignment.topCenter, child: img(52)))),
+          ),
+        ]),
+      ),
+    );
+  }
+
   Widget _buildHomeMeetupTile() {
     final hasHome = _user.homeMeetupId.isNotEmpty;
     final cityName = _homeMeetup?.city ?? _user.homeMeetupId;
@@ -675,13 +726,16 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
-          // ── Header: Label + Badge-Count ──
+          // ── Header: Label + Wappen (Cover-Flow) + Badge-Count ──
           Row(children: [
             Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(6)),
               child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
             const Spacer(),
-            if (bh > 0) Container(
+            _homeCrestCoverFlow(),
+            if (bh > 0) ...[
+              const SizedBox(width: 10),
+              Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(6)),
               child: Row(children: [
@@ -689,6 +743,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 const SizedBox(width: 4),
                 Text(AppLocalizations.of(context).homeMeetupBadges(bh), style: const TextStyle(color: cOrange, fontSize: 9, fontWeight: FontWeight.w700)),
               ])),
+            ],
           ]),
 
           const SizedBox(height: 16),

@@ -27,7 +27,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
   }
 
   void _loadSpecificEvents() async {
-    final allEvents = await _calendarService.fetchMeetups();
+    final allEvents = await _calendarService.fetchMeetupsPortalFirst();
     if (mounted) {
       setState(() {
         _meetupEvents = allEvents.where((e) {

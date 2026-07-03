@@ -8,6 +8,7 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/calendar_event_service.dart';
@@ -102,7 +103,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     // Beide Quellen laden: Nostr-Events (NIP-52) + Portal-/iCal-Meetups.
     // Getrennt awaiten, damit die Typen sauber erhalten bleiben.
     final nostrFuture = CalendarEventService.fetchEvents(worldwide: _worldwide);
-    final meetupFuture = MeetupCalendarService().fetchMeetups();
+    final meetupFuture = MeetupCalendarService().fetchMeetupsPortalFirst();
     final List<NostrCalendarEvent> nostrEvents = await nostrFuture;
     final List<ical.CalendarEvent> meetups = await meetupFuture;
     if (!mounted) return;
@@ -550,7 +551,9 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
 
   // ── Event-Karte ──
   Widget _eventCard(AppLocalizations t, _CalItem e, {bool showDate = false}) {
-    return Container(
+    return GestureDetector(
+      onTap: () => _showItemDetails(e),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -590,6 +593,90 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
               style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
         ],
       ]),
+      ),
+    );
+  }
+
+  /// DETAIL-ANSICHT: Antippen einer Veranstaltung öffnet ein Sheet mit
+  /// vollständiger Beschreibung, Ort, Zeit und KLICKBAREN Links.
+  void _showItemDetails(_CalItem e) {
+    final t = AppLocalizations.of(context);
+    // URLs aus Beschreibung + Ort extrahieren (klickbar anbieten)
+    final linkRegex = RegExp(r'https?://[^\s\)\]>,]+');
+    final links = <String>{
+      ...linkRegex.allMatches('${e.description} ${e.location}').map((m) => m.group(0)!),
+    }.toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => DraggableScrollableSheet(
+        expand: false, initialChildSize: 0.55, maxChildSize: 0.9, minChildSize: 0.35,
+        builder: (_, scroll) => SingleChildScrollView(
+          controller: scroll,
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Center(child: Container(width: 44, height: 4, decoration: BoxDecoration(color: cTileBorder, borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 16),
+            Row(children: [
+              Container(width: 10, height: 10, decoration: BoxDecoration(color: e.color, shape: BoxShape.circle)),
+              const SizedBox(width: 10),
+              Expanded(child: Text(e.title, style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: e.color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(7)),
+                child: Text(e.isMeetup ? t.calLegendMeetup : t.calLegendEvent,
+                    style: TextStyle(color: e.color, fontSize: 11, fontWeight: FontWeight.w800)),
+              ),
+            ]),
+            const SizedBox(height: 14),
+            Row(children: [
+              const Icon(Icons.schedule_rounded, color: cTextTertiary, size: 15),
+              const SizedBox(width: 7),
+              Text(_fmtWhen(t, e, true), style: const TextStyle(color: cTextSecondary, fontSize: 13)),
+            ]),
+            if (e.location.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Icon(Icons.place_rounded, color: cTextTertiary, size: 15),
+                const SizedBox(width: 7),
+                Expanded(child: Text(e.location, style: const TextStyle(color: cTextSecondary, fontSize: 13))),
+              ]),
+            ],
+            if (e.description.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Text(e.description, style: const TextStyle(color: cText, fontSize: 14, height: 1.5)),
+            ],
+            if (links.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              for (final url in links)
+                GestureDetector(
+                  onTap: () async {
+                    try { await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication); } catch (_) {}
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: cOrange.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.5),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.link_rounded, color: cOrange, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(url, maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: cOrange, fontSize: 13, fontWeight: FontWeight.w600))),
+                      const Icon(Icons.open_in_new_rounded, color: cOrange, size: 14),
+                    ]),
+                  ),
+                ),
+            ],
+          ]),
+        ),
+      ),
     );
   }
 

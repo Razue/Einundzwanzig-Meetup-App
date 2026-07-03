@@ -73,7 +73,7 @@ class NearbyMeetupService {
     if (!forceReload && _meetupCache != null && _eventCache != null) return;
 
     final meetupsFuture = MeetupService.fetchMeetups();
-    final eventsFuture = MeetupCalendarService().fetchMeetups();
+    final eventsFuture = MeetupCalendarService().fetchMeetupsPortalFirst();
     List<Meetup> meetups = await meetupsFuture;
     final events = await eventsFuture;
 
