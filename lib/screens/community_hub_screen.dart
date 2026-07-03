@@ -273,13 +273,15 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
 
   bool _isGoing(Map<String, dynamic>? r) {
     if (r == null) return false;
-    final v = r['going'] ?? r['is_going'] ?? r['rsvped'] ?? r['attending'];
+    final st = (r['status'] ?? '').toString();
+    if (st == 'attending' || st == 'maybe') return true;
+    final v = r['going'] ?? r['is_going'] ?? r['rsvped'];
     return v == true;
   }
 
   int _count(Map<String, dynamic>? r) {
     if (r == null) return -1;
-    final v = r['count'] ?? r['total'] ?? r['rsvps'];
+    final v = r['attendees'] ?? r['count'] ?? r['total'] ?? r['rsvps'];
     return (v is int) ? v : -1;
   }
 
@@ -319,7 +321,7 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
     final r = _rsvp[id];
     final going = _isGoing(r);
     final count = _count(r);
-    final meetupName = (e['meetup'] is Map ? (e['meetup']['name'] ?? '') : (e['meetup_name'] ?? '')).toString();
+    final meetupName = (e['meetup'] is Map ? ((e['meetup'] as Map)['name'] ?? '') : (e['meetup.name'] ?? e['meetup_name'] ?? '')).toString();
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),

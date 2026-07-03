@@ -46,18 +46,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final events = <CalendarEvent>[];
         _eventLogo.clear(); _eventPortalId.clear();
         for (final e in portal) {
-          final start = DateTime.tryParse((e['start'] ?? '').toString())?.toLocal();
+          final start = DateTime.tryParse((e['start'] ?? '').toString());
           if (start == null || start.isBefore(cutoff)) continue;
-          final meetup = (e['meetup'] is Map) ? e['meetup'] as Map : const {};
+          // Meetup-Felder sind FLACH mit Punkt-Schlüsseln ("meetup.name")
+          String mv(String key) {
+            final nested = e['meetup'];
+            if (nested is Map && nested[key] != null) return nested[key].toString();
+            final flat = e['meetup.$key'];
+            return flat == null ? '' : flat.toString();
+          }
+          final name = mv('name').trim().isNotEmpty ? mv('name').trim() : 'Meetup';
+          final link = (e['link'] ?? '').toString();
           final ev = CalendarEvent(
-            title: (meetup['name'] ?? 'Meetup').toString(),
+            title: name,
             description: (e['description'] ?? '').toString(),
             location: (e['location'] ?? '').toString(),
             startTime: start,
-            url: (e['link'] ?? meetup['portalLink'] ?? '').toString(),
+            url: link.isNotEmpty ? link : mv('portalLink'),
           );
           events.add(ev);
-          final logo = (meetup['logo'] ?? '').toString();
+          final logo = mv('logo');
           if (logo.isNotEmpty) _eventLogo[ev] = logo;
           if (e['id'] is int) { _eventPortalId[ev] = e['id'] as int; _rsvp[e['id'] as int] = {'count': (e['attendees'] is int) ? e['attendees'] : 0}; }
         }
@@ -116,13 +124,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   bool _isGoing(Map<String, dynamic>? r) {
     if (r == null) return false;
-    final v = r['going'] ?? r['is_going'] ?? r['rsvped'] ?? r['attending'];
+    final st = (r['status'] ?? '').toString();
+    if (st == 'attending' || st == 'maybe') return true;
+    final v = r['going'] ?? r['is_going'] ?? r['rsvped'];
     return v == true;
   }
 
   int _rsvpCount(Map<String, dynamic>? r) {
     if (r == null) return -1;
-    final v = r['count'] ?? r['attendees'] ?? r['total'] ?? r['rsvps'];
+    final v = r['attendees'] ?? r['count'] ?? r['total'] ?? r['rsvps'];
     return (v is int) ? v : -1;
   }
 

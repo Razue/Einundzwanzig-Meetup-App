@@ -34,16 +34,24 @@ class MeetupCalendarService {
       for (final e in portal) {
         final start = DateTime.tryParse((e['start'] ?? '').toString());
         if (start == null || start.isBefore(cutoff)) continue;
-        final meetup = (e['meetup'] is Map) ? e['meetup'] as Map : const {};
-        final name = (meetup['name'] ?? 'Meetup').toString();
-        final logo = (meetup['logo'] ?? '').toString();
+        // WICHTIG: Die API liefert die Meetup-Felder FLACH mit Punkt-
+        // Schlüsseln ("meetup.name", "meetup.logo") — nicht verschachtelt!
+        String mv(String key) {
+          final nested = e['meetup'];
+          if (nested is Map && nested[key] != null) return nested[key].toString();
+          final flat = e['meetup.$key'];
+          return flat == null ? '' : flat.toString();
+        }
+        final name = mv('name').trim().isNotEmpty ? mv('name').trim() : 'Meetup';
+        final logo = mv('logo');
         if (logo.isNotEmpty) portalLogos[name] = logo;
+        final link = (e['link'] ?? '').toString();
         events.add(CalendarEvent(
           title: name,
           description: (e['description'] ?? '').toString(),
           location: (e['location'] ?? '').toString(),
           startTime: start,
-          url: (e['link'] ?? meetup['portalLink'] ?? '').toString(),
+          url: link.isNotEmpty ? link : mv('portalLink'),
         ));
       }
       if (events.isNotEmpty) {

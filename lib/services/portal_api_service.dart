@@ -463,9 +463,10 @@ class PortalApiService {
     return null;
   }
 
-  /// Zusagen. POST /api/meetup-events/{id}/rsvp (Auth nötig)
-  static Future<PortalResult> rsvp(int eventId) =>
-      _write('POST', '$_apiBase/meetup-events/$eventId/rsvp', {});
+  /// Zusagen. POST /api/meetup-events/{id}/rsvp (Auth nötig).
+  /// Der Body MUSS einen Status tragen: 'attending' | 'maybe' | 'none'.
+  static Future<PortalResult> rsvp(int eventId, {String status = 'attending'}) =>
+      _write('POST', '$_apiBase/meetup-events/$eventId/rsvp', {'status': status});
 
   /// Kurse. GET /api/courses
   static Future<List<Map<String, dynamic>>> getCourses() async {
