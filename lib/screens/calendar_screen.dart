@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/meetup_calendar_service.dart';
+import '../services/meetup_service.dart';
 import '../models/calendar_event.dart';
+import '../models/meetup.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 
@@ -22,6 +24,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
 
+  // WAPPEN: Meetups aus dem Portal (mit logoUrl) + Zuordnungs-Cache
+  List<Meetup> _meetups = [];
+  final Map<String, Meetup?> _crestCache = {};
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +36,54 @@ class _CalendarScreenState extends State<CalendarScreen> {
       _searchController.text = widget.initialSearch!;
     }
     _loadEvents();
+    _loadMeetupCrests();
+  }
+
+  /// Lädt die Portal-Meetups (enthalten die Wappen/Logos) parallel zur
+  /// Terminliste. Schlägt das fehl, zeigen wir einfach das Fallback-Icon.
+  void _loadMeetupCrests() async {
+    final meetups = await MeetupService.fetchMeetups();
+    if (mounted && meetups.isNotEmpty) {
+      setState(() { _meetups = meetups; _crestCache.clear(); });
+    }
+  }
+
+  /// Ordnet einem Termin das passende Meetup zu (Stadtname im Titel/Ort).
+  /// Bei mehreren Treffern gewinnt der LÄNGSTE Stadtname (verhindert, dass
+  /// z.B. "Au" fälschlich vor "Aschaffenburg" matcht). Ergebnis wird gecacht.
+  Meetup? _matchMeetup(CalendarEvent event) {
+    final key = '${event.title}|${event.location}';
+    if (_crestCache.containsKey(key)) return _crestCache[key];
+    final hay = '${event.title} ${event.location}'.toLowerCase();
+    Meetup? best;
+    for (final m in _meetups) {
+      final city = m.city.trim().toLowerCase();
+      if (city.length < 3) continue;
+      if (hay.contains(city)) {
+        if (best == null || city.length > best.city.trim().length) best = m;
+      }
+    }
+    _crestCache[key] = best;
+    return best;
+  }
+
+  /// Rundes Meetup-Wappen (Logo bevorzugt, sonst Cover); Fallback: Icon.
+  Widget _crest(CalendarEvent event) {
+    final m = _matchMeetup(event);
+    final url = m == null ? '' : (m.logoUrl.isNotEmpty ? m.logoUrl : m.coverImagePath);
+    final fallback = Container(
+      width: 42, height: 42,
+      decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.10), shape: BoxShape.circle,
+          border: Border.all(color: cOrange.withValues(alpha: 0.25))),
+      child: const Icon(Icons.groups_rounded, color: cOrange, size: 20),
+    );
+    if (url.isEmpty) return fallback;
+    return ClipOval(
+      child: Image.network(
+        url, width: 42, height: 42, fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => fallback,
+      ),
+    );
   }
 
   void _loadEvents() async {
@@ -179,7 +233,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 16),
+                                    const SizedBox(width: 12),
+                                    // MEETUP-WAPPEN
+                                    _crest(event),
+                                    const SizedBox(width: 12),
                                     // INFO-TEXT (Mitte)
                                     Expanded(
                                       child: Column(

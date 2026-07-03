@@ -50,6 +50,7 @@ class Meetup {
       nostrNpub: json['nostr'] ?? '',
       lat: (json['lat'] ?? 0).toDouble(),
       lng: (json['lon'] ?? 0).toDouble(),
+      logoUrl: json['logo'] ?? '',
       coverImagePath: image,
     );
   }

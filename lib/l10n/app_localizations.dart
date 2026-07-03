@@ -7575,6 +7575,216 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Weltweit zeigt alle Nostr-Events – auch fremde.'**
   String get calWorldwideHint;
+
+  /// No description provided for @chTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Community'**
+  String get chTitle;
+
+  /// No description provided for @chPortal.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal'**
+  String get chPortal;
+
+  /// No description provided for @chPortalSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups · Events · Kurse · Karte'**
+  String get chPortalSub;
+
+  /// No description provided for @chNews.
+  ///
+  /// In de, this message translates to:
+  /// **'News'**
+  String get chNews;
+
+  /// No description provided for @chNewsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel lesen'**
+  String get chNewsSub;
+
+  /// No description provided for @chNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr'**
+  String get chNostr;
+
+  /// No description provided for @chNostrSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Community-Feed'**
+  String get chNostrSub;
+
+  /// No description provided for @chShoutout.
+  ///
+  /// In de, this message translates to:
+  /// **'Shoutout'**
+  String get chShoutout;
+
+  /// No description provided for @chShoutoutSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Senden'**
+  String get chShoutoutSub;
+
+  /// No description provided for @chPodcast.
+  ///
+  /// In de, this message translates to:
+  /// **'Podcast'**
+  String get chPodcast;
+
+  /// No description provided for @chPodcastSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Anhören'**
+  String get chPodcastSub;
+
+  /// No description provided for @paTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal'**
+  String get paTitle;
+
+  /// No description provided for @paMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups'**
+  String get paMeetups;
+
+  /// No description provided for @paMeetupsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Meetups durchsuchen'**
+  String get paMeetupsSub;
+
+  /// No description provided for @paEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Events & Zusagen'**
+  String get paEvents;
+
+  /// No description provided for @paEventsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Termine ansehen und direkt zusagen'**
+  String get paEventsSub;
+
+  /// No description provided for @paCourses.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurse & Dozenten'**
+  String get paCourses;
+
+  /// No description provided for @paCoursesSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Einundzwanzig-Bildungsangebot'**
+  String get paCoursesSub;
+
+  /// No description provided for @paMap.
+  ///
+  /// In de, this message translates to:
+  /// **'Karte'**
+  String get paMap;
+
+  /// No description provided for @paMapSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups in der Nähe'**
+  String get paMapSub;
+
+  /// No description provided for @paMine.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get paMine;
+
+  /// No description provided for @paMineSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Termine verwalten (Organisator)'**
+  String get paMineSub;
+
+  /// No description provided for @paWeb.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal-Webseite'**
+  String get paWeb;
+
+  /// No description provided for @paWebSub.
+  ///
+  /// In de, this message translates to:
+  /// **'portal.einundzwanzig.space im Browser'**
+  String get paWebSub;
+
+  /// No description provided for @rsvpLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Events …'**
+  String get rsvpLoading;
+
+  /// No description provided for @rsvpNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine kommenden Events gefunden.'**
+  String get rsvpNone;
+
+  /// No description provided for @rsvpGoing.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusagen'**
+  String get rsvpGoing;
+
+  /// No description provided for @rsvpYouGo.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast zugesagt ✓'**
+  String get rsvpYouGo;
+
+  /// No description provided for @rsvpCount.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusagen'**
+  String get rsvpCount;
+
+  /// No description provided for @rsvpNeedLogin.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Zusagen bitte zuerst im Portal anmelden (Meine Meetups).'**
+  String get rsvpNeedLogin;
+
+  /// No description provided for @rsvpFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusage fehlgeschlagen'**
+  String get rsvpFailed;
+
+  /// No description provided for @crsLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Kurse …'**
+  String get crsLoading;
+
+  /// No description provided for @crsNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Kurse gefunden.'**
+  String get crsNone;
+
+  /// No description provided for @crsCourses.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurse'**
+  String get crsCourses;
+
+  /// No description provided for @crsLecturers.
+  ///
+  /// In de, this message translates to:
+  /// **'Dozenten'**
+  String get crsLecturers;
 }
 
 class _AppLocalizationsDelegate

@@ -4156,4 +4156,109 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get calWorldwideHint =>
       'Mundial muestra todos los eventos Nostr, también externos.';
+
+  @override
+  String get chTitle => 'Comunidad';
+
+  @override
+  String get chPortal => 'Portal';
+
+  @override
+  String get chPortalSub => 'Meetups · Eventos · Cursos · Mapa';
+
+  @override
+  String get chNews => 'Noticias';
+
+  @override
+  String get chNewsSub => 'Leer artículos';
+
+  @override
+  String get chNostr => 'Nostr';
+
+  @override
+  String get chNostrSub => 'Feed de la comunidad';
+
+  @override
+  String get chShoutout => 'Shoutout';
+
+  @override
+  String get chShoutoutSub => 'Enviar';
+
+  @override
+  String get chPodcast => 'Podcast';
+
+  @override
+  String get chPodcastSub => 'Escuchar';
+
+  @override
+  String get paTitle => 'Portal';
+
+  @override
+  String get paMeetups => 'Meetups';
+
+  @override
+  String get paMeetupsSub => 'Explorar meetups';
+
+  @override
+  String get paEvents => 'Eventos y confirmaciones';
+
+  @override
+  String get paEventsSub => 'Ver eventos y confirmar asistencia';
+
+  @override
+  String get paCourses => 'Cursos y docentes';
+
+  @override
+  String get paCoursesSub => 'La oferta educativa';
+
+  @override
+  String get paMap => 'Mapa';
+
+  @override
+  String get paMapSub => 'Meetups cercanos';
+
+  @override
+  String get paMine => 'Mis meetups';
+
+  @override
+  String get paMineSub => 'Gestionar eventos';
+
+  @override
+  String get paWeb => 'Web del portal';
+
+  @override
+  String get paWebSub => 'Abrir portal.einundzwanzig.space';
+
+  @override
+  String get rsvpLoading => 'Cargando eventos …';
+
+  @override
+  String get rsvpNone => 'No hay eventos próximos.';
+
+  @override
+  String get rsvpGoing => 'Confirmar';
+
+  @override
+  String get rsvpYouGo => 'Has confirmado ✓';
+
+  @override
+  String get rsvpCount => 'asistentes';
+
+  @override
+  String get rsvpNeedLogin => 'Inicia sesión en el portal primero.';
+
+  @override
+  String get rsvpFailed => 'Error al confirmar';
+
+  @override
+  String get crsLoading => 'Cargando cursos …';
+
+  @override
+  String get crsNone => 'No hay cursos.';
+
+  @override
+  String get crsCourses => 'Cursos';
+
+  @override
+  String get crsLecturers => 'Docentes';
 }

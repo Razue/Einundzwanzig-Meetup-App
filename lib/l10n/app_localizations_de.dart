@@ -4172,4 +4172,110 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get calWorldwideHint =>
       'Weltweit zeigt alle Nostr-Events – auch fremde.';
+
+  @override
+  String get chTitle => 'Community';
+
+  @override
+  String get chPortal => 'Portal';
+
+  @override
+  String get chPortalSub => 'Meetups · Events · Kurse · Karte';
+
+  @override
+  String get chNews => 'News';
+
+  @override
+  String get chNewsSub => 'Artikel lesen';
+
+  @override
+  String get chNostr => 'Nostr';
+
+  @override
+  String get chNostrSub => 'Community-Feed';
+
+  @override
+  String get chShoutout => 'Shoutout';
+
+  @override
+  String get chShoutoutSub => 'Senden';
+
+  @override
+  String get chPodcast => 'Podcast';
+
+  @override
+  String get chPodcastSub => 'Anhören';
+
+  @override
+  String get paTitle => 'Portal';
+
+  @override
+  String get paMeetups => 'Meetups';
+
+  @override
+  String get paMeetupsSub => 'Alle Meetups durchsuchen';
+
+  @override
+  String get paEvents => 'Events & Zusagen';
+
+  @override
+  String get paEventsSub => 'Termine ansehen und direkt zusagen';
+
+  @override
+  String get paCourses => 'Kurse & Dozenten';
+
+  @override
+  String get paCoursesSub => 'Das Einundzwanzig-Bildungsangebot';
+
+  @override
+  String get paMap => 'Karte';
+
+  @override
+  String get paMapSub => 'Meetups in der Nähe';
+
+  @override
+  String get paMine => 'Meine Meetups';
+
+  @override
+  String get paMineSub => 'Termine verwalten (Organisator)';
+
+  @override
+  String get paWeb => 'Portal-Webseite';
+
+  @override
+  String get paWebSub => 'portal.einundzwanzig.space im Browser';
+
+  @override
+  String get rsvpLoading => 'Lade Events …';
+
+  @override
+  String get rsvpNone => 'Keine kommenden Events gefunden.';
+
+  @override
+  String get rsvpGoing => 'Zusagen';
+
+  @override
+  String get rsvpYouGo => 'Du hast zugesagt ✓';
+
+  @override
+  String get rsvpCount => 'Zusagen';
+
+  @override
+  String get rsvpNeedLogin =>
+      'Zum Zusagen bitte zuerst im Portal anmelden (Meine Meetups).';
+
+  @override
+  String get rsvpFailed => 'Zusage fehlgeschlagen';
+
+  @override
+  String get crsLoading => 'Lade Kurse …';
+
+  @override
+  String get crsNone => 'Keine Kurse gefunden.';
+
+  @override
+  String get crsCourses => 'Kurse';
+
+  @override
+  String get crsLecturers => 'Dozenten';
 }

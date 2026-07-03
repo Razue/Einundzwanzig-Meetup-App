@@ -405,4 +405,65 @@ class PortalApiService {
       return PortalResult(ok: false, statusCode: 0, error: 'Netzwerkfehler. Bist du online?');
     }
   }
+
+  // ═══════════════ COMPANION-FUNKTIONEN (lesend + RSVP) ═══════════════
+  // Pfade 1:1 aus der Open-Source-Companion-App übernommen.
+
+  /// Öffentliche GET-Anfrage; sendet Token mit, falls vorhanden (für RSVP-Status).
+  static Future<dynamic> _get(String path) async {
+    try {
+      final token = await getToken();
+      final r = await http.get(
+        Uri.parse('$_apiBase$path'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(_timeout);
+      if (r.statusCode != 200) return null;
+      return jsonDecode(r.body);
+    } catch (e) {
+      AppLogger.debug(_tag, 'GET $path Fehler: $e');
+      return null;
+    }
+  }
+
+  /// Alle kommenden Meetup-Events (Portal-weit). GET /api/meetup-events
+  static Future<List<Map<String, dynamic>>> getAllMeetupEvents() async {
+    final body = await _get('/meetup-events');
+    final data = (body is Map) ? body['data'] : body;
+    if (data is! List) return [];
+    return data.whereType<Map<String, dynamic>>().toList();
+  }
+
+  /// RSVP-Status eines Events. GET /api/meetup-events/{id}/rsvp
+  /// Liefert z.B. {count: n, going: bool} — Struktur wird tolerant gelesen.
+  static Future<Map<String, dynamic>?> getRsvp(int eventId) async {
+    final body = await _get('/meetup-events/$eventId/rsvp');
+    if (body is Map<String, dynamic>) {
+      final data = body['data'];
+      return (data is Map<String, dynamic>) ? data : body;
+    }
+    return null;
+  }
+
+  /// Zusagen. POST /api/meetup-events/{id}/rsvp (Auth nötig)
+  static Future<PortalResult> rsvp(int eventId) =>
+      _write('POST', '$_apiBase/meetup-events/$eventId/rsvp', {});
+
+  /// Kurse. GET /api/courses
+  static Future<List<Map<String, dynamic>>> getCourses() async {
+    final body = await _get('/courses');
+    final data = (body is Map) ? body['data'] : body;
+    if (data is! List) return [];
+    return data.whereType<Map<String, dynamic>>().toList();
+  }
+
+  /// Dozenten. GET /api/lecturers
+  static Future<List<Map<String, dynamic>>> getLecturers() async {
+    final body = await _get('/lecturers');
+    final data = (body is Map) ? body['data'] : body;
+    if (data is! List) return [];
+    return data.whereType<Map<String, dynamic>>().toList();
+  }
 }

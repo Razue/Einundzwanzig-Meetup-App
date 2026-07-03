@@ -4133,4 +4133,110 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get calWorldwideHint =>
       'Worldwide shows all Nostr events – including external ones.';
+
+  @override
+  String get chTitle => 'Community';
+
+  @override
+  String get chPortal => 'Portal';
+
+  @override
+  String get chPortalSub => 'Meetups · Events · Courses · Map';
+
+  @override
+  String get chNews => 'News';
+
+  @override
+  String get chNewsSub => 'Read articles';
+
+  @override
+  String get chNostr => 'Nostr';
+
+  @override
+  String get chNostrSub => 'Community feed';
+
+  @override
+  String get chShoutout => 'Shoutout';
+
+  @override
+  String get chShoutoutSub => 'Send';
+
+  @override
+  String get chPodcast => 'Podcast';
+
+  @override
+  String get chPodcastSub => 'Listen';
+
+  @override
+  String get paTitle => 'Portal';
+
+  @override
+  String get paMeetups => 'Meetups';
+
+  @override
+  String get paMeetupsSub => 'Browse all meetups';
+
+  @override
+  String get paEvents => 'Events & RSVP';
+
+  @override
+  String get paEventsSub => 'View events and RSVP';
+
+  @override
+  String get paCourses => 'Courses & lecturers';
+
+  @override
+  String get paCoursesSub => 'The Einundzwanzig education program';
+
+  @override
+  String get paMap => 'Map';
+
+  @override
+  String get paMapSub => 'Meetups nearby';
+
+  @override
+  String get paMine => 'My meetups';
+
+  @override
+  String get paMineSub => 'Manage events (organizer)';
+
+  @override
+  String get paWeb => 'Portal website';
+
+  @override
+  String get paWebSub => 'Open portal.einundzwanzig.space';
+
+  @override
+  String get rsvpLoading => 'Loading events …';
+
+  @override
+  String get rsvpNone => 'No upcoming events found.';
+
+  @override
+  String get rsvpGoing => 'RSVP';
+
+  @override
+  String get rsvpYouGo => 'You\'re going ✓';
+
+  @override
+  String get rsvpCount => 'going';
+
+  @override
+  String get rsvpNeedLogin =>
+      'Please sign in to the portal first (My meetups).';
+
+  @override
+  String get rsvpFailed => 'RSVP failed';
+
+  @override
+  String get crsLoading => 'Loading courses …';
+
+  @override
+  String get crsNone => 'No courses found.';
+
+  @override
+  String get crsCourses => 'Courses';
+
+  @override
+  String get crsLecturers => 'Lecturers';
 }
