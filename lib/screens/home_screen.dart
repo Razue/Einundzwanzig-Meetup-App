@@ -303,33 +303,53 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
   Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); _checkPortalOrganizer(); }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
-  /// PORTAL-ORGANISATOR = APP-ADMIN: Ist der Nutzer im Portal angemeldet
-  /// (Nostr-Login, Community-Bereich) und verwaltet dort mindestens ein
-  /// Meetup ("my-meetups"), bekommt er automatisch Admin-Rechte in der App
-  /// (Rolling QR, Tags). Das Portal ist die Quelle der Wahrheit dafür,
-  /// WER ein Meetup organisiert — kein manuelles Nostr-Admin-Register nötig.
-  /// WoT-Bürgen als zweiter Weg bleibt unverändert bestehen.
+  /// PORTAL-ORGANISATOR = APP-ADMIN (robust, mit sicherem Entzug):
+  /// - Portal-Login (Nostr) + my-meetups nicht leer  -> Admin VERGEBEN
+  ///   und automatisch einen signierten Organizer-Claim an Nostr
+  ///   publizieren (Sichtbarkeit für Dritte; Portal bleibt Autorität).
+  /// - Ist der Nutzer per Portal Admin geworden und my-meetups ist bei
+  ///   einer ERFOLGREICHEN Abfrage leer -> Admin ENTZIEHEN (Revocation).
+  /// - Netzwerkfehler/offline: KEINE Änderung (kein fälschlicher Entzug).
+  /// WoT-Bürgen und Seed-Admins bleiben davon unberührt.
   Future<void> _checkPortalOrganizer() async {
     try {
-      if (_user.isAdmin) return; // schon Admin (Seed/TrustScore/WoT)
       if (!await PortalApiService.hasToken()) return; // kein Portal-Login
-      final my = await PortalApiService.getMyMeetups();
-      if (my.isEmpty || !mounted) return;
-      setState(() {
-        _user.isAdmin = true;
-        _user.isAdminVerified = true;
-        _user.promotionSource = 'portal_organizer';
-      });
-      await _user.save();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context).organizerPromoted),
-          backgroundColor: Colors.green.shade700,
-          duration: const Duration(seconds: 5),
-          behavior: SnackBarBehavior.floating,
-        ));
+      // Rohabfrage: null = Fehler/offline (nichts tun), Liste = Fakt.
+      final body = await PortalApiService.rawGet('/my-meetups');
+      if (body == null || !mounted) return;
+      final data = (body is Map) ? body['data'] : body;
+      final meetups = (data is List) ? data.whereType<Map<String, dynamic>>().toList() : <Map<String, dynamic>>[];
+
+      if (meetups.isNotEmpty && !_user.isAdmin) {
+        // VERGEBEN
+        setState(() {
+          _user.isAdmin = true;
+          _user.isAdminVerified = true;
+          _user.promotionSource = 'portal_organizer';
+        });
+        await _user.save();
+        // Organizer-Claim an Nostr publizieren (best effort): macht den
+        // Status für Dritte sichtbar; kein manuelles Register nötig.
+        final meetupName = (meetups.first['name'] ?? _user.homeMeetupId).toString();
+        try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: meetupName.isNotEmpty ? meetupName : 'Unbekannt'); } catch (_) {}
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context).organizerPromoted),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+      } else if (meetups.isEmpty && _user.isAdmin && _user.promotionSource == 'portal_organizer') {
+        // ENTZIEHEN: Portal sagt verbindlich "kein Meetup mehr".
+        setState(() {
+          _user.isAdmin = false;
+          _user.isAdminVerified = false;
+          _user.promotionSource = '';
+        });
+        await _user.save();
       }
-    } catch (_) {/* still: kein Netz o.ä. -> beim nächsten Start erneut */}
+    } catch (_) {/* still: beim nächsten Start erneut */}
   }
 
   Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.isAdmin = false; _user.isAdminVerified = false; _user.promotionSource = ''; }); } }

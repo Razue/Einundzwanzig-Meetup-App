@@ -409,6 +409,10 @@ class PortalApiService {
   // ═══════════════ COMPANION-FUNKTIONEN (lesend + RSVP) ═══════════════
   // Pfade 1:1 aus der Open-Source-Companion-App übernommen.
 
+  /// Roh-GET für Aufrufer, die Fehler (null) von leeren Daten unterscheiden
+  /// müssen — z.B. der sichere Admin-Entzug (kein Entzug bei offline).
+  static Future<dynamic> rawGet(String path) => _get(path);
+
   /// Öffentliche GET-Anfrage; sendet Token mit, falls vorhanden (für RSVP-Status).
   static Future<dynamic> _get(String path) async {
     try {
