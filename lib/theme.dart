@@ -14,6 +14,7 @@ const Color cOrangeDim   = Color(0xFF3D2500);
 
 // ── Funktionale Statusfarben (nur für Inhalte, nie für Hintergründe) ──
 const Color cCyan   = Color(0xFFD4A017); // Warm Gold – Countdown, Community
+const Color cCourse = Color(0xFF9AA0AA); // Kurse im Kalender – neutrales Grau
 const Color cCyanDim = Color(0xFF3D2E00);
 const Color cPurple = Color(0xFF9B45E8); // Podcast, Nostr
 const Color cNostr  = Color(0xFF8B5CF6);

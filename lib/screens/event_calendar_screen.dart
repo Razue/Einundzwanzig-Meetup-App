@@ -46,7 +46,7 @@ class _CalItem {
   });
 
   DateTime get day => DateTime(start.year, start.month, start.day);
-  Color get color => isCourse ? cCyan : (isMeetup ? cOrange : cNostr);
+  Color get color => isCourse ? cCourse : (isMeetup ? cOrange : cNostr);
 
   factory _CalItem.fromNostr(NostrCalendarEvent e) => _CalItem(
         title: e.title,
@@ -128,7 +128,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     // in der DETAIL-Antwort /courses/{id} -> Feld "events" mit from/to/venue.
     // Wir laden die Details parallel (mit Limit gegen Überlastung).
     final cutoff = DateTime.now().subtract(const Duration(hours: 6));
-    final courseIds = courses.map((c) => c['id']).whereType<int>().toList();
+    final courseIds = courses.map((c) => c['id']).whereType<int>().toSet().toList();
     final details = <Map<String, dynamic>>[];
     const cchunk = 8;
     for (var i = 0; i < courseIds.length; i += cchunk) {
@@ -137,6 +137,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       details.addAll(results.whereType<Map<String, dynamic>>());
     }
     if (!mounted) return;
+    final seenCourseEv = <String>{}; // gegen Doppel-Einträge
     for (final c in details) {
       final cname = (c['name'] ?? c['title'] ?? 'Kurs').toString();
       final cdesc = (c['description'] ?? '').toString();
@@ -145,6 +146,9 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       for (final ev in evs.whereType<Map>()) {
         final start = DateTime.tryParse((ev['from'] ?? ev['start'] ?? '').toString());
         if (start == null || start.toLocal().isBefore(cutoff)) continue;
+        // Dedup: gleiche Termin-id ODER gleiche Kurs+Startzeit nur EINMAL
+        final evKey = ev['id'] != null ? 'e${ev['id']}' : '$cname@${start.toIso8601String()}';
+        if (!seenCourseEv.add(evKey)) continue;
         // Ort: venue.name (+ Stadt), sonst location
         String loc = '';
         final venue = ev['venue'];
@@ -306,7 +310,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       const SizedBox(width: 18),
       _legendDot(cNostr, t.calLegendEvent),
       const SizedBox(width: 14),
-      _legendDot(cCyan, t.calLegendCourse),
+      _legendDot(cCourse, t.calLegendCourse),
     ]),
   );
 
@@ -328,7 +332,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
           _typeBtn(t.calFilterAll, 0, cOrange),
           _typeBtn(t.calFilterMeetups, 1, cOrange),
           _typeBtn(t.calFilterExternal, 2, cNostr),
-          _typeBtn(t.calFilterCourses, 3, cCyan),
+          _typeBtn(t.calFilterCourses, 3, cCourse),
         ]),
       ),
       const SizedBox(height: 8),

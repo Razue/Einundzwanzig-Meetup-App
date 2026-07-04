@@ -468,9 +468,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.of(context).padding.top;
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-      padding: EdgeInsets.fromLTRB(16, top + 12, 16, 130),
+    // FIXES DASHBOARD (nicht scrollbar): Header + Home-Meetup-Kachel sitzen
+    // fest oben. Der restliche Kachel-Block wird als GANZES so skaliert,
+    // dass er den verbleibenden Raum darunter exakt füllt (3 Kacheln =>
+    // groß, 8 Kacheln => proportional kleiner, immer eingepasst).
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, top + 12, 16, 12),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _buildLogoBar(),
         const SizedBox(height: 14),
@@ -478,20 +481,46 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         const SizedBox(height: 18),
         if (_deviceCompromised && !_dismissedIntegrityWarning) ...[_buildDeviceWarning(), const SizedBox(height: kTileGap)],
         if (_activeSession != null) ...[_buildActiveSessionTile(), const SizedBox(height: kTileGap)],
-        // Dynamisch geordnete Tiles
-        ..._buildOrderedTiles(),
+        // Fixe Home-Meetup-Kachel (immer gleiche Größe)
+        _buildHomeMeetupTile(),
+        const SizedBox(height: kTileGap),
+        // Restlicher Raum: skalierter Kachel-Block
+        Expanded(child: _buildScaledTileBlock()),
+        const SizedBox(height: 76), // Platz für die untere Navigationsleiste
       ]),
     );
+  }
+
+  /// Baut die einblendbaren Kacheln (ohne home_meetup) in natürlicher Größe
+  /// und skaliert den ganzen Block per FittedBox so, dass er den verfügbaren
+  /// Raum füllt. Layout/Anordnung bleiben identisch, nur der Maßstab ändert
+  /// sich — das gewünschte "Schrumpfen der gesamten Kachel(n)".
+  Widget _buildScaledTileBlock() {
+    final tiles = _buildOrderedTiles(excludeHomeMeetup: true);
+    if (tiles.isEmpty) return const SizedBox.shrink();
+    return LayoutBuilder(builder: (context, constraints) {
+      // Natürliche Breite = verfügbare Breite; der Block wird in dieser
+      // Breite gebaut und dann proportional in die Höhe eingepasst.
+      return FittedBox(
+        fit: BoxFit.contain,
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          width: constraints.maxWidth,
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: tiles),
+        ),
+      );
+    });
   }
 
   // ============================================================
   // DYNAMIC TILE LAYOUT — Packt Tiles in Reihen basierend auf Span
   // ============================================================
-  List<Widget> _buildOrderedTiles() {
+  List<Widget> _buildOrderedTiles({bool excludeHomeMeetup = false}) {
     final visibleTiles = _tileOrder
       .map((id) => _tileDefs.where((t) => t.id == id).firstOrNull)
       .where((t) => t != null && t.visible() && !_hiddenTiles.contains(t!.id))
       .cast<_TileDef>()
+      .where((t) => !excludeHomeMeetup || t.id != 'home_meetup')
       .toList();
 
     final widgets = <Widget>[];
@@ -526,6 +555,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         i += row.length;
       }
     }
+    // Letzten Abstand entfernen (sonst Lücke am Block-Ende beim Skalieren)
+    if (widgets.isNotEmpty && widgets.last is SizedBox) widgets.removeLast();
     return widgets;
   }
 
