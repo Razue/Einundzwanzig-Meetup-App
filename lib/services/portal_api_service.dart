@@ -496,24 +496,34 @@ class PortalApiService {
     return _getAllPages('/courses');
   }
 
-  /// Holt ALLE Seiten einer paginierten Liste (Laravel: ?page=N + meta).
-  /// Bricht ab, wenn eine Seite leer ist oder das Ende erreicht wurde.
-  /// Funktioniert auch, wenn die API gar nicht paginiert (dann 1 Seite).
+  /// Holt ALLE Seiten einer Liste. Robust gegen unbekannte Seitengröße:
+  /// lädt weiter, solange Seiten NICHT-LEER sind und NEUE Einträge bringen
+  /// (Dedup per id). Stoppt bei meta.last_page, bei leerer Seite, wenn eine
+  /// Seite keine neuen ids mehr liefert, oder nach 50 Seiten (Sicherheit).
   static Future<List<Map<String, dynamic>>> _getAllPages(String path) async {
     final all = <Map<String, dynamic>>[];
-    for (var page = 1; page <= 20; page++) {
+    final seen = <String>{};
+    int? lastPage;
+    for (var page = 1; page <= 50; page++) {
       final sep = path.contains('?') ? '&' : '?';
       final body = await _get('$path${sep}page=$page');
+      // data kann direkt Liste sein ODER unter 'data' liegen
       final data = (body is Map) ? body['data'] : body;
       if (data is! List || data.isEmpty) break;
-      all.addAll(data.whereType<Map<String, dynamic>>());
-      // Ende erkennen: meta.last_page ODER weniger als eine volle Seite.
-      final meta = (body is Map) ? body['meta'] : null;
-      if (meta is Map && meta['current_page'] is int && meta['last_page'] is int) {
-        if ((meta['current_page'] as int) >= (meta['last_page'] as int)) break;
-      } else if (data.length < 15) {
-        break; // keine Paginierungs-Meta -> vermutlich alles auf einer Seite
+
+      var added = 0;
+      for (final e in data.whereType<Map<String, dynamic>>()) {
+        final key = '${e['id'] ?? e.hashCode}';
+        if (seen.add(key)) { all.add(e); added++; }
       }
+      // last_page aus meta ODER top-level (Laravel-Varianten)
+      if (body is Map) {
+        final meta = body['meta'];
+        if (meta is Map && meta['last_page'] is int) lastPage = meta['last_page'] as int;
+        else if (body['last_page'] is int) lastPage = body['last_page'] as int;
+      }
+      if (lastPage != null) { if (page >= lastPage) break; }
+      else if (added == 0) break; // keine Paginierungs-Info + nichts Neues -> fertig
     }
     return all;
   }

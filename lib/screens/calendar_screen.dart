@@ -96,17 +96,29 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   /// RSVP-Status der ersten 25 sichtbaren Portal-Termine nachladen (sparsam).
   void _loadRsvpStatuses() async {
-    // Status für ALLE Termine laden — aber viel schneller: hohe Parallelität,
-    // damit "Du hast zugesagt" quasi sofort erscheint (statt ~20s). Die
-    // Liste ist chronologisch, die obersten (sichtbaren) laden zuerst.
+    // INSTANT für sichtbare Termine: die ersten ~12 (das, was auf den Schirm
+    // passt) werden SOFORT und gebündelt geladen -> "Du hast zugesagt"
+    // erscheint praktisch ohne Verzögerung. Der Rest lädt danach im
+    // Hintergrund nach (für Scrollen weiter unten).
     final ids = _eventPortalId.values.toList();
-    const chunk = 20; // deutlich mehr gleichzeitig
-    for (var i = 0; i < ids.length; i += chunk) {
-      final batch = ids.skip(i).take(chunk);
+    if (ids.isEmpty) return;
+
+    Future<void> load(Iterable<int> batch) async {
       await Future.wait(batch.map((id) async {
         final r = await PortalApiService.getRsvp(id);
         if (mounted && r != null) setState(() => _rsvp[id] = {...?_rsvp[id], ...r});
       }));
+    }
+
+    // 1) Sofort: erste 12 (sichtbarer Bereich) – alle gleichzeitig
+    final visible = ids.take(12).toList();
+    await load(visible);
+    if (!mounted) return;
+
+    // 2) Hintergrund: der Rest in 20er-Wellen
+    final rest = ids.skip(12).toList();
+    for (var i = 0; i < rest.length; i += 20) {
+      await load(rest.skip(i).take(20));
       if (!mounted) return;
     }
   }

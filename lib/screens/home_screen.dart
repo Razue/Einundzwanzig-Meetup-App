@@ -116,9 +116,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<String> _tileOrder = [];
   Set<String> _hiddenTiles = {};
   // Pflicht-Kacheln (nicht löschbar)
-  static const _requiredTiles = {'trust_score', 'home_meetup', 'reputation'};
+  static const _requiredTiles = {'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['trust_score', 'home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'news', 'portal', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
+  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'news', 'portal', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events'};
 
   late List<_TileDef> _tileDefs;
@@ -168,6 +168,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       savedHidden.add('events');
       await prefs.setBool('mig_hide_events_v1', true);
       await prefs.setStringList('tile_hidden', List<String>.from(savedHidden));
+    }
+    // Trust-Score-Kachel entfällt (Score sitzt jetzt in der Kopfzeile).
+    if (!(prefs.getBool('mig_trust_header_v1') ?? false)) {
+      savedHidden.add('trust_score');
+      saved?.remove('trust_score');
+      await prefs.setBool('mig_trust_header_v1', true);
+      await prefs.setStringList('tile_hidden', List<String>.from(savedHidden));
+      if (saved != null) await prefs.setStringList('tile_order', saved);
     }
 
     if (saved != null && saved.isNotEmpty) {
@@ -561,22 +569,26 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       ),
       const SizedBox(width: 12),
-      // Name + Level — alles auf einer Zeile
-      Expanded(child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Text(_user.nickname, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-        if (_trustScore != null) ...[
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(color: cTileBorder, borderRadius: BorderRadius.circular(4)),
-            child: Text(localizedLevel(context, _trustScore!.level), style: TextStyle(color: _levelColor, fontSize: 10, fontWeight: FontWeight.w700)),
+      // Name (ohne NEU-Badge)
+      Expanded(child: Text(_user.nickname, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis)),
+      // Trust-Score als kompakte Plakette rechts -> öffnet Reputations-Profil
+      GestureDetector(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationCardScreen())),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
+                colors: [cOrange, cOrange.withValues(alpha: 0.78)]),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
-      ])),
-      // Badges — dezent rechts
-      Text('${myBadges.length}', style: const TextStyle(color: cTextTertiary, fontSize: 13, fontWeight: FontWeight.w600)),
-      const SizedBox(width: 2),
-      const Icon(Icons.military_tech_rounded, color: cTextTertiary, size: 14),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Text((_trustScore?.totalScore ?? 0.0).toStringAsFixed(1),
+                style: const TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.w900).copyWith(fontFamily: fontMono)),
+            const SizedBox(width: 6),
+            const Icon(Icons.chevron_right_rounded, color: Colors.black54, size: 16),
+          ]),
+        ),
+      ),
     ]);
   }
 
@@ -1358,7 +1370,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
   late List<String> _order;
   late Set<String> _hidden;
 
-  static const _requiredTiles = {'trust_score', 'home_meetup', 'reputation'};
+  static const _requiredTiles = {'home_meetup', 'reputation'};
 
   @override
   void initState() {
