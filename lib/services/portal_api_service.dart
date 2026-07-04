@@ -493,10 +493,29 @@ class PortalApiService {
 
   /// Kurse. GET /api/courses
   static Future<List<Map<String, dynamic>>> getCourses() async {
-    final body = await _get('/courses');
-    final data = (body is Map) ? body['data'] : body;
-    if (data is! List) return [];
-    return data.whereType<Map<String, dynamic>>().toList();
+    return _getAllPages('/courses');
+  }
+
+  /// Holt ALLE Seiten einer paginierten Liste (Laravel: ?page=N + meta).
+  /// Bricht ab, wenn eine Seite leer ist oder das Ende erreicht wurde.
+  /// Funktioniert auch, wenn die API gar nicht paginiert (dann 1 Seite).
+  static Future<List<Map<String, dynamic>>> _getAllPages(String path) async {
+    final all = <Map<String, dynamic>>[];
+    for (var page = 1; page <= 20; page++) {
+      final sep = path.contains('?') ? '&' : '?';
+      final body = await _get('$path${sep}page=$page');
+      final data = (body is Map) ? body['data'] : body;
+      if (data is! List || data.isEmpty) break;
+      all.addAll(data.whereType<Map<String, dynamic>>());
+      // Ende erkennen: meta.last_page ODER weniger als eine volle Seite.
+      final meta = (body is Map) ? body['meta'] : null;
+      if (meta is Map && meta['current_page'] is int && meta['last_page'] is int) {
+        if ((meta['current_page'] as int) >= (meta['last_page'] as int)) break;
+      } else if (data.length < 15) {
+        break; // keine Paginierungs-Meta -> vermutlich alles auf einer Seite
+      }
+    }
+    return all;
   }
 
   /// Leader eines Meetups. GET /api/meetup/{id}/leaders (nur für Leader).
@@ -531,9 +550,6 @@ class PortalApiService {
 
   /// Dozenten. GET /api/lecturers
   static Future<List<Map<String, dynamic>>> getLecturers() async {
-    final body = await _get('/lecturers');
-    final data = (body is Map) ? body['data'] : body;
-    if (data is! List) return [];
-    return data.whereType<Map<String, dynamic>>().toList();
+    return _getAllPages('/lecturers');
   }
 }

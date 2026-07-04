@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/portal_api_service.dart';
+import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import 'calendar_screen.dart';
 import 'community_portal_screen.dart' as legacy;
 import 'news_screen.dart';
@@ -234,7 +235,7 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
     if (!mounted) return;
     setState(() { _events = list; _loading = false; });
     // RSVP-Status der ersten 25 nachladen (sparsam)
-    for (final e in list.take(25)) {
+    for (final e in list) {
       final id = e['id'];
       if (id is! int) continue;
       final r = await PortalApiService.getRsvp(id);
@@ -580,7 +581,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
             child: _linkRow(Icons.open_in_new_rounded, t.crsOpenPortal, () => _openUrl(portal))),
         if (events.isNotEmpty) ...[
           _section(t.crsUpcoming),
-          for (final ev in events.take(10)) _eventRow(ev),
+          for (final ev in events) _eventRow(ev),
         ],
         if (desc.isNotEmpty) ...[_section(t.crsAbout),
           Text(desc, style: const TextStyle(color: cTextSecondary, fontSize: 14, height: 1.55))],
@@ -600,6 +601,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
     final from = pv(ev, 'from').isNotEmpty ? pv(ev, 'from') : pv(ev, 'start');
     final loc = pv(ev, 'location').isNotEmpty ? pv(ev, 'location') : pv(ev, 'venue.name');
     final link = pv(ev, 'link');
+    final title = pv(ev, 'name').isNotEmpty ? pv(ev, 'name') : pv(ev, 'title');
+    final desc = pv(ev, 'description');
     final d = DateTime.tryParse(from);
     String two(int n) => n.toString().padLeft(2, '0');
     final when = d == null ? from : '${two(d.day)}.${two(d.month)}.${d.year} · ${two(d.hour)}:${two(d.minute)}';
@@ -611,6 +614,23 @@ class _CourseDetailScreenState extends State<CourseDetailScreen> {
           Text(when, style: const TextStyle(color: cText, fontSize: 13.5, fontWeight: FontWeight.w700)),
           if (loc.isNotEmpty) Text(loc, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
         ])),
+        // In den Geräte-Kalender übernehmen
+        if (d != null)
+          GestureDetector(
+            onTap: () {
+              cal.Add2Calendar.addEvent2Cal(cal.Event(
+                title: title.isNotEmpty ? title : (loc.isNotEmpty ? loc : 'Termin'),
+                description: desc,
+                location: loc,
+                startDate: d,
+                endDate: d.add(const Duration(hours: 2)),
+              ));
+            },
+            child: const Padding(
+              padding: EdgeInsets.only(left: 6, right: 4),
+              child: Icon(Icons.event_available_rounded, color: cTextSecondary, size: 18),
+            ),
+          ),
         if (link.startsWith('http')) GestureDetector(onTap: () => _openUrl(link), child: const Icon(Icons.link_rounded, color: cOrange, size: 18)),
       ]));
   }
@@ -651,7 +671,7 @@ class _LecturerDetailScreenState extends State<LecturerDetailScreen> {
           Text(bio, style: const TextStyle(color: cTextSecondary, fontSize: 14, height: 1.55))],
         if (courses.isNotEmpty) ...[
           _section(t.crsCourses),
-          for (final c in courses.take(15))
+          for (final c in courses)
             GestureDetector(
               onTap: (c['id'] is int) ? () => Navigator.push(context, MaterialPageRoute(
                   builder: (_) => CourseDetailScreen(id: c['id'] as int, fallback: c))) : null,

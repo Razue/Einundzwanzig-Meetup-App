@@ -96,12 +96,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   /// RSVP-Status der ersten 25 sichtbaren Portal-Termine nachladen (sparsam).
   void _loadRsvpStatuses() async {
-    // Status für ALLE Termine laden (nicht nur die ersten 25) — sonst
-    // verliert ein weiter unten liegendes zugesagtes Event beim erneuten
-    // Öffnen seine "Du hast zugesagt"-Anzeige. In kleinen Wellen, damit
-    // es das Portal nicht überlastet.
+    // Status für ALLE Termine laden — aber viel schneller: hohe Parallelität,
+    // damit "Du hast zugesagt" quasi sofort erscheint (statt ~20s). Die
+    // Liste ist chronologisch, die obersten (sichtbaren) laden zuerst.
     final ids = _eventPortalId.values.toList();
-    const chunk = 6;
+    const chunk = 20; // deutlich mehr gleichzeitig
     for (var i = 0; i < ids.length; i += chunk) {
       final batch = ids.skip(i).take(chunk);
       await Future.wait(batch.map((id) async {
