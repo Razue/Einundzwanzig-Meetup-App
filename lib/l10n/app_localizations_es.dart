@@ -4306,4 +4306,55 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get portalTileSub => 'Para confirmaciones y tus meetups';
+
+  @override
+  String get ldTitle => 'Organizadores';
+
+  @override
+  String get ldManage => 'Gestionar organizadores';
+
+  @override
+  String get ldManageSub => 'Añadir co-organizadores';
+
+  @override
+  String get ldPickMeetup => 'Elegir meetup';
+
+  @override
+  String get ldCreator => 'Creador';
+
+  @override
+  String get ldAdd => 'Añadir organizador';
+
+  @override
+  String get ldAddHint => 'npub del nuevo organizador';
+
+  @override
+  String get ldAddDo => 'Añadir';
+
+  @override
+  String get ldRemove => 'Quitar';
+
+  @override
+  String get ldRemoveConfirm => '¿Quitar este organizador?';
+
+  @override
+  String get ldAdded => 'Organizador añadido';
+
+  @override
+  String get ldRemoved => 'Organizador quitado';
+
+  @override
+  String get ldFailed => 'Acción fallida';
+
+  @override
+  String get ldEmpty => 'Aún no hay otros organizadores.';
+
+  @override
+  String get ldLoading => 'Cargando organizadores …';
+
+  @override
+  String get ldNpubInvalid => 'Introduce un npub válido.';
+
+  @override
+  String get ldAddButton => 'Añadir admin';
 }

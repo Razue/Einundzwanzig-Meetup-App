@@ -379,14 +379,14 @@ class PortalApiService {
   }
 
   /// Gemeinsamer schreibender Aufruf mit einheitlicher Fehlerbehandlung.
-  static Future<PortalResult> _write(String method, String url, Map<String, dynamic> payload) async {
+  static Future<PortalResult> _write(String method, String url, Map<String, dynamic>? payload) async {
     final token = await getToken();
     if (token == null) {
       return PortalResult(ok: false, statusCode: 401, error: 'Nicht angemeldet. Bitte zuerst mit dem Portal verbinden.');
     }
     try {
       final headers = await _authHeaders();
-      final body = jsonEncode(payload);
+      final body = payload == null ? null : jsonEncode(payload);
       final uri = Uri.parse(url);
       final http.Response r;
       switch (method) {
@@ -396,10 +396,13 @@ class PortalApiService {
         case 'PATCH':
           r = await http.patch(uri, headers: headers, body: body).timeout(_timeout);
           break;
+        case 'DELETE':
+          r = await http.delete(uri, headers: headers, body: body).timeout(_timeout);
+          break;
         default:
           return PortalResult(ok: false, statusCode: 0, error: 'Unbekannte Methode.');
       }
-      if (r.statusCode == 200 || r.statusCode == 201) {
+      if (r.statusCode == 200 || r.statusCode == 201 || r.statusCode == 204) {
         dynamic data;
         try { data = jsonDecode(r.body); } catch (_) {}
         return PortalResult(ok: true, statusCode: r.statusCode, data: data);
@@ -495,6 +498,22 @@ class PortalApiService {
     if (data is! List) return [];
     return data.whereType<Map<String, dynamic>>().toList();
   }
+
+  /// Leader eines Meetups. GET /api/meetup/{id}/leaders (nur für Leader).
+  static Future<List<Map<String, dynamic>>> getMeetupLeaders(int meetupId) async {
+    final b = await _get('/meetup/$meetupId/leaders');
+    final data = (b is Map) ? b['data'] : b;
+    if (data is! List) return [];
+    return data.whereType<Map<String, dynamic>>().toList();
+  }
+
+  /// Leader hinzufügen. POST /api/meetup/{id}/leaders  Body: {npub}
+  static Future<PortalResult> addMeetupLeader(int meetupId, String npub) =>
+      _write('POST', '$_apiBase/meetup/$meetupId/leaders', {'npub': npub});
+
+  /// Leader entfernen. DELETE /api/meetup/{id}/leaders/{userId}
+  static Future<PortalResult> removeMeetupLeader(int meetupId, int userId) =>
+      _write('DELETE', '$_apiBase/meetup/$meetupId/leaders/$userId', null);
 
   /// Kurs-Detail. GET /api/courses/{id}
   static Future<Map<String, dynamic>?> getCourse(int id) async {

@@ -2109,5 +2109,22 @@
   "evToCalendar": "Zum Kalender",
   "portalConnected": "Portal verbunden",
   "portalLoginPrompt": "Zum Zusagen verbinden wir dich mit dem Portal.",
-  "portalTileSub": "Für Zusagen & eigene Meetups"
+  "portalTileSub": "Für Zusagen & eigene Meetups",
+  "ldTitle": "Organisatoren",
+  "ldManage": "Organisatoren verwalten",
+  "ldManageSub": "Vertraute als Leader hinzufügen",
+  "ldPickMeetup": "Meetup wählen",
+  "ldCreator": "Ersteller",
+  "ldAdd": "Organisator hinzufügen",
+  "ldAddHint": "npub des neuen Organisators",
+  "ldAddDo": "Hinzufügen",
+  "ldRemove": "Entfernen",
+  "ldRemoveConfirm": "Diesen Organisator entfernen?",
+  "ldAdded": "Organisator hinzugefügt",
+  "ldRemoved": "Organisator entfernt",
+  "ldFailed": "Aktion fehlgeschlagen",
+  "ldEmpty": "Noch keine weiteren Organisatoren.",
+  "ldLoading": "Lade Organisatoren …",
+  "ldNpubInvalid": "Bitte einen gültigen npub eingeben.",
+  "ldAddButton": "Admin hinzufügen"
 }

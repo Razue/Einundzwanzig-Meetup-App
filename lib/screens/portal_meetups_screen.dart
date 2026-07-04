@@ -168,40 +168,8 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
     );
   }
 
-  Widget _meetupCard(AppLocalizations t, PortalMeetup m) => Container(
-    margin: const EdgeInsets.only(bottom: 12),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: cCard,
-      borderRadius: BorderRadius.circular(kTileRadius),
-      border: Border.all(color: cTileBorder, width: 0.5),
-    ),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        Expanded(child: Text(m.name, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
-        if (m.isLeader)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
-            child: Text(t.portalLeader, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w700)),
-          ),
-      ]),
-      const SizedBox(height: 14),
-      SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: () => _openManageEvents(m),
-          icon: const Icon(Icons.event_note_rounded, color: cOrange, size: 18),
-          label: Text(t.portalManageEvents, style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
-          style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: cOrange, width: 1),
-            padding: const EdgeInsets.symmetric(vertical: 11),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kTileRadius)),
-          ),
-        ),
-      ),
-    ]),
-  );
+  Widget _meetupCard(AppLocalizations t, PortalMeetup m) =>
+      _MeetupAdminCard(meetup: m, onManageEvents: () => _openManageEvents(m));
 
   Future<void> _openManageEvents(PortalMeetup meetup) async {
     await Navigator.push(
@@ -209,6 +177,213 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
       MaterialPageRoute(builder: (_) => _ManageEventsScreen(meetup: meetup)),
     );
     // nach Rückkehr nichts nachzuladen — die Verwaltungsseite lädt selbst
+  }
+}
+
+// ============================================
+//  MEETUP-KARTE mit inline Admin-Verwaltung
+// ============================================
+class _MeetupAdminCard extends StatefulWidget {
+  final PortalMeetup meetup;
+  final VoidCallback onManageEvents;
+  const _MeetupAdminCard({required this.meetup, required this.onManageEvents});
+
+  @override
+  State<_MeetupAdminCard> createState() => _MeetupAdminCardState();
+}
+
+class _MeetupAdminCardState extends State<_MeetupAdminCard> {
+  List<Map<String, dynamic>> _admins = [];
+  bool _loading = true;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.meetup.isLeader) {
+      _loadAdmins();
+    } else {
+      _loading = false;
+    }
+  }
+
+  Future<void> _loadAdmins() async {
+    setState(() => _loading = true);
+    final l = await PortalApiService.getMeetupLeaders(widget.meetup.id);
+    if (!mounted) return;
+    setState(() { _admins = l; _loading = false; });
+  }
+
+  void _snack(String msg, Color c) => ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: c, behavior: SnackBarBehavior.floating));
+
+  Future<void> _addAdmin() async {
+    final t = AppLocalizations.of(context);
+    final ctrl = TextEditingController();
+    final npub = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        title: Text(t.ldAdd, style: const TextStyle(color: cText, fontSize: 17)),
+        content: TextField(
+          controller: ctrl, autofocus: true,
+          style: const TextStyle(color: cText),
+          decoration: InputDecoration(
+            hintText: t.ldAddHint,
+            hintStyle: const TextStyle(color: cTextTertiary),
+            enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: cTileBorder)),
+            focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: cOrange)),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t.resetCancel, style: const TextStyle(color: cTextSecondary))),
+          TextButton(onPressed: () => Navigator.pop(ctx, ctrl.text.trim()), child: Text(t.ldAddDo, style: const TextStyle(color: cOrange, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+    if (npub == null || npub.isEmpty) return;
+    if (!npub.startsWith('npub1') || npub.length < 60) { _snack(t.ldNpubInvalid, cRed); return; }
+    setState(() => _busy = true);
+    final res = await PortalApiService.addMeetupLeader(widget.meetup.id, npub);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (res.ok) { _snack(t.ldAdded, Colors.green.shade700); _loadAdmins(); }
+    else { _snack('${t.ldFailed}: ${res.error ?? ''}', cRed); }
+  }
+
+  Future<void> _removeAdmin(Map<String, dynamic> admin) async {
+    final t = AppLocalizations.of(context);
+    final id = admin['id'];
+    if (id is! int) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        title: Text(t.ldRemove, style: const TextStyle(color: cText, fontSize: 17)),
+        content: Text(t.ldRemoveConfirm, style: const TextStyle(color: cTextSecondary)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t.resetCancel, style: const TextStyle(color: cTextSecondary))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t.ldRemove, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    setState(() => _busy = true);
+    final res = await PortalApiService.removeMeetupLeader(widget.meetup.id, id);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    if (res.ok) { _snack(t.ldRemoved, Colors.green.shade700); _loadAdmins(); }
+    else { _snack('${t.ldFailed}: ${res.error ?? ''}', cRed); }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final m = widget.meetup;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cCard,
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(color: cTileBorder, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text(m.name, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+          if (m.isLeader)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+              child: Text(t.portalLeader, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w700)),
+            ),
+        ]),
+        const SizedBox(height: 14),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: widget.onManageEvents,
+            icon: const Icon(Icons.event_note_rounded, color: cOrange, size: 18),
+            label: Text(t.portalManageEvents, style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: cOrange, width: 1),
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kTileRadius)),
+            ),
+          ),
+        ),
+
+        // ── Admin-Verwaltung (nur wenn ich Leader bin) ──
+        if (m.isLeader) ...[
+          const SizedBox(height: 16),
+          const Divider(color: Colors.white10, height: 1),
+          const SizedBox(height: 12),
+          Row(children: [
+            const Icon(Icons.shield_rounded, color: cTextSecondary, size: 15),
+            const SizedBox(width: 7),
+            Text(t.ldTitle, style: const TextStyle(color: cTextSecondary, fontSize: 12.5, fontWeight: FontWeight.w700)),
+          ]),
+          const SizedBox(height: 10),
+          if (_loading)
+            const Padding(padding: EdgeInsets.symmetric(vertical: 8),
+              child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: cOrange, strokeWidth: 2))))
+          else ...[
+            for (final a in _admins) _adminRow(t, a),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _busy ? null : _addAdmin,
+                icon: const Icon(Icons.person_add_alt_1_rounded, color: cGreen, size: 17),
+                label: Text(t.ldAddButton, style: const TextStyle(color: cGreen, fontWeight: FontWeight.w700)),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: cGreen.withValues(alpha: 0.7), width: 1),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kTileRadius)),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ]),
+    );
+  }
+
+  Widget _adminRow(AppLocalizations t, Map<String, dynamic> a) {
+    final name = (a['name'] ?? '').toString();
+    final nostr = (a['nostr'] ?? '').toString();
+    final isCreator = a['is_creator'] == true;
+    final shortNpub = nostr.isNotEmpty ? '${nostr.substring(0, nostr.length.clamp(0, 14))}…' : '';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(10)),
+      child: Row(children: [
+        Icon(isCreator ? Icons.star_rounded : Icons.person_rounded, color: isCreator ? cOrange : cTextSecondary, size: 17),
+        const SizedBox(width: 10),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(name.isNotEmpty ? name : (shortNpub.isNotEmpty ? shortNpub : '?'),
+              style: const TextStyle(color: cText, fontSize: 13.5, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
+          if (name.isNotEmpty && shortNpub.isNotEmpty)
+            Text(shortNpub, style: const TextStyle(color: cTextTertiary, fontSize: 10.5)),
+        ])),
+        if (isCreator)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(5)),
+            child: Text(t.ldCreator, style: const TextStyle(color: cOrange, fontSize: 9.5, fontWeight: FontWeight.w700)),
+          )
+        else
+          GestureDetector(
+            onTap: _busy ? null : () => _removeAdmin(a),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(color: cRed.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(6)),
+              child: const Icon(Icons.close_rounded, color: cRed, size: 16),
+            ),
+          ),
+      ]),
+    );
   }
 }
 

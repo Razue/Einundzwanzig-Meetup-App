@@ -7875,6 +7875,108 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Für Zusagen & eigene Meetups'**
   String get portalTileSub;
+
+  /// No description provided for @ldTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisatoren'**
+  String get ldTitle;
+
+  /// No description provided for @ldManage.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisatoren verwalten'**
+  String get ldManage;
+
+  /// No description provided for @ldManageSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertraute als Leader hinzufügen'**
+  String get ldManageSub;
+
+  /// No description provided for @ldPickMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup wählen'**
+  String get ldPickMeetup;
+
+  /// No description provided for @ldCreator.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersteller'**
+  String get ldCreator;
+
+  /// No description provided for @ldAdd.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator hinzufügen'**
+  String get ldAdd;
+
+  /// No description provided for @ldAddHint.
+  ///
+  /// In de, this message translates to:
+  /// **'npub des neuen Organisators'**
+  String get ldAddHint;
+
+  /// No description provided for @ldAddDo.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen'**
+  String get ldAddDo;
+
+  /// No description provided for @ldRemove.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get ldRemove;
+
+  /// No description provided for @ldRemoveConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Diesen Organisator entfernen?'**
+  String get ldRemoveConfirm;
+
+  /// No description provided for @ldAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator hinzugefügt'**
+  String get ldAdded;
+
+  /// No description provided for @ldRemoved.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator entfernt'**
+  String get ldRemoved;
+
+  /// No description provided for @ldFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktion fehlgeschlagen'**
+  String get ldFailed;
+
+  /// No description provided for @ldEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine weiteren Organisatoren.'**
+  String get ldEmpty;
+
+  /// No description provided for @ldLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Lade Organisatoren …'**
+  String get ldLoading;
+
+  /// No description provided for @ldNpubInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte einen gültigen npub eingeben.'**
+  String get ldNpubInvalid;
+
+  /// No description provided for @ldAddButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Admin hinzufügen'**
+  String get ldAddButton;
 }
 
 class _AppLocalizationsDelegate

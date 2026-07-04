@@ -2087,5 +2087,22 @@
   "evToCalendar": "Add to calendar",
   "portalConnected": "Portal connected",
   "portalLoginPrompt": "Connecting you to the portal to RSVP.",
-  "portalTileSub": "For RSVPs & your meetups"
+  "portalTileSub": "For RSVPs & your meetups",
+  "ldTitle": "Organizers",
+  "ldManage": "Manage organizers",
+  "ldManageSub": "Add trusted co-leaders",
+  "ldPickMeetup": "Choose meetup",
+  "ldCreator": "Creator",
+  "ldAdd": "Add organizer",
+  "ldAddHint": "npub of the new organizer",
+  "ldAddDo": "Add",
+  "ldRemove": "Remove",
+  "ldRemoveConfirm": "Remove this organizer?",
+  "ldAdded": "Organizer added",
+  "ldRemoved": "Organizer removed",
+  "ldFailed": "Action failed",
+  "ldEmpty": "No other organizers yet.",
+  "ldLoading": "Loading organizers …",
+  "ldNpubInvalid": "Please enter a valid npub.",
+  "ldAddButton": "Add admin"
 }

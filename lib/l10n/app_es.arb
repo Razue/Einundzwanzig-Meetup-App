@@ -2087,5 +2087,22 @@
   "evToCalendar": "Añadir al calendario",
   "portalConnected": "Portal conectado",
   "portalLoginPrompt": "Te conectamos al portal para confirmar.",
-  "portalTileSub": "Para confirmaciones y tus meetups"
+  "portalTileSub": "Para confirmaciones y tus meetups",
+  "ldTitle": "Organizadores",
+  "ldManage": "Gestionar organizadores",
+  "ldManageSub": "Añadir co-organizadores",
+  "ldPickMeetup": "Elegir meetup",
+  "ldCreator": "Creador",
+  "ldAdd": "Añadir organizador",
+  "ldAddHint": "npub del nuevo organizador",
+  "ldAddDo": "Añadir",
+  "ldRemove": "Quitar",
+  "ldRemoveConfirm": "¿Quitar este organizador?",
+  "ldAdded": "Organizador añadido",
+  "ldRemoved": "Organizador quitado",
+  "ldFailed": "Acción fallida",
+  "ldEmpty": "Aún no hay otros organizadores.",
+  "ldLoading": "Cargando organizadores …",
+  "ldNpubInvalid": "Introduce un npub válido.",
+  "ldAddButton": "Añadir admin"
 }
