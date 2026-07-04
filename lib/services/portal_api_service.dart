@@ -493,39 +493,18 @@ class PortalApiService {
 
   /// Kurse. GET /api/courses
   static Future<List<Map<String, dynamic>>> getCourses() async {
-    return _getAllPages('/courses');
+    // WICHTIG: Die API liefert ein DIREKTES Array (kein data-Wrapper) und
+    // paginiert nicht per ?page. Ohne withDetails=1 kommt nur eine gekürzte
+    // Liste -> mit withDetails=1 kommen ALLE Kurse samt Terminen/Referent.
+    final body = await _get('/courses?withDetails=1');
+    return _asList(body);
   }
 
-  /// Holt ALLE Seiten einer Liste. Robust gegen unbekannte Seitengröße:
-  /// lädt weiter, solange Seiten NICHT-LEER sind und NEUE Einträge bringen
-  /// (Dedup per id). Stoppt bei meta.last_page, bei leerer Seite, wenn eine
-  /// Seite keine neuen ids mehr liefert, oder nach 50 Seiten (Sicherheit).
-  static Future<List<Map<String, dynamic>>> _getAllPages(String path) async {
-    final all = <Map<String, dynamic>>[];
-    final seen = <String>{};
-    int? lastPage;
-    for (var page = 1; page <= 50; page++) {
-      final sep = path.contains('?') ? '&' : '?';
-      final body = await _get('$path${sep}page=$page');
-      // data kann direkt Liste sein ODER unter 'data' liegen
-      final data = (body is Map) ? body['data'] : body;
-      if (data is! List || data.isEmpty) break;
-
-      var added = 0;
-      for (final e in data.whereType<Map<String, dynamic>>()) {
-        final key = '${e['id'] ?? e.hashCode}';
-        if (seen.add(key)) { all.add(e); added++; }
-      }
-      // last_page aus meta ODER top-level (Laravel-Varianten)
-      if (body is Map) {
-        final meta = body['meta'];
-        if (meta is Map && meta['last_page'] is int) lastPage = meta['last_page'] as int;
-        else if (body['last_page'] is int) lastPage = body['last_page'] as int;
-      }
-      if (lastPage != null) { if (page >= lastPage) break; }
-      else if (added == 0) break; // keine Paginierungs-Info + nichts Neues -> fertig
-    }
-    return all;
+  /// Liest eine Portal-Liste tolerant: direktes Array ODER unter 'data'.
+  static List<Map<String, dynamic>> _asList(dynamic body) {
+    final data = (body is Map) ? (body['data'] ?? body['items'] ?? body) : body;
+    if (data is! List) return [];
+    return data.whereType<Map<String, dynamic>>().toList();
   }
 
   /// Leader eines Meetups. GET /api/meetup/{id}/leaders (nur für Leader).
@@ -560,6 +539,7 @@ class PortalApiService {
 
   /// Dozenten. GET /api/lecturers
   static Future<List<Map<String, dynamic>>> getLecturers() async {
-    return _getAllPages('/lecturers');
+    final body = await _get('/lecturers?withDetails=1');
+    return _asList(body);
   }
 }

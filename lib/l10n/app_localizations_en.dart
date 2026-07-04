@@ -4335,4 +4335,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ldAddButton => 'Add admin';
+
+  @override
+  String get calLegendCourse => 'Courses';
+
+  @override
+  String get calFilterCourses => 'Courses';
 }

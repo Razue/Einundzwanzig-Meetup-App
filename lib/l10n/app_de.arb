@@ -2126,5 +2126,7 @@
   "ldEmpty": "Noch keine weiteren Organisatoren.",
   "ldLoading": "Lade Organisatoren …",
   "ldNpubInvalid": "Bitte einen gültigen npub eingeben.",
-  "ldAddButton": "Admin hinzufügen"
+  "ldAddButton": "Admin hinzufügen",
+  "calLegendCourse": "Kurse",
+  "calFilterCourses": "Kurse"
 }

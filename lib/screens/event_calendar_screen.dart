@@ -14,6 +14,7 @@ import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/calendar_event_service.dart';
 import '../services/meetup_calendar_service.dart';
+import '../services/portal_api_service.dart';
 import '../models/calendar_event.dart' as ical;
 
 enum _CalView { month, year, list }
@@ -29,6 +30,8 @@ class _CalItem {
   final DateTime? end;
   final bool allDay;
   final bool isMeetup;
+  final bool isCourse; // Portal-Kurstermin (eigene Farbe)
+  final String url;
 
   _CalItem({
     required this.title,
@@ -38,10 +41,12 @@ class _CalItem {
     required this.end,
     required this.allDay,
     required this.isMeetup,
+    this.isCourse = false,
+    this.url = '',
   });
 
   DateTime get day => DateTime(start.year, start.month, start.day);
-  Color get color => isMeetup ? cOrange : cNostr;
+  Color get color => isCourse ? cPurple : (isMeetup ? cOrange : cNostr);
 
   factory _CalItem.fromNostr(NostrCalendarEvent e) => _CalItem(
         title: e.title,
@@ -82,7 +87,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   Map<DateTime, List<_CalItem>> _byDay = {};
 
   // Filter
-  int _typeFilter = 0;                 // 0=Alle, 1=Meetups, 2=Externe
+  int _typeFilter = 0;                 // 0=Alle, 1=Meetups, 2=Externe, 3=Kurse
   bool _worldwide = false;             // false=nur Community-Relay, true=alle
   final TextEditingController _locationCtrl = TextEditingController();
   String _locationQuery = '';
@@ -105,8 +110,10 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     // Getrennt awaiten, damit die Typen sauber erhalten bleiben.
     final nostrFuture = CalendarEventService.fetchEvents(worldwide: _worldwide);
     final meetupFuture = MeetupCalendarService().fetchMeetupsPortalFirst();
+    final coursesFuture = PortalApiService.getCourses();
     final List<NostrCalendarEvent> nostrEvents = await nostrFuture;
     final List<ical.CalendarEvent> meetups = await meetupFuture;
+    final List<Map<String, dynamic>> courses = await coursesFuture;
     if (!mounted) return;
 
     final items = <_CalItem>[];
@@ -115,6 +122,31 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     }
     for (final m in meetups) {
       items.add(_CalItem.fromMeetup(m));
+    }
+    // KURS-TERMINE: jeder Kurs kann mehrere Termine (events) haben.
+    final cutoff = DateTime.now().subtract(const Duration(hours: 6));
+    for (final c in courses) {
+      final cname = (c['name'] ?? c['title'] ?? 'Kurs').toString();
+      final cdesc = (c['description'] ?? '').toString();
+      final evs = (c['events'] is List) ? c['events'] as List
+                : (c['course_events'] is List) ? c['course_events'] as List : const [];
+      for (final ev in evs.whereType<Map>()) {
+        final fromStr = (ev['from'] ?? ev['start'] ?? '').toString();
+        final start = DateTime.tryParse(fromStr);
+        if (start == null || start.isBefore(cutoff)) continue;
+        final loc = (ev['location'] ?? (ev['venue'] is Map ? (ev['venue'] as Map)['name'] : '') ?? '').toString();
+        items.add(_CalItem(
+          title: cname,
+          description: cdesc,
+          location: loc,
+          start: start,
+          end: DateTime.tryParse((ev['to'] ?? '').toString()),
+          allDay: false,
+          isMeetup: false,
+          isCourse: true,
+          url: (ev['link'] ?? c['portalLink'] ?? '').toString(),
+        ));
+      }
     }
     items.sort((a, b) => a.start.compareTo(b.start));
 
@@ -127,9 +159,10 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   void _applyFilter() {
     final q = _locationQuery.trim().toLowerCase();
     final filtered = _allItems.where((e) {
-      // Typ-Filter: 0=Alle, 1=Meetups, 2=Externe
+      // Typ-Filter: 0=Alle, 1=Meetups, 2=Externe, 3=Kurse
       if (_typeFilter == 1 && !e.isMeetup) return false;
-      if (_typeFilter == 2 && e.isMeetup) return false;
+      if (_typeFilter == 2 && (e.isMeetup || e.isCourse)) return false;
+      if (_typeFilter == 3 && !e.isCourse) return false;
       // Orts-Filter: leerer Ort bleibt IMMER sichtbar (nichts verstecken)
       if (q.isNotEmpty) {
         final loc = e.location.trim().toLowerCase();
@@ -251,6 +284,8 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       _legendDot(cOrange, t.calLegendMeetup),
       const SizedBox(width: 18),
       _legendDot(cNostr, t.calLegendEvent),
+      const SizedBox(width: 14),
+      _legendDot(cPurple, t.calLegendCourse),
     ]),
   );
 
@@ -272,6 +307,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
           _typeBtn(t.calFilterAll, 0, cOrange),
           _typeBtn(t.calFilterMeetups, 1, cOrange),
           _typeBtn(t.calFilterExternal, 2, cNostr),
+          _typeBtn(t.calFilterCourses, 3, cPurple),
         ]),
       ),
       const SizedBox(height: 8),
@@ -641,7 +677,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(color: e.color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(7)),
-                child: Text(e.isMeetup ? t.calLegendMeetup : t.calLegendEvent,
+                child: Text(e.isCourse ? t.calLegendCourse : (e.isMeetup ? t.calLegendMeetup : t.calLegendEvent),
                     style: TextStyle(color: e.color, fontSize: 11, fontWeight: FontWeight.w800)),
               ),
             ]),

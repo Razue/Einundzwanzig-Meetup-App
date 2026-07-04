@@ -4375,4 +4375,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get ldAddButton => 'Admin hinzufügen';
+
+  @override
+  String get calLegendCourse => 'Kurse';
+
+  @override
+  String get calFilterCourses => 'Kurse';
 }

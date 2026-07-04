@@ -2104,5 +2104,7 @@
   "ldEmpty": "Aún no hay otros organizadores.",
   "ldLoading": "Cargando organizadores …",
   "ldNpubInvalid": "Introduce un npub válido.",
-  "ldAddButton": "Añadir admin"
+  "ldAddButton": "Añadir admin",
+  "calLegendCourse": "Cursos",
+  "calFilterCourses": "Cursos"
 }

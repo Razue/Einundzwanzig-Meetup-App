@@ -7977,6 +7977,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Admin hinzufügen'**
   String get ldAddButton;
+
+  /// No description provided for @calLegendCourse.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurse'**
+  String get calLegendCourse;
+
+  /// No description provided for @calFilterCourses.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurse'**
+  String get calFilterCourses;
 }
 
 class _AppLocalizationsDelegate
