@@ -46,7 +46,7 @@ class _CalItem {
   });
 
   DateTime get day => DateTime(start.year, start.month, start.day);
-  Color get color => isCourse ? cPurple : (isMeetup ? cOrange : cNostr);
+  Color get color => isCourse ? cCyan : (isMeetup ? cOrange : cNostr);
 
   factory _CalItem.fromNostr(NostrCalendarEvent e) => _CalItem(
         title: e.title,
@@ -123,28 +123,49 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     for (final m in meetups) {
       items.add(_CalItem.fromMeetup(m));
     }
-    // KURS-TERMINE: jeder Kurs kann mehrere Termine (events) haben.
+    // KURS-TERMINE: Die Übersicht (/courses) enthält NUR next_event, nicht
+    // die volle Terminliste. Die vielen Termine (z.B. Schnuartz' 11) stecken
+    // in der DETAIL-Antwort /courses/{id} -> Feld "events" mit from/to/venue.
+    // Wir laden die Details parallel (mit Limit gegen Überlastung).
     final cutoff = DateTime.now().subtract(const Duration(hours: 6));
-    for (final c in courses) {
+    final courseIds = courses.map((c) => c['id']).whereType<int>().toList();
+    final details = <Map<String, dynamic>>[];
+    const cchunk = 8;
+    for (var i = 0; i < courseIds.length; i += cchunk) {
+      final batch = courseIds.skip(i).take(cchunk);
+      final results = await Future.wait(batch.map((id) => PortalApiService.getCourse(id)));
+      details.addAll(results.whereType<Map<String, dynamic>>());
+    }
+    if (!mounted) return;
+    for (final c in details) {
       final cname = (c['name'] ?? c['title'] ?? 'Kurs').toString();
       final cdesc = (c['description'] ?? '').toString();
-      final evs = (c['events'] is List) ? c['events'] as List
-                : (c['course_events'] is List) ? c['course_events'] as List : const [];
+      final cportal = (c['portalLink'] ?? '').toString();
+      final evs = (c['events'] is List) ? c['events'] as List : const [];
       for (final ev in evs.whereType<Map>()) {
-        final fromStr = (ev['from'] ?? ev['start'] ?? '').toString();
-        final start = DateTime.tryParse(fromStr);
-        if (start == null || start.isBefore(cutoff)) continue;
-        final loc = (ev['location'] ?? (ev['venue'] is Map ? (ev['venue'] as Map)['name'] : '') ?? '').toString();
+        final start = DateTime.tryParse((ev['from'] ?? ev['start'] ?? '').toString());
+        if (start == null || start.toLocal().isBefore(cutoff)) continue;
+        // Ort: venue.name (+ Stadt), sonst location
+        String loc = '';
+        final venue = ev['venue'];
+        if (venue is Map) {
+          loc = (venue['name'] ?? '').toString();
+          final city = venue['city'];
+          if (city is Map && (city['name'] ?? '').toString().isNotEmpty) {
+            loc = loc.isEmpty ? city['name'].toString() : '$loc · ${city['name']}';
+          }
+        }
+        if (loc.isEmpty) loc = (ev['location'] ?? '').toString();
         items.add(_CalItem(
           title: cname,
           description: cdesc,
           location: loc,
-          start: start,
-          end: DateTime.tryParse((ev['to'] ?? '').toString()),
+          start: start.toLocal(),
+          end: DateTime.tryParse((ev['to'] ?? '').toString())?.toLocal(),
           allDay: false,
           isMeetup: false,
           isCourse: true,
-          url: (ev['link'] ?? c['portalLink'] ?? '').toString(),
+          url: (ev['link'] ?? cportal).toString(),
         ));
       }
     }
@@ -285,7 +306,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       const SizedBox(width: 18),
       _legendDot(cNostr, t.calLegendEvent),
       const SizedBox(width: 14),
-      _legendDot(cPurple, t.calLegendCourse),
+      _legendDot(cCyan, t.calLegendCourse),
     ]),
   );
 
@@ -307,7 +328,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
           _typeBtn(t.calFilterAll, 0, cOrange),
           _typeBtn(t.calFilterMeetups, 1, cOrange),
           _typeBtn(t.calFilterExternal, 2, cNostr),
-          _typeBtn(t.calFilterCourses, 3, cPurple),
+          _typeBtn(t.calFilterCourses, 3, cCyan),
         ]),
       ),
       const SizedBox(height: 8),
