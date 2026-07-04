@@ -292,8 +292,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         title: Text(
             "BADGE WALLET${myBadges.isNotEmpty ? ' (${myBadges.length})' : ''}"),
         actions: [
-          // Weltkarte — nur wenn Badges mit Standort existieren
-          if (myBadges.any((b) => b.lat != 0 || b.lng != 0))
+          // Weltkarte — immer erreichbar, sobald Badges existieren
+          if (myBadges.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.public_rounded),
               tooltip: AppLocalizations.of(context).mapButton,

@@ -175,6 +175,34 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     }
     items.sort((a, b) => a.start.compareTo(b.start));
 
+    // QUELLENÜBERGREIFENDE DEDUP: Derselbe Termin kann aus mehreren Quellen
+    // kommen (z.B. ein Kurs als Nostr-Event UND als Portal-Kurstermin). Wir
+    // erkennen Duplikate an gleicher Startzeit (auf die Minute) + ähnlichem
+    // Titel (erste 12 Zeichen, normalisiert) bzw. gleichem Ort.
+    String norm(String s) => s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9äöü]'), '');
+    // Vor der Dedup: bevorzugte Reihenfolge, damit bei Duplikaten die
+    // SAUBERE Variante gewinnt (Portal-Kurstermin/Meetup vor Nostr-Blob).
+    int rank(_CalItem e) => e.isCourse ? 0 : (e.isMeetup ? 1 : 2);
+    final dedup = <_CalItem>[];
+    final byKey = <String, _CalItem>{};
+    for (final it in items) {
+      final tkey = norm(it.title);
+      final tShort = tkey.length > 12 ? tkey.substring(0, 12) : tkey;
+      final minuteKey = '${it.start.year}${it.start.month}${it.start.day}${it.start.hour}${it.start.minute}';
+      final key = '$minuteKey|$tShort';
+      final existing = byKey[key];
+      if (existing == null) {
+        byKey[key] = it;
+      } else if (rank(it) < rank(existing)) {
+        byKey[key] = it; // bessere Variante ersetzt die schlechtere
+      }
+    }
+    dedup.addAll(byKey.values);
+    dedup.sort((a, b) => a.start.compareTo(b.start));
+    items
+      ..clear()
+      ..addAll(dedup);
+
     _allItems = items;
     if (mounted) setState(() => _loading = false);
     _applyFilter();

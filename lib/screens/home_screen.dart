@@ -491,31 +491,46 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  /// Baut die einblendbaren Kacheln (ohne home_meetup) in natürlicher Größe
-  /// und skaliert den ganzen Block per FittedBox so, dass er den verfügbaren
-  /// Raum füllt. Layout/Anordnung bleiben identisch, nur der Maßstab ändert
-  /// sich — das gewünschte "Schrumpfen der gesamten Kachel(n)".
+  /// Kachel-Block: füllt den verfügbaren Raum VOLLSTÄNDIG (Reihen dehnen
+  /// sich gleichmäßig, keine Lücken), solange jede Reihe ihre Mindesthöhe
+  /// behält. Passt alles -> exakt gefüllt, nicht scrollbar. Wird die
+  /// Mindesthöhe unterschritten (zu viele Kacheln) -> scrollbar mit
+  /// Mindesthöhe pro Reihe.
   Widget _buildScaledTileBlock() {
-    final tiles = _buildOrderedTiles(excludeHomeMeetup: true);
-    if (tiles.isEmpty) return const SizedBox.shrink();
-    return LayoutBuilder(builder: (context, constraints) {
-      // Natürliche Breite = verfügbare Breite; der Block wird in dieser
-      // Breite gebaut und dann proportional in die Höhe eingepasst.
-      return FittedBox(
-        fit: BoxFit.contain,
-        alignment: Alignment.topCenter,
-        child: SizedBox(
-          width: constraints.maxWidth,
-          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: tiles),
-        ),
+    final rows = _buildTileRows(excludeHomeMeetup: true);
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    const double minRowHeight = 96; // darunter wird gescrollt
+    return LayoutBuilder(builder: (context, c) {
+      final gaps = (rows.length - 1) * kTileGap;
+      final avail = c.maxHeight - gaps;
+      final perRow = rows.isEmpty ? 0 : avail / rows.length;
+
+      if (perRow >= minRowHeight) {
+        // FÜLLEN: jede Reihe bekommt gleich viel Höhe, Block füllt exakt.
+        return Column(children: [
+          for (int i = 0; i < rows.length; i++) ...[
+            if (i > 0) const SizedBox(height: kTileGap),
+            Expanded(child: rows[i]),
+          ],
+        ]);
+      }
+      // SCROLLEN: Reihen behalten Mindesthöhe, Rest scrollt.
+      return SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(children: [
+          for (int i = 0; i < rows.length; i++) ...[
+            if (i > 0) const SizedBox(height: kTileGap),
+            SizedBox(height: minRowHeight, child: rows[i]),
+          ],
+        ]),
       );
     });
   }
 
-  // ============================================================
-  // DYNAMIC TILE LAYOUT — Packt Tiles in Reihen basierend auf Span
-  // ============================================================
-  List<Widget> _buildOrderedTiles({bool excludeHomeMeetup = false}) {
+  /// Baut die sichtbaren Kacheln als REIHEN (jede Reihe ein Row-Widget mit
+  /// stretch), damit sie sich vertikal dehnen lassen.
+  List<Widget> _buildTileRows({bool excludeHomeMeetup = false}) {
     final visibleTiles = _tileOrder
       .map((id) => _tileDefs.where((t) => t.id == id).firstOrNull)
       .where((t) => t != null && t.visible() && !_hiddenTiles.contains(t!.id))
@@ -523,42 +538,40 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       .where((t) => !excludeHomeMeetup || t.id != 'home_meetup')
       .toList();
 
-    final widgets = <Widget>[];
+    final rows = <Widget>[];
     int i = 0;
     while (i < visibleTiles.length) {
       final tile = visibleTiles[i];
       if (tile.span == 3) {
-        // Full width
-        widgets.add(tile.builder());
-        widgets.add(const SizedBox(height: kTileGap));
+        rows.add(Row(crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [Expanded(child: tile.builder())]));
         i++;
       } else {
-        // Sammle Tiles für eine Reihe (max span = 3)
         final row = <_TileDef>[tile];
         int rowSpan = tile.span;
         while (i + row.length < visibleTiles.length && rowSpan < 3) {
           final next = visibleTiles[i + row.length];
-          if (next.span == 3) break; // Full-width Tile bricht Reihe ab
+          if (next.span == 3) break;
           if (rowSpan + next.span > 3) break;
           row.add(next);
           rowSpan += next.span;
         }
-        widgets.add(IntrinsicHeight(
-          child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            for (int j = 0; j < row.length; j++) ...[
-              if (j > 0) const SizedBox(width: kTileGap),
-              Expanded(flex: row[j].span, child: row[j].builder()),
-            ],
-          ]),
-        ));
-        widgets.add(const SizedBox(height: kTileGap));
+        rows.add(Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          for (int j = 0; j < row.length; j++) ...[
+            if (j > 0) const SizedBox(width: kTileGap),
+            Expanded(flex: row[j].span, child: row[j].builder()),
+          ],
+        ]));
         i += row.length;
       }
     }
-    // Letzten Abstand entfernen (sonst Lücke am Block-Ende beim Skalieren)
-    if (widgets.isNotEmpty && widgets.last is SizedBox) widgets.removeLast();
-    return widgets;
+    return rows;
   }
+
+  // ============================================================
+  // DYNAMIC TILE LAYOUT — Packt Tiles in Reihen basierend auf Span
+  // ============================================================
+
 
   // ============================================================
   // LOGO BAR
@@ -655,9 +668,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   bottom: -12,
                   child: Icon(watermark, size: 96, color: accentColor.withValues(alpha: 0.10)),
                 ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: child,
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: child,
+                ),
               ),
             ],
           ),
