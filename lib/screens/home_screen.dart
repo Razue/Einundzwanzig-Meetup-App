@@ -146,6 +146,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _TileDef(id: 'shoutout',     label: 'Shoutout',         span: 1, builder: _buildShoutoutTile),
       _TileDef(id: 'podcast',      label: 'Podcast',          span: 1, builder: _buildPodcastTile),
       _TileDef(id: 'nostr',        label: 'Nostr',            span: 1, builder: _buildNostrTile),
+      _TileDef(id: 'portal_connect', label: 'Portal', span: 2, builder: _buildPortalConnectTile),
       _TileDef(id: 'converter',    label: 'Rechner',          span: 1, builder: _buildConverterTile),
       _TileDef(id: 'news',         label: 'News',             span: 2, builder: _buildNewsTile),
       _TileDef(id: 'portal',       label: 'Meine Meetups',    span: 2, builder: _buildPortalTile),
@@ -187,7 +188,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() { _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
-  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); }
+  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
 
   // ============================================================
   // BUSINESS LOGIC (1:1 dashboard.dart + Profilbild + Countdown)
@@ -303,7 +304,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _syncOrganicAdminsInBackground() async { try { await PromotionClaimService.syncOrganicAdmins(); } catch (_) {} }
   void _checkDeviceIntegrity() async { try { final r = await DeviceIntegrityService.check(); if (r.isCompromised && mounted) setState(() => _deviceCompromised = true); } catch (_) {} }
   Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
-  Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); _checkPortalOrganizer(); }
+  Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); _checkPortalOrganizer(); _refreshPortalConnected(); }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
   /// PORTAL-ORGANISATOR = APP-ADMIN (robust, mit sicherem Entzug):
   /// - Portal-Login (Nostr) + my-meetups nicht leer  -> Admin VERGEBEN
@@ -439,6 +440,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     myBadges.clear();
     await MeetupBadge.saveBadges([]);
     try { await SecureKeyStore.deleteKeys(); } catch (_) {}
+    try { await PortalApiService.logout(); } catch (_) {}
     await NostrProfileService.clearCache();
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -885,6 +887,75 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildEventsTile() => _tile(accentColor: cTextTertiary, watermark: Icons.event_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.event_rounded, color: cTextSecondary, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileEvents, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileEventsCalendar, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  bool _portalConnected = false;
+
+  /// PORTAL-VERBINDUNG als Schieberegler auf dem Dashboard: rot/aus = nicht
+  /// verbunden, grün/an = verbunden. Antippen verbindet (Nostr-Login) bzw.
+  /// trennt. Macht das Portal-Login sichtbar statt versteckt.
+  Widget _buildPortalConnectTile() {
+    final t = AppLocalizations.of(context);
+    final on = _portalConnected;
+    return _tile(
+      accentColor: on ? cGreen : cRed,
+      watermark: Icons.hub_rounded,
+      onTap: _togglePortalConnection,
+      child: Row(children: [
+        Icon(on ? Icons.check_circle_rounded : Icons.power_settings_new_rounded,
+            color: on ? cGreen : cRed, size: 22),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(on ? t.portalConnected : t.portalConnect,
+              style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 3),
+          Text(t.portalTileSub, style: const TextStyle(color: cTextTertiary, fontSize: 11.5)),
+        ])),
+        // Optischer Schalter
+        Container(
+          width: 46, height: 26,
+          decoration: BoxDecoration(
+            color: on ? cGreen : Colors.white.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 180),
+            alignment: on ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(width: 20, height: 20, margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Future<void> _refreshPortalConnected() async {
+    final c = await PortalApiService.tokenMatchesCurrentKey();
+    if (mounted && c != _portalConnected) setState(() => _portalConnected = c);
+  }
+
+  Future<void> _togglePortalConnection() async {
+    final t = AppLocalizations.of(context);
+    if (_portalConnected) {
+      await PortalApiService.logout();
+      if (mounted) setState(() => _portalConnected = false);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.portalConnecting), backgroundColor: cCard,
+        duration: const Duration(seconds: 8), behavior: SnackBarBehavior.floating));
+    final res = await PortalApiService.loginWithNostr();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (res.ok) {
+      setState(() => _portalConnected = true);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.portalConnected), backgroundColor: Colors.green.shade700, behavior: SnackBarBehavior.floating));
+      _checkPortalOrganizer();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${t.portalLoginFailed}: ${res.error ?? ''}'), backgroundColor: cRed, behavior: SnackBarBehavior.floating));
+    }
+  }
+
   Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildNewsTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.article_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())), child: Row(children: [const Icon(Icons.article_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileNews, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileNewsSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));

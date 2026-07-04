@@ -2106,5 +2106,8 @@
   "rsvpMaybe": "Vielleicht",
   "evOpenLink": "Link öffnen",
   "evShare": "Teilen",
-  "evToCalendar": "Zum Kalender"
+  "evToCalendar": "Zum Kalender",
+  "portalConnected": "Portal verbunden",
+  "portalLoginPrompt": "Zum Zusagen verbinden wir dich mit dem Portal.",
+  "portalTileSub": "Für Zusagen & eigene Meetups"
 }

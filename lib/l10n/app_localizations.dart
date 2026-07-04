@@ -7857,6 +7857,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zum Kalender'**
   String get evToCalendar;
+
+  /// No description provided for @portalConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal verbunden'**
+  String get portalConnected;
+
+  /// No description provided for @portalLoginPrompt.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Zusagen verbinden wir dich mit dem Portal.'**
+  String get portalLoginPrompt;
+
+  /// No description provided for @portalTileSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Für Zusagen & eigene Meetups'**
+  String get portalTileSub;
 }
 
 class _AppLocalizationsDelegate

@@ -96,29 +96,61 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   /// RSVP-Status der ersten 25 sichtbaren Portal-Termine nachladen (sparsam).
   void _loadRsvpStatuses() async {
-    final ids = _eventPortalId.values.take(25).toList();
-    for (final id in ids) {
-      final r = await PortalApiService.getRsvp(id);
+    // Status für ALLE Termine laden (nicht nur die ersten 25) — sonst
+    // verliert ein weiter unten liegendes zugesagtes Event beim erneuten
+    // Öffnen seine "Du hast zugesagt"-Anzeige. In kleinen Wellen, damit
+    // es das Portal nicht überlastet.
+    final ids = _eventPortalId.values.toList();
+    const chunk = 6;
+    for (var i = 0; i < ids.length; i += chunk) {
+      final batch = ids.skip(i).take(chunk);
+      await Future.wait(batch.map((id) async {
+        final r = await PortalApiService.getRsvp(id);
+        if (mounted && r != null) setState(() => _rsvp[id] = {...?_rsvp[id], ...r});
+      }));
       if (!mounted) return;
-      if (r != null) setState(() => _rsvp[id] = {...?_rsvp[id], ...r});
     }
+  }
+
+  /// Stellt sicher, dass eine gültige Portal-Verbindung besteht: löst bei
+  /// Bedarf DIREKT den Nostr-Login aus (Amber/nsec) — ohne separaten Screen.
+  /// Gibt true zurück, wenn danach verbunden. Zeigt dezenten Fortschritt.
+  Future<bool> _ensurePortalLogin() async {
+    final t = AppLocalizations.of(context);
+    if (await PortalApiService.tokenMatchesCurrentKey()) return true;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.portalConnecting), backgroundColor: cCard,
+        duration: const Duration(seconds: 8), behavior: SnackBarBehavior.floating));
+    final res = await PortalApiService.loginWithNostr();
+    if (!mounted) return false;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (res.ok) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.portalConnected), backgroundColor: Colors.green.shade700, behavior: SnackBarBehavior.floating));
+      return true;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${t.portalLoginFailed}: ${res.error ?? ''}'), backgroundColor: cRed, behavior: SnackBarBehavior.floating));
+    return false;
   }
 
   Future<void> _doRsvp(int id, {String status = 'attending'}) async {
     final t = AppLocalizations.of(context);
-    if (!await PortalApiService.hasToken()) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(t.rsvpNeedLogin), backgroundColor: cRed, behavior: SnackBarBehavior.floating));
-      return;
+    // Nicht verbunden? -> DIREKT verbinden (statt roter Fehlermeldung).
+    if (!await PortalApiService.tokenMatchesCurrentKey()) {
+      final ok = await _ensurePortalLogin();
+      if (!ok) return; // abgebrochen/fehlgeschlagen
     }
     setState(() => _rsvpBusy.add(id));
     final res = await PortalApiService.rsvp(id, status: status);
     if (!mounted) return;
     setState(() => _rsvpBusy.remove(id));
     if (res.ok) {
+      // Status lokal SOFORT setzen (nicht auf getRsvp warten/verlassen) —
+      // so bleibt "Du hast zugesagt" auch nach Verlassen/Rückkehr korrekt.
+      setState(() => _rsvp[id] = {...?_rsvp[id], 'status': status});
       final r = await PortalApiService.getRsvp(id);
-      if (mounted && r != null) setState(() => _rsvp[id] = r);
+      if (mounted && r != null) setState(() => _rsvp[id] = {...?_rsvp[id], ...r});
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('${t.rsvpFailed}: ${res.error ?? ''}'), backgroundColor: cRed, behavior: SnackBarBehavior.floating));

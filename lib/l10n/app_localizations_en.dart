@@ -4275,4 +4275,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evToCalendar => 'Add to calendar';
+
+  @override
+  String get portalConnected => 'Portal connected';
+
+  @override
+  String get portalLoginPrompt => 'Connecting you to the portal to RSVP.';
+
+  @override
+  String get portalTileSub => 'For RSVPs & your meetups';
 }

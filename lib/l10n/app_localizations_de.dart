@@ -4314,4 +4314,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get evToCalendar => 'Zum Kalender';
+
+  @override
+  String get portalConnected => 'Portal verbunden';
+
+  @override
+  String get portalLoginPrompt =>
+      'Zum Zusagen verbinden wir dich mit dem Portal.';
+
+  @override
+  String get portalTileSub => 'Für Zusagen & eigene Meetups';
 }
