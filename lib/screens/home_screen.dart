@@ -484,38 +484,36 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         // Fixe Home-Meetup-Kachel (immer gleiche Größe)
         _buildHomeMeetupTile(),
         const SizedBox(height: kTileGap),
-        // Restlicher Raum: skalierter Kachel-Block
+        // Restlicher Raum: Kachel-Block füllt exakt bis zur unteren Leiste
         Expanded(child: _buildScaledTileBlock()),
-        const SizedBox(height: 76), // Platz für die untere Navigationsleiste
       ]),
     );
   }
 
-  /// Kachel-Block: füllt den verfügbaren Raum VOLLSTÄNDIG (Reihen dehnen
-  /// sich gleichmäßig, keine Lücken), solange jede Reihe ihre Mindesthöhe
-  /// behält. Passt alles -> exakt gefüllt, nicht scrollbar. Wird die
-  /// Mindesthöhe unterschritten (zu viele Kacheln) -> scrollbar mit
-  /// Mindesthöhe pro Reihe.
+  /// Kachel-Block: füllt den Raum zwischen Home-Meetup-Kachel und unterer
+  /// Leiste VOLLSTÄNDIG. Jede Reihe bekommt exakt dieselbe berechnete Höhe,
+  /// sodass alle Reihen zusammen die volle Höhe ausfüllen (keine Lücke).
+  /// Bis die Reihenhöhe unter die Mindesthöhe fällt -> dann scrollbar.
   Widget _buildScaledTileBlock() {
     final rows = _buildTileRows(excludeHomeMeetup: true);
     if (rows.isEmpty) return const SizedBox.shrink();
 
-    const double minRowHeight = 96; // darunter wird gescrollt
+    const double minRowHeight = 92; // darunter wird gescrollt
     return LayoutBuilder(builder: (context, c) {
       final gaps = (rows.length - 1) * kTileGap;
       final avail = c.maxHeight - gaps;
-      final perRow = rows.isEmpty ? 0 : avail / rows.length;
+      final perRow = avail / rows.length;
 
       if (perRow >= minRowHeight) {
-        // FÜLLEN: jede Reihe bekommt gleich viel Höhe, Block füllt exakt.
+        // FÜLLEN: jede Reihe exakt perRow hoch -> Summe = volle Höhe.
         return Column(children: [
           for (int i = 0; i < rows.length; i++) ...[
             if (i > 0) const SizedBox(height: kTileGap),
-            Expanded(child: rows[i]),
+            SizedBox(height: perRow, child: rows[i]),
           ],
         ]);
       }
-      // SCROLLEN: Reihen behalten Mindesthöhe, Rest scrollt.
+      // SCROLLEN: Reihen behalten Mindesthöhe.
       return SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(children: [
@@ -1522,7 +1520,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
               if (availableTiles.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 // ── VERFÜGBAR ──
-                _sectionHeader(Icons.add_circle_outline_rounded, 'VERFÜGBAR', 'Tippe auf + zum Hinzufügen'),
+                _sectionHeader(Icons.add_circle_outline_rounded, 'VERFÜGBAR', 'Schalter aktivieren zum Hinzufügen'),
                 const SizedBox(height: 8),
                 ...availableTiles.map((id) => _availableRow(id)),
               ],
@@ -1562,29 +1560,29 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
           fontSize: 13, fontWeight: FontWeight.w600))),
         isFixed
           ? const Icon(Icons.lock_outline_rounded, color: cTextTertiary, size: 13)
-          : GestureDetector(
-              onTap: () => _hide(id),
-              child: const Padding(
-                padding: EdgeInsets.all(6),
-                child: Icon(Icons.close_rounded, color: cTextTertiary, size: 14))),
+          : Switch(
+              value: true,
+              activeColor: cOrange,
+              onChanged: (_) => _hide(id),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
       ]),
     );
   }
 
   Widget _availableRow(String id) => Container(
     margin: const EdgeInsets.only(bottom: 4),
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
     decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(8), border: Border.all(color: cBorder, width: 0.5)),
     child: Row(children: [
       Icon(_iconFor(id), color: cTextTertiary, size: 15),
       const SizedBox(width: 10),
       Expanded(child: Text(_labelFor(id), style: const TextStyle(color: cTextTertiary, fontSize: 13, fontWeight: FontWeight.w500))),
-      GestureDetector(
-        onTap: () => _show(id),
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: const Icon(Icons.add_rounded, color: cOrange, size: 15),
-        ),
+      Switch(
+        value: false,
+        activeColor: cOrange,
+        onChanged: (_) => _show(id),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     ]),
   );
