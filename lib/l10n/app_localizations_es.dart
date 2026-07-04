@@ -3683,7 +3683,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tileConverter => 'Calculadora';
 
   @override
-  String get tileConverterSub => 'Moneda ⇄ sats';
+  String get tileConverterSub => 'Tipo & sats';
 
   @override
   String get convTitle => 'Conversor';
@@ -4363,4 +4363,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get calFilterCourses => 'Cursos';
+
+  @override
+  String get refreshRunning => 'Actualizando datos …';
+
+  @override
+  String get refreshDone => 'Todo actualizado';
 }

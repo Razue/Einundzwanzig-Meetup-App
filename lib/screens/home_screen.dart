@@ -198,6 +198,38 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() { _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
   void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
 
+  bool _refreshing = false;
+
+  /// MANUELLE VOLLAKTUALISIERUNG (Pfeil oben rechts): holt alle Daten neu und
+  /// löst die daran hängenden Statusprüfungen aus:
+  /// - Badges + Trust Score neu laden
+  /// - WoT/Bürgen-Admin-Status neu verifizieren (_reVerifyAdminStatus)
+  /// - Portal-Organisator-Status prüfen (Kachel erscheint/verschwindet)
+  /// - nächstes Home-Meetup + Portal-Verbindung aktualisieren
+  /// So bekommt z.B. ein frisch im Portal ernannter Organisator oder ein
+  /// per Nostr Verbürgter seine Rechte/Kachel, ohne die App neu zu starten.
+  Future<void> _refreshAll() async {
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+    final t = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.refreshRunning), backgroundColor: cCard,
+        duration: const Duration(seconds: 2), behavior: SnackBarBehavior.floating));
+    try {
+      await _loadUser();                 // löst _checkPortalOrganizer + _refreshPortalConnected
+      await _loadBadges();
+      await _calculateTrustScore();
+      await _reVerifyAdminStatus();       // WoT/Bürgen-Weg
+      await _checkPortalOrganizer();      // Portal-Weg (explizit, fallsicher)
+      _loadNextHomeMeetup();              // void (feuert async intern)
+    } catch (_) {/* einzelne Fehler ignorieren, Rest läuft */}
+    if (!mounted) return;
+    setState(() => _refreshing = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.refreshDone), backgroundColor: Colors.green.shade700,
+        behavior: SnackBarBehavior.floating));
+  }
+
   // ============================================================
   // BUSINESS LOGIC (1:1 dashboard.dart + Profilbild + Countdown)
   // ============================================================
@@ -577,6 +609,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildLogoBar() => Row(children: [
     SvgPicture.asset('assets/images/einundzwanzig_logo.svg', height: 16),
     const Spacer(),
+    _headerIcon(_refreshing ? Icons.hourglass_empty_rounded : Icons.refresh_rounded, _refreshing ? () {} : _refreshAll),
     _headerIcon(Icons.settings_rounded, _showSettings),
   ]);
 
@@ -940,7 +973,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
   Widget _buildReputationTile() => _tile(accentColor: Colors.amber, watermark: Icons.workspace_premium_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileReputation, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? AppLocalizations.of(context).tileReputationShare : AppLocalizations.of(context).tileReputationCheck, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.account_tree_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildEventsTile() => _tile(accentColor: cTextTertiary, watermark: Icons.event_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.event_rounded, color: cTextSecondary, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileEvents, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileEventsCalendar, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   bool _portalConnected = false;
@@ -1012,14 +1045,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildNewsTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.article_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())), child: Row(children: [const Icon(Icons.article_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileNews, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileNewsSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildNostrTile() => _tile(
     accentColor: cNostr,
-    watermark: Icons.travel_explore_rounded,
     opacity: 0.07,
     onTap: _openNostr,
     child: Stack(children: [

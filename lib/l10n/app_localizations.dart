@@ -6661,7 +6661,7 @@ abstract class AppLocalizations {
   /// No description provided for @tileConverterSub.
   ///
   /// In de, this message translates to:
-  /// **'Währung ⇄ Sats'**
+  /// **'Kurs & Sats'**
   String get tileConverterSub;
 
   /// No description provided for @convTitle.
@@ -7989,6 +7989,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Kurse'**
   String get calFilterCourses;
+
+  /// No description provided for @refreshRunning.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisiere Daten …'**
+  String get refreshRunning;
+
+  /// No description provided for @refreshDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles aktualisiert'**
+  String get refreshDone;
 }
 
 class _AppLocalizationsDelegate

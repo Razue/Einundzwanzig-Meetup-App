@@ -1907,7 +1907,7 @@
     }
   },
   "tileConverter": "Rechner",
-  "tileConverterSub": "Währung ⇄ Sats",
+  "tileConverterSub": "Kurs & Sats",
   "convTitle": "Wechselrechner",
   "convYouPay": "Betrag",
   "convRateInfo": "1 BTC = {price} {cur}",
@@ -2128,5 +2128,7 @@
   "ldNpubInvalid": "Bitte einen gültigen npub eingeben.",
   "ldAddButton": "Admin hinzufügen",
   "calLegendCourse": "Kurse",
-  "calFilterCourses": "Kurse"
+  "calFilterCourses": "Kurse",
+  "refreshRunning": "Aktualisiere Daten …",
+  "refreshDone": "Alles aktualisiert"
 }

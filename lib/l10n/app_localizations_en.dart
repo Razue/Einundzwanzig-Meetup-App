@@ -3658,7 +3658,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tileConverter => 'Converter';
 
   @override
-  String get tileConverterSub => 'Currency ⇄ sats';
+  String get tileConverterSub => 'Rate & sats';
 
   @override
   String get convTitle => 'Converter';
@@ -4341,4 +4341,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calFilterCourses => 'Courses';
+
+  @override
+  String get refreshRunning => 'Refreshing data …';
+
+  @override
+  String get refreshDone => 'Everything up to date';
 }

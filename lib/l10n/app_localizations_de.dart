@@ -3697,7 +3697,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get tileConverter => 'Rechner';
 
   @override
-  String get tileConverterSub => 'Währung ⇄ Sats';
+  String get tileConverterSub => 'Kurs & Sats';
 
   @override
   String get convTitle => 'Wechselrechner';
@@ -4381,4 +4381,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get calFilterCourses => 'Kurse';
+
+  @override
+  String get refreshRunning => 'Aktualisiere Daten …';
+
+  @override
+  String get refreshDone => 'Alles aktualisiert';
 }

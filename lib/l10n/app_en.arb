@@ -1885,7 +1885,7 @@
     }
   },
   "tileConverter": "Converter",
-  "tileConverterSub": "Currency ⇄ sats",
+  "tileConverterSub": "Rate & sats",
   "convTitle": "Converter",
   "convYouPay": "Amount",
   "convRateInfo": "1 BTC = {price} {cur}",
@@ -2106,5 +2106,7 @@
   "ldNpubInvalid": "Please enter a valid npub.",
   "ldAddButton": "Add admin",
   "calLegendCourse": "Courses",
-  "calFilterCourses": "Courses"
+  "calFilterCourses": "Courses",
+  "refreshRunning": "Refreshing data …",
+  "refreshDone": "Everything up to date"
 }
