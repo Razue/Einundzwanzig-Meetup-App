@@ -513,6 +513,20 @@ class AdminRegistry {
     await prefs.setInt(_cacheTimestampKey, DateTime.now().millisecondsSinceEpoch);
   }
 
+  /// Entfernt einen bestimmten npub aus dem lokalen Admin-Cache. Nötig, wenn
+  /// eine externe Autorität (z.B. das Portal) den Organisator-Status entzieht:
+  /// Der alte Cache-Treffer dürfte sonst weiter als Admin-Beweis durchgehen.
+  static Future<void> removeFromCache(String npub) async {
+    try {
+      final list = await _loadFromCache();
+      if (list == null || list.isEmpty) return;
+      final filtered = list.where((e) => e.npub != npub).toList();
+      if (filtered.length != list.length) {
+        await _saveToCache(filtered);
+      }
+    } catch (_) {/* Cache nicht kritisch */}
+  }
+
   // =============================================
   // ADMIN-LISTE VERWALTEN (lokal)
   // =============================================

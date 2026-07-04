@@ -216,11 +216,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         content: Text(t.refreshRunning), backgroundColor: cCard,
         duration: const Duration(seconds: 2), behavior: SnackBarBehavior.floating));
     try {
-      await _loadUser();                 // löst _checkPortalOrganizer + _refreshPortalConnected
+      await _loadUser(skipOrgCheck: true); // Org-Check unten kontrolliert
       await _loadBadges();
       await _calculateTrustScore();
-      await _reVerifyAdminStatus();       // WoT/Bürgen-Weg
-      await _checkPortalOrganizer();      // Portal-Weg (explizit, fallsicher)
+      // REIHENFOLGE WICHTIG: Portal-Check ZUERST (räumt bei Entzug den
+      // Admin-Cache), DANN WoT-Verifikation — sonst würde ein veralteter
+      // Cache-Treffer den gerade entzogenen Status wieder als Vouch/Seed
+      // setzen.
+      await _checkPortalOrganizer();      // Portal-Weg (räumt ggf. Cache)
+      await _reVerifyAdminStatus();       // WoT/Bürgen-Weg (sieht sauberen Cache)
       _loadNextHomeMeetup();              // void (feuert async intern)
     } catch (_) {/* einzelne Fehler ignorieren, Rest läuft */}
     if (!mounted) return;
@@ -344,7 +348,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _syncOrganicAdminsInBackground() async { try { await PromotionClaimService.syncOrganicAdmins(); } catch (_) {} }
   void _checkDeviceIntegrity() async { try { final r = await DeviceIntegrityService.check(); if (r.isCompromised && mounted) setState(() => _deviceCompromised = true); } catch (_) {} }
   Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
-  Future<void> _loadUser() async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); _checkPortalOrganizer(); _refreshPortalConnected(); }
+  Future<void> _loadUser({bool skipOrgCheck = false}) async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); if (!skipOrgCheck) _checkPortalOrganizer(); _refreshPortalConnected(); }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
   /// PORTAL-ORGANISATOR = APP-ADMIN (robust, mit sicherem Entzug):
   /// - Portal-Login (Nostr) + my-meetups nicht leer  -> Admin VERGEBEN
@@ -364,12 +368,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final data = (body is Map) ? body['data'] : body;
       final meetups = (data is List) ? data.whereType<Map<String, dynamic>>().toList() : <Map<String, dynamic>>[];
 
-      if (meetups.isNotEmpty && !_user.isAdmin) {
-        // VERGEBEN
+      if (meetups.isNotEmpty && !_user.adminViaPortal) {
+        // VERGEBEN: nur das Portal-Flag setzen (Vouch/Seed unberührt).
         setState(() {
-          _user.isAdmin = true;
-          _user.isAdminVerified = true;
-          _user.promotionSource = 'portal_organizer';
+          _user.adminViaPortal = true;
+          _user.isAdminVerified = _user.isAdmin;
         });
         await _user.save();
         // Organizer-Claim an Nostr publizieren (best effort): macht den
@@ -384,19 +387,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             behavior: SnackBarBehavior.floating,
           ));
         }
-      } else if (meetups.isEmpty && _user.isAdmin && _user.promotionSource == 'portal_organizer') {
-        // ENTZIEHEN: Portal sagt verbindlich "kein Meetup mehr".
+      } else if (meetups.isEmpty && _user.adminViaPortal) {
+        // ENTZIEHEN: nur das Portal-Flag löschen. Bleibt der Nutzer über
+        // WoT-Bürgschaft/Seed berechtigt, behält er isAdmin (abgeleitet).
         setState(() {
-          _user.isAdmin = false;
-          _user.isAdminVerified = false;
-          _user.promotionSource = '';
+          _user.adminViaPortal = false;
+          _user.isAdminVerified = _user.isAdmin;
         });
         await _user.save();
+        // WICHTIG: alten Admin-Cache-Eintrag für den eigenen npub räumen,
+        // sonst würde der Registry-Cache ihn weiter als Admin ausweisen
+        // (genau der Bug: Kachel kam nach Portal-Entzug wieder).
+        final ownNpub = await SecureKeyStore.getNpub();
+        if (ownNpub != null) await AdminRegistry.removeFromCache(ownNpub);
       }
     } catch (_) {/* still: beim nächsten Start erneut */}
   }
 
-  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.isAdmin = false; _user.isAdminVerified = false; _user.promotionSource = ''; }); } }
+  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
   void _resetApp() async {
     final t = AppLocalizations.of(context);
     // 1. Erste Bestätigung (wie bisher)
