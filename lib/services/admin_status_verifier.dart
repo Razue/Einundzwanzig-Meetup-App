@@ -88,16 +88,23 @@ class AdminStatusVerifier {
       }
     }
 
-    // --- CHECK 3: Seed-Admin in Registry ---
+    // --- CHECK 3: ECHTER Seed-/Super-Admin ---
+    // WICHTIG: Für die SELBST-Prüfung zählt NUR ein echter Super-Admin
+    // (hardcodierter npub). Die Quellen 'nostr_relay' und 'local_cache'
+    // sind SELBST-publizierte Organizer-Claims des eigenen Schlüssels —
+    // sie würden den Status zirkulär "beweisen" und einen im Portal
+    // entzogenen Organisator fälschlich weiter als Admin führen. Der
+    // Portal-Status läuft ohnehin getrennt über adminViaPortal, der
+    // Vouch-Status über den Trust Score.
     final npub = await NostrService.getNpub();
     if (npub != null && npub.isNotEmpty) {
       try {
         final result = await AdminRegistry.checkAdmin(npub);
-        if (result.isAdmin) {
+        if (result.isAdmin && result.source == 'super_admin') {
           return AdminVerification(
             isAdmin: true,
             source: 'seed_admin',
-            reason: 'Seed-Admin (${result.source}).',
+            reason: 'Super-Admin (${result.source}).',
           );
         }
       } catch (_) {
