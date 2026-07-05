@@ -47,6 +47,22 @@ jobs:
         flutter clean
         flutter pub get
 
+    # 5b. Release-Keystore aus Secrets wiederherstellen
+    - name: Setup Release Keystore
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+        KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+      run: |
+        echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+        cat > android/key.properties <<EOF
+        storePassword=$STORE_PASSWORD
+        keyPassword=$KEY_PASSWORD
+        keyAlias=$KEY_ALIAS
+        storeFile=release.jks
+        EOF
+
     # 6. Bauen (Obfuscation aktiviert)
     - name: Build APK
       run: flutter build apk --release --obfuscate --split-debug-info=build/debug-info
