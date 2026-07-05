@@ -1,3 +1,11 @@
+// Release-Keystore aus key.properties laden (liegt NICHT im Repo).
+// In der CI wird key.properties aus GitHub-Secrets erzeugt.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 plugins {
     id "com.android.application"
     id "kotlin-android"
@@ -23,7 +31,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.example.einundzwanzig_meetup_app"
+    namespace "space.einundzwanzig.meetup"
     compileSdk 36
     ndkVersion "27.0.12077973"
 
@@ -41,18 +49,29 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.einundzwanzig_meetup_app"
+        applicationId "space.einundzwanzig.meetup"
         minSdk 23
         targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
+    signingConfigs {
+        release {
+            if (keystoreProperties['storeFile']) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Debug-Signing nutzen, damit die Installation klappt
-            signingConfig signingConfigs.debug
-            // Code-Shrinking deaktivieren (verhindert Abstürze)
+            // Echter Release-Keystore, falls key.properties vorhanden,
+            // sonst Debug (damit lokale Builds ohne Keystore noch laufen).
+            signingConfig keystoreProperties['storeFile'] ? signingConfigs.release : signingConfigs.debug
             minifyEnabled false
             shrinkResources false
         }

@@ -1,4 +1,4 @@
-package com.example.einundzwanzig_meetup_app
+package space.einundzwanzig.meetup
 
 import android.app.Activity
 import android.content.Intent
