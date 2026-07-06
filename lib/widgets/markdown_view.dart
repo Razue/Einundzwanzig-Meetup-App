@@ -194,6 +194,12 @@ class _MarkdownViewState extends State<MarkdownView> {
           padding: const EdgeInsets.only(bottom: 12),
           child: _richText(buf.join(' '), const TextStyle(color: cText, fontSize: 15, height: 1.6)),
         ));
+      } else {
+        // FORTSCHRITTS-GARANTIE: Wurde in diesem Durchlauf keine Zeile
+        // konsumiert (buf leer und i unverändert), MUSS i erhöht werden,
+        // sonst dreht die äußere while-Schleife endlos -> App friert ein
+        // ("reagiert nicht"). Diese Zeile überspringen.
+        i++;
       }
     }
     return widgets;
