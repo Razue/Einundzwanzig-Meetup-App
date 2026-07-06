@@ -37,11 +37,35 @@ class _MarkdownViewState extends State<MarkdownView> {
   Widget build(BuildContext context) {
     // Defensiv: bei komplett leerem Inhalt nichts rendern.
     if (widget.data.trim().isEmpty) return const SizedBox.shrink();
-    final blocks = _parseBlocks(widget.data);
+    List<Widget> blocks;
+    try {
+      blocks = _parseBlocks(widget.data);
+    } catch (_) {
+      // Sollte das Parsen an einem ungewöhnlichen Inhalt scheitern, zeigen
+      // wir den Text sicher als einfachen Fließtext statt abzustürzen.
+      return SelectableText(
+        _plainFallback(widget.data),
+        style: const TextStyle(color: cText, fontSize: 15, height: 1.6),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: blocks,
     );
+  }
+
+  /// Entfernt Markdown-/Bild-Syntax grob und liefert lesbaren Reintext.
+  String _plainFallback(String src) {
+    var s = src;
+    // eingebettete Data-URIs und Bild-Syntax entfernen
+    s = s.replaceAll(RegExp(r'!\[[^\]]*\]\([^)]*\)'), '');
+    s = s.replaceAll(RegExp(r'data:image/[A-Za-z0-9;,+/=._-]+'), '');
+    // Markdown-Zeichen entschärfen
+    s = s.replaceAll(RegExp(r'[#*`>]'), '');
+    // überlange Ketten ohne Leerzeichen (Base64-Reste) raus
+    s = s.split('\n').where((l) => !(l.trim().length > 200 && !l.trim().contains(' '))).join('\n');
+    s = s.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    return s.trim();
   }
 
   List<Widget> _parseBlocks(String src) {
@@ -219,6 +243,21 @@ class _MarkdownViewState extends State<MarkdownView> {
         final comma = u.indexOf(',');
         if (comma == -1) return const SizedBox.shrink();
         final b64 = u.substring(comma + 1);
+        // Sehr große eingebettete Bilder können beim Dekodieren den Speicher
+        // sprengen -> ab ~3 MB Base64 nicht rendern (Platzhalter zeigen).
+        if (b64.length > 3 * 1024 * 1024) {
+          return Container(
+            height: 120,
+            margin: const EdgeInsets.only(bottom: 12),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: cCard,
+              borderRadius: BorderRadius.circular(kTileRadius),
+              border: Border.all(color: cTileBorder, width: 0.5),
+            ),
+            child: const Text('🖼  Bild', style: TextStyle(color: cTextTertiary, fontSize: 13)),
+          );
+        }
         final bytes = base64Decode(b64);
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -261,6 +300,15 @@ class _MarkdownViewState extends State<MarkdownView> {
 
   /// Inline-Formatierung: **fett**, *kursiv*, `code`, [text](url).
   Widget _richText(String text, TextStyle base) {
+    try {
+      return _buildRichText(text, base);
+    } catch (_) {
+      // Bei problematischem Inhalt: reiner Text statt Absturz.
+      return Text(text, style: base);
+    }
+  }
+
+  Widget _buildRichText(String text, TextStyle base) {
     final spans = <InlineSpan>[];
     final pattern = RegExp(
       r'(\*\*([^*]+)\*\*)' // **fett**

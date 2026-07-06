@@ -256,7 +256,7 @@ class _ArticleDetailState extends State<_ArticleDetail> {
             const SizedBox(height: 20),
             const Center(child: CircularProgressIndicator(color: cOrange)),
           ] else if (_fullContent != null && _fullContent!.trim().isNotEmpty)
-            MarkdownView(_fullContent!)
+            _SafeArticleBody(content: _fullContent!)
           else ...[
             // Fallback: kein Volltext ladbar -> Zusammenfassung + Web-Link
             if (article.summary.isNotEmpty)
@@ -289,5 +289,33 @@ class _ArticleDetailState extends State<_ArticleDetail> {
         ],
       ),
     );
+  }
+}
+
+/// Rendert den Artikel-Body und fängt JEDEN Render-Fehler ab: Statt eines
+/// App-Absturzes wird bei einem problematischen Artikel der reine Text
+/// angezeigt. So kann ein einzelner Artikel die App nie zum Absturz bringen.
+class _SafeArticleBody extends StatelessWidget {
+  final String content;
+  const _SafeArticleBody({required this.content});
+
+  @override
+  Widget build(BuildContext context) {
+    // Lokaler Error-Handler nur für diesen Teilbaum.
+    final previous = ErrorWidget.builder;
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: SelectableText(
+          content,
+          style: const TextStyle(color: cText, fontSize: 15, height: 1.6),
+        ),
+      );
+    };
+    // Nach dem Frame den globalen Handler wiederherstellen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ErrorWidget.builder = previous;
+    });
+    return MarkdownView(content);
   }
 }
