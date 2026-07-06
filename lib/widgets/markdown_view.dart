@@ -106,9 +106,20 @@ class _MarkdownViewState extends State<MarkdownView> {
       if (trimmed.startsWith('## '))  { widgets.add(_heading(trimmed.substring(3), 2)); i++; continue; }
       if (trimmed.startsWith('# '))   { widgets.add(_heading(trimmed.substring(2), 1)); i++; continue; }
 
-      // Bild ![alt](url) als eigene Zeile — auch Data-URIs (data:image/...).
-      // Bei Data-URIs kann die URL sehr lang sein und Sonderzeichen
-      // enthalten, daher großzügiges Matching bis zur letzten ')'.
+      // Bild(er) als eigene Zeile — auch mehrere direkt hintereinander
+      // ![](a)![](b) und Data-URIs. Alle Bilder der Zeile rendern.
+      final allImgs = RegExp(r'!\[[^\]]*\]\(([^)]+)\)').allMatches(trimmed).toList();
+      if (allImgs.isNotEmpty) {
+        // Prüfen, ob die Zeile NUR aus Bildern besteht (evtl. mit Leerraum).
+        final withoutImgs = trimmed.replaceAll(RegExp(r'!\[[^\]]*\]\([^)]+\)'), '').trim();
+        if (withoutImgs.isEmpty) {
+          for (final im in allImgs) {
+            widgets.add(_image(im.group(1)!));
+          }
+          i++; continue;
+        }
+      }
+      // Einzelbild mit Data-URI (sehr lange URL) als ganze Zeile.
       final imgMatch = RegExp(r'^!\[[^\]]*\]\((.+)\)$', dotAll: true).firstMatch(trimmed);
       if (imgMatch != null) {
         widgets.add(_image(imgMatch.group(1)!));
@@ -279,6 +290,22 @@ class _MarkdownViewState extends State<MarkdownView> {
     if (u.isEmpty || uri == null || !uri.hasScheme || !(uri.isScheme('http') || uri.isScheme('https'))) {
       return const SizedBox.shrink();
     }
+    // HEIC/HEIF (Apple-Format) kann Android nicht dekodieren -> würde den
+    // Screen abstürzen lassen. Solche Bilder als dezenten Platzhalter zeigen.
+    final lower = u.toLowerCase();
+    if (lower.contains('.heic') || lower.contains('.heif')) {
+      return Container(
+        height: 120,
+        margin: const EdgeInsets.only(bottom: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cTileBorder, width: 0.5),
+        ),
+        child: const Text('🖼  Bild', style: TextStyle(color: cTextTertiary, fontSize: 13)),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
@@ -286,6 +313,8 @@ class _MarkdownViewState extends State<MarkdownView> {
         child: Image.network(
           u,
           fit: BoxFit.cover,
+          // Speicher schonen: sehr große Fotos herunterskalieren.
+          cacheWidth: 1080,
           errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           loadingBuilder: (ctx, child, progress) =>
               progress == null ? child : Container(
