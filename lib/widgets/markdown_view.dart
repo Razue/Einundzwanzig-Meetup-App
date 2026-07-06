@@ -7,18 +7,37 @@
 // Bewusst kompakt gehalten (kein vollständiger CommonMark-Parser).
 // ============================================
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 
-class MarkdownView extends StatelessWidget {
+class MarkdownView extends StatefulWidget {
   final String data;
   const MarkdownView(this.data, {super.key});
 
   @override
+  State<MarkdownView> createState() => _MarkdownViewState();
+}
+
+class _MarkdownViewState extends State<MarkdownView> {
+  final List<TapGestureRecognizer> _recognizers = [];
+
+  @override
+  void dispose() {
+    for (final r in _recognizers) {
+      r.dispose();
+    }
+    _recognizers.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final blocks = _parseBlocks(data);
+    // Defensiv: bei komplett leerem Inhalt nichts rendern.
+    if (widget.data.trim().isEmpty) return const SizedBox.shrink();
+    final blocks = _parseBlocks(widget.data);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: blocks,
@@ -63,10 +82,19 @@ class MarkdownView extends StatelessWidget {
       if (trimmed.startsWith('## '))  { widgets.add(_heading(trimmed.substring(3), 2)); i++; continue; }
       if (trimmed.startsWith('# '))   { widgets.add(_heading(trimmed.substring(2), 1)); i++; continue; }
 
-      // Bild ![alt](url) als eigene Zeile
-      final imgMatch = RegExp(r'^!\[[^\]]*\]\(([^)]+)\)$').firstMatch(trimmed);
+      // Bild ![alt](url) als eigene Zeile — auch Data-URIs (data:image/...).
+      // Bei Data-URIs kann die URL sehr lang sein und Sonderzeichen
+      // enthalten, daher großzügiges Matching bis zur letzten ')'.
+      final imgMatch = RegExp(r'^!\[[^\]]*\]\((.+)\)$', dotAll: true).firstMatch(trimmed);
       if (imgMatch != null) {
         widgets.add(_image(imgMatch.group(1)!));
+        i++; continue;
+      }
+
+      // Sicherung: eine überlange "Wort"-Zeile ohne Leerzeichen (z.B. ein
+      // rohes Base64-Fragment, das nicht als Bild erkannt wurde) NICHT als
+      // Textwüste rendern.
+      if (trimmed.length > 200 && !trimmed.contains(' ')) {
         i++; continue;
       }
 
@@ -107,7 +135,24 @@ class MarkdownView extends StatelessWidget {
              !lines[i].trim().startsWith('```') &&
              !RegExp(r'^[-*] ').hasMatch(lines[i].trim()) &&
              !RegExp(r'^\d+\. ').hasMatch(lines[i].trim())) {
-        buf.add(lines[i].trim()); i++;
+        final lt = lines[i].trim();
+        // Data-URI-Bild inmitten des Textes: als Bild rendern, nicht als Text.
+        final inlineImg = RegExp(r'!\[[^\]]*\]\((data:image/[^)]+)\)').firstMatch(lt);
+        if (inlineImg != null) {
+          if (buf.isNotEmpty) {
+            widgets.add(Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _richText(buf.join(' '), const TextStyle(color: cText, fontSize: 15, height: 1.6)),
+            ));
+            buf.clear();
+          }
+          widgets.add(_image(inlineImg.group(1)!));
+          i++;
+          continue;
+        }
+        // Überlange Kette ohne Leerzeichen (rohes Base64) überspringen.
+        if (lt.length > 200 && !lt.contains(' ')) { i++; continue; }
+        buf.add(lt); i++;
       }
       if (buf.isNotEmpty) {
         widgets.add(Padding(
@@ -166,23 +211,53 @@ class MarkdownView extends StatelessWidget {
     child: Text(code, style: const TextStyle(color: cTextSecondary, fontSize: 13, fontFamily: 'monospace', height: 1.5)),
   );
 
-  Widget _image(String url) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(kTileRadius),
-      child: Image.network(
-        url,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-        loadingBuilder: (ctx, child, progress) =>
-            progress == null ? child : Container(
-              height: 160, alignment: Alignment.center,
-              color: cCard,
-              child: const CircularProgressIndicator(color: cOrange, strokeWidth: 2),
+  Widget _image(String url) {
+    final u = url.trim();
+    // Data-URI (eingebettetes Base64-Bild): direkt aus dem Text rendern.
+    if (u.startsWith('data:image/')) {
+      try {
+        final comma = u.indexOf(',');
+        if (comma == -1) return const SizedBox.shrink();
+        final b64 = u.substring(comma + 1);
+        final bytes = base64Decode(b64);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(kTileRadius),
+            child: Image.memory(
+              bytes,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
             ),
+          ),
+        );
+      } catch (_) {
+        return const SizedBox.shrink(); // kaputtes Base64 -> nichts anzeigen
+      }
+    }
+    // Sonst nur echte http(s)-URLs.
+    final uri = Uri.tryParse(u);
+    if (u.isEmpty || uri == null || !uri.hasScheme || !(uri.isScheme('http') || uri.isScheme('https'))) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(kTileRadius),
+        child: Image.network(
+          u,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          loadingBuilder: (ctx, child, progress) =>
+              progress == null ? child : Container(
+                height: 160, alignment: Alignment.center,
+                color: cCard,
+                child: const CircularProgressIndicator(color: cOrange, strokeWidth: 2),
+              ),
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   /// Inline-Formatierung: **fett**, *kursiv*, `code`, [text](url).
   Widget _richText(String text, TextStyle base) {
@@ -208,16 +283,22 @@ class MarkdownView extends StatelessWidget {
       } else if (m.group(8) != null) {
         final label = m.group(8)!;
         final url = m.group(9)!;
+        final recognizer = TapGestureRecognizer()..onTap = () => _open(url);
+        _recognizers.add(recognizer); // wird in dispose() freigegeben
         spans.add(TextSpan(
           text: label,
           style: base.copyWith(color: cOrange, decoration: TextDecoration.underline),
-          recognizer: TapGestureRecognizer()..onTap = () => _open(url),
+          recognizer: recognizer,
         ));
       }
       last = m.end;
     }
     if (last < text.length) {
       spans.add(TextSpan(text: text.substring(last), style: base));
+    }
+    // Defensiv: leere Span-Liste würde RichText zum Absturz bringen.
+    if (spans.isEmpty) {
+      spans.add(TextSpan(text: text, style: base));
     }
     return RichText(text: TextSpan(children: spans));
   }
