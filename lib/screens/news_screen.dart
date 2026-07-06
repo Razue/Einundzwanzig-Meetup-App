@@ -187,13 +187,39 @@ class _NewsScreenState extends State<NewsScreen> {
 // ============================================
 //  ARTIKEL-DETAIL (voll lesbar, Markdown)
 // ============================================
-class _ArticleDetail extends StatelessWidget {
+class _ArticleDetail extends StatefulWidget {
   final NewsArticle article;
   const _ArticleDetail({required this.article});
 
   @override
+  State<_ArticleDetail> createState() => _ArticleDetailState();
+}
+
+class _ArticleDetailState extends State<_ArticleDetail> {
+  String? _fullContent; // voller Markdown-Text aus dem Nostr-Event
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFullArticle();
+  }
+
+  Future<void> _loadFullArticle() async {
+    // Die guid steht in article.id ("30023:pubkey:d"). Voller Text via Nostr.
+    final guid = widget.article.id;
+    final content = await NewsService.fetchArticleContent(guid);
+    if (!mounted) return;
+    setState(() {
+      _fullContent = content;
+      _loading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final article = widget.article;
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
@@ -222,8 +248,42 @@ class _ArticleDetail extends StatelessWidget {
                 style: const TextStyle(color: cTextTertiary, fontSize: 12)),
           ]),
           const SizedBox(height: 20),
-          // Voller Artikel IN DER APP: HTML aus dem Feed -> Markdown -> Render
-          MarkdownView(NewsService.htmlToMarkdown(article.content)),
+          // Voller Artikel aus dem Nostr-Event (Markdown). Solange er lädt:
+          // Zusammenfassung + Ladeindikator. Kommt nichts: Zusammenfassung.
+          if (_loading) ...[
+            if (article.summary.isNotEmpty)
+              Text(article.summary, style: const TextStyle(color: cTextSecondary, fontSize: 15, height: 1.5)),
+            const SizedBox(height: 20),
+            const Center(child: CircularProgressIndicator(color: cOrange)),
+          ] else if (_fullContent != null && _fullContent!.trim().isNotEmpty)
+            MarkdownView(_fullContent!)
+          else ...[
+            // Fallback: kein Volltext ladbar -> Zusammenfassung + Web-Link
+            if (article.summary.isNotEmpty)
+              Text(article.summary, style: const TextStyle(color: cTextSecondary, fontSize: 15, height: 1.5)),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () async {
+                final url = article.link.isNotEmpty
+                    ? (article.link.startsWith('http') ? article.link : '$kNewsWebsiteUrl${article.link}')
+                    : kNewsWebsiteUrl;
+                final uri = Uri.parse(url);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(color: cOrange, borderRadius: BorderRadius.circular(kTileRadius)),
+                child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Icon(Icons.open_in_new_rounded, color: Colors.black, size: 18),
+                  SizedBox(width: 8),
+                  Text('Auf der Webseite lesen', style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w700)),
+                ]),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           Center(child: Text(t.newsSource, style: const TextStyle(color: cTextTertiary, fontSize: 11))),
         ],

@@ -8,6 +8,8 @@
 // ============================================
 
 import 'dart:convert';
+import 'dart:async';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../services/app_logger.dart';
 
@@ -49,6 +51,14 @@ class NewsService {
   static const Duration _timeout = Duration(seconds: 12);
   static const String _tag = 'NewsService';
 
+  // Relays, auf denen die Einundzwanzig-Longform-Artikel liegen.
+  static const List<String> _relays = [
+    'wss://nostr.einundzwanzig.space',
+    'wss://relay.damus.io',
+    'wss://nos.lol',
+    'wss://relay.nostr.band',
+  ];
+
   /// Lädt die Artikel aus dem RSS-Feed der Einundzwanzig-News-Seite.
   static Future<List<NewsArticle>> fetchArticles({int limit = 50}) async {
     try {
@@ -70,6 +80,71 @@ class NewsService {
       AppLogger.debug(_tag, 'Feed-Fehler: $e');
       return [];
     }
+  }
+
+  /// Holt den VOLLEN Artikeltext (Markdown) zu einem Feed-Artikel aus dem
+  /// zugehörigen Nostr-Longform-Event (kind 30023). Die RSS-guid hat das
+  /// Format "30023:<pubkey>:<d-identifier>". Damit fragen wir das
+  /// adressierbare Event gezielt über mehrere Relays ab und nehmen das erste
+  /// Ergebnis. Gibt den Markdown-Content zurück, oder null bei Misserfolg.
+  static Future<String?> fetchArticleContent(String guid) async {
+    // guid parsen
+    final parts = guid.split(':');
+    if (parts.length < 3) return null;
+    final pubkey = parts[1];
+    final dId = parts.sublist(2).join(':'); // d kann ':' enthalten (selten)
+    if (pubkey.isEmpty || dId.isEmpty) return null;
+
+    final completer = Completer<String?>();
+    final sockets = <WebSocket>[];
+    var settled = false;
+
+    void finish(String? result) {
+      if (settled) return;
+      settled = true;
+      for (final ws in sockets) {
+        try { ws.close(); } catch (_) {}
+      }
+      if (!completer.isCompleted) completer.complete(result);
+    }
+
+    // Timeout-Sicherung
+    Timer(_timeout, () => finish(null));
+
+    for (final url in _relays) {
+      () async {
+        try {
+          final ws = await WebSocket.connect(url).timeout(const Duration(seconds: 6));
+          if (settled) { try { ws.close(); } catch (_) {} return; }
+          sockets.add(ws);
+          const subId = 'article';
+          ws.add(jsonEncode([
+            'REQ',
+            subId,
+            {
+              'kinds': [30023],
+              'authors': [pubkey],
+              '#d': [dId],
+              'limit': 1,
+            }
+          ]));
+          ws.listen((data) {
+            try {
+              final msg = jsonDecode(data as String) as List<dynamic>;
+              if (msg.isNotEmpty && msg[0] == 'EVENT' && msg.length >= 3) {
+                final event = msg[2] as Map<String, dynamic>;
+                final content = (event['content'] ?? '').toString();
+                if (content.isNotEmpty) finish(content);
+              }
+            } catch (_) {}
+          }, onError: (_) {}, onDone: () {});
+        } catch (_) {
+          // dieser Relay nicht erreichbar — die anderen laufen weiter
+        }
+      }();
+    }
+
+    return completer.future;
   }
 
   /// Parst RSS 2.0 <item>-Elemente. Bewusst tolerant (RegExp statt XML-Lib),
