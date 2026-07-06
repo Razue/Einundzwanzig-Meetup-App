@@ -1,52 +1,33 @@
-// NEWS / ARTIKEL — NIP-23 Longform (kind 30023)
 // ============================================
-// Liest Einundzwanzig-Artikel von den Relays und erlaubt das
-// Veröffentlichen eigener Artikel (Titel, Bild, Zusammenfassung, Text).
-// Quelle/Ziel: dieselben Nostr-Relays wie der Rest der App.
-//
-// Ein Artikel ist ein kind:30023-Event mit den Standard-Tags
-// title / image / summary / published_at / d / t (NIP-23).
+//  NEWS / ARTIKEL — RSS-Feed von media.einundzwanzig.space
+// ============================================
+//  Quelle: https://media.einundzwanzig.space/s/einundzwanzig-news/feed.xml
+//  Zeigt EXAKT die Artikel, die auch auf der Webseite
+//  media.einundzwanzig.space/s/einundzwanzig-news erscheinen.
+//  Ersetzt die frühere Nostr-Relay-Abfrage (kind 30023).
 // ============================================
 
-import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
-import 'relay_config.dart';
-import 'app_logger.dart';
+import 'package:http/http.dart' as http;
+import '../services/app_logger.dart';
 
-const String _tag = 'News';
-const int kArticleKind = 30023; // NIP-23 Longform
+const String kNewsFeedUrl =
+    'https://media.einundzwanzig.space/s/einundzwanzig-news/feed.xml';
+const String kNewsWebsiteUrl =
+    'https://media.einundzwanzig.space/s/einundzwanzig-news';
 
-/// News-Kuratierung nach dem Discover-Prinzip (EINUNDZWANZIG STANDUP):
-/// Ein Artikel wird angezeigt, wenn er ENTWEDER einen der Tags trägt ODER
-/// von einem Autor der Watchlist stammt.
-///
-/// 1) TAGS (NIP-23 t-Tag): breite, themenbasierte Erfassung.
-const List<String> kNewsTags = ['einundzwanzig', 'bitcoin', '21', 'meetup'];
-
-/// 2) AUTOREN-WATCHLIST (Hex-Pubkeys): gezielt die Blogs, die auf Discover
-///    kuratiert sind. Wartbar: neue Discover-Autoren hier als Hex ergänzen
-///    (npub -> hex z.B. über njump.me/<npub>). NUR bestätigte Pubkeys.
-const List<String> kNewsAuthors = [
-  // markusturm (Einundzwanzig News)
-  'f240be2b684f85cc81566f2081386af81d7427ea86250c8bde6b7a8500c761ba',
-  // Weitere Discover-Autoren hier ergänzen:
-  // '<hex-pubkey>',  // <name>
-];
-
-
-/// Ein einzelner Artikel (aus einem kind:30023-Event).
+/// Ein einzelner Artikel (aus einem RSS <item>).
 class NewsArticle {
-  final String id;          // Event-ID
-  final String pubkey;      // Autor (hex)
-  final String dTag;        // Identifier (für Adressierung/Updates)
+  final String id;
+  final String pubkey;      // Autor-Name (RSS: <dc:creator>/<author>)
+  final String dTag;        // ungenutzt (Kompat)
   final String title;
   final String summary;
-  final String image;       // Bild-URL (kann leer sein)
-  final String content;     // Markdown
-  final int publishedAt;    // Unix-Sekunden
-  final List<String> topics; // t-Tags
+  final String image;
+  final String content;
+  final int publishedAt;
+  final List<String> topics;
+  final String link;        // URL zum Artikel auf der Webseite
 
   NewsArticle({
     required this.id,
@@ -58,133 +39,186 @@ class NewsArticle {
     required this.content,
     required this.publishedAt,
     required this.topics,
+    required this.link,
   });
 
   DateTime get date => DateTime.fromMillisecondsSinceEpoch(publishedAt * 1000);
-
-  static NewsArticle? fromEvent(Map<String, dynamic> e) {
-    try {
-      final tags = (e['tags'] as List<dynamic>?)
-              ?.map((t) => (t as List<dynamic>).map((x) => x.toString()).toList())
-              .toList() ??
-          [];
-      String tagVal(String key) {
-        final t = tags.firstWhere((t) => t.isNotEmpty && t[0] == key, orElse: () => const []);
-        return t.length >= 2 ? t[1] : '';
-      }
-      final topics = tags.where((t) => t.isNotEmpty && t[0] == 't' && t.length >= 2).map((t) => t[1]).toList();
-
-      final title = tagVal('title');
-      final content = (e['content'] ?? '').toString();
-      // Artikel ohne Titel UND ohne Inhalt überspringen
-      if (title.isEmpty && content.isEmpty) return null;
-
-      final publishedStr = tagVal('published_at');
-      final published = int.tryParse(publishedStr) ?? (e['created_at'] as int? ?? 0);
-
-      return NewsArticle(
-        id: (e['id'] ?? '').toString(),
-        pubkey: (e['pubkey'] ?? '').toString(),
-        dTag: tagVal('d'),
-        title: title.isEmpty ? '(ohne Titel)' : title,
-        summary: tagVal('summary'),
-        image: tagVal('image'),
-        content: content,
-        publishedAt: published,
-        topics: topics,
-      );
-    } catch (_) {
-      return null;
-    }
-  }
 }
 
 class NewsService {
-  static const Duration _timeout = Duration(seconds: 8);
+  static const Duration _timeout = Duration(seconds: 12);
+  static const String _tag = 'NewsService';
 
-  /// Lädt die neuesten Artikel (kind 30023) von allen aktiven Relays.
-  /// [limit] begrenzt pro Relay. Ergebnisse werden dedupliziert
-  /// (gleiche d-Tag+Autor -> nur neueste Version) und nach Datum sortiert.
+  /// Lädt die Artikel aus dem RSS-Feed der Einundzwanzig-News-Seite.
   static Future<List<NewsArticle>> fetchArticles({int limit = 50}) async {
-    final relays = await RelayConfig.getActiveRelays();
-    // Map-Key: pubkey:dTag  -> nur die neueste Version behalten (NIP-23 replaceable)
-    final byKey = <String, NewsArticle>{};
-
-    for (final relayUrl in relays) {
-      final list = await _fetchFromRelay(relayUrl, limit);
-      if (list == null) continue;
-      for (final a in list) {
-        final key = '${a.pubkey}:${a.dTag}';
-        final existing = byKey[key];
-        if (existing == null || a.publishedAt > existing.publishedAt) {
-          byKey[key] = a;
-        }
+    try {
+      final r = await http
+          .get(Uri.parse(kNewsFeedUrl), headers: {
+            'Accept': 'application/rss+xml, application/xml, text/xml',
+            'User-Agent': 'Einundzwanzig-Meetup-App/1.0 (Android)'
+          })
+          .timeout(_timeout);
+      if (r.statusCode != 200) {
+        AppLogger.debug(_tag, 'Feed HTTP ${r.statusCode}');
+        return [];
       }
+      final xml = utf8.decode(r.bodyBytes, allowMalformed: true);
+      final articles = _parseRss(xml);
+      if (articles.length > limit) return articles.sublist(0, limit);
+      return articles;
+    } catch (e) {
+      AppLogger.debug(_tag, 'Feed-Fehler: $e');
+      return [];
     }
-
-    final all = byKey.values.toList()
-      ..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
-    return all;
   }
 
-  static Future<List<NewsArticle>?> _fetchFromRelay(String relayUrl, int limit) async {
-    WebSocket? ws;
-    try {
-      ws = await WebSocket.connect(relayUrl).timeout(_timeout);
-      final completer = Completer<List<NewsArticle>?>();
-      final results = <NewsArticle>[];
+  /// Parst RSS 2.0 <item>-Elemente. Bewusst tolerant (RegExp statt XML-Lib),
+  /// damit keine zusätzliche Abhängigkeit nötig ist.
+  static List<NewsArticle> _parseRss(String xml) {
+    final items = <NewsArticle>[];
+    final itemRe =
+        RegExp(r'<item\b[^>]*>(.*?)</item>', dotAll: true, caseSensitive: false);
+    for (final m in itemRe.allMatches(xml)) {
+      final block = m.group(1) ?? '';
+      final title = _clean(_extract(block, 'title'));
+      final link = _clean(_extract(block, 'link'));
+      final guid = _clean(_extract(block, 'guid'));
+      final author = _clean(_extract(block, 'dc:creator').isNotEmpty
+          ? _extract(block, 'dc:creator')
+          : _extract(block, 'author'));
+      final descRaw = _extract(block, 'description');
+      final contentRaw = _extract(block, 'content:encoded').isNotEmpty
+          ? _extract(block, 'content:encoded')
+          : descRaw;
+      final pubDate = _extract(block, 'pubDate');
 
-      final random = Random.secure();
-      final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
-      // Zwei Subscriptions: eine nach Tags, eine nach Autoren (ODER-Verknüpfung).
-      final subTags = 'news-t-$subIdHex';
-      final subAuthors = 'news-a-$subIdHex';
-
-      // Wie viele EOSE erwarten wir? (nur aktive Subscriptions zählen)
-      var pending = 0;
-      if (kNewsTags.isNotEmpty) pending++;
-      if (kNewsAuthors.isNotEmpty) pending++;
-      if (pending == 0) pending = 1; // Fallback: unbegrenzt (siehe unten)
-
-      ws.listen(
-        (data) {
-          try {
-            final message = jsonDecode(data as String) as List<dynamic>;
-            final type = message[0] as String;
-            if (type == 'EVENT' && message.length >= 3) {
-              final eventData = message[2] as Map<String, dynamic>;
-              final article = NewsArticle.fromEvent(eventData);
-              if (article != null) results.add(article);
-            } else if (type == 'EOSE') {
-              pending--;
-              if (pending <= 0 && !completer.isCompleted) completer.complete(results);
-            }
-          } catch (_) {/* einzelne fehlerhafte Events ignorieren */}
-        },
-        onError: (_) { if (!completer.isCompleted) completer.complete(results); },
-        onDone: () { if (!completer.isCompleted) completer.complete(results); },
-      );
-
-      // REQ 1: Longform-Artikel mit einem der News-Tags (t-Tag).
-      if (kNewsTags.isNotEmpty) {
-        ws.add(jsonEncode(['REQ', subTags, {'kinds': [kArticleKind], '#t': kNewsTags, 'limit': limit}]));
-      }
-      // REQ 2: Longform-Artikel der kuratierten Autoren (Watchlist).
-      if (kNewsAuthors.isNotEmpty) {
-        ws.add(jsonEncode(['REQ', subAuthors, {'kinds': [kArticleKind], 'authors': kNewsAuthors, 'limit': limit}]));
-      }
-      // Falls beides leer wäre: alle Longform-Artikel (Sicherheitsnetz).
-      if (kNewsTags.isEmpty && kNewsAuthors.isEmpty) {
-        ws.add(jsonEncode(['REQ', subTags, {'kinds': [kArticleKind], 'limit': limit}]));
+      String image = '';
+      final enc = RegExp(r'<enclosure[^>]*url="([^"]+)"', caseSensitive: false)
+          .firstMatch(block);
+      if (enc != null) {
+        image = enc.group(1) ?? '';
+      } else {
+        final img = RegExp(r'<img[^>]*src="([^"]+)"', caseSensitive: false)
+            .firstMatch(contentRaw);
+        if (img != null) image = img.group(1) ?? '';
       }
 
-      final res = await completer.future.timeout(_timeout, onTimeout: () => results);
-      return res;
-    } catch (e) {
-      AppLogger.debug(_tag, '$relayUrl Lesefehler: $e');
-      return null;
-    } finally {
-      try { ws?.close(); } catch (_) {}
+      if (title.isEmpty && descRaw.isEmpty) continue;
+
+      items.add(NewsArticle(
+        id: guid.isNotEmpty ? guid : link,
+        pubkey: author,
+        dTag: '',
+        title: title.isEmpty ? '(ohne Titel)' : title,
+        summary: _stripHtml(_clean(descRaw)).trim(),
+        image: image,
+        content: _clean(contentRaw),
+        publishedAt: _parseDate(pubDate),
+        topics: const [],
+        link: link.isNotEmpty ? link : guid,
+      ));
     }
+    return items;
+  }
+
+  static String _extract(String block, String tag) {
+    final re = RegExp(
+        '<${RegExp.escape(tag)}\\b[^>]*>(.*?)</${RegExp.escape(tag)}>',
+        dotAll: true,
+        caseSensitive: false);
+    final m = re.firstMatch(block);
+    if (m == null) return '';
+    return m.group(1) ?? '';
+  }
+
+  static String _clean(String s) {
+    var out = s.trim();
+    out = out.replaceAll(RegExp(r'<!\[CDATA\[', caseSensitive: false), '');
+    out = out.replaceAll(']]>', '');
+    out = out
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&apos;', "'")
+        .replaceAll('&nbsp;', ' ');
+    return out.trim();
+  }
+
+  static String _stripHtml(String s) =>
+      s.replaceAll(RegExp(r'<[^>]+>'), ' ').replaceAll(RegExp(r'\s+'), ' ');
+
+  /// Wandelt den HTML-Inhalt des Feeds in einfaches Markdown um, damit er
+  /// im vorhandenen MarkdownView (ohne externe Abhängigkeit) IN DER APP
+  /// gerendert werden kann. Deckt die gängigen Elemente ab.
+  static String htmlToMarkdown(String html) {
+    var s = html;
+    // Skripte/Styles komplett raus
+    s = s.replaceAll(RegExp(r'<(script|style)[^>]*>.*?</\1>', dotAll: true, caseSensitive: false), '');
+    // Überschriften
+    for (var i = 1; i <= 6; i++) {
+      s = s.replaceAllMapped(
+          RegExp('<h$i[^>]*>(.*?)</h$i>', dotAll: true, caseSensitive: false),
+          (m) => '\n\n${'#' * i} ${_stripInline(m.group(1) ?? '')}\n\n');
+    }
+    // Bilder  ![](src)
+    s = s.replaceAllMapped(
+        RegExp(r'<img[^>]*src="([^"]+)"[^>]*>', caseSensitive: false),
+        (m) => '\n\n![](${m.group(1)})\n\n');
+    // Links [text](href)
+    s = s.replaceAllMapped(
+        RegExp(r'<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>', dotAll: true, caseSensitive: false),
+        (m) => '[${_stripInline(m.group(2) ?? '')}](${m.group(1)})');
+    // fett / kursiv
+    s = s.replaceAllMapped(RegExp(r'<(strong|b)[^>]*>(.*?)</\1>', dotAll: true, caseSensitive: false),
+        (m) => '**${_stripInline(m.group(2) ?? '')}**');
+    s = s.replaceAllMapped(RegExp(r'<(em|i)[^>]*>(.*?)</\1>', dotAll: true, caseSensitive: false),
+        (m) => '*${_stripInline(m.group(2) ?? '')}*');
+    // Listenpunkte
+    s = s.replaceAllMapped(RegExp(r'<li[^>]*>(.*?)</li>', dotAll: true, caseSensitive: false),
+        (m) => '\n- ${_stripInline(m.group(1) ?? '')}');
+    // Zitate
+    s = s.replaceAllMapped(RegExp(r'<blockquote[^>]*>(.*?)</blockquote>', dotAll: true, caseSensitive: false),
+        (m) => '\n\n> ${_stripInline(m.group(1) ?? '')}\n\n');
+    // Absätze / Zeilenumbrüche
+    s = s.replaceAll(RegExp(r'</p>', caseSensitive: false), '\n\n');
+    s = s.replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n');
+    // horizontale Linie
+    s = s.replaceAll(RegExp(r'<hr\s*/?>', caseSensitive: false), '\n\n---\n\n');
+    // alle übrigen Tags entfernen
+    s = s.replaceAll(RegExp(r'<[^>]+>'), '');
+    // Entities
+    s = _clean(s);
+    // überflüssige Leerzeilen zusammenfassen
+    s = s.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+    return s.trim();
+  }
+
+  static String _stripInline(String s) =>
+      _clean(s.replaceAll(RegExp(r'<[^>]+>'), '')).trim();
+
+  static int _parseDate(String s) {
+    if (s.isEmpty) return DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    try {
+      final months = {
+        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+        'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+      };
+      final m = RegExp(
+              r'(\d{1,2})\s+(\w{3})\w*\s+(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?')
+          .firstMatch(s.toLowerCase());
+      if (m != null) {
+        final day = int.parse(m.group(1)!);
+        final mon = months[m.group(2)!] ?? 1;
+        final year = int.parse(m.group(3)!);
+        final hour = int.parse(m.group(4)!);
+        final min = int.parse(m.group(5)!);
+        final sec = int.tryParse(m.group(6) ?? '0') ?? 0;
+        final dt = DateTime.utc(year, mon, day, hour, min, sec);
+        return dt.millisecondsSinceEpoch ~/ 1000;
+      }
+    } catch (_) {}
+    return DateTime.now().millisecondsSinceEpoch ~/ 1000;
   }
 }
