@@ -48,6 +48,7 @@ import 'meetup_details.dart';
 import 'reputation_qr.dart';
 import 'my_network_screen.dart';
 import 'relay_settings_screen.dart';
+import 'v4v_screen.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
@@ -1233,6 +1234,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         trailing: Switch(value: haptic, activeColor: cOrange,
                           onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
                       ),
+                    ]),
+                    const SizedBox(height: 18),
+                    // UNTERSTÜTZEN (V4V)
+                    _sGroup(AppLocalizations.of(context).v4vSectionTitle, [
+                      _sRow(Icons.bolt_rounded, cOrange,
+                        'V4V',
+                        AppLocalizations.of(context).v4vSectionSubtitle,
+                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const V4VScreen())); }),
                     ]),
                     const SizedBox(height: 18),
                     // GEFAHRENZONE
