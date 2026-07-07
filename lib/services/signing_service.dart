@@ -253,14 +253,42 @@ class AmberNostrSigner implements NostrSigner {
     try {
       if (!await isAvailable()) return const AmberConnectMissing();
 
-      final npub = await _channel.invokeMethod<String>('getPublicKey');
-      if (npub == null || npub.trim().isEmpty) {
+      final raw = await _channel.invokeMethod<String>('getPublicKey');
+      if (raw == null || raw.trim().isEmpty) {
         return const AmberConnectCancelled();
       }
 
+      // Amber kann den Schlüssel in verschiedenen Formaten zurückgeben:
+      // - "npub1..."            (bech32)
+      // - roher Hex-pubkey       (64 Hex-Zeichen)
+      // - JSON wie {"result":"npub1..."} (manche Versionen/Sonderfälle)
+      var value = raw.trim();
+
+      // Falls JSON: das "result"/"npub"-Feld herausziehen.
+      if (value.startsWith('{')) {
+        try {
+          final map = jsonDecode(value) as Map<String, dynamic>;
+          value = (map['result'] ?? map['npub'] ?? map['pubkey'] ?? '')
+              .toString()
+              .trim();
+        } catch (_) {/* unten weiter versuchen */}
+      }
+
       try {
-        final hex = Nip19.decodePubkey(npub.trim());
-        return AmberConnectSuccess(pubkeyHex: hex, npub: npub.trim());
+        String hex;
+        String npub;
+        if (value.startsWith('npub1')) {
+          // bech32 -> hex
+          hex = Nip19.decodePubkey(value);
+          npub = value;
+        } else if (RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(value)) {
+          // schon roher Hex-pubkey -> npub daraus bilden
+          hex = value.toLowerCase();
+          npub = Nip19.encodePubkey(hex);
+        } else {
+          return AmberConnectError('Unerwartetes Schlüsselformat von Amber.');
+        }
+        return AmberConnectSuccess(pubkeyHex: hex, npub: npub);
       } on Exception catch (e) {
         return AmberConnectError('Ungültiger pubkey von Amber: $e');
       }
