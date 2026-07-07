@@ -4369,4 +4369,65 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get refreshDone => 'Todo actualizado';
+
+  @override
+  String get v4vSectionTitle => 'Apoyar';
+
+  @override
+  String get v4vSectionSubtitle =>
+      'Value for Value – apoya el proyecto con sats';
+
+  @override
+  String get v4vTitle => 'Value for Value';
+
+  @override
+  String get v4vHeadline => 'Value for Value';
+
+  @override
+  String get v4vExplain1 =>
+      'Esta app está hecha a mano para la comunidad: sin anuncios, sin rastreo, sin suscripción. Según el principio \"Value for Value\", devuelves lo que la app vale para ti.';
+
+  @override
+  String get v4vExplain2 =>
+      'Tus sats van directamente al desarrollo del proyecto. Cada cantidad ayuda. ¡Gracias!';
+
+  @override
+  String get v4vAmountLabel => 'Cantidad';
+
+  @override
+  String get v4vDonateButton => 'Donar con Lightning';
+
+  @override
+  String get v4vRecipient => 'Destinatario';
+
+  @override
+  String get v4vErrInvalidAmount => 'Introduce una cantidad válida.';
+
+  @override
+  String get v4vErrBelowMin =>
+      'La cantidad es demasiado baja para esta dirección.';
+
+  @override
+  String get v4vErrAboveMax =>
+      'La cantidad es demasiado alta para esta dirección.';
+
+  @override
+  String get v4vErrUnreachable =>
+      'Conexión fallida. Inténtalo de nuevo más tarde.';
+
+  @override
+  String get v4vErrGeneric => 'No se pudo crear la factura.';
+
+  @override
+  String get v4vNoWalletTitle => 'No se encontró ninguna wallet Lightning';
+
+  @override
+  String get v4vNoWalletBody =>
+      'No se encontró ninguna app para pagar. Puedes copiar la factura y pegarla en tu wallet.';
+
+  @override
+  String get v4vCopyInvoice => 'Copiar factura';
+
+  @override
+  String get v4vCopied => 'Factura copiada';
 }

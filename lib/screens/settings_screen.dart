@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
+import 'v4v_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -48,6 +49,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               );
             },
+          ),
+
+          // --- V4V (Value for Value) ---
+          const SizedBox(height: 28),
+          Text(
+            t.v4vSectionTitle.toUpperCase(),
+            style: const TextStyle(
+                color: cOrange, fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: cCard,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: cBorder, width: 0.5),
+            ),
+            child: ListTile(
+              leading: Container(
+                width: 38, height: 38,
+                decoration: BoxDecoration(
+                  color: cOrange.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.bolt_rounded, color: cOrange, size: 20),
+              ),
+              title: Text('V4V', style: const TextStyle(color: cText, fontWeight: FontWeight.w700)),
+              subtitle: Text(t.v4vSectionSubtitle, style: const TextStyle(color: cTextSecondary, fontSize: 12)),
+              trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const V4VScreen())),
+            ),
           ),
         ],
       ),

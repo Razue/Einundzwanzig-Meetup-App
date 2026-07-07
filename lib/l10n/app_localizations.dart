@@ -8001,6 +8001,114 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Alles aktualisiert'**
   String get refreshDone;
+
+  /// No description provided for @v4vSectionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterstützen'**
+  String get v4vSectionTitle;
+
+  /// No description provided for @v4vSectionSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Value for Value – das Projekt mit Sats unterstützen'**
+  String get v4vSectionSubtitle;
+
+  /// No description provided for @v4vTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Value for Value'**
+  String get v4vTitle;
+
+  /// No description provided for @v4vHeadline.
+  ///
+  /// In de, this message translates to:
+  /// **'Value for Value'**
+  String get v4vHeadline;
+
+  /// No description provided for @v4vExplain1.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese App entsteht in echter Handarbeit für die Community – ohne Werbung, ohne Tracking, ohne Abo. Nach dem Prinzip \"Value for Value\" gibst du zurück, was dir die App wert ist.'**
+  String get v4vExplain1;
+
+  /// No description provided for @v4vExplain2.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Sats fließen direkt in die Weiterentwicklung des Projekts. Jeder Betrag hilft – vielen Dank!'**
+  String get v4vExplain2;
+
+  /// No description provided for @v4vAmountLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Betrag'**
+  String get v4vAmountLabel;
+
+  /// No description provided for @v4vDonateButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Lightning spenden'**
+  String get v4vDonateButton;
+
+  /// No description provided for @v4vRecipient.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfänger'**
+  String get v4vRecipient;
+
+  /// No description provided for @v4vErrInvalidAmount.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte einen gültigen Betrag eingeben.'**
+  String get v4vErrInvalidAmount;
+
+  /// No description provided for @v4vErrBelowMin.
+  ///
+  /// In de, this message translates to:
+  /// **'Betrag ist zu niedrig für diese Adresse.'**
+  String get v4vErrBelowMin;
+
+  /// No description provided for @v4vErrAboveMax.
+  ///
+  /// In de, this message translates to:
+  /// **'Betrag ist zu hoch für diese Adresse.'**
+  String get v4vErrAboveMax;
+
+  /// No description provided for @v4vErrUnreachable.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung fehlgeschlagen. Bitte später erneut versuchen.'**
+  String get v4vErrUnreachable;
+
+  /// No description provided for @v4vErrGeneric.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Invoice konnte nicht erstellt werden.'**
+  String get v4vErrGeneric;
+
+  /// No description provided for @v4vNoWalletTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Lightning-Wallet gefunden'**
+  String get v4vNoWalletTitle;
+
+  /// No description provided for @v4vNoWalletBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Es wurde keine App zum Bezahlen gefunden. Du kannst die Rechnung kopieren und in deiner Wallet einfügen.'**
+  String get v4vNoWalletBody;
+
+  /// No description provided for @v4vCopyInvoice.
+  ///
+  /// In de, this message translates to:
+  /// **'Rechnung kopieren'**
+  String get v4vCopyInvoice;
+
+  /// No description provided for @v4vCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Rechnung kopiert'**
+  String get v4vCopied;
 }
 
 class _AppLocalizationsDelegate

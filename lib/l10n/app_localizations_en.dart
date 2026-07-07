@@ -4347,4 +4347,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refreshDone => 'Everything up to date';
+
+  @override
+  String get v4vSectionTitle => 'Support';
+
+  @override
+  String get v4vSectionSubtitle =>
+      'Value for Value – support the project with sats';
+
+  @override
+  String get v4vTitle => 'Value for Value';
+
+  @override
+  String get v4vHeadline => 'Value for Value';
+
+  @override
+  String get v4vExplain1 =>
+      'This app is handcrafted for the community – no ads, no tracking, no subscription. Following the \"Value for Value\" principle, you give back what the app is worth to you.';
+
+  @override
+  String get v4vExplain2 =>
+      'Your sats go directly into developing the project further. Every amount helps – thank you!';
+
+  @override
+  String get v4vAmountLabel => 'Amount';
+
+  @override
+  String get v4vDonateButton => 'Donate with Lightning';
+
+  @override
+  String get v4vRecipient => 'Recipient';
+
+  @override
+  String get v4vErrInvalidAmount => 'Please enter a valid amount.';
+
+  @override
+  String get v4vErrBelowMin => 'Amount is too low for this address.';
+
+  @override
+  String get v4vErrAboveMax => 'Amount is too high for this address.';
+
+  @override
+  String get v4vErrUnreachable => 'Connection failed. Please try again later.';
+
+  @override
+  String get v4vErrGeneric => 'Could not create the invoice.';
+
+  @override
+  String get v4vNoWalletTitle => 'No Lightning wallet found';
+
+  @override
+  String get v4vNoWalletBody =>
+      'No app was found to pay. You can copy the invoice and paste it into your wallet.';
+
+  @override
+  String get v4vCopyInvoice => 'Copy invoice';
+
+  @override
+  String get v4vCopied => 'Invoice copied';
 }
