@@ -57,6 +57,30 @@ class MainActivity : FlutterActivity() {
                         }
                     }
 
+                    // V4V: Lightning-Invoice mit SYSTEM-CHOOSER öffnen.
+                    // Intent.createChooser erzwingt die App-Auswahlliste,
+                    // statt direkt die Standard-Wallet zu starten.
+                    "payLightningInvoice" -> {
+                        val invoice = call.argument<String>("invoice")
+                        if (invoice == null) {
+                            result.error("bad_args", "invoice fehlt", null)
+                        } else {
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("lightning:$invoice"))
+                                // Gibt es überhaupt eine App dafür?
+                                if (intent.resolveActivity(packageManager) == null) {
+                                    result.success(false)
+                                } else {
+                                    val chooser = Intent.createChooser(intent, "Lightning-Wallet wählen")
+                                    startActivity(chooser)
+                                    result.success(true)
+                                }
+                            } catch (e: Exception) {
+                                result.success(false)
+                            }
+                        }
+                    }
+
                     else -> result.notImplemented()
                 }
             }

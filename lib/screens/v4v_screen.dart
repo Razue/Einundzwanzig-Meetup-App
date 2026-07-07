@@ -3,9 +3,12 @@
 // ============================================
 //  Erklärt Value for Value, nimmt einen frei wählbaren Sats-Betrag,
 //  holt eine Invoice über die Lightning-Adresse des Projekts und öffnet
-//  die Wallet-Auswahl des Systems (lightning:-URI) zum Bezahlen.
+//  die ANDROID-APP-AUSWAHL (System-Chooser via MethodChannel), damit der
+//  Nutzer seine Wallet frei wählen kann — statt dass immer die
+//  Standard-Wallet startet.
 // ============================================
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,6 +24,8 @@ class V4VScreen extends StatefulWidget {
 }
 
 class _V4VScreenState extends State<V4VScreen> {
+  static const _channel = MethodChannel('einundzwanzig/amber_signer');
+
   final _controller = TextEditingController();
   bool _loading = false;
   String? _error;
@@ -38,6 +43,26 @@ class _V4VScreenState extends State<V4VScreen> {
       case 'above_max': return t.v4vErrAboveMax;
       case 'unreachable': return t.v4vErrUnreachable;
       default: return t.v4vErrGeneric;
+    }
+  }
+
+  /// Öffnet die Invoice: auf Android über den System-Chooser (Wallet-
+  /// Auswahlliste), sonst per url_launcher. Liefert true bei Erfolg.
+  Future<bool> _openInvoice(String invoice) async {
+    if (Platform.isAndroid) {
+      try {
+        final ok = await _channel.invokeMethod<bool>(
+          'payLightningInvoice', {'invoice': invoice});
+        return ok == true;
+      } catch (_) {
+        // Fallback: normaler Weg
+      }
+    }
+    final uri = Uri.parse('lightning:$invoice');
+    try {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      return false;
     }
   }
 
@@ -64,17 +89,10 @@ class _V4VScreenState extends State<V4VScreen> {
       return;
     }
 
-    // Invoice per lightning:-URI öffnen -> System zeigt Wallet-Auswahl
-    final invoice = result.invoice!;
-    final uri = Uri.parse('lightning:$invoice');
-    final opened = await canLaunchUrl(uri)
-        ? await launchUrl(uri, mode: LaunchMode.externalApplication)
-        : false;
-
+    final opened = await _openInvoice(result.invoice!);
     if (!mounted) return;
     if (!opened) {
-      // Keine Wallet gefunden: Invoice zum Kopieren anbieten
-      _showInvoiceFallback(t, invoice);
+      _showInvoiceFallback(t, result.invoice!);
     }
   }
 
@@ -126,87 +144,120 @@ class _V4VScreenState extends State<V4VScreen> {
       backgroundColor: cDark,
       appBar: AppBar(title: Text(t.v4vTitle)),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
         children: [
-          // Symbol
+          // Kopf: Symbol mit Glow
           Center(
             child: Container(
-              width: 64, height: 64,
+              width: 84, height: 84,
               decoration: BoxDecoration(
-                color: cOrange.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
+                gradient: RadialGradient(colors: [
+                  cOrange.withValues(alpha: 0.25),
+                  cOrange.withValues(alpha: 0.04),
+                ]),
+                border: Border.all(color: cOrange.withValues(alpha: 0.35), width: 1),
               ),
-              child: const Icon(Icons.bolt_rounded, color: cOrange, size: 34),
+              child: const Icon(Icons.bolt_rounded, color: cOrange, size: 42),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 22),
           Text(t.v4vHeadline,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: cText, fontSize: 20, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
-          Text(t.v4vExplain1,
-              style: const TextStyle(color: cTextSecondary, fontSize: 15, height: 1.6)),
-          const SizedBox(height: 10),
-          Text(t.v4vExplain2,
-              style: const TextStyle(color: cTextSecondary, fontSize: 15, height: 1.6)),
-          const SizedBox(height: 24),
+              style: const TextStyle(color: cText, fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: 0.3)),
+          const SizedBox(height: 14),
 
-          // Betrag
-          Text(t.v4vAmountLabel.toUpperCase(),
-              style: const TextStyle(color: cOrange, fontWeight: FontWeight.bold, fontSize: 12)),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _controller,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w700),
-            decoration: InputDecoration(
-              hintText: '0',
-              hintStyle: const TextStyle(color: cTextTertiary),
-              suffixText: 'Sats',
-              suffixStyle: const TextStyle(color: cTextSecondary, fontSize: 14),
-              filled: true,
-              fillColor: cCard,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kTileRadius),
-                borderSide: const BorderSide(color: cBorder, width: 0.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(kTileRadius),
-                borderSide: const BorderSide(color: cOrange, width: 1.5),
-              ),
+          // Erklärung als Karte
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: cCard,
+              borderRadius: BorderRadius.circular(kTileRadius),
+              border: Border.all(color: cTileBorder, width: 0.5),
             ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(t.v4vExplain1,
+                  style: const TextStyle(color: cTextSecondary, fontSize: 14.5, height: 1.6)),
+              const SizedBox(height: 10),
+              Text(t.v4vExplain2,
+                  style: const TextStyle(color: cTextSecondary, fontSize: 14.5, height: 1.6)),
+            ]),
+          ),
+          const SizedBox(height: 28),
+
+          // Betrag — groß und zentriert
+          Center(
+            child: Text(t.v4vAmountLabel.toUpperCase(),
+                style: const TextStyle(color: cOrange, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1.5)),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: cCard,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: cTileBorder, width: 0.5),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+            child: Row(children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  textAlign: TextAlign.center,
+                  autofocus: false,
+                  style: const TextStyle(color: cText, fontSize: 36, fontWeight: FontWeight.w800, letterSpacing: 1),
+                  decoration: const InputDecoration(
+                    hintText: '0',
+                    hintStyle: TextStyle(color: cTextTertiary, fontSize: 36, fontWeight: FontWeight.w800),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (_) { if (_error != null) setState(() => _error = null); },
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 4, top: 12),
+                child: Text('Sats', style: TextStyle(color: cOrange, fontSize: 16, fontWeight: FontWeight.w700)),
+              ),
+            ]),
           ),
 
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Row(children: [
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Icon(Icons.error_outline_rounded, color: cRed, size: 16),
               const SizedBox(width: 6),
-              Expanded(child: Text(_error!, style: const TextStyle(color: cRed, fontSize: 13))),
+              Flexible(child: Text(_error!, style: const TextStyle(color: cRed, fontSize: 13))),
             ]),
           ],
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 26),
           SizedBox(
             width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
+            height: 56,
+            child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: cOrange,
                 foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kTileRadius)),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               onPressed: _loading ? null : _donate,
-              child: _loading
-                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5))
-                  : Text(t.v4vDonateButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              icon: _loading
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5))
+                  : const Icon(Icons.bolt_rounded, size: 22),
+              label: Text(_loading ? '' : t.v4vDonateButton,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Center(
-            child: Text('${t.v4vRecipient}: $kV4VLightningAddress',
-                style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.favorite_rounded, color: cOrange, size: 13),
+              const SizedBox(width: 6),
+              Text('${t.v4vRecipient}: $kV4VLightningAddress',
+                  style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+            ]),
           ),
         ],
       ),

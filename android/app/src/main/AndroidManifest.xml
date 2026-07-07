@@ -25,6 +25,11 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
         </intent>
+        <!-- V4V: Lightning-Wallets sichtbar machen (lightning:-Invoices) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="lightning" />
+        </intent>
     </queries>
 
     <application
