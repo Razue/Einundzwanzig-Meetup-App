@@ -142,13 +142,26 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _handleWidgetLaunch();       // wurde die App über den Widget-News-Button geöffnet?
   }
 
-  /// Prüft, ob die App über den News-Bereich des Widgets gestartet wurde,
-  /// und öffnet dann direkt die News.
+  /// Prüft, ob die App über einen Bereich des Widgets gestartet wurde,
+  /// und öffnet dann das passende Ziel (Bitcoin / Meetup / News).
   Future<void> _handleWidgetLaunch() async {
     try {
       final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
-      if (uri != null && uri.toString().contains('news')) {
+      if (uri == null) return;
+      final target = uri.toString();
+      // kleine Verzögerung, damit der erste Frame/Context sicher steht
+      await Future.delayed(const Duration(milliseconds: 250));
+      if (!mounted) return;
+      if (target.contains('news')) {
         _openNews();
+      } else if (target.contains('bitcoin')) {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const BitcoinDashboardScreen()));
+      } else if (target.contains('meetup')) {
+        if (_homeMeetup != null) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _homeMeetup!.city)));
+        } else {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
+        }
       }
     } catch (_) {/* egal */}
   }

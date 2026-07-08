@@ -68,23 +68,26 @@ class MeetupWidgetProvider : AppWidgetProvider() {
 
                 val piFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
-                // Tap auf den NEWS-Bereich -> App öffnen + direkt zu den News.
-                val newsIntent = Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    putExtra("open", "news")
-                    action = "space.einundzwanzig.meetup.OPEN_NEWS"
+                fun openIntent(target: String, requestCode: Int): PendingIntent {
+                    val i = Intent(context, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra("open", target)
+                        action = "space.einundzwanzig.meetup.OPEN_${target.uppercase()}"
+                    }
+                    return PendingIntent.getActivity(context, requestCode, i, piFlags)
                 }
-                val newsPi = PendingIntent.getActivity(context, 1, newsIntent, piFlags)
-                views.setOnClickPendingIntent(R.id.widget_news_row, newsPi)
 
-                // Tap aufs restliche Widget -> App normal öffnen. Intent selbst
-                // bauen (NICHT HomeWidgetLaunchIntent), da dessen Flags auf
-                // Android 14+/MIUI crashen. FLAG_IMMUTABLE ist ab 12 Pflicht.
-                val launchIntent = Intent(context, MainActivity::class.java).apply {
+                // Drei getrennte Klickbereiche -> jeweils eigenes Ziel in der App.
+                views.setOnClickPendingIntent(R.id.widget_btc_area, openIntent("bitcoin", 2))
+                views.setOnClickPendingIntent(R.id.widget_meetup_area, openIntent("meetup", 3))
+                views.setOnClickPendingIntent(R.id.widget_news_row, openIntent("news", 1))
+
+                // Fallback: Tap auf sonstige Flächen (Logo/Rand) -> App normal öffnen.
+                val rootIntent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
-                val pendingIntent = PendingIntent.getActivity(context, 0, launchIntent, piFlags)
-                views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+                val rootPi = PendingIntent.getActivity(context, 0, rootIntent, piFlags)
+                views.setOnClickPendingIntent(R.id.widget_root, rootPi)
 
                 appWidgetManager.updateAppWidget(widgetId, views)
             } catch (e: Exception) {

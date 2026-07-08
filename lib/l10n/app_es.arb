@@ -2130,5 +2130,6 @@
   "convPremiumTitle": "Prima / Descuento",
   "convPremiumHint": "Para operaciones: prima (+) o descuento (−) en porcentaje sobre el precio.",
   "convPremiumResult": "Con prima/descuento",
-  "convPremiumBase": "Precio base"
+  "convPremiumBase": "Precio base",
+  "convPremiumSats": "Resultado en sats"
 }

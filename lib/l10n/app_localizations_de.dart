@@ -4459,4 +4459,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get convPremiumBase => 'Basiskurs';
+
+  @override
+  String get convPremiumSats => 'Ergebnis in Sats';
 }

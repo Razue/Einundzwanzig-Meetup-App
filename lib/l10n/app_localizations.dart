@@ -8133,6 +8133,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Basiskurs'**
   String get convPremiumBase;
+
+  /// No description provided for @convPremiumSats.
+  ///
+  /// In de, this message translates to:
+  /// **'Ergebnis in Sats'**
+  String get convPremiumSats;
 }
 
 class _AppLocalizationsDelegate

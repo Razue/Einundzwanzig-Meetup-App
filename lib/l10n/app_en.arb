@@ -2130,5 +2130,6 @@
   "convPremiumTitle": "Premium / Discount",
   "convPremiumHint": "For trades: percentage premium (+) or discount (−) on the rate.",
   "convPremiumResult": "With premium/discount",
-  "convPremiumBase": "Base rate"
+  "convPremiumBase": "Base rate",
+  "convPremiumSats": "Result in sats"
 }

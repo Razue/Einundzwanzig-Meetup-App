@@ -4443,4 +4443,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get convPremiumBase => 'Precio base';
+
+  @override
+  String get convPremiumSats => 'Resultado en sats';
 }

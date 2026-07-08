@@ -93,13 +93,6 @@ class _ConverterScreenState extends State<ConverterScreen> {
     });
   }
 
-  void _adjustPremium(double delta) {
-    setState(() {
-      _premiumPercent = ((_premiumPercent + delta) * 10).round() / 10; // auf 0.1 runden
-      _premiumCtrl.text = _premiumPercent == 0 ? '' : _premiumPercent.toString();
-    });
-  }
-
   /// Berechnet die jeweils andere Seite neu, je nachdem welche
   /// Seite zuletzt bearbeitet wurde.
   void _recalculate() {
@@ -250,12 +243,14 @@ class _ConverterScreenState extends State<ConverterScreen> {
     );
   }
 
-  /// Auf-/Abschlag-Bereich fürs Trading: Prozent eingeben (mit Nachkomma),
-  /// zeigt den angepassten Fiat-Preis.
+  /// Auf-/Abschlag-Bereich fürs Trading: Schieberegler + manuelle Eingabe,
+  /// zeigt den angepassten Fiat-Preis UND die resultierende Sats-Menge.
   Widget _premiumSection(AppLocalizations t) {
     final base = _currentFiat;
     final withP = _fiatWithPremium;
     final hasValue = base > 0;
+    // Sats, die bei diesem angepassten Fiat-Betrag herauskommen.
+    final satsWithP = (_btcPrice > 0) ? (withP / _btcPrice * _satsPerBtc).round() : 0;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -269,21 +264,14 @@ class _ConverterScreenState extends State<ConverterScreen> {
           const SizedBox(width: 8),
           Text(t.convPremiumTitle,
               style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
-        ]),
-        const SizedBox(height: 4),
-        Text(t.convPremiumHint,
-            style: const TextStyle(color: cTextTertiary, fontSize: 11)),
-        const SizedBox(height: 14),
-        Row(children: [
-          // Minus-Button (-0.5)
-          _stepButton('−0,5', () => _adjustPremium(-0.5)),
-          const SizedBox(width: 8),
-          // Eingabefeld Prozent
-          Expanded(
+          const Spacer(),
+          // Manuelle Eingabe (kompakt, rechts)
+          SizedBox(
+            width: 82,
             child: Container(
               decoration: BoxDecoration(
                 color: cSurface,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: cTileBorder, width: 0.5),
               ),
               child: TextField(
@@ -291,32 +279,70 @@ class _ConverterScreenState extends State<ConverterScreen> {
                 onChanged: _onPremiumChanged,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w700),
+                style: const TextStyle(color: cOrange, fontSize: 15, fontWeight: FontWeight.w800),
                 decoration: const InputDecoration(
                   hintText: '0,0',
                   hintStyle: TextStyle(color: cTextTertiary),
                   suffixText: '%',
-                  suffixStyle: TextStyle(color: cOrange, fontWeight: FontWeight.w700),
+                  suffixStyle: TextStyle(color: cOrange, fontWeight: FontWeight.w700, fontSize: 13),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 12),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          // Plus-Button (+0.5)
-          _stepButton('+0,5', () => _adjustPremium(0.5)),
+        ]),
+        const SizedBox(height: 4),
+        Text(t.convPremiumHint,
+            style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+        const SizedBox(height: 8),
+        // Schieberegler von -20% bis +20% in 0,5-Schritten
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: cOrange,
+            inactiveTrackColor: cSurface,
+            thumbColor: cOrange,
+            overlayColor: cOrange.withValues(alpha: 0.15),
+            trackHeight: 3,
+          ),
+          child: Slider(
+            value: _premiumPercent.clamp(-20.0, 20.0),
+            min: -20,
+            max: 20,
+            divisions: 80, // 0,5-Schritte
+            label: '${_premiumPercent > 0 ? '+' : ''}${_premiumPercent.toStringAsFixed(1)}%',
+            onChanged: (v) {
+              setState(() {
+                _premiumPercent = (v * 2).round() / 2; // auf 0,5 runden
+                _premiumCtrl.text = _premiumPercent == 0 ? '' : _premiumPercent.toString();
+              });
+            },
+          ),
+        ),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [
+          Text('−20%', style: TextStyle(color: cTextTertiary, fontSize: 10)),
+          Text('0', style: TextStyle(color: cTextTertiary, fontSize: 10)),
+          Text('+20%', style: TextStyle(color: cTextTertiary, fontSize: 10)),
         ]),
         if (hasValue) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Container(height: 0.5, color: cTileBorder),
           const SizedBox(height: 14),
+          // Ergebnis: angepasster Fiat-Preis
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(t.convPremiumResult, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
             Text('${withP.toStringAsFixed(2)} $_currency',
                 style: const TextStyle(color: cOrange, fontSize: 20, fontWeight: FontWeight.w800)),
           ]),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
+          // Ergebnis: resultierende Sats-Menge
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(t.convPremiumSats, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
+            Text('${_fmtSats(satsWithP)} sats',
+                style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+          ]),
+          const SizedBox(height: 6),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text(t.convPremiumBase, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
             Text('${base.toStringAsFixed(2)} $_currency',
@@ -327,19 +353,16 @@ class _ConverterScreenState extends State<ConverterScreen> {
     );
   }
 
-  Widget _stepButton(String label, VoidCallback onTap) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: 52, height: 48,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: cSurface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: cTileBorder, width: 0.5),
-      ),
-      child: Text(label, style: const TextStyle(color: cOrange, fontSize: 13, fontWeight: FontWeight.w700)),
-    ),
-  );
+  /// Tausenderpunkte für Sats.
+  String _fmtSats(int v) {
+    final s = v.abs().toString();
+    final buf = StringBuffer(v < 0 ? '-' : '');
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write('.');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
 
   Widget _errorBanner(AppLocalizations t) => Container(
     margin: const EdgeInsets.only(bottom: 16),

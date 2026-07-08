@@ -2152,5 +2152,6 @@
   "convPremiumTitle": "Auf-/Abschlag",
   "convPremiumHint": "Für Trades: Prozent-Aufschlag (+) oder Abschlag (−) auf den Kurs.",
   "convPremiumResult": "Mit Auf-/Abschlag",
-  "convPremiumBase": "Basiskurs"
+  "convPremiumBase": "Basiskurs",
+  "convPremiumSats": "Ergebnis in Sats"
 }
