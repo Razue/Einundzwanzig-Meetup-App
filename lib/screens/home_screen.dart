@@ -926,28 +926,32 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 style: const TextStyle(color: cText, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5, height: 1.05)),
             ])),
             const SizedBox(width: 10),
-            // Buttons rechts neben dem Logo/Text
-            Column(mainAxisSize: MainAxisSize.min, children: [
-              GestureDetector(
-                onTap: _homeMeetup != null
-                  ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _homeMeetup!.city)))
-                  : null,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-                  decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(9),
-                    boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.22), blurRadius: 8, offset: const Offset(0, 2))]),
-                  child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.6))),
-              ),
-              if (_homeMeetup != null) ...[
-                const SizedBox(height: 7),
+            // Buttons rechts neben dem Logo/Text (feste Breite gegen Overflow)
+            SizedBox(
+              width: 88,
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
                 GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: _homeMeetup!))),
-                  child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(9)),
-                    child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 16)),
+                  onTap: _homeMeetup != null
+                    ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _homeMeetup!.city)))
+                    : null,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 9),
+                    decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(9),
+                      boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.22), blurRadius: 8, offset: const Offset(0, 2))]),
+                    child: Center(child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.6)))),
                 ),
-              ],
-            ]),
+                if (_homeMeetup != null) ...[
+                  const SizedBox(height: 7),
+                  GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: _homeMeetup!))),
+                    child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
+                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(9)),
+                      child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 16)),
+                  ),
+                ],
+              ]),
+            ),
           ]),
 
           const SizedBox(height: 12),
