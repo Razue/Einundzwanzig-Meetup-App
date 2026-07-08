@@ -53,6 +53,7 @@ import 'bitcoin_dashboard_screen.dart';
 import '../services/mempool.dart';
 import '../services/widget_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:home_widget/home_widget.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
@@ -137,6 +138,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _loadTileOrder();
     _loadAll();
     _loadAppVersion();
+    WidgetService.refreshNews(); // News-Titel + NEU-Status fürs Widget
+    _handleWidgetLaunch();       // wurde die App über den Widget-News-Button geöffnet?
+  }
+
+  /// Prüft, ob die App über den News-Bereich des Widgets gestartet wurde,
+  /// und öffnet dann direkt die News.
+  Future<void> _handleWidgetLaunch() async {
+    try {
+      final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+      if (uri != null && uri.toString().contains('news')) {
+        _openNews();
+      }
+    } catch (_) {/* egal */}
+  }
+
+  void _openNews() {
+    WidgetService.markNewsSeen(); // NEU-Markierung entfernen
+    Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen()));
   }
 
   Future<void> _loadAppVersion() async {
@@ -1088,7 +1107,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   );
 
   Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildNewsTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.article_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())), child: Row(children: [const Icon(Icons.article_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileNews, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileNewsSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
+  Widget _buildNewsTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.article_rounded, onTap: _openNews, child: Row(children: [const Icon(Icons.article_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileNews, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileNewsSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));

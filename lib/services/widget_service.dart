@@ -8,7 +8,9 @@
 // ============================================
 
 import 'package:home_widget/home_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'mempool.dart';
+import 'news_service.dart';
 import 'app_logger.dart';
 
 class WidgetService {
@@ -61,6 +63,49 @@ class WidgetService {
       await updateBitcoin(d);
     } catch (e) {
       AppLogger.debug(_tag, 'refreshBitcoin fehlgeschlagen: $e');
+    }
+  }
+
+  static const _kLastSeenNewsId = 'widget_last_seen_news_id';
+  static const _kLatestNewsId = 'widget_latest_news_id';
+  static const _kLatestNewsTitle = 'widget_latest_news_title';
+
+  /// Prüft den neuesten Artikel und markiert das Widget mit "NEU", wenn er
+  /// noch nicht gesehen wurde. Schreibt Titel + Neu-Status ins Widget.
+  static Future<void> refreshNews() async {
+    try {
+      final articles = await NewsService.fetchArticles(limit: 1);
+      if (articles.isEmpty) return;
+      final latest = articles.first;
+      final prefs = await SharedPreferences.getInstance();
+      final lastSeen = prefs.getString(_kLastSeenNewsId) ?? '';
+      final isNew = latest.id.isNotEmpty && latest.id != lastSeen;
+
+      await prefs.setString(_kLatestNewsId, latest.id);
+      await prefs.setString(_kLatestNewsTitle, latest.title);
+
+      await HomeWidget.saveWidgetData<String>('newsTitle',
+          latest.title.isNotEmpty ? latest.title : 'News');
+      await HomeWidget.saveWidgetData<bool>('newsIsNew', isNew);
+      await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
+    } catch (e) {
+      AppLogger.debug(_tag, 'refreshNews fehlgeschlagen: $e');
+    }
+  }
+
+  /// Markiert den neuesten Artikel als gesehen -> "NEU"-Markierung im Widget
+  /// verschwindet. Beim Öffnen der News-Sektion aufrufen.
+  static Future<void> markNewsSeen() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final latest = prefs.getString(_kLatestNewsId) ?? '';
+      if (latest.isNotEmpty) {
+        await prefs.setString(_kLastSeenNewsId, latest);
+      }
+      await HomeWidget.saveWidgetData<bool>('newsIsNew', false);
+      await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
+    } catch (e) {
+      AppLogger.debug(_tag, 'markNewsSeen fehlgeschlagen: $e');
     }
   }
 }
