@@ -49,6 +49,8 @@ import 'reputation_qr.dart';
 import 'my_network_screen.dart';
 import 'relay_settings_screen.dart';
 import 'v4v_screen.dart';
+import 'bitcoin_dashboard_screen.dart';
+import '../services/mempool.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
@@ -119,7 +121,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Pflicht-Kacheln (nicht löschbar)
   static const _requiredTiles = {'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'news', 'portal', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
+  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events'};
 
   late List<_TileDef> _tileDefs;
@@ -149,6 +151,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _TileDef(id: 'nostr',        label: 'Nostr',            span: 1, builder: _buildNostrTile),
       _TileDef(id: 'portal_connect', label: 'Portal', span: 2, builder: _buildPortalConnectTile),
       _TileDef(id: 'converter',    label: 'Rechner',          span: 1, builder: _buildConverterTile),
+      _TileDef(id: 'btc_dashboard', label: 'Bitcoin',         span: 2, builder: _buildBtcDashboardTile),
       _TileDef(id: 'news',         label: 'News',             span: 2, builder: _buildNewsTile),
       _TileDef(id: 'portal',       label: 'Meine Meetups',    span: 2, builder: _buildPortalTile),
       _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin),
@@ -1054,6 +1057,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  Widget _buildBtcDashboardTile() => _tile(
+    accentColor: cOrange,
+    opacity: 0.07,
+    watermark: Icons.currency_bitcoin_rounded,
+    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BitcoinDashboardScreen())),
+    child: const _BtcDashboardTileContent(),
+  );
+
   Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildNewsTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.article_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())), child: Row(children: [const Icon(Icons.article_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileNews, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileNewsSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
@@ -1635,4 +1646,83 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
       ),
     ]),
   );
+}
+
+/// Kompakter Inhalt der Bitcoin-Dashboard-Kachel im Home-Grid:
+/// Blockhöhe + EUR-Preis. Lädt selbst und aktualisiert alle 60s.
+class _BtcDashboardTileContent extends StatefulWidget {
+  const _BtcDashboardTileContent();
+
+  @override
+  State<_BtcDashboardTileContent> createState() => _BtcDashboardTileContentState();
+}
+
+class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
+  BitcoinDashboardData? _d;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _d = MempoolService.lastDashboard;
+    _load();
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) => _load());
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    final d = await MempoolService.getDashboardData();
+    if (mounted) setState(() => _d = d);
+  }
+
+  String _fmtInt(int v) {
+    final s = v.toString();
+    final buf = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write('.');
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final d = _d;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(children: [
+          const Icon(Icons.currency_bitcoin_rounded, color: cOrange, size: 22),
+          const SizedBox(width: 8),
+          const Text('Bitcoin', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+          const Spacer(),
+          Container(
+            width: 7, height: 7,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: d != null ? cGreen.withValues(alpha: 0.7) : cTextTertiary,
+            ),
+          ),
+        ]),
+        const SizedBox(height: 12),
+        Text(
+          d != null && d.blockHeight > 0 ? _fmtInt(d.blockHeight) : '––',
+          style: const TextStyle(color: cOrange, fontSize: 26, fontWeight: FontWeight.w800, height: 1.0)
+              .copyWith(fontFamily: fontMono),
+        ),
+        const SizedBox(height: 2),
+        Text('BLOCK', style: const TextStyle(color: cTextTertiary, fontSize: 10, letterSpacing: 2)),
+        const SizedBox(height: 8),
+        Text(
+          d != null && d.priceEur > 0 ? '${_fmtInt(d.priceEur.round())} €' : '––',
+          style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
 }
