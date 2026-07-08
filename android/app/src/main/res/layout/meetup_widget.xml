@@ -19,10 +19,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="₿ITCOIN"
+            android:text="BITCOIN"
             android:textColor="#F7931A"
-            android:textSize="12sp"
-            android:letterSpacing="0.18"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <TextView
@@ -31,7 +30,6 @@
             android:text="BLOCK"
             android:textColor="#5A5F68"
             android:textSize="9sp"
-            android:letterSpacing="0.2"
             android:layout_marginEnd="8dp" />
 
         <TextView
@@ -41,11 +39,7 @@
             android:text="––"
             android:textColor="#F7931A"
             android:textSize="30sp"
-            android:textStyle="bold"
-            android:shadowColor="#66F7931A"
-            android:shadowDx="0"
-            android:shadowDy="0"
-            android:shadowRadius="12" />
+            android:textStyle="bold" />
     </LinearLayout>
 
     <!-- Trennlinie -->
@@ -74,7 +68,6 @@
                 android:text="PREIS"
                 android:textColor="#5A5F68"
                 android:textSize="9sp"
-                android:letterSpacing="0.1"
                 android:layout_marginBottom="3dp" />
             <TextView
                 android:id="@+id/widget_price"
@@ -97,7 +90,6 @@
                 android:text="MOSCOW"
                 android:textColor="#5A5F68"
                 android:textSize="9sp"
-                android:letterSpacing="0.1"
                 android:layout_marginBottom="3dp" />
             <TextView
                 android:id="@+id/widget_moscow"
@@ -120,7 +112,6 @@
                 android:text="FEES L·M·H"
                 android:textColor="#5A5F68"
                 android:textSize="9sp"
-                android:letterSpacing="0.1"
                 android:layout_marginBottom="3dp" />
             <TextView
                 android:id="@+id/widget_fees"
@@ -142,12 +133,6 @@
         android:background="@drawable/widget_meetup_bg"
         android:padding="12dp">
 
-        <ImageView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@drawable/ic_widget_calendar"
-            android:layout_marginEnd="10dp" />
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -159,7 +144,6 @@
                 android:text="NÄCHSTES MEETUP"
                 android:textColor="#F7931A"
                 android:textSize="9sp"
-                android:letterSpacing="0.15"
                 android:textStyle="bold"
                 android:layout_marginBottom="2dp" />
             <TextView
