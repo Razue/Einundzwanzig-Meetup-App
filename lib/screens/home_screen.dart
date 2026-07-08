@@ -51,6 +51,7 @@ import 'relay_settings_screen.dart';
 import 'v4v_screen.dart';
 import 'bitcoin_dashboard_screen.dart';
 import '../services/mempool.dart';
+import '../services/widget_service.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
@@ -329,6 +330,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final future = events.where((e) => e.startTime.isAfter(cutoff) && matches(e)).toList()
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
       if (mounted) setState(() { _nextHomeMeetup = future.isNotEmpty ? future.first : null; _countdownLoading = false; });
+
+      // Nächstes Meetup ins Homescreen-Widget schreiben.
+      final widgetCity = _homeMeetup?.city ?? '';
+      String countdown = '';
+      if (_nextHomeMeetup != null) {
+        final days = _nextHomeMeetup!.startTime.difference(DateTime.now()).inDays;
+        countdown = days <= 0 ? 'Heute' : (days == 1 ? 'Morgen' : 'in $days Tagen');
+      }
+      WidgetService.updateMeetup(city: widgetCity, countdown: countdown);
     } catch (_) { if (mounted) setState(() => _countdownLoading = false); }
   }
 
@@ -1684,6 +1694,7 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
   Future<void> _load() async {
     final d = await MempoolService.getDashboardData();
     if (mounted) setState(() => _d = d);
+    WidgetService.updateBitcoin(d); // Homescreen-Widget mitversorgen
   }
 
   String _fmtInt(int v) {

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <!-- Kopfzeile: Titel + Blockhöhe -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="BITCOIN"
+            android:textColor="#8A8F98"
+            android:textSize="11sp"
+            android:letterSpacing="0.15"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_block"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="––"
+            android:textColor="#F7931A"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="BLOCK"
+        android:textColor="#5A5F68"
+        android:textSize="9sp"
+        android:letterSpacing="0.2"
+        android:layout_marginBottom="10dp" />
+
+    <!-- Kennzahlen-Zeile: Preis | Moscow | Fees -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PREIS"
+                android:textColor="#5A5F68"
+                android:textSize="8sp"
+                android:letterSpacing="0.1" />
+            <TextView
+                android:id="@+id/widget_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="–– €"
+                android:textColor="#E8E8EA"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MOSCOW"
+                android:textColor="#5A5F68"
+                android:textSize="8sp"
+                android:letterSpacing="0.1" />
+            <TextView
+                android:id="@+id/widget_moscow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="––:––"
+                android:textColor="#E8E8EA"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FEES L·M·H"
+                android:textColor="#5A5F68"
+                android:textSize="8sp"
+                android:letterSpacing="0.1" />
+            <TextView
+                android:id="@+id/widget_fees"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="–·–·–"
+                android:textColor="#E8E8EA"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Nächstes Meetup -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/widget_meetup_bg"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NÄCHSTES MEETUP"
+                android:textColor="#F7931A"
+                android:textSize="8sp"
+                android:letterSpacing="0.15"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/widget_meetup_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="––"
+                android:textColor="#E8E8EA"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/widget_meetup_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="––"
+            android:textColor="#F7931A"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:gravity="end" />
+    </LinearLayout>
+
+</LinearLayout>
