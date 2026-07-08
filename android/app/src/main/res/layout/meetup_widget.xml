@@ -42,8 +42,8 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Trennlinie -->
-    <View
+    <!-- Trennlinie (FrameLayout statt View: RemoteViews erlaubt kein nacktes View!) -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#22F7931A"
