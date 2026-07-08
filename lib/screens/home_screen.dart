@@ -713,7 +713,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               Positioned.fill(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
                   child: child,
                 ),
               ),
@@ -1060,7 +1060,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildBtcDashboardTile() => _tile(
     accentColor: cOrange,
     opacity: 0.07,
-    watermark: Icons.currency_bitcoin_rounded,
     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BitcoinDashboardScreen())),
     child: const _BtcDashboardTileContent(),
   );
@@ -1650,6 +1649,10 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
 
 /// Kompakter Inhalt der Bitcoin-Dashboard-Kachel im Home-Grid:
 /// Blockhöhe + EUR-Preis. Lädt selbst und aktualisiert alle 60s.
+
+/// Kompakter Inhalt der Bitcoin-Dashboard-Kachel im Home-Grid.
+/// Layout: offizielles Bitcoin-Logo im Hintergrund (rechts, transparent),
+/// links die Kachel-Beschreibung, rechts die aktuelle Blockhöhe.
 class _BtcDashboardTileContent extends StatefulWidget {
   const _BtcDashboardTileContent();
 
@@ -1693,34 +1696,70 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
   @override
   Widget build(BuildContext context) {
     final d = _d;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Stack(
       children: [
-        Row(children: [
-          const Icon(Icons.currency_bitcoin_rounded, color: cOrange, size: 22),
-          const SizedBox(width: 8),
-          const Text('Bitcoin', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
-          const Spacer(),
-          Container(
-            width: 7, height: 7,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: d != null ? cGreen.withValues(alpha: 0.7) : cTextTertiary,
+        // Offizielles Bitcoin-Logo im Hintergrund (rechts, dezent)
+        Positioned(
+          right: -18,
+          top: 0,
+          bottom: 0,
+          child: Center(
+            child: Opacity(
+              opacity: 0.10,
+              child: SvgPicture.asset('assets/icons/bitcoin.svg', width: 104, height: 104),
             ),
           ),
-        ]),
-        const SizedBox(height: 12),
-        Text(
-          d != null && d.blockHeight > 0 ? _fmtInt(d.blockHeight) : '––',
-          style: const TextStyle(color: cOrange, fontSize: 26, fontWeight: FontWeight.w800, height: 1.0)
-              .copyWith(fontFamily: fontMono),
         ),
-        const SizedBox(height: 2),
-        Text('BLOCK', style: const TextStyle(color: cTextTertiary, fontSize: 10, letterSpacing: 2)),
-        const SizedBox(height: 8),
-        Text(
-          d != null && d.priceEur > 0 ? '${_fmtInt(d.priceEur.round())} €' : '––',
-          style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600),
+        // Inhalt: links Beschreibung, rechts Blockhöhe
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Links: Titel + Untertitel + Preis
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    SvgPicture.asset('assets/icons/bitcoin.svg', width: 22, height: 22),
+                    const SizedBox(width: 8),
+                    const Text('Bitcoin', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                  ]),
+                  const SizedBox(height: 4),
+                  const Text('Netzwerk & Kurs', style: TextStyle(color: cTextTertiary, fontSize: 12)),
+                  if (d != null && d.priceEur > 0) ...[
+                    const SizedBox(height: 8),
+                    Text('${_fmtInt(d.priceEur.round())} €',
+                        style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+                  ],
+                ],
+              ),
+            ),
+            // Rechts: Blockhöhe
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(children: [
+                  Container(
+                    width: 7, height: 7,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: d != null ? cGreen.withValues(alpha: 0.7) : cTextTertiary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text('BLOCK', style: TextStyle(color: cTextTertiary, fontSize: 10, letterSpacing: 2)),
+                ]),
+                const SizedBox(height: 4),
+                Text(
+                  d != null && d.blockHeight > 0 ? _fmtInt(d.blockHeight) : '––',
+                  style: const TextStyle(color: cOrange, fontSize: 26, fontWeight: FontWeight.w800, height: 1.0)
+                      .copyWith(fontFamily: fontMono),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     );
