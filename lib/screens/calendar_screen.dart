@@ -105,7 +105,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     Future<void> load(Iterable<int> batch) async {
       await Future.wait(batch.map((id) async {
-        final r = await PortalApiService.getRsvp(id);
+        final r = await PortalApiService.getRsvpCached(id);
         if (mounted && r != null) setState(() => _rsvp[id] = {...?_rsvp[id], ...r});
       }));
     }
@@ -160,7 +160,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
       // Status lokal SOFORT setzen (nicht auf getRsvp warten/verlassen) —
       // so bleibt "Du hast zugesagt" auch nach Verlassen/Rückkehr korrekt.
       setState(() => _rsvp[id] = {...?_rsvp[id], 'status': status});
-      final r = await PortalApiService.getRsvp(id);
+      // Frisch laden UND den Cache aktualisieren (forceRefresh), damit die
+      // eigene Zusage sofort auch im 1h-Cache steht.
+      final r = await PortalApiService.getRsvpCached(id, forceRefresh: true);
       if (mounted && r != null) setState(() => _rsvp[id] = {...?_rsvp[id], ...r});
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

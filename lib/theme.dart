@@ -21,8 +21,8 @@ const Color cNostr  = Color(0xFF8B5CF6);
 
 // ── Text (hoher Kontrast) ─────────────────
 const Color cText          = Color(0xFFFFFFFF);
-const Color cTextSecondary = Color(0xFF808088);
-const Color cTextTertiary  = Color(0xFF3E3E46);
+const Color cTextSecondary = Color(0xFF9CA0A8); // aufgehellt für bessere Lesbarkeit (war 0xFF808088)
+const Color cTextTertiary  = Color(0xFF6E727C); // deutlich aufgehellt, draußen lesbar (war 0xFF3E3E46)
 
 // ── Rahmen (minimal) ─────────────────────
 const Color cBorder     = Color(0xFF1C1C22);

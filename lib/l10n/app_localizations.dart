@@ -8109,6 +8109,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Rechnung kopiert'**
   String get v4vCopied;
+
+  /// No description provided for @convPremiumTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf-/Abschlag'**
+  String get convPremiumTitle;
+
+  /// No description provided for @convPremiumHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Für Trades: Prozent-Aufschlag (+) oder Abschlag (−) auf den Kurs.'**
+  String get convPremiumHint;
+
+  /// No description provided for @convPremiumResult.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Auf-/Abschlag'**
+  String get convPremiumResult;
+
+  /// No description provided for @convPremiumBase.
+  ///
+  /// In de, this message translates to:
+  /// **'Basiskurs'**
+  String get convPremiumBase;
 }
 
 class _AppLocalizationsDelegate

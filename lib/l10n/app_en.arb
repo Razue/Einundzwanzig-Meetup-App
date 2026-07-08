@@ -2126,5 +2126,9 @@
   "v4vNoWalletTitle": "No Lightning wallet found",
   "v4vNoWalletBody": "No app was found to pay. You can copy the invoice and paste it into your wallet.",
   "v4vCopyInvoice": "Copy invoice",
-  "v4vCopied": "Invoice copied"
+  "v4vCopied": "Invoice copied",
+  "convPremiumTitle": "Premium / Discount",
+  "convPremiumHint": "For trades: percentage premium (+) or discount (−) on the rate.",
+  "convPremiumResult": "With premium/discount",
+  "convPremiumBase": "Base rate"
 }

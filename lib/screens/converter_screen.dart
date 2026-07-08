@@ -35,6 +35,10 @@ class _ConverterScreenState extends State<ConverterScreen> {
   bool _error = false;
   DateTime? _updated;
 
+  // Auf-/Abschlag fürs Trading (in Prozent, mit Nachkommastelle).
+  final TextEditingController _premiumCtrl = TextEditingController();
+  double _premiumPercent = 0; // positiv = Aufschlag, negativ = Abschlag
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +49,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
   void dispose() {
     _fiatCtrl.dispose();
     _cryptoCtrl.dispose();
+    _premiumCtrl.dispose();
     super.dispose();
   }
 
@@ -66,6 +71,34 @@ class _ConverterScreenState extends State<ConverterScreen> {
 
   /// Aktueller BTC-Preis in der gewählten Währung (0 wenn unbekannt).
   double get _btcPrice => _prices[_currency] ?? 0;
+
+  /// Der aktuelle Fiat-Betrag (aus dem Fiat-Feld oder berechnet).
+  double get _currentFiat {
+    final direct = double.tryParse(_fiatCtrl.text.replaceAll(',', '.'));
+    if (direct != null) return direct;
+    final raw = double.tryParse(_cryptoCtrl.text.replaceAll(',', '.'));
+    if (raw != null && _btcPrice > 0) {
+      final btc = _cryptoIsBtc ? raw : raw / _satsPerBtc;
+      return btc * _btcPrice;
+    }
+    return 0;
+  }
+
+  /// Fiat-Betrag mit Auf-/Abschlag (fürs Trading).
+  double get _fiatWithPremium => _currentFiat * (1 + _premiumPercent / 100);
+
+  void _onPremiumChanged(String v) {
+    setState(() {
+      _premiumPercent = double.tryParse(v.replaceAll(',', '.')) ?? 0;
+    });
+  }
+
+  void _adjustPremium(double delta) {
+    setState(() {
+      _premiumPercent = ((_premiumPercent + delta) * 10).round() / 10; // auf 0.1 runden
+      _premiumCtrl.text = _premiumPercent == 0 ? '' : _premiumPercent.toString();
+    });
+  }
 
   /// Berechnet die jeweils andere Seite neu, je nachdem welche
   /// Seite zuletzt bearbeitet wurde.
@@ -205,7 +238,10 @@ class _ConverterScreenState extends State<ConverterScreen> {
               onChanged: _onCryptoChanged,
               trailing: _unitToggle(t),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+            // ── Auf-/Abschlag fürs Trading ──
+            _premiumSection(t),
+            const SizedBox(height: 20),
             // ── Kursinfo ──
             _rateInfo(t),
           ]),
@@ -213,6 +249,97 @@ class _ConverterScreenState extends State<ConverterScreen> {
       ),
     );
   }
+
+  /// Auf-/Abschlag-Bereich fürs Trading: Prozent eingeben (mit Nachkomma),
+  /// zeigt den angepassten Fiat-Preis.
+  Widget _premiumSection(AppLocalizations t) {
+    final base = _currentFiat;
+    final withP = _fiatWithPremium;
+    final hasValue = base > 0;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cCard,
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(color: cTileBorder, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.trending_up_rounded, color: cOrange, size: 16),
+          const SizedBox(width: 8),
+          Text(t.convPremiumTitle,
+              style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+        ]),
+        const SizedBox(height: 4),
+        Text(t.convPremiumHint,
+            style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+        const SizedBox(height: 14),
+        Row(children: [
+          // Minus-Button (-0.5)
+          _stepButton('−0,5', () => _adjustPremium(-0.5)),
+          const SizedBox(width: 8),
+          // Eingabefeld Prozent
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: cSurface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: cTileBorder, width: 0.5),
+              ),
+              child: TextField(
+                controller: _premiumCtrl,
+                onChanged: _onPremiumChanged,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w700),
+                decoration: const InputDecoration(
+                  hintText: '0,0',
+                  hintStyle: TextStyle(color: cTextTertiary),
+                  suffixText: '%',
+                  suffixStyle: TextStyle(color: cOrange, fontWeight: FontWeight.w700),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Plus-Button (+0.5)
+          _stepButton('+0,5', () => _adjustPremium(0.5)),
+        ]),
+        if (hasValue) ...[
+          const SizedBox(height: 16),
+          Container(height: 0.5, color: cTileBorder),
+          const SizedBox(height: 14),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(t.convPremiumResult, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
+            Text('${withP.toStringAsFixed(2)} $_currency',
+                style: const TextStyle(color: cOrange, fontSize: 20, fontWeight: FontWeight.w800)),
+          ]),
+          const SizedBox(height: 4),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(t.convPremiumBase, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+            Text('${base.toStringAsFixed(2)} $_currency',
+                style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+          ]),
+        ],
+      ]),
+    );
+  }
+
+  Widget _stepButton(String label, VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 52, height: 48,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: cSurface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: cTileBorder, width: 0.5),
+      ),
+      child: Text(label, style: const TextStyle(color: cOrange, fontSize: 13, fontWeight: FontWeight.w700)),
+    ),
+  );
 
   Widget _errorBanner(AppLocalizations t) => Container(
     margin: const EdgeInsets.only(bottom: 16),

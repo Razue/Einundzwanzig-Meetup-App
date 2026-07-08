@@ -4405,4 +4405,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get v4vCopied => 'Invoice copied';
+
+  @override
+  String get convPremiumTitle => 'Premium / Discount';
+
+  @override
+  String get convPremiumHint =>
+      'For trades: percentage premium (+) or discount (−) on the rate.';
+
+  @override
+  String get convPremiumResult => 'With premium/discount';
+
+  @override
+  String get convPremiumBase => 'Base rate';
 }

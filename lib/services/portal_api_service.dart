@@ -26,6 +26,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app_logger.dart';
 import 'secure_key_store.dart';
 import 'signing_service.dart';
@@ -484,6 +485,47 @@ class PortalApiService {
       return (data is Map<String, dynamic>) ? data : body;
     }
     return null;
+  }
+
+  static const _rsvpCacheTtl = Duration(hours: 1);
+
+  /// Wie getRsvp, aber mit lokalem 1-Stunden-Cache. Gibt bei einem frischen
+  /// Cache-Treffer SOFORT den gespeicherten Wert zurück (keine Netzabfrage),
+  /// sonst wird geladen und das Ergebnis gecacht. So erscheint "Du hast
+  /// zugesagt" beim wiederholten Öffnen ohne Verzögerung.
+  /// [forceRefresh] umgeht den Cache (z.B. nach eigenem Zu-/Absagen).
+  static Future<Map<String, dynamic>?> getRsvpCached(int eventId, {bool forceRefresh = false}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'rsvp_cache_$eventId';
+    final tsKey = 'rsvp_cache_ts_$eventId';
+
+    if (!forceRefresh) {
+      final tsMillis = prefs.getInt(tsKey);
+      final cached = prefs.getString(key);
+      if (tsMillis != null && cached != null) {
+        final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(tsMillis));
+        if (age < _rsvpCacheTtl) {
+          try {
+            final map = jsonDecode(cached);
+            if (map is Map<String, dynamic>) return map;
+          } catch (_) {/* kaputter Cache -> neu laden */}
+        }
+      }
+    }
+
+    final fresh = await getRsvp(eventId);
+    if (fresh != null) {
+      await prefs.setString(key, jsonEncode(fresh));
+      await prefs.setInt(tsKey, DateTime.now().millisecondsSinceEpoch);
+    }
+    return fresh;
+  }
+
+  /// Löscht den RSVP-Cache eines Events (nach eigenem Zu-/Absagen aufrufen).
+  static Future<void> clearRsvpCache(int eventId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('rsvp_cache_$eventId');
+    await prefs.remove('rsvp_cache_ts_$eventId');
   }
 
   /// Zusagen. POST /api/meetup-events/{id}/rsvp (Auth nötig).

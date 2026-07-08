@@ -2148,5 +2148,9 @@
   "v4vNoWalletTitle": "Keine Lightning-Wallet gefunden",
   "v4vNoWalletBody": "Es wurde keine App zum Bezahlen gefunden. Du kannst die Rechnung kopieren und in deiner Wallet einfügen.",
   "v4vCopyInvoice": "Rechnung kopieren",
-  "v4vCopied": "Rechnung kopiert"
+  "v4vCopied": "Rechnung kopiert",
+  "convPremiumTitle": "Auf-/Abschlag",
+  "convPremiumHint": "Für Trades: Prozent-Aufschlag (+) oder Abschlag (−) auf den Kurs.",
+  "convPremiumResult": "Mit Auf-/Abschlag",
+  "convPremiumBase": "Basiskurs"
 }

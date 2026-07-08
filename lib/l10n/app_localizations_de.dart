@@ -4446,4 +4446,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get v4vCopied => 'Rechnung kopiert';
+
+  @override
+  String get convPremiumTitle => 'Auf-/Abschlag';
+
+  @override
+  String get convPremiumHint =>
+      'Für Trades: Prozent-Aufschlag (+) oder Abschlag (−) auf den Kurs.';
+
+  @override
+  String get convPremiumResult => 'Mit Auf-/Abschlag';
+
+  @override
+  String get convPremiumBase => 'Basiskurs';
 }

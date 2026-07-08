@@ -52,6 +52,7 @@ import 'v4v_screen.dart';
 import 'bitcoin_dashboard_screen.dart';
 import '../services/mempool.dart';
 import '../services/widget_service.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
@@ -126,6 +127,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events'};
 
   late List<_TileDef> _tileDefs;
+  String _appVersion = ''; // wird in initState aus package_info geladen
 
   @override
   void initState() {
@@ -134,6 +136,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _initTileDefs();
     _loadTileOrder();
     _loadAll();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) setState(() => _appVersion = info.version);
+    } catch (_) {/* Version bleibt leer, keine Anzeige */}
   }
 
   void _initTileDefs() {
@@ -1274,6 +1284,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         AppLocalizations.of(context).settingsResetSub,
                         () { Navigator.pop(ctx); _resetApp(); }, danger: true),
                     ]),
+                    const SizedBox(height: 20),
+                    // Versionsanzeige (dezent, unten)
+                    Center(
+                      child: Text(
+                        _appVersion.isEmpty ? '' : '21Meetup · Version $_appVersion',
+                        style: const TextStyle(color: cTextTertiary, fontSize: 11),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),

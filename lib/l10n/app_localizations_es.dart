@@ -4430,4 +4430,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get v4vCopied => 'Factura copiada';
+
+  @override
+  String get convPremiumTitle => 'Prima / Descuento';
+
+  @override
+  String get convPremiumHint =>
+      'Para operaciones: prima (+) o descuento (−) en porcentaje sobre el precio.';
+
+  @override
+  String get convPremiumResult => 'Con prima/descuento';
+
+  @override
+  String get convPremiumBase => 'Precio base';
 }

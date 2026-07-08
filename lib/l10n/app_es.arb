@@ -2126,5 +2126,9 @@
   "v4vNoWalletTitle": "No se encontró ninguna wallet Lightning",
   "v4vNoWalletBody": "No se encontró ninguna app para pagar. Puedes copiar la factura y pegarla en tu wallet.",
   "v4vCopyInvoice": "Copiar factura",
-  "v4vCopied": "Factura copiada"
+  "v4vCopied": "Factura copiada",
+  "convPremiumTitle": "Prima / Descuento",
+  "convPremiumHint": "Para operaciones: prima (+) o descuento (−) en porcentaje sobre el precio.",
+  "convPremiumResult": "Con prima/descuento",
+  "convPremiumBase": "Precio base"
 }
