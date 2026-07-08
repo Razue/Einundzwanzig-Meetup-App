@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetPlugin
 
 /**
@@ -49,12 +48,16 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.widget_meetup_countdown, "In der App wählen")
             }
 
-            // Tap aufs ganze Widget -> App öffnen
-            val launchIntent: PendingIntent = HomeWidgetLaunchIntent.getActivity(
-                context,
-                MainActivity::class.java
-            )
-            views.setOnClickPendingIntent(R.id.widget_root, launchIntent)
+            // Tap aufs ganze Widget -> App öffnen.
+            // Intent selbst bauen (NICHT HomeWidgetLaunchIntent), da dessen
+            // PendingIntent-Flags auf Android 14+/MIUI zu einem Absturz führen
+            // (pendingIntentBackgroundActivityStartMode-Fehler).
+            val launchIntent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            }
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            val pendingIntent = PendingIntent.getActivity(context, 0, launchIntent, flags)
+            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
             appWidgetManager.updateAppWidget(widgetId, views)
         }
