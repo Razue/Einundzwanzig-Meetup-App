@@ -7,15 +7,37 @@
     android:background="@drawable/widget_bg"
     android:padding="16dp">
 
-    <!-- Einundzwanzig-Logo oben (klickbar -> App normal öffnen) -->
-    <ImageView
-        android:id="@+id/widget_logo"
-        android:layout_width="wrap_content"
-        android:layout_height="18dp"
-        android:src="@drawable/widget_logo"
-        android:adjustViewBounds="true"
-        android:layout_marginBottom="20dp"
-        android:contentDescription="Einundzwanzig" />
+    <!-- Kopf: Logo links (klickbar -> App), Refresh-Rädchen rechts -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:id="@+id/widget_logo"
+            android:layout_width="0dp"
+            android:layout_height="18dp"
+            android:layout_weight="1"
+            android:src="@drawable/widget_logo"
+            android:adjustViewBounds="true"
+            android:scaleType="fitStart"
+            android:contentDescription="Einundzwanzig" />
+
+        <TextView
+            android:id="@+id/widget_refresh"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⟳"
+            android:textColor="#F7931A"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingLeft="12dp"
+            android:paddingRight="4dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp" />
+    </LinearLayout>
 
     <!-- BEREICH BITCOIN (klickbar -> Bitcoin-Ansicht) -->
     <LinearLayout
@@ -136,6 +158,80 @@
                     android:text="–·–·–"
                     android:textColor="#FFFFFF"
                     android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Zweite Kennzahlen-Zeile: Hashrate | Supply | Difficulty -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="14dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="HASHRATE"
+                    android:textColor="#8A8F98"
+                    android:textSize="9sp"
+                    android:layout_marginBottom="3dp" />
+                <TextView
+                    android:id="@+id/widget_hashrate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="––"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SUPPLY"
+                    android:textColor="#8A8F98"
+                    android:textSize="9sp"
+                    android:layout_marginBottom="3dp" />
+                <TextView
+                    android:id="@+id/widget_supply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="––"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DIFFICULTY"
+                    android:textColor="#8A8F98"
+                    android:textSize="9sp"
+                    android:layout_marginBottom="3dp" />
+                <TextView
+                    android:id="@+id/widget_difficulty"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="––"
+                    android:textColor="#FFFFFF"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>

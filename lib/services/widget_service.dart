@@ -38,6 +38,14 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('moscow', d.moscowTime);
       await HomeWidget.saveWidgetData<String>(
           'fees', '${d.feeLow}·${d.feeMedium}·${d.feeHigh}');
+      await HomeWidget.saveWidgetData<String>('hashrate',
+          d.hashrateEhs > 0 ? '${d.hashrateEhs.toStringAsFixed(0)} EH/s' : '––');
+      await HomeWidget.saveWidgetData<String>('supply',
+          d.supply > 0 ? _fmtInt(d.supply) : '––');
+      await HomeWidget.saveWidgetData<String>('difficulty',
+          d.difficultyRemainingBlocks > 0
+              ? '${d.difficultyChangePct >= 0 ? '+' : ''}${d.difficultyChangePct.toStringAsFixed(1)}% / ${d.difficultyRemainingBlocks}'
+              : '––');
       await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
     } catch (e) {
       AppLogger.debug(_tag, 'Bitcoin-Widget-Update fehlgeschlagen: $e');

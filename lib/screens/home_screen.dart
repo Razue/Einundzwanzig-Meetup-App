@@ -142,28 +142,42 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _handleWidgetLaunch();       // wurde die App über den Widget-News-Button geöffnet?
   }
 
-  /// Prüft, ob die App über einen Bereich des Widgets gestartet wurde,
-  /// und öffnet dann das passende Ziel (Bitcoin / Meetup / News).
+  /// Widget-Klicks: Kaltstart (App war zu) UND warmer Klick (App läuft).
+  /// Die URI kommt als homewidget://<ziel> vom Provider.
+  StreamSubscription<Uri?>? _widgetClickSub;
+
   Future<void> _handleWidgetLaunch() async {
     try {
+      // Kaltstart: App wurde über einen Widget-Bereich geöffnet.
       final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
-      if (uri == null) return;
-      final target = uri.toString();
-      // kleine Verzögerung, damit der erste Frame/Context sicher steht
-      await Future.delayed(const Duration(milliseconds: 250));
-      if (!mounted) return;
-      if (target.contains('news')) {
+      if (uri != null) {
+        await Future.delayed(const Duration(milliseconds: 250));
+        _routeWidgetTarget(uri);
+      }
+      // Warm: App lief schon, Nutzer tippt einen Widget-Bereich an.
+      _widgetClickSub = HomeWidget.widgetClicked.listen(_routeWidgetTarget);
+    } catch (_) {/* egal */}
+  }
+
+  void _routeWidgetTarget(Uri? uri) {
+    if (uri == null || !mounted) return;
+    final target = uri.host; // homewidget://bitcoin -> "bitcoin"
+    switch (target) {
+      case 'news':
         _openNews();
-      } else if (target.contains('bitcoin')) {
+        break;
+      case 'bitcoin':
         Navigator.push(context, MaterialPageRoute(builder: (_) => const BitcoinDashboardScreen()));
-      } else if (target.contains('meetup')) {
+        break;
+      case 'meetup':
         if (_homeMeetup != null) {
           Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _homeMeetup!.city)));
         } else {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
         }
-      }
-    } catch (_) {/* egal */}
+        break;
+      // 'home' und 'refresh' -> nichts extra tun (App ist offen / Hintergrund-Job)
+    }
   }
 
   void _openNews() {
@@ -242,7 +256,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   @override
-  void dispose() { _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
+  void dispose() { _sessionTimer?.cancel(); _widgetClickSub?.cancel(); _pulseController.dispose(); super.dispose(); }
   void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
 
   bool _refreshing = false;

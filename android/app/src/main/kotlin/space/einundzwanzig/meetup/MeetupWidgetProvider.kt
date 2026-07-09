@@ -44,6 +44,14 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.widget_moscow, moscow)
                 views.setTextViewText(R.id.widget_fees, fees)
 
+                // Erweiterte Kennzahlen (Hashrate, Supply, Difficulty)
+                try {
+                    val prefs = HomeWidgetPlugin.getData(context)
+                    views.setTextViewText(R.id.widget_hashrate, prefs.getString("hashrate", "––") ?: "––")
+                    views.setTextViewText(R.id.widget_supply, prefs.getString("supply", "––") ?: "––")
+                    views.setTextViewText(R.id.widget_difficulty, prefs.getString("difficulty", "––") ?: "––")
+                } catch (_: Exception) {}
+
                 if (meetupCity.isNotEmpty()) {
                     views.setTextViewText(R.id.widget_meetup_city, meetupCity)
                     views.setTextViewText(R.id.widget_meetup_countdown, meetupCountdown)
@@ -68,11 +76,16 @@ class MeetupWidgetProvider : AppWidgetProvider() {
 
                 val piFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
+                // WICHTIG: Die Intents MÜSSEN die home_widget-LAUNCH-Action und
+                // eine data-URI tragen — nur dann liefert das Plugin auf der
+                // Dart-Seite (initiallyLaunchedFromHomeWidget/widgetClicked)
+                // die URI und das Routing greift. Eigene Actions/Extras werden
+                // vom Plugin ignoriert (das war der Fehler bisher).
                 fun openIntent(target: String, requestCode: Int): PendingIntent {
                     val i = Intent(context, MainActivity::class.java).apply {
+                        action = "es.antonborri.home_widget.action.LAUNCH"
+                        data = android.net.Uri.parse("homewidget://$target")
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        putExtra("open", target)
-                        action = "space.einundzwanzig.meetup.OPEN_${target.uppercase()}"
                     }
                     return PendingIntent.getActivity(context, requestCode, i, piFlags)
                 }
@@ -82,11 +95,18 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                 views.setOnClickPendingIntent(R.id.widget_meetup_area, openIntent("meetup", 3))
                 views.setOnClickPendingIntent(R.id.widget_news_row, openIntent("news", 1))
 
-                // WICHTIG: KEIN Klick auf widget_root! Ein Klick auf dem
-                // Wurzel-Container würde in RemoteViews die inneren Bereiche
-                // überdecken (alle Taps gingen an den Root). Stattdessen ist
-                // das Logo oben der allgemeine "App öffnen"-Bereich.
+                // Logo oben = "App normal öffnen".
                 views.setOnClickPendingIntent(R.id.widget_logo, openIntent("home", 0))
+
+                // Aktualisieren-Rädchen: führt Dart-Code im HINTERGRUND aus
+                // (holt frische Daten, ohne die App zu öffnen).
+                try {
+                    val refreshPi = es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
+                        context,
+                        android.net.Uri.parse("homewidget://refresh")
+                    )
+                    views.setOnClickPendingIntent(R.id.widget_refresh, refreshPi)
+                } catch (_: Exception) { /* Refresh-Button dann ohne Funktion, Widget lebt weiter */ }
 
                 appWidgetManager.updateAppWidget(widgetId, views)
             } catch (e: Exception) {

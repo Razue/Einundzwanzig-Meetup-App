@@ -163,12 +163,25 @@ class MempoolService {
       }, [prev?.lnCapacityBtc ?? 0.0, (prev?.lnNodeCount ?? 0).toDouble(), (prev?.lnChannelCount ?? 0).toDouble()]),
     ]);
 
-    final height = results[0] as int;
-    final fees = results[1] as List<int>;
+    final height0 = results[0] as int;
+    final fees0 = results[1] as List<int>;
     final prices = results[2] as Map<String, double>;
-    final hashrate = results[3] as double;
-    final diff = results[4] as List<double>;
-    final ln = results[5] as List<double>;
+    final hashrate0 = results[3] as double;
+    final diff0 = results[4] as List<double>;
+    final ln0 = results[5] as List<double>;
+
+    // 0-GUARDS: Einige Quellen (z.B. getBlockHeight) geben bei Fehlern 0
+    // zurück statt zu werfen — dann greift der safe()-Fallback nicht.
+    // Ein guter alter Wert darf NIE von einer 0 überschrieben werden,
+    // sonst zeigt Kachel/App plötzlich "––" bis zum Neustart.
+    final height = height0 > 0 ? height0 : (prev?.blockHeight ?? 0);
+    final fees = (fees0[0] > 0 || fees0[1] > 0 || fees0[2] > 0)
+        ? fees0 : [prev?.feeLow ?? 0, prev?.feeMedium ?? 0, prev?.feeHigh ?? 0];
+    final hashrate = hashrate0 > 0 ? hashrate0 : (prev?.hashrateEhs ?? 0.0);
+    final diff = (diff0[0] != 0.0 || diff0[1] > 0)
+        ? diff0 : [prev?.difficultyChangePct ?? 0.0, (prev?.difficultyRemainingBlocks ?? 0).toDouble()];
+    final ln = ln0[0] > 0 ? ln0
+        : [prev?.lnCapacityBtc ?? 0.0, (prev?.lnNodeCount ?? 0).toDouble(), (prev?.lnChannelCount ?? 0).toDouble()];
 
     final data = BitcoinDashboardData(
       blockHeight: height,
