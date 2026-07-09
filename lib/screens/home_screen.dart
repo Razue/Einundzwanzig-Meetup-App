@@ -10,6 +10,7 @@
 // ============================================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -142,26 +143,31 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _handleWidgetLaunch();       // wurde die App über den Widget-News-Button geöffnet?
   }
 
-  /// Widget-Klicks: Kaltstart (App war zu) UND warmer Klick (App läuft).
-  /// Die URI kommt als homewidget://<ziel> vom Provider.
-  StreamSubscription<Uri?>? _widgetClickSub;
+  /// Widget-Klick-Routing über unseren EIGENEN MethodChannel (die
+  /// MainActivity liest das Ziel aus dem Intent und reicht es durch) —
+  /// unabhängig vom home_widget-Plugin-Verhalten.
+  static const _widgetChannel = MethodChannel('einundzwanzig/widget');
 
   Future<void> _handleWidgetLaunch() async {
     try {
-      // Kaltstart: App wurde über einen Widget-Bereich geöffnet.
-      final uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
-      if (uri != null) {
+      // Push-Weg: App läuft, Nutzer tippt Widget-Bereich -> Native pusht Ziel.
+      _widgetChannel.setMethodCallHandler((call) async {
+        if (call.method == 'widgetTarget') {
+          _routeWidgetTarget(call.arguments as String?);
+        }
+        return null;
+      });
+      // Kaltstart-Weg: App wurde über einen Widget-Bereich geöffnet.
+      final t = await _widgetChannel.invokeMethod<String>('getLaunchTarget');
+      if (t != null) {
         await Future.delayed(const Duration(milliseconds: 250));
-        _routeWidgetTarget(uri);
+        _routeWidgetTarget(t);
       }
-      // Warm: App lief schon, Nutzer tippt einen Widget-Bereich an.
-      _widgetClickSub = HomeWidget.widgetClicked.listen(_routeWidgetTarget);
     } catch (_) {/* egal */}
   }
 
-  void _routeWidgetTarget(Uri? uri) {
-    if (uri == null || !mounted) return;
-    final target = uri.host; // homewidget://bitcoin -> "bitcoin"
+  void _routeWidgetTarget(String? target) {
+    if (target == null || !mounted) return;
     switch (target) {
       case 'news':
         _openNews();
@@ -176,7 +182,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
         }
         break;
-      // 'home' und 'refresh' -> nichts extra tun (App ist offen / Hintergrund-Job)
+      // 'home'/'refresh' -> nichts extra
     }
   }
 
@@ -256,7 +262,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   @override
-  void dispose() { _sessionTimer?.cancel(); _widgetClickSub?.cancel(); _pulseController.dispose(); super.dispose(); }
+  void dispose() { _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
   void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
 
   bool _refreshing = false;

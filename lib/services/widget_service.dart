@@ -46,6 +46,10 @@ class WidgetService {
           d.difficultyRemainingBlocks > 0
               ? '${d.difficultyChangePct >= 0 ? '+' : ''}${d.difficultyChangePct.toStringAsFixed(1)}% / ${d.difficultyRemainingBlocks}'
               : '––');
+      // "Stand HH:MM" — sichtbares Feedback, dass aktualisiert wurde.
+      final now = DateTime.now();
+      String two(int n) => n.toString().padLeft(2, '0');
+      await HomeWidget.saveWidgetData<String>('updated', '${two(now.hour)}:${two(now.minute)}');
       await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
     } catch (e) {
       AppLogger.debug(_tag, 'Bitcoin-Widget-Update fehlgeschlagen: $e');

@@ -50,6 +50,8 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                     views.setTextViewText(R.id.widget_hashrate, prefs.getString("hashrate", "––") ?: "––")
                     views.setTextViewText(R.id.widget_supply, prefs.getString("supply", "––") ?: "––")
                     views.setTextViewText(R.id.widget_difficulty, prefs.getString("difficulty", "––") ?: "––")
+                    val upd = prefs.getString("updated", "") ?: ""
+                    views.setTextViewText(R.id.widget_updated, if (upd.isEmpty()) "" else "Stand $upd")
                 } catch (_: Exception) {}
 
                 if (meetupCity.isNotEmpty()) {
@@ -85,6 +87,7 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                     val i = Intent(context, MainActivity::class.java).apply {
                         action = "es.antonborri.home_widget.action.LAUNCH"
                         data = android.net.Uri.parse("homewidget://$target")
+                        putExtra("open", target)
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     }
                     return PendingIntent.getActivity(context, requestCode, i, piFlags)

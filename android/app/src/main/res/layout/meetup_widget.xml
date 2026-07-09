@@ -26,17 +26,26 @@
             android:contentDescription="Einundzwanzig" />
 
         <TextView
+            android:id="@+id/widget_updated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#8A8F98"
+            android:textSize="10sp"
+            android:layout_marginEnd="6dp" />
+
+        <TextView
             android:id="@+id/widget_refresh"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="⟳"
             android:textColor="#F7931A"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:paddingLeft="12dp"
-            android:paddingRight="4dp"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp" />
+            android:paddingLeft="14dp"
+            android:paddingRight="6dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp" />
     </LinearLayout>
 
     <!-- BEREICH BITCOIN (klickbar -> Bitcoin-Ansicht) -->
