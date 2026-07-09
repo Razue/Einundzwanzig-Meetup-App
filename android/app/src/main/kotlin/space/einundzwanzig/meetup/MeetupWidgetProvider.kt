@@ -82,12 +82,11 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                 views.setOnClickPendingIntent(R.id.widget_meetup_area, openIntent("meetup", 3))
                 views.setOnClickPendingIntent(R.id.widget_news_row, openIntent("news", 1))
 
-                // Fallback: Tap auf sonstige Flächen (Logo/Rand) -> App normal öffnen.
-                val rootIntent = Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                }
-                val rootPi = PendingIntent.getActivity(context, 0, rootIntent, piFlags)
-                views.setOnClickPendingIntent(R.id.widget_root, rootPi)
+                // WICHTIG: KEIN Klick auf widget_root! Ein Klick auf dem
+                // Wurzel-Container würde in RemoteViews die inneren Bereiche
+                // überdecken (alle Taps gingen an den Root). Stattdessen ist
+                // das Logo oben der allgemeine "App öffnen"-Bereich.
+                views.setOnClickPendingIntent(R.id.widget_logo, openIntent("home", 0))
 
                 appWidgetManager.updateAppWidget(widgetId, views)
             } catch (e: Exception) {

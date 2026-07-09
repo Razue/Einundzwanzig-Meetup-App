@@ -7,13 +7,14 @@
     android:background="@drawable/widget_bg"
     android:padding="16dp">
 
-    <!-- Einundzwanzig-Logo oben -->
+    <!-- Einundzwanzig-Logo oben (klickbar -> App normal öffnen) -->
     <ImageView
+        android:id="@+id/widget_logo"
         android:layout_width="wrap_content"
         android:layout_height="18dp"
         android:src="@drawable/widget_logo"
         android:adjustViewBounds="true"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="20dp"
         android:contentDescription="Einundzwanzig" />
 
     <!-- BEREICH BITCOIN (klickbar -> Bitcoin-Ansicht) -->
