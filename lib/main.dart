@@ -127,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     Widget nextScreen;
-    if (user.nickname == "Anon" || user.nickname.isEmpty) {
+    if (!user.isOnboarded) {
       nextScreen = const IntroScreen();
     } else {
       // NEU: Statt DashboardScreen → AppShell (mit BottomNav)
@@ -183,5 +183,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
-
 

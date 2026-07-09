@@ -71,7 +71,7 @@ class _IntroScreenState extends State<IntroScreen>
     UserProfile user = await UserProfile.load();
     if (!mounted) return;
 
-    if (user.nickname == "Anon" && !user.isVerified) {
+    if (!user.isOnboarded) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context).introSetIdentity),
@@ -85,7 +85,7 @@ class _IntroScreenState extends State<IntroScreen>
       );
       user = await UserProfile.load();
       if (!mounted) return;
-      if (user.nickname == "Anon" || user.nickname.isEmpty) {
+      if (!user.isOnboarded) {
         setState(() => _isLoading = false);
         return;
       }
@@ -360,5 +360,4 @@ class _IntroScreenState extends State<IntroScreen>
     );
   }
 }
-
 

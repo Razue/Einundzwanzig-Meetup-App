@@ -57,6 +57,13 @@ class UserProfile {
   bool _adminCryptoVerified = false;
   bool get isAdminCryptoVerified => _adminCryptoVerified;
 
+  bool get hasCustomNickname {
+    final trimmed = nickname.trim();
+    return trimmed.isNotEmpty && trimmed != 'Anon';
+  }
+
+  bool get isOnboarded => hasCustomNickname || isVerified;
+
   UserProfile({
     this.nickname = "Anon",
     this.fullName = "",
@@ -175,5 +182,4 @@ class UserProfile {
 
   bool get isVerified => isNostrVerified || isAdminVerified;
 }
-
 
