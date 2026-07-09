@@ -50,6 +50,13 @@ class DeviceIntegrityService {
       if (Platform.isAndroid) {
         findings.addAll(await _checkAndroid());
       } else if (Platform.isIOS) {
+        if (_isIOSSimulator) {
+          _cachedReport = IntegrityReport(
+            status: DeviceIntegrityStatus.unknown,
+            findings: ['iOS Simulator: Integritätsprüfung nicht aussagekräftig'],
+          );
+          return _cachedReport!;
+        }
         findings.addAll(await _checkIOS());
       } else {
         _cachedReport = IntegrityReport(
@@ -151,6 +158,14 @@ class DeviceIntegrityService {
   // =============================================
   // iOS JAILBREAK DETECTION
   // =============================================
+  static bool get _isIOSSimulator {
+    if (!Platform.isIOS) return false;
+    final env = Platform.environment;
+    return env.containsKey('SIMULATOR_DEVICE_NAME') ||
+        env.containsKey('SIMULATOR_UDID') ||
+        env.containsKey('SIMULATOR_ROOT');
+  }
+
   static Future<List<String>> _checkIOS() async {
     final findings = <String>[];
 
