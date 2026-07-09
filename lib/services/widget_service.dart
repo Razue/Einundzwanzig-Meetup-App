@@ -7,6 +7,7 @@
 //  Startseite aufgerufen.
 // ============================================
 
+import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'mempool.dart';
@@ -17,6 +18,9 @@ class WidgetService {
   static const _tag = 'WidgetService';
   // Muss zum nativen Provider passen:
   static const _androidProvider = 'MeetupWidgetProvider';
+
+  static bool get _isAndroid =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   static String _fmtInt(int v) {
     final s = v.toString();
@@ -30,6 +34,7 @@ class WidgetService {
 
   /// Aktualisiert die Bitcoin-/Mempool-Kennzahlen im Widget.
   static Future<void> updateBitcoin(BitcoinDashboardData d) async {
+    if (!_isAndroid) return;
     try {
       await HomeWidget.saveWidgetData<String>(
           'block', d.blockHeight > 0 ? _fmtInt(d.blockHeight) : '––');
@@ -59,6 +64,7 @@ class WidgetService {
   /// Aktualisiert das nächste Meetup im Widget.
   /// [city] leer -> Widget zeigt "Kein Home-Meetup".
   static Future<void> updateMeetup({required String city, required String countdown}) async {
+    if (!_isAndroid) return;
     try {
       await HomeWidget.saveWidgetData<String>('meetupCity', city);
       await HomeWidget.saveWidgetData<String>('meetupCountdown', countdown);
@@ -70,6 +76,7 @@ class WidgetService {
 
   /// Bequemer Sammel-Aufruf: holt frische Bitcoin-Daten und schreibt sie.
   static Future<void> refreshBitcoin() async {
+    if (!_isAndroid) return;
     try {
       final d = await MempoolService.getDashboardData();
       await updateBitcoin(d);
@@ -85,6 +92,7 @@ class WidgetService {
   /// Prüft den neuesten Artikel und markiert das Widget mit "NEU", wenn er
   /// noch nicht gesehen wurde. Schreibt Titel + Neu-Status ins Widget.
   static Future<void> refreshNews() async {
+    if (!_isAndroid) return;
     try {
       final articles = await NewsService.fetchArticles(limit: 1);
       if (articles.isEmpty) return;
@@ -108,6 +116,7 @@ class WidgetService {
   /// Markiert den neuesten Artikel als gesehen -> "NEU"-Markierung im Widget
   /// verschwindet. Beim Öffnen der News-Sektion aufrufen.
   static Future<void> markNewsSeen() async {
+    if (!_isAndroid) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       final latest = prefs.getString(_kLatestNewsId) ?? '';
