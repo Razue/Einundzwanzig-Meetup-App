@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:home_widget/home_widget.dart';
 import 'l10n/app_localizations.dart';
 import 'theme.dart';
 import 'screens/intro.dart';
@@ -9,9 +10,24 @@ import 'models/user.dart';
 import 'services/secure_key_store.dart';
 import 'services/promotion_claim_service.dart';
 import 'services/locale_controller.dart';
+import 'services/widget_service.dart';
+
+/// Wird vom Aktualisieren-Rädchen des Homescreen-Widgets ausgelöst:
+/// läuft im HINTERGRUND (ohne die App zu öffnen), holt frische Daten
+/// und schreibt sie ins Widget.
+@pragma('vm:entry-point')
+Future<void> widgetBackgroundCallback(Uri? uri) async {
+  if (uri?.host == 'refresh') {
+    await WidgetService.refreshBitcoin();
+    await WidgetService.refreshNews();
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Hintergrund-Callback fürs Widget-Aktualisieren registrieren
+  HomeWidget.registerInteractivityCallback(widgetBackgroundCallback);
 
   // Gespeicherte Sprache laden, bevor die App startet
   await LocaleController.load();
