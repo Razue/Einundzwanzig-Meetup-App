@@ -2156,5 +2156,7 @@
   "convPremiumSats": "Ergebnis in Sats",
   "portalTokenMismatch": "Dein Portal-Login gehört zu einem anderen Nostr-Schlüssel und wurde getrennt. Bitte verbinde das Portal neu — mit dem Schlüssel, mit dem du dort Leiter bist.",
   "settingsLogTitle": "Diagnose-Log",
-  "settingsLogSub": "Ereignisse für die Fehlersuche"
+  "settingsLogSub": "Ereignisse für die Fehlersuche",
+  "rsvpNoNames": "Das Portal stellt für dieses Event keine Namensliste bereit.",
+  "rsvpAnon": "Anonym"
 }

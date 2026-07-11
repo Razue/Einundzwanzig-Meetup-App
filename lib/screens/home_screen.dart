@@ -54,6 +54,7 @@ import 'bitcoin_dashboard_screen.dart';
 import 'log_screen.dart';
 import '../services/mempool.dart';
 import '../services/widget_service.dart';
+import '../services/signing_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:home_widget/home_widget.dart';
 import 'calendar_screen.dart';
@@ -443,6 +444,31 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Future<void> _checkPortalOrganizer() async {
     try {
       AppLogger.diag('Portal', 'Organisator-Prüfung gestartet');
+
+      // AUTO-CONNECT: Ist noch kein Portal-Token da, aber ein Schlüssel
+      // aktiv, versucht die App EINMAL leise, sich mit dem Portal zu
+      // verbinden. So muss der Nutzer nicht manuell über Community ->
+      // Portal -> Meine Meetups gehen. Ist der Nutzer im Portal bekannt,
+      // klappt es automatisch; ist er es nicht, passiert nichts Störendes.
+      //
+      // WICHTIG: Nur bei LOKALEM Schlüssel lautlos. Bei Amber würde die
+      // Signatur ein Popup auslösen — das wäre beim App-Start unerwartet.
+      // Amber-Nutzer verbinden sich weiter über den manuellen Weg.
+      if (!await PortalApiService.hasToken()) {
+        if (await SigningService.isAmber) {
+          AppLogger.diag('Portal', 'Kein Token, aber Amber aktiv — Auto-Connect übersprungen (kein Überraschungs-Popup).');
+          return;
+        }
+        AppLogger.diag('Portal', 'Kein Token — versuche automatische Verbindung (lokaler Schlüssel).');
+        final res = await PortalApiService.loginWithNostr();
+        if (res.ok) {
+          AppLogger.diag('Portal', 'Automatische Verbindung erfolgreich.');
+        } else {
+          AppLogger.diag('Portal', 'Automatische Verbindung nicht möglich (Nutzer evtl. nicht im Portal) — übersprungen.');
+          return;
+        }
+      }
+
       // Token muss zum AKTUELLEN Schlüssel gehören (kein geerbter Login!).
       if (!await PortalApiService.tokenMatchesCurrentKey()) {
         final hasStaleToken = await PortalApiService.hasToken();

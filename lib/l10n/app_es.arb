@@ -2134,5 +2134,7 @@
   "convPremiumSats": "Resultado en sats",
   "portalTokenMismatch": "Tu sesión del portal pertenece a otra clave Nostr y se ha desconectado. Vuelve a conectar el portal con la clave con la que eres líder.",
   "settingsLogTitle": "Registro de diagnóstico",
-  "settingsLogSub": "Eventos para solución de problemas"
+  "settingsLogSub": "Eventos para solución de problemas",
+  "rsvpNoNames": "El portal no proporciona una lista de nombres para este evento.",
+  "rsvpAnon": "Anónimo"
 }

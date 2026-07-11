@@ -2134,5 +2134,7 @@
   "convPremiumSats": "Result in sats",
   "portalTokenMismatch": "Your portal login belongs to a different Nostr key and has been disconnected. Please reconnect the portal — with the key you are a leader with.",
   "settingsLogTitle": "Diagnostic log",
-  "settingsLogSub": "Events for troubleshooting"
+  "settingsLogSub": "Events for troubleshooting",
+  "rsvpNoNames": "The portal does not provide a name list for this event.",
+  "rsvpAnon": "Anonymous"
 }

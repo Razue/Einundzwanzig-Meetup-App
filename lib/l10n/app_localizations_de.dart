@@ -4472,4 +4472,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsLogSub => 'Ereignisse für die Fehlersuche';
+
+  @override
+  String get rsvpNoNames =>
+      'Das Portal stellt für dieses Event keine Namensliste bereit.';
+
+  @override
+  String get rsvpAnon => 'Anonym';
 }

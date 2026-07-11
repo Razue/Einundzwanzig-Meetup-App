@@ -8157,6 +8157,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ereignisse für die Fehlersuche'**
   String get settingsLogSub;
+
+  /// No description provided for @rsvpNoNames.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Portal stellt für dieses Event keine Namensliste bereit.'**
+  String get rsvpNoNames;
+
+  /// No description provided for @rsvpAnon.
+  ///
+  /// In de, this message translates to:
+  /// **'Anonym'**
+  String get rsvpAnon;
 }
 
 class _AppLocalizationsDelegate

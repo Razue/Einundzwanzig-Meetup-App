@@ -38,6 +38,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   final Map<CalendarEvent, int> _eventPortalId = {};
   final Map<int, Map<String, dynamic>> _rsvp = {};
   final Set<int> _rsvpBusy = {};
+  // Teilnehmerlisten-Aufklappung: welches Event ist offen + geladene Namen.
+  final Set<int> _attendeesExpanded = {};
+  final Map<int, List<Map<String, String>>> _attendees = {};
+  final Set<int> _attendeesLoading = {};
 
   void _loadEvents() async {
     // 1) PORTAL ZUERST: /api/meetup-events liefert jeden Termin MIT seinem
@@ -184,6 +188,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return (v is int) ? v : -1;
   }
 
+  /// Lädt die Teilnehmernamen für ein Event (einmalig) und klappt auf/zu.
+  Future<void> _toggleAttendees(int id) async {
+    if (_attendeesExpanded.contains(id)) {
+      setState(() => _attendeesExpanded.remove(id));
+      return;
+    }
+    setState(() => _attendeesExpanded.add(id));
+    if (!_attendees.containsKey(id)) {
+      setState(() => _attendeesLoading.add(id));
+      final list = await PortalApiService.getRsvpAttendees(id);
+      if (mounted) {
+        setState(() {
+          _attendees[id] = list;
+          _attendeesLoading.remove(id);
+        });
+      }
+    }
+  }
+
   /// Zusagen-Zeile unter dem Termin (nur im Portal-Modus verfügbar).
   Widget _rsvpRow(CalendarEvent event) {
     final id = _eventPortalId[event];
@@ -192,11 +215,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final r = _rsvp[id];
     final going = _isGoing(r);
     final count = _rsvpCount(r);
-    return Padding(
+    final expanded = _attendeesExpanded.contains(id);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Row(children: [
         if (count >= 0)
-          Text('$count ${t.rsvpCount}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          // Antippbar: klappt die Teilnehmerliste auf/zu.
+          GestureDetector(
+            onTap: count > 0 ? () => _toggleAttendees(id) : null,
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text('$count ${t.rsvpCount}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              if (count > 0) ...[
+                const SizedBox(width: 4),
+                Icon(expanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                    color: Colors.grey, size: 16),
+              ],
+            ]),
+          ),
         const Spacer(),
         going
             ? Row(mainAxisSize: MainAxisSize.min, children: [
@@ -229,7 +265,71 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
               ),
       ]),
+    ),
+    // Aufgeklappte Teilnehmerliste
+    if (expanded) _attendeesList(id, t),
+    ]);
+  }
+
+  /// Die aufgeklappte Liste der Zusagenden (Nickname + gekürzter npub).
+  Widget _attendeesList(int id, AppLocalizations t) {
+    final loading = _attendeesLoading.contains(id);
+    final list = _attendees[id] ?? [];
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: cTileBorder, width: 0.5),
+      ),
+      child: loading
+          ? const Center(child: Padding(
+              padding: EdgeInsets.all(8),
+              child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: cOrange, strokeWidth: 2)),
+            ))
+          : list.isEmpty
+              // Portal liefert (noch) keine Namen -> ehrlicher Hinweis.
+              ? Text(t.rsvpNoNames, style: const TextStyle(color: cTextTertiary, fontSize: 12))
+              : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  for (final a in list) Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(children: [
+                      Container(
+                        width: 26, height: 26,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: cOrange.withValues(alpha: 0.15),
+                        ),
+                        child: Text(
+                          (a['name']?.isNotEmpty == true ? a['name']![0] : '?').toUpperCase(),
+                          style: const TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(
+                          a['name']?.isNotEmpty == true ? a['name']! : t.rsvpAnon,
+                          style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600),
+                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                        ),
+                        if (a['npub']?.isNotEmpty == true)
+                          Text(
+                            _shortNpub(a['npub']!),
+                            style: const TextStyle(color: cTextTertiary, fontSize: 10).copyWith(fontFamily: fontMono),
+                          ),
+                      ])),
+                    ]),
+                  ),
+                ]),
     );
+  }
+
+  /// Kürzt einen npub für die Anzeige (npub1abc…xyz).
+  String _shortNpub(String npub) {
+    if (npub.length <= 16) return npub;
+    return '${npub.substring(0, 10)}…${npub.substring(npub.length - 6)}';
   }
 
   @override

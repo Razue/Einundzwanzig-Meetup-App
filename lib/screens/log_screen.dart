@@ -1,9 +1,9 @@
 // ============================================
-//  Diagnose-Log — Einstellungen
+//  Diagnose-Log — klassische Protokoll-Ansicht
 // ============================================
-//  Zeigt die persistent gespeicherten Diagnose-Ereignisse (Portal,
-//  Admin, Widget, Warnungen, Fehler). Zum Teilen (an dich für die
-//  Fehlersuche) und Löschen. Enthält bewusst KEINE Secrets.
+//  Zeigt die persistent gespeicherten Diagnose-Ereignisse als ruhiges,
+//  technisches Logprotokoll (monospace, eine Zeile pro Eintrag).
+//  Zum Teilen/Kopieren und Leeren. Enthält bewusst KEINE Secrets.
 // ============================================
 
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ class LogScreen extends StatefulWidget {
 }
 
 class _LogScreenState extends State<LogScreen> {
-  String _filter = 'ALLE'; // ALLE | PORTAL | ADMIN | WIDGET | FEHLER
+  bool _onlyProblems = false; // Filter: nur WARN/ERROR
 
   Color _levelColor(String level) {
     switch (level) {
@@ -30,20 +30,12 @@ class _LogScreenState extends State<LogScreen> {
     }
   }
 
-  bool _matches(LogEntry e) {
-    switch (_filter) {
-      case 'PORTAL': return e.tag == 'Portal';
-      case 'ADMIN': return e.tag == 'Admin';
-      case 'WIDGET': return e.tag.toLowerCase().contains('widget');
-      case 'FEHLER': return e.level == 'ERROR' || e.level == 'WARN';
-      default: return true;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Neueste zuerst anzeigen
-    final all = AppLogger.entries.reversed.where(_matches).toList();
+    final all = AppLogger.entries
+        .where((e) => !_onlyProblems || e.level == 'ERROR' || e.level == 'WARN')
+        .toList(); // chronologisch (älteste oben, wie ein Logfile)
+
     return Scaffold(
       backgroundColor: cDark,
       appBar: AppBar(
@@ -51,6 +43,12 @@ class _LogScreenState extends State<LogScreen> {
         elevation: 0,
         title: const Text('Diagnose-Log', style: TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
         actions: [
+          IconButton(
+            icon: Icon(_onlyProblems ? Icons.filter_alt_rounded : Icons.filter_alt_outlined,
+                color: _onlyProblems ? cOrange : cTextSecondary, size: 20),
+            tooltip: 'Nur Warnungen/Fehler',
+            onPressed: () => setState(() => _onlyProblems = !_onlyProblems),
+          ),
           IconButton(
             icon: const Icon(Icons.copy_rounded, color: cTextSecondary, size: 20),
             tooltip: 'Kopieren',
@@ -72,98 +70,61 @@ class _LogScreenState extends State<LogScreen> {
           ),
         ],
       ),
-      body: Column(children: [
-        // Filter-Chips
-        SizedBox(
-          height: 44,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            children: ['ALLE', 'PORTAL', 'ADMIN', 'WIDGET', 'FEHLER'].map((f) {
-              final sel = _filter == f;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: GestureDetector(
-                  onTap: () => setState(() => _filter = f),
-                  child: Container(
-                    alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: sel ? cOrange.withValues(alpha: 0.2) : cCard,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: sel ? cOrange : cTileBorder, width: 0.5),
-                    ),
-                    child: Text(f, style: TextStyle(
-                      color: sel ? cOrange : cTextSecondary,
-                      fontSize: 12, fontWeight: FontWeight.w700)),
+      body: all.isEmpty
+          ? const Center(child: Text('Keine Einträge', style: TextStyle(color: cTextTertiary)))
+          : Container(
+              color: const Color(0xFF0D0D0F), // Terminal-artiger, ruhiger Grund
+              width: double.infinity,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: SelectableText.rich(
+                  TextSpan(
+                    style: const TextStyle(fontSize: 11.5, height: 1.6).copyWith(fontFamily: fontMono),
+                    children: [
+                      for (final e in all) ..._line(e),
+                    ],
                   ),
                 ),
-              );
-            }).toList(),
-          ),
-        ),
-        Expanded(
-          child: all.isEmpty
-              ? const Center(child: Text('Keine Einträge', style: TextStyle(color: cTextTertiary)))
-              : ListView.separated(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: all.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 6),
-                  itemBuilder: (_, i) {
-                    final e = all[i];
-                    String two(int n) => n.toString().padLeft(2, '0');
-                    final ts = '${two(e.time.hour)}:${two(e.time.minute)}:${two(e.time.second)}';
-                    return Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: cCard,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: cTileBorder, width: 0.5),
-                      ),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Row(children: [
-                          Text(ts, style: const TextStyle(color: cTextTertiary, fontSize: 11).copyWith(fontFamily: fontMono)),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: _levelColor(e.level).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(e.level, style: TextStyle(color: _levelColor(e.level), fontSize: 9, fontWeight: FontWeight.w800)),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(e.tag, style: const TextStyle(color: cOrange, fontSize: 11, fontWeight: FontWeight.w700)),
-                        ]),
-                        const SizedBox(height: 4),
-                        Text(e.message, style: const TextStyle(color: cText, fontSize: 13)),
-                      ]),
-                    );
-                  },
-                ),
-        ),
-      ]),
+              ),
+            ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: GestureDetector(
-            onTap: () async {
-              await AppLogger.clear();
-              if (mounted) setState(() {});
-            },
-            child: Container(
-              height: 44,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: cRed.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: cRed.withValues(alpha: 0.3), width: 0.5),
-              ),
-              child: const Text('Log leeren', style: TextStyle(color: cRed, fontSize: 14, fontWeight: FontWeight.w700)),
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
+          child: Row(children: [
+            Expanded(
+              child: Text('${all.length} Einträge',
+                  style: const TextStyle(color: cTextTertiary, fontSize: 12)),
             ),
-          ),
+            GestureDetector(
+              onTap: () async {
+                await AppLogger.clear();
+                if (mounted) setState(() {});
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                decoration: BoxDecoration(
+                  color: cRed.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: cRed.withValues(alpha: 0.3), width: 0.5),
+                ),
+                child: const Text('Log leeren', style: TextStyle(color: cRed, fontSize: 13, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ]),
         ),
       ),
     );
+  }
+
+  /// Eine Protokollzeile: "HH:MM:SS  LEVEL  [tag]  message\n"
+  List<TextSpan> _line(LogEntry e) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    final ts = '${two(e.time.hour)}:${two(e.time.minute)}:${two(e.time.second)}';
+    return [
+      TextSpan(text: '$ts  ', style: const TextStyle(color: cTextTertiary)),
+      TextSpan(text: e.level.padRight(5), style: TextStyle(color: _levelColor(e.level), fontWeight: FontWeight.w700)),
+      TextSpan(text: '  ${e.tag}: ', style: const TextStyle(color: cOrange)),
+      TextSpan(text: '${e.message}\n', style: const TextStyle(color: cText)),
+    ];
   }
 }

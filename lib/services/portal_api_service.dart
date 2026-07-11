@@ -528,7 +528,95 @@ class PortalApiService {
     await prefs.remove('rsvp_cache_ts_$eventId');
   }
 
-  /// Zusagen. POST /api/meetup-events/{id}/rsvp (Auth nötig).
+  /// Teilnehmerliste eines Events (wer hat zugesagt). Das Einundzwanzig-
+  /// Portal kann die Namen liefern (im Portal + Companion-App sichtbar).
+  /// Da die genaue Feldstruktur nicht dokumentiert ist, wird sie TOLERANT
+  /// gelesen: erst ein eigener attendees-Endpunkt, sonst ein
+  /// attendees/rsvps-Feld in der normalen RSVP-Antwort. Gibt eine Liste
+  /// von {npub, name} zurück (leer, wenn das Portal keine Namen liefert).
+  static Future<List<Map<String, String>>> getRsvpAttendees(int eventId) async {
+    List<Map<String, String>> parse(dynamic list) {
+      final out = <Map<String, String>>[];
+      if (list is List) {
+        for (final item in list) {
+          if (item is Map) {
+            // Personendaten liegen evtl. verschachtelt (z.B. in "user",
+            // "member", "profile") — dort zuerst nachsehen.
+            final inner = (item['user'] ?? item['member'] ?? item['profile'] ?? item);
+            final src = (inner is Map) ? inner : item;
+            final npub = (src['npub'] ?? src['pubkey'] ?? src['public_key'] ??
+                          item['npub'] ?? item['pubkey'] ?? '').toString();
+            final name = (src['name'] ?? src['nickname'] ?? src['display_name'] ??
+                          src['username'] ?? src['nick'] ??
+                          item['name'] ?? item['nickname'] ?? '').toString();
+            if (npub.isNotEmpty || name.isNotEmpty) {
+              out.add({'npub': npub, 'name': name});
+            }
+          } else if (item is String && item.isNotEmpty) {
+            out.add({'npub': item, 'name': ''});
+          }
+        }
+      }
+      return out;
+    }
+
+    // Weg 0: Der dokumentierte Organisator-Endpunkt für EIN Event
+    // (/my-meetup-events/{id}). Liefert für eigene Meetups die Details
+    // inkl. Teilnehmer. Die Namen können direkt als Liste ODER in einem
+    // verschachtelten Feld liegen — beides wird tolerant gelesen.
+    try {
+      final body = await _get('/my-meetup-events/$eventId');
+      if (body != null) {
+        final root = (body is Map) ? (body['data'] ?? body) : body;
+        // a) direkt eine Liste im Wurzelobjekt
+        for (final key in ['attendees', 'rsvps', 'participants', 'going', 'members', 'guests']) {
+          final parsed = parse((root is Map) ? root[key] : null);
+          if (parsed.isNotEmpty) {
+            AppLogger.diag('Portal', 'Teilnehmer via /my-meetup-events (Feld "$key"): ${parsed.length} Namen.');
+            return parsed;
+          }
+        }
+        // b) das Wurzelobjekt selbst ist schon die Liste
+        final direct = parse(root);
+        if (direct.isNotEmpty) {
+          AppLogger.diag('Portal', 'Teilnehmer via /my-meetup-events (Liste): ${direct.length} Namen.');
+          return direct;
+        }
+      }
+    } catch (_) {/* evtl. kein Organisator dieses Events -> andere Wege */}
+
+    // Weg 1: dedizierter Teilnehmer-Endpunkt (mehrere Namensvarianten).
+    for (final path in ['/meetup-events/$eventId/attendees',
+                        '/meetup-events/$eventId/rsvps',
+                        '/meetup-events/$eventId/participants']) {
+      try {
+        final body = await _get(path);
+        final data = (body is Map) ? (body['data'] ?? body['attendees'] ?? body['rsvps'] ?? body) : body;
+        final parsed = parse(data);
+        if (parsed.isNotEmpty) {
+          AppLogger.diag('Portal', 'Teilnehmerliste via $path: ${parsed.length} Namen.');
+          return parsed;
+        }
+      } catch (_) {/* nächsten Weg versuchen */}
+    }
+
+    // Weg 2: Namen stecken evtl. in der normalen RSVP-Antwort.
+    try {
+      final r = await getRsvp(eventId);
+      if (r != null) {
+        for (final key in ['attendees', 'rsvps', 'going_users', 'participants', 'members']) {
+          final parsed = parse(r[key]);
+          if (parsed.isNotEmpty) {
+            AppLogger.diag('Portal', 'Teilnehmerliste aus RSVP-Feld "$key": ${parsed.length} Namen.');
+            return parsed;
+          }
+        }
+      }
+    } catch (_) {}
+
+    AppLogger.diag('Portal', 'Teilnehmer-Namen: Portal liefert (noch) keine Liste für Event $eventId.');
+    return [];
+  }
   /// Der Body MUSS einen Status tragen: 'attending' | 'maybe' | 'none'.
   static Future<PortalResult> rsvp(int eventId, {String status = 'attending'}) =>
       _write('POST', '$_apiBase/meetup-events/$eventId/rsvp', {'status': status});

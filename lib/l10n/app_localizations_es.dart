@@ -4456,4 +4456,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsLogSub => 'Eventos para solución de problemas';
+
+  @override
+  String get rsvpNoNames =>
+      'El portal no proporciona una lista de nombres para este evento.';
+
+  @override
+  String get rsvpAnon => 'Anónimo';
 }
