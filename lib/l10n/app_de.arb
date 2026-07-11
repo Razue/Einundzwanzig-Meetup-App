@@ -2153,5 +2153,6 @@
   "convPremiumHint": "Für Trades: Prozent-Aufschlag (+) oder Abschlag (−) auf den Kurs.",
   "convPremiumResult": "Mit Auf-/Abschlag",
   "convPremiumBase": "Basiskurs",
-  "convPremiumSats": "Ergebnis in Sats"
+  "convPremiumSats": "Ergebnis in Sats",
+  "portalTokenMismatch": "Dein Portal-Login gehört zu einem anderen Nostr-Schlüssel und wurde getrennt. Bitte verbinde das Portal neu — mit dem Schlüssel, mit dem du dort Leiter bist."
 }

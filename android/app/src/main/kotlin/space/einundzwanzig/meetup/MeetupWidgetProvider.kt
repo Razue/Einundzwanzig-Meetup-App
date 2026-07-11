@@ -78,17 +78,17 @@ class MeetupWidgetProvider : AppWidgetProvider() {
 
                 val piFlags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
 
-                // WICHTIG: Die Intents MÜSSEN die home_widget-LAUNCH-Action und
-                // eine data-URI tragen — nur dann liefert das Plugin auf der
-                // Dart-Seite (initiallyLaunchedFromHomeWidget/widgetClicked)
-                // die URI und das Routing greift. Eigene Actions/Extras werden
-                // vom Plugin ignoriert (das war der Fehler bisher).
+                // Jeder Bereich zielt auf die WidgetRouterActivity — die wird
+                // pro Tap FRISCH erzeugt (ihr Intent kann nie alt/recycelt
+                // sein) und reicht das Ziel über den lokalen Speicher weiter.
+                // Dreifache Eindeutigkeit (Action + data-URI + requestCode),
+                // damit die PendingIntents unter keinen Umständen verschmelzen.
                 fun openIntent(target: String, requestCode: Int): PendingIntent {
-                    val i = Intent(context, MainActivity::class.java).apply {
-                        action = "es.antonborri.home_widget.action.LAUNCH"
+                    val i = Intent(context, WidgetRouterActivity::class.java).apply {
+                        action = "space.einundzwanzig.meetup.WIDGET_${target.uppercase()}"
                         data = android.net.Uri.parse("homewidget://$target")
                         putExtra("open", target)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     }
                     return PendingIntent.getActivity(context, requestCode, i, piFlags)
                 }

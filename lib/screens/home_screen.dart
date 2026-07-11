@@ -91,7 +91,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
   // State
   UserProfile _user = UserProfile();
   Meetup? _homeMeetup;
@@ -140,30 +140,36 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _loadAll();
     _loadAppVersion();
     WidgetService.refreshNews(); // News-Titel + NEU-Status fürs Widget
-    _handleWidgetLaunch();       // wurde die App über den Widget-News-Button geöffnet?
+    WidgetsBinding.instance.addObserver(this); // für Widget-Ziel-Abfrage bei Resume
+    _pollWidgetTarget();         // wurde die App über einen Widget-Bereich geöffnet?
   }
 
-  /// Widget-Klick-Routing über unseren EIGENEN MethodChannel (die
-  /// MainActivity liest das Ziel aus dem Intent und reicht es durch) —
-  /// unabhängig vom home_widget-Plugin-Verhalten.
+  /// Widget-Klick-Routing: Das Ziel liegt im lokalen Speicher (von der
+  /// WidgetRouterActivity geschrieben). Wir fragen es beim Start UND bei
+  /// jedem App-Aufwachen ab — deterministisch, ohne Intent-Abhängigkeit.
   static const _widgetChannel = MethodChannel('einundzwanzig/widget');
+  bool _routingWidgetTarget = false;
 
-  Future<void> _handleWidgetLaunch() async {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _pollWidgetTarget();
+    }
+  }
+
+  Future<void> _pollWidgetTarget() async {
+    if (_routingWidgetTarget) return; // kein Doppel-Routing
     try {
-      // Push-Weg: App läuft, Nutzer tippt Widget-Bereich -> Native pusht Ziel.
-      _widgetChannel.setMethodCallHandler((call) async {
-        if (call.method == 'widgetTarget') {
-          _routeWidgetTarget(call.arguments as String?);
-        }
-        return null;
-      });
-      // Kaltstart-Weg: App wurde über einen Widget-Bereich geöffnet.
       final t = await _widgetChannel.invokeMethod<String>('getLaunchTarget');
-      if (t != null) {
-        await Future.delayed(const Duration(milliseconds: 250));
-        _routeWidgetTarget(t);
-      }
-    } catch (_) {/* egal */}
+      if (t == null || !mounted) return;
+      _routingWidgetTarget = true;
+      // kurzer Moment, damit der Frame steht (v.a. beim Kaltstart)
+      await Future.delayed(const Duration(milliseconds: 250));
+      if (mounted) _routeWidgetTarget(t);
+    } catch (_) {/* egal */} finally {
+      _routingWidgetTarget = false;
+    }
   }
 
   void _routeWidgetTarget(String? target) {
@@ -182,7 +188,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
         }
         break;
-      // 'home'/'refresh' -> nichts extra
     }
   }
 
@@ -262,7 +267,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   @override
-  void dispose() { _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
+  void dispose() { WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
   void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
 
   bool _refreshing = false;
@@ -436,8 +441,25 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   /// WoT-Bürgen und Seed-Admins bleiben davon unberührt.
   Future<void> _checkPortalOrganizer() async {
     try {
-      // Token muss zum AKTUELLEN Schlüssel gehören (kein geerbter Login!)
-      if (!await PortalApiService.tokenMatchesCurrentKey()) return;
+      // Token muss zum AKTUELLEN Schlüssel gehören (kein geerbter Login!).
+      // WICHTIG: Nicht mehr still abbrechen (Bug: Portal-Leader ohne Button).
+      // Ist ein Token da, das zu einem ANDEREN Schlüssel gehört (z.B. Amber-
+      // Account gewechselt, neue Identität erstellt), wird es verworfen und
+      // der Nutzer sichtbar zum Neu-Verbinden aufgefordert.
+      if (!await PortalApiService.tokenMatchesCurrentKey()) {
+        final hasStaleToken = await PortalApiService.hasToken();
+        if (hasStaleToken) {
+          await PortalApiService.deleteToken();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(AppLocalizations.of(context).portalTokenMismatch),
+              backgroundColor: Colors.orange.shade800,
+              duration: const Duration(seconds: 6),
+            ));
+          }
+        }
+        return;
+      }
       // Rohabfrage: null = Fehler/offline (nichts tun), Liste = Fakt.
       final body = await PortalApiService.rawGet('/my-meetups');
       if (body == null || !mounted) return;
@@ -480,7 +502,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     } catch (_) {/* still: beim nächsten Start erneut */}
   }
 
-  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && v.source == 'trust_score') { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
+  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
   void _resetApp() async {
     final t = AppLocalizations.of(context);
     // 1. Erste Bestätigung (wie bisher)

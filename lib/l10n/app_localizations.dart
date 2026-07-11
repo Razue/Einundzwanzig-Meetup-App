@@ -8139,6 +8139,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ergebnis in Sats'**
   String get convPremiumSats;
+
+  /// No description provided for @portalTokenMismatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Portal-Login gehört zu einem anderen Nostr-Schlüssel und wurde getrennt. Bitte verbinde das Portal neu — mit dem Schlüssel, mit dem du dort Leiter bist.'**
+  String get portalTokenMismatch;
 }
 
 class _AppLocalizationsDelegate

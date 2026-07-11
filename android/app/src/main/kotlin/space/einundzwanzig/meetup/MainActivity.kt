@@ -29,32 +29,13 @@ class MainActivity : FlutterActivity() {
     private val channelName = "einundzwanzig/amber_signer"
     private val amberPackage = "com.greenart7c3.nostrsigner"
 
-    // ── Widget-Klick-Routing (eigener, plugin-unabhängiger Kanal) ──
-    // Der Widget-PendingIntent trägt das Ziel als data-URI (homewidget://x)
-    // und als Extra "open". Wir lesen es hier selbst aus und reichen es an
-    // Dart weiter — beim Kaltstart per Abfrage (getLaunchTarget), bei
-    // laufender App per Push (widgetTarget). Damit hängen wir nicht am
-    // Verhalten des home_widget-Plugins.
+    // ── Widget-Klick-Routing ──
+    // Das Ziel wird NICHT aus dem Intent dieser Activity gelesen (MIUI
+    // spielt beim Wiederöffnen aus dem Task-Speicher den ALTEN Intent
+    // erneut ab — deshalb kam bisher fast immer das falsche Ziel an).
+    // Stattdessen schreibt die WidgetRouterActivity das Ziel in den
+    // lokalen Speicher; Dart fragt es bei jedem Aufwachen hier ab.
     private val widgetChannelName = "einundzwanzig/widget"
-    private var widgetChannel: MethodChannel? = null
-    private var pendingWidgetTarget: String? = null
-
-    private fun extractWidgetTarget(intent: Intent?): String? {
-        val t = intent?.data?.host ?: intent?.getStringExtra("open")
-        return if (t.isNullOrEmpty() || t == "home") null else t
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        val t = extractWidgetTarget(intent)
-        if (t != null) {
-            // App läuft bereits: Ziel direkt an Dart pushen.
-            val ch = widgetChannel
-            if (ch != null) ch.invokeMethod("widgetTarget", t)
-            else pendingWidgetTarget = t
-        }
-    }
 
     // Request-Codes für die Vordergrund-Intents
     private val reqGetPublicKey = 9551
@@ -67,18 +48,19 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        // Widget-Kanal: Kaltstart-Ziel merken und auf Abfrage liefern.
-        pendingWidgetTarget = extractWidgetTarget(intent) ?: pendingWidgetTarget
-        widgetChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, widgetChannelName)
-        widgetChannel!!.setMethodCallHandler { call, result ->
-            when (call.method) {
-                "getLaunchTarget" -> {
-                    result.success(pendingWidgetTarget)
-                    pendingWidgetTarget = null
+        // Widget-Kanal: liefert das vom Router gespeicherte Ziel (einmalig).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, widgetChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getLaunchTarget" -> {
+                        val prefs = getSharedPreferences("e21_widget", MODE_PRIVATE)
+                        val t = prefs.getString("pending_target", null)
+                        if (t != null) prefs.edit().remove("pending_target").commit()
+                        result.success(t)
+                    }
+                    else -> result.notImplemented()
                 }
-                else -> result.notImplemented()
             }
-        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
             .setMethodCallHandler { call, result ->

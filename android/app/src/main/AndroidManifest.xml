@@ -65,6 +65,17 @@
             </intent-filter>
         </activity>
 
+        <!-- Unsichtbarer Widget-Klick-Router: wird pro Tap frisch erzeugt,
+             schreibt das Ziel in den lokalen Speicher und öffnet die App.
+             Kein Task-Verlauf, kein Recycling -> kein Intent-Replay. -->
+        <activity
+            android:name=".WidgetRouterActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

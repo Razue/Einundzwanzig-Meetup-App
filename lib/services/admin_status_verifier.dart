@@ -24,6 +24,7 @@ import 'admin_registry.dart';
 import 'nostr_service.dart';
 import 'signing_service.dart';
 import 'trust_score_service.dart';
+import 'vouching_service.dart';
 
 class AdminVerification {
   final bool isAdmin;
@@ -85,6 +86,38 @@ class AdminStatusVerifier {
           reason: 'Trust Score ${score.totalScore.toStringAsFixed(1)} '
               'erfüllt Schwellenwert (${score.activeThresholds.promotionScore}).',
         );
+      }
+    }
+
+    // --- CHECK 2b: Web-of-Trust-Bürgschaften (empfangene Vouches) ---
+    // Dieser Pfad FEHLTE bisher komplett: Admins publizieren Bürgschaften
+    // ins Nostr-Netzwerk (kind 30078), aber die App des Begünstigten hat
+    // nie geprüft, ob der EIGENE npub im Netzwerk-Konsens genug
+    // Bürgschaften hat. Deshalb bekam niemand per Bürgschaft den
+    // Organisator-Button. Es gilt der Schwellenwert des Netzwerks
+    // (minVouches, größenabhängig) — eine einzelne Bürgschaft reicht in
+    // der Regel bewusst NICHT (Sybil-Schutz, siehe Security Audit H3).
+    final ownNpub = await NostrService.getNpub();
+    if (ownNpub != null && ownNpub.isNotEmpty) {
+      try {
+        final consensus = await VouchingService.calculateConsensus();
+        if (consensus.totalVoters > 0) {
+          VouchingStatus? me;
+          for (final a in consensus.effectiveAdmins) {
+            if (a.npub == ownNpub) { me = a; break; }
+          }
+          if (me != null) {
+            return AdminVerification(
+              isAdmin: true,
+              source: 'vouch_consensus',
+              reason: 'WoT-Bürgschaften: ${me.vouchCount} Vouches '
+                  '(Schwelle ${consensus.minVouches}).',
+            );
+          }
+        }
+      } catch (_) {
+        // Relays nicht erreichbar -> Pfad überspringen (kein fälschlicher
+        // Entzug bei Offline; Sicherheit der anderen Pfade unberührt).
       }
     }
 

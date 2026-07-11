@@ -4421,4 +4421,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get convPremiumSats => 'Result in sats';
+
+  @override
+  String get portalTokenMismatch =>
+      'Your portal login belongs to a different Nostr key and has been disconnected. Please reconnect the portal — with the key you are a leader with.';
 }

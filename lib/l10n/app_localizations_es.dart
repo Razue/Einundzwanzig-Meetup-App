@@ -4446,4 +4446,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get convPremiumSats => 'Resultado en sats';
+
+  @override
+  String get portalTokenMismatch =>
+      'Tu sesión del portal pertenece a otra clave Nostr y se ha desconectado. Vuelve a conectar el portal con la clave con la que eres líder.';
 }

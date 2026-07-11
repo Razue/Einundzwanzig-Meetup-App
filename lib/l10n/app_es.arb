@@ -2131,5 +2131,6 @@
   "convPremiumHint": "Para operaciones: prima (+) o descuento (−) en porcentaje sobre el precio.",
   "convPremiumResult": "Con prima/descuento",
   "convPremiumBase": "Precio base",
-  "convPremiumSats": "Resultado en sats"
+  "convPremiumSats": "Resultado en sats",
+  "portalTokenMismatch": "Tu sesión del portal pertenece a otra clave Nostr y se ha desconectado. Vuelve a conectar el portal con la clave con la que eres líder."
 }
