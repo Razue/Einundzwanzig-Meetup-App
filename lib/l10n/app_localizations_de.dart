@@ -4466,4 +4466,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get portalTokenMismatch =>
       'Dein Portal-Login gehört zu einem anderen Nostr-Schlüssel und wurde getrennt. Bitte verbinde das Portal neu — mit dem Schlüssel, mit dem du dort Leiter bist.';
+
+  @override
+  String get settingsLogTitle => 'Diagnose-Log';
+
+  @override
+  String get settingsLogSub => 'Ereignisse für die Fehlersuche';
 }

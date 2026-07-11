@@ -51,6 +51,7 @@ import 'my_network_screen.dart';
 import 'relay_settings_screen.dart';
 import 'v4v_screen.dart';
 import 'bitcoin_dashboard_screen.dart';
+import 'log_screen.dart';
 import '../services/mempool.dart';
 import '../services/widget_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -441,14 +442,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// WoT-Bürgen und Seed-Admins bleiben davon unberührt.
   Future<void> _checkPortalOrganizer() async {
     try {
+      AppLogger.diag('Portal', 'Organisator-Prüfung gestartet');
       // Token muss zum AKTUELLEN Schlüssel gehören (kein geerbter Login!).
-      // WICHTIG: Nicht mehr still abbrechen (Bug: Portal-Leader ohne Button).
-      // Ist ein Token da, das zu einem ANDEREN Schlüssel gehört (z.B. Amber-
-      // Account gewechselt, neue Identität erstellt), wird es verworfen und
-      // der Nutzer sichtbar zum Neu-Verbinden aufgefordert.
       if (!await PortalApiService.tokenMatchesCurrentKey()) {
         final hasStaleToken = await PortalApiService.hasToken();
         if (hasStaleToken) {
+          AppLogger.warn('Portal', 'Token gehört zu anderem Schlüssel — getrennt. Neu verbinden nötig.');
           await PortalApiService.deleteToken();
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -457,14 +456,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               duration: const Duration(seconds: 6),
             ));
           }
+        } else {
+          AppLogger.diag('Portal', 'Kein Portal-Token vorhanden — übersprungen.');
         }
         return;
       }
       // Rohabfrage: null = Fehler/offline (nichts tun), Liste = Fakt.
       final body = await PortalApiService.rawGet('/my-meetups');
-      if (body == null || !mounted) return;
+      if (body == null || !mounted) { AppLogger.diag('Portal', '/my-meetups: keine Antwort (offline/Fehler) — keine Änderung.'); return; }
       final data = (body is Map) ? body['data'] : body;
       final meetups = (data is List) ? data.whereType<Map<String, dynamic>>().toList() : <Map<String, dynamic>>[];
+      AppLogger.diag('Portal', '/my-meetups lieferte ${meetups.length} Meetup(s) für aktuellen Schlüssel.');
 
       if (meetups.isNotEmpty && !_user.adminViaPortal) {
         // VERGEBEN: nur das Portal-Flag setzen (Vouch/Seed unberührt).
@@ -1341,6 +1343,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         trailing: Switch(value: haptic, activeColor: cOrange,
                           onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
                       ),
+                      _sDivider(),
+                      // Diagnose-Log
+                      _sRow(Icons.bug_report_rounded, cCyan,
+                        AppLocalizations.of(context).settingsLogTitle,
+                        AppLocalizations.of(context).settingsLogSub,
+                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const LogScreen())); }),
                     ]),
                     const SizedBox(height: 18),
                     // UNTERSTÜTZEN (V4V)

@@ -8145,6 +8145,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dein Portal-Login gehört zu einem anderen Nostr-Schlüssel und wurde getrennt. Bitte verbinde das Portal neu — mit dem Schlüssel, mit dem du dort Leiter bist.'**
   String get portalTokenMismatch;
+
+  /// No description provided for @settingsLogTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnose-Log'**
+  String get settingsLogTitle;
+
+  /// No description provided for @settingsLogSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ereignisse für die Fehlersuche'**
+  String get settingsLogSub;
 }
 
 class _AppLocalizationsDelegate

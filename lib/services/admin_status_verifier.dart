@@ -25,6 +25,7 @@ import 'nostr_service.dart';
 import 'signing_service.dart';
 import 'trust_score_service.dart';
 import 'vouching_service.dart';
+import 'app_logger.dart';
 
 class AdminVerification {
   final bool isAdmin;
@@ -107,15 +108,21 @@ class AdminStatusVerifier {
             if (a.npub == ownNpub) { me = a; break; }
           }
           if (me != null) {
+            AppLogger.diag('Admin', 'Bürgschafts-Konsens: eigener npub ist effektiver Admin (${me.vouchCount}/${consensus.minVouches} Vouches).');
             return AdminVerification(
               isAdmin: true,
               source: 'vouch_consensus',
               reason: 'WoT-Bürgschaften: ${me.vouchCount} Vouches '
                   '(Schwelle ${consensus.minVouches}).',
             );
+          } else {
+            AppLogger.diag('Admin', 'Bürgschafts-Konsens: eigener npub NICHT unter effektiven Admins (Schwelle ${consensus.minVouches}, Voter ${consensus.totalVoters}).');
           }
+        } else {
+          AppLogger.diag('Admin', 'Bürgschafts-Konsens: keine Voter im Netzwerk gefunden.');
         }
-      } catch (_) {
+      } catch (e) {
+        AppLogger.warn('Admin', 'Bürgschafts-Konsens nicht abrufbar (Relays?): $e');
         // Relays nicht erreichbar -> Pfad überspringen (kein fälschlicher
         // Entzug bei Offline; Sicherheit der anderen Pfade unberührt).
       }

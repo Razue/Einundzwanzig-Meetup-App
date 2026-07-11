@@ -2132,5 +2132,7 @@
   "convPremiumResult": "With premium/discount",
   "convPremiumBase": "Base rate",
   "convPremiumSats": "Result in sats",
-  "portalTokenMismatch": "Your portal login belongs to a different Nostr key and has been disconnected. Please reconnect the portal — with the key you are a leader with."
+  "portalTokenMismatch": "Your portal login belongs to a different Nostr key and has been disconnected. Please reconnect the portal — with the key you are a leader with.",
+  "settingsLogTitle": "Diagnostic log",
+  "settingsLogSub": "Events for troubleshooting"
 }

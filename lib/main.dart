@@ -11,6 +11,7 @@ import 'services/secure_key_store.dart';
 import 'services/promotion_claim_service.dart';
 import 'services/locale_controller.dart';
 import 'services/widget_service.dart';
+import 'services/app_logger.dart';
 
 /// Wird vom Aktualisieren-Rädchen des Homescreen-Widgets ausgelöst:
 /// läuft im HINTERGRUND (ohne die App zu öffnen), holt frische Daten
@@ -25,6 +26,7 @@ Future<void> widgetBackgroundCallback(Uri? uri) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLogger.init(); // persistente Diagnose-Logs laden
 
   // Hintergrund-Callback fürs Widget-Aktualisieren registrieren
   HomeWidget.registerInteractivityCallback(widgetBackgroundCallback);

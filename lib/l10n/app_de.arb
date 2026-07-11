@@ -2154,5 +2154,7 @@
   "convPremiumResult": "Mit Auf-/Abschlag",
   "convPremiumBase": "Basiskurs",
   "convPremiumSats": "Ergebnis in Sats",
-  "portalTokenMismatch": "Dein Portal-Login gehört zu einem anderen Nostr-Schlüssel und wurde getrennt. Bitte verbinde das Portal neu — mit dem Schlüssel, mit dem du dort Leiter bist."
+  "portalTokenMismatch": "Dein Portal-Login gehört zu einem anderen Nostr-Schlüssel und wurde getrennt. Bitte verbinde das Portal neu — mit dem Schlüssel, mit dem du dort Leiter bist.",
+  "settingsLogTitle": "Diagnose-Log",
+  "settingsLogSub": "Ereignisse für die Fehlersuche"
 }
