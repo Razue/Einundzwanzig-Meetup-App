@@ -49,6 +49,7 @@ import 'meetup_details.dart';
 import 'reputation_qr.dart';
 import 'my_network_screen.dart';
 import 'relay_settings_screen.dart';
+import 'mempool_settings_screen.dart';
 import 'v4v_screen.dart';
 import 'bitcoin_dashboard_screen.dart';
 import 'log_screen.dart';
@@ -1345,6 +1346,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         AppLocalizations.of(context).settingsRelays,
                         AppLocalizations.of(context).settingsRelaysSub,
                         () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                      _sDivider(),
+                      // Mempool-Datenquelle (Clearnet / Tor-Onion / eigene Instanz)
+                      _sRow(Icons.dns_rounded, cOrange,
+                        AppLocalizations.of(context).settingsMempool,
+                        AppLocalizations.of(context).settingsMempoolSub,
+                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const MempoolSettingsScreen())); }),
                     ]),
                     const SizedBox(height: 18),
                     // APP

@@ -69,9 +69,20 @@ class WidgetService {
   }
 
   /// Bequemer Sammel-Aufruf: holt frische Bitcoin-Daten und schreibt sie.
+  ///
+  /// WICHTIG: Wenn KEINE einzige Quelle geliefert hat (offline, Cloudflare
+  /// blockt den Tor-Exit, ...), wird das Widget NICHT überschrieben. Sonst
+  /// würde ein einziger fehlgeschlagener Refresh die zuletzt guten Werte
+  /// durch Nullen ersetzen — genau das Bild, das Nutzer gemeldet haben.
   static Future<void> refreshBitcoin() async {
     try {
       final d = await MempoolService.getDashboardData();
+      if (d.isDead) {
+        AppLogger.diag(_tag,
+            'Bitcoin-Widget nicht aktualisiert — keine Quelle erreichbar '
+            '(${d.lastError.isEmpty ? 'offline' : d.lastError}). Alte Werte bleiben stehen.');
+        return;
+      }
       await updateBitcoin(d);
     } catch (e) {
       AppLogger.debug(_tag, 'refreshBitcoin fehlgeschlagen: $e');

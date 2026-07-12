@@ -1,6 +1,35 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'app_logger.dart';
+import 'mempool_config.dart';
+
+/// Fehler mit Kontext — damit im Diagnose-Log steht, WARUM eine Quelle
+/// gescheitert ist (Statuscode + Anfang der Antwort). Genau das hat bisher
+/// gefehlt: alle Fehler wurden mit `catch (_)` stumm verschluckt.
+class MempoolHttpException implements Exception {
+  final String path;
+  final int statusCode;
+  final String snippet;
+
+  MempoolHttpException(this.path, this.statusCode, String body)
+      : snippet = _snip(body);
+
+  static String _snip(String body) {
+    final flat = body.replaceAll(RegExp(r'\s+'), ' ').trim();
+    return flat.length > 120 ? '${flat.substring(0, 120)}…' : flat;
+  }
+
+  /// Typische Sperr-Antworten (Cloudflare / Rate-Limit / WAF).
+  bool get looksBlocked =>
+      statusCode == 403 ||
+      statusCode == 429 ||
+      statusCode == 503 ||
+      snippet.toLowerCase().contains('cloudflare') ||
+      snippet.toLowerCase().contains('<!doctype html');
+
+  @override
+  String toString() => 'HTTP $statusCode bei $path — $snippet';
+}
 
 /// Gebündelte Kennzahlen fürs Bitcoin-Dashboard.
 class BitcoinDashboardData {
@@ -19,6 +48,20 @@ class BitcoinDashboardData {
   final int lnChannelCount;    // Anzahl Lightning-Kanäle
   final DateTime updatedAt;
 
+  /// Wie viele der [sourcesTotal] Quellen in DIESEM Durchlauf geklappt haben.
+  /// 0 = komplett offline/geblockt. Das Dashboard darf dann nicht mehr
+  /// fröhlich "grün" anzeigen.
+  final int sourcesOk;
+  final int sourcesTotal;
+
+  /// Kurze, für Menschen lesbare Fehlerursache (letzter Fehler), z.B.
+  /// "HTTP 403" — leer, wenn alles geklappt hat.
+  final String lastError;
+
+  /// true, wenn der Server die Anfragen aktiv abgewiesen hat (Cloudflare/
+  /// Rate-Limit). Typischer Fall bei Tor-Exit-IPs.
+  final bool blocked;
+
   const BitcoinDashboardData({
     required this.blockHeight,
     required this.feeLow,
@@ -34,7 +77,17 @@ class BitcoinDashboardData {
     required this.lnNodeCount,
     required this.lnChannelCount,
     required this.updatedAt,
+    this.sourcesOk = 0,
+    this.sourcesTotal = 6,
+    this.lastError = '',
+    this.blocked = false,
   });
+
+  /// Alle Quellen haben geliefert.
+  bool get isLive => sourcesOk == sourcesTotal;
+
+  /// Gar nichts geliefert — echter Offline-/Blockier-Zustand.
+  bool get isDead => sourcesOk == 0;
 
   /// Moscow Time = Sats pro 1 USD, gelesen wie eine Uhrzeit.
   /// Beispiel: 1827 Sats/USD -> "18:27".
@@ -49,25 +102,113 @@ class BitcoinDashboardData {
 }
 
 class MempoolService {
-  static const String _baseUrl = 'https://mempool.space/api';
+  static const String _tag = 'Mempool';
+
+  /// Eigener User-Agent. Der Default von Dart ist `Dart/3.x (dart:io)` —
+  /// ein deutliches Bot-Signal, das WAFs (Cloudflare) gern blocken.
+  static const String _userAgent = '21Meetup/1.3 (Einundzwanzig Meetup App)';
+
+  /// EIN geteilter Client statt sechs Einzel-Clients.
+  /// Die Top-Level-Funktion `http.get()` legt pro Aufruf einen neuen Client an
+  /// und schließt ihn wieder — über Tor bedeutet das sechs frische Circuits
+  /// und sechs TLS-Handshakes pro Refresh. Mit Keep-alive läuft alles über
+  /// eine Verbindung.
+  ///
+  /// ABER: Keep-alive-Sockets überleben keinen Netzwechsel. Schaltet der
+  /// Nutzer Orbot AN oder AUS, während die App läuft, zeigen die offenen
+  /// Verbindungen ins Leere — die nächsten Requests würden in den Timeout
+  /// laufen. Deshalb ist der Client NICHT final, sondern wird verworfen,
+  /// sobald sich der Host ändert oder ein kompletter Fehlschlag auftritt.
+  static http.Client _client = http.Client();
+
+  /// Host, für den der aktuelle Client aufgebaut wurde.
+  static String _clientHost = '';
+
+  /// Verbindungspool wegwerfen und frisch aufbauen.
+  /// Aufrufen bei: Host-Wechsel, Totalausfall, Orbot-Umschaltung.
+  static void resetClient() {
+    try {
+      _client.close();
+    } catch (_) {
+      // Schon geschlossen — egal.
+    }
+    _client = http.Client();
+    _clientHost = MempoolConfig.host;
+    AppLogger.diag(_tag, 'HTTP-Client neu aufgebaut für $_clientHost');
+  }
+
+  /// Blockhöhe wird auch im Meetup-Ablauf geholt (Rolling QR, Co-Attendance)
+  /// — dort MIT Retry. Mit dem vollen Onion-Timeout (45 s) käme man auf über
+  /// 90 s Wartezeit beim Scannen. Für diesen Pfad wird das Zeitlimit gekappt.
+  static const Duration _blockHeightMaxTimeout = Duration(seconds: 20);
 
   /// Letzter erfolgreich geladener Datensatz — wird angezeigt, während neu
   /// geladen wird oder falls eine Quelle mal ausfällt (keine leere Kachel).
   static BitcoinDashboardData? lastDashboard;
 
-  // Holt die aktuelle Blockhöhe (Tip Height)
+  // Fehlerbild des letzten Durchlaufs (für Dashboard-Hinweis + Log).
+  static String _lastError = '';
+  static bool _lastBlocked = false;
+
+  // =============================================
+  // ZENTRALER GET
+  // Prüft den Statuscode WIRKLICH und wirft mit Kontext.
+  // =============================================
+  static Future<http.Response> _get(String path, {Duration? maxTimeout}) async {
+    await MempoolConfig.ensureLoaded();
+
+    // Host gewechselt (Einstellungen geändert)? Dann darf der alte
+    // Verbindungspool nicht weiterverwendet werden.
+    if (_clientHost != MempoolConfig.host) resetClient();
+
+    final uri = Uri.parse('${MempoolConfig.apiBase}$path');
+
+    var timeout = MempoolConfig.timeout;
+    if (maxTimeout != null && maxTimeout < timeout) timeout = maxTimeout;
+
+    final r = await _client.get(uri, headers: {
+      'User-Agent': _userAgent,
+      'Accept': 'application/json, text/plain, */*',
+    }).timeout(timeout);
+
+    if (r.statusCode != 200) {
+      throw MempoolHttpException(path, r.statusCode, r.body);
+    }
+    return r;
+  }
+
+  /// Einheitliches Logging aller Fehlschläge — das ist der Kern des Fixes.
+  /// Vorher: `catch (_)`, also absolute Stille im Diagnose-Log.
+  static void _logFailure(String source, Object e) {
+    if (e is MempoolHttpException) {
+      _lastError = 'HTTP ${e.statusCode}';
+      if (e.looksBlocked) _lastBlocked = true;
+      AppLogger.diag(_tag,
+          '$source FEHLGESCHLAGEN — HTTP ${e.statusCode} @ ${MempoolConfig.host}${e.path} · Antwort: ${e.snippet}');
+    } else {
+      final type = e.runtimeType.toString();
+      _lastError = type;
+      AppLogger.diag(_tag,
+          '$source FEHLGESCHLAGEN — $type @ ${MempoolConfig.host} · $e');
+    }
+  }
+
+  // Holt die aktuelle Blockhöhe (Tip Height).
+  // Vertrag bleibt: 0 bei Fehler (rolling_qr_service, coattendance_service,
+  // meetup_verification verlassen sich darauf). Aber jetzt MIT Log-Eintrag.
   static Future<int> getBlockHeight() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/blocks/tip/height'));
-      
-      if (response.statusCode == 200) {
-        // Die API gibt einfach nur eine Zahl zurück (z.B. 829450)
-        return int.parse(response.body);
-      } else {
-        return 0; // Fehler
+      final r = await _get('/blocks/tip/height',
+          maxTimeout: _blockHeightMaxTimeout);
+      final h = int.tryParse(r.body.trim());
+      if (h == null || h <= 0) {
+        AppLogger.diag(_tag,
+            'Blockhöhe: unlesbare Antwort (kein Integer): "${r.body.length > 60 ? '${r.body.substring(0, 60)}…' : r.body}"');
+        return 0;
       }
+      return h;
     } catch (e) {
-      AppLogger.debug('App', "Mempool Fehler: $e");
+      _logFailure('Blockhöhe', e);
       return 0; // Offline oder Fehler
     }
   }
@@ -82,9 +223,8 @@ class MempoolService {
   /// Leere Map bei Fehler/offline.
   static Future<Map<String, double>> getPrices() async {
     try {
-      final response = await http.get(Uri.parse('$_baseUrl/v1/prices'));
-      if (response.statusCode != 200) return {};
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final r = await _get('/v1/prices');
+      final data = jsonDecode(r.body) as Map<String, dynamic>;
       final result = <String, double>{};
       for (final cur in supportedCurrencies) {
         final v = data[cur];
@@ -92,8 +232,41 @@ class MempoolService {
       }
       return result;
     } catch (e) {
-      AppLogger.debug('App', "Mempool Preis-Fehler: $e");
+      _logFailure('Preise', e);
       return {};
+    }
+  }
+
+  /// Einmaliger Verbindungstest gegen einen BELIEBIGEN Host — für den
+  /// "Verbindung testen"-Knopf in den Einstellungen. Ändert die Config nicht.
+  /// Gibt die Blockhöhe zurück, oder wirft mit sprechendem Fehler.
+  static Future<int> testHost(String rawHost) async {
+    final host = MempoolConfig.normalize(rawHost);
+    final isOnion = host.contains('.onion');
+    final uri = Uri.parse('$host/api/blocks/tip/height');
+
+    // BEWUSST ein eigener Wegwerf-Client: Der Test soll die Wahrheit über
+    // JETZT sagen. Ein alter Verbindungspool (z.B. von vor dem Orbot-Start)
+    // könnte das Ergebnis verfälschen.
+    final client = http.Client();
+    try {
+      final r = await client.get(uri, headers: {
+        'User-Agent': _userAgent,
+        'Accept': 'text/plain, */*',
+      }).timeout(Duration(seconds: isOnion ? 45 : 20));
+
+      if (r.statusCode != 200) {
+        throw MempoolHttpException('/blocks/tip/height', r.statusCode, r.body);
+      }
+      final h = int.tryParse(r.body.trim());
+      if (h == null || h <= 0) {
+        throw MempoolHttpException(
+            '/blocks/tip/height', 200, 'Keine Zahl: ${r.body}');
+      }
+      AppLogger.diag(_tag, 'Verbindungstest OK: $host -> Block $h');
+      return h;
+    } finally {
+      client.close();
     }
   }
 
@@ -113,45 +286,64 @@ class MempoolService {
     return supply.round();
   }
 
-  /// Holt alle Dashboard-Kennzahlen parallel von mempool.space.
+  /// Holt alle Dashboard-Kennzahlen parallel von der konfigurierten Instanz.
   /// Einzelne fehlgeschlagene Quellen fallen auf den letzten bekannten Wert
-  /// (bzw. 0) zurück, statt die ganze Kachel leer zu lassen.
+  /// (bzw. 0) zurück, statt die ganze Kachel leer zu lassen — ABER es wird
+  /// jetzt mitgezählt, wie viele Quellen wirklich geliefert haben, und jeder
+  /// Fehlschlag landet im Diagnose-Log.
   static Future<BitcoinDashboardData> getDashboardData() async {
+    await MempoolConfig.ensureLoaded();
     final prev = lastDashboard;
 
-    Future<T> safe<T>(Future<T> Function() f, T fallback) async {
-      try { return await f().timeout(const Duration(seconds: 12)); }
-      catch (_) { return fallback; }
+    _lastError = '';
+    _lastBlocked = false;
+    var ok = 0;
+
+    // safe() zählt Erfolge und loggt Fehler — kein stummes catch(_) mehr.
+    Future<T> safe<T>(String source, Future<T> Function() f, T fallback) async {
+      try {
+        final v = await f();
+        ok++;
+        return v;
+      } catch (e) {
+        _logFailure(source, e);
+        return fallback;
+      }
     }
 
     final results = await Future.wait([
-      safe(getBlockHeight, prev?.blockHeight ?? 0),
-      safe(() async {
-        final r = await http.get(Uri.parse('$_baseUrl/v1/fees/recommended'));
+      // getBlockHeight() fängt intern selbst ab und gibt 0 zurück; deshalb
+      // hier keine Exception -> Erfolg separat an der 0 erkennen.
+      getBlockHeight(),
+      safe('Fees', () async {
+        final r = await _get('/v1/fees/recommended');
         final d = jsonDecode(r.body) as Map<String, dynamic>;
         return [
           (d['economyFee'] as num?)?.toInt() ?? (d['minimumFee'] as num?)?.toInt() ?? 0,
           (d['halfHourFee'] as num?)?.toInt() ?? 0,
           (d['fastestFee'] as num?)?.toInt() ?? 0,
         ];
-      }, [prev?.feeLow ?? 0, prev?.feeMedium ?? 0, prev?.feeHigh ?? 0]),
-      safe(getPrices, <String, double>{}),
-      safe(() async {
-        final r = await http.get(Uri.parse('$_baseUrl/v1/mining/hashrate/3d'));
+      }, <int>[-1, -1, -1]),
+      // getPrices() fängt (wie getBlockHeight) intern ab und gibt eine leere
+      // Map zurück, statt zu werfen -> Erfolg unten an der Leere erkennen,
+      // NICHT über safe(), sonst würde ein Fehlschlag als Erfolg gezählt.
+      getPrices(),
+      safe('Hashrate', () async {
+        final r = await _get('/v1/mining/hashrate/3d');
         final d = jsonDecode(r.body) as Map<String, dynamic>;
         final hr = (d['currentHashrate'] as num?)?.toDouble() ?? 0;
         return hr / 1e18; // H/s -> EH/s
-      }, prev?.hashrateEhs ?? 0.0),
-      safe(() async {
-        final r = await http.get(Uri.parse('$_baseUrl/v1/difficulty-adjustment'));
+      }, -1.0),
+      safe('Difficulty', () async {
+        final r = await _get('/v1/difficulty-adjustment');
         final d = jsonDecode(r.body) as Map<String, dynamic>;
         return [
           (d['difficultyChange'] as num?)?.toDouble() ?? 0.0,
           ((d['remainingBlocks'] as num?)?.toInt() ?? 0).toDouble(),
         ];
-      }, [prev?.difficultyChangePct ?? 0.0, (prev?.difficultyRemainingBlocks ?? 0).toDouble()]),
-      safe(() async {
-        final r = await http.get(Uri.parse('$_baseUrl/v1/lightning/statistics/latest'));
+      }, <double>[double.nan, double.nan]),
+      safe('Lightning', () async {
+        final r = await _get('/v1/lightning/statistics/latest');
         final d = jsonDecode(r.body) as Map<String, dynamic>;
         final latest = d['latest'] as Map<String, dynamic>? ?? d;
         final capSats = (latest['total_capacity'] as num?)?.toDouble() ?? 0;
@@ -160,28 +352,60 @@ class MempoolService {
           ((latest['node_count'] as num?)?.toInt() ?? 0).toDouble(),
           ((latest['channel_count'] as num?)?.toInt() ?? 0).toDouble(),
         ];
-      }, [prev?.lnCapacityBtc ?? 0.0, (prev?.lnNodeCount ?? 0).toDouble(), (prev?.lnChannelCount ?? 0).toDouble()]),
+      }, <double>[-1, -1, -1]),
     ]);
 
     final height0 = results[0] as int;
+    if (height0 > 0) ok++; // Blockhöhe zählt als eigene Quelle
+
     final fees0 = results[1] as List<int>;
+
     final prices = results[2] as Map<String, double>;
+    if (prices.isNotEmpty) ok++; // eigene Quelle, fängt intern ab
+
     final hashrate0 = results[3] as double;
     final diff0 = results[4] as List<double>;
     final ln0 = results[5] as List<double>;
 
-    // 0-GUARDS: Einige Quellen (z.B. getBlockHeight) geben bei Fehlern 0
-    // zurück statt zu werfen — dann greift der safe()-Fallback nicht.
-    // Ein guter alter Wert darf NIE von einer 0 überschrieben werden,
-    // sonst zeigt Kachel/App plötzlich "––" bis zum Neustart.
+    // FALLBACK-GUARDS: Ein guter alter Wert darf NIE von einem Fehlerwert
+    // überschrieben werden — sonst zeigt die Kachel plötzlich "––".
+    // Fehlerwerte sind jetzt eindeutig (-1 / NaN) statt 0, damit ein echter
+    // Wert von 0 (z.B. Fee = 0 sat/vB gibt es nicht, aber Difficulty 0.0 %
+    // sehr wohl!) nicht fälschlich als Fehler gilt.
     final height = height0 > 0 ? height0 : (prev?.blockHeight ?? 0);
-    final fees = (fees0[0] > 0 || fees0[1] > 0 || fees0[2] > 0)
-        ? fees0 : [prev?.feeLow ?? 0, prev?.feeMedium ?? 0, prev?.feeHigh ?? 0];
-    final hashrate = hashrate0 > 0 ? hashrate0 : (prev?.hashrateEhs ?? 0.0);
-    final diff = (diff0[0] != 0.0 || diff0[1] > 0)
-        ? diff0 : [prev?.difficultyChangePct ?? 0.0, (prev?.difficultyRemainingBlocks ?? 0).toDouble()];
-    final ln = ln0[0] > 0 ? ln0
-        : [prev?.lnCapacityBtc ?? 0.0, (prev?.lnNodeCount ?? 0).toDouble(), (prev?.lnChannelCount ?? 0).toDouble()];
+
+    final fees = fees0[0] >= 0
+        ? fees0
+        : [prev?.feeLow ?? 0, prev?.feeMedium ?? 0, prev?.feeHigh ?? 0];
+
+    final hashrate = hashrate0 >= 0 ? hashrate0 : (prev?.hashrateEhs ?? 0.0);
+
+    final diff = !diff0[0].isNaN
+        ? diff0
+        : [
+            prev?.difficultyChangePct ?? 0.0,
+            (prev?.difficultyRemainingBlocks ?? 0).toDouble(),
+          ];
+
+    final ln = ln0[0] >= 0
+        ? ln0
+        : [
+            prev?.lnCapacityBtc ?? 0.0,
+            (prev?.lnNodeCount ?? 0).toDouble(),
+            (prev?.lnChannelCount ?? 0).toDouble(),
+          ];
+
+    if (ok == 0) {
+      AppLogger.warn(_tag,
+          'ALLE Quellen fehlgeschlagen @ ${MempoolConfig.host}'
+          '${_lastBlocked ? ' — Server weist Anfragen ab (Cloudflare/Rate-Limit). Bei Tor: Onion-Adresse in den Einstellungen wählen.' : ''}');
+      // Häufigste Ursache für einen Totalausfall aus dem Nichts: der Nutzer
+      // hat Orbot an- oder ausgeschaltet, die Keep-alive-Sockets sind tot.
+      // Verbindungspool wegwerfen, damit der nächste Versuch frisch startet.
+      resetClient();
+    } else if (ok < 6) {
+      AppLogger.diag(_tag, 'Nur $ok von 6 Quellen geliefert.');
+    }
 
     final data = BitcoinDashboardData(
       blockHeight: height,
@@ -198,8 +422,15 @@ class MempoolService {
       lnNodeCount: ln[1].toInt(),
       lnChannelCount: ln[2].toInt(),
       updatedAt: DateTime.now(),
+      sourcesOk: ok,
+      sourcesTotal: 6,
+      lastError: _lastError,
+      blocked: _lastBlocked,
     );
-    lastDashboard = data;
+
+    // Nur speichern, wenn wenigstens EINE Quelle geliefert hat — sonst würden
+    // wir einen guten Datensatz durch einen leeren ersetzen.
+    if (ok > 0) lastDashboard = data;
     return data;
   }
 }

@@ -8169,6 +8169,168 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Anonym'**
   String get rsvpAnon;
+
+  /// No description provided for @settingsMempool.
+  ///
+  /// In de, this message translates to:
+  /// **'Mempool-Server'**
+  String get settingsMempool;
+
+  /// No description provided for @settingsMempoolSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Quelle der Bitcoin-Daten'**
+  String get settingsMempoolSub;
+
+  /// No description provided for @mempoolTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mempool-Server'**
+  String get mempoolTitle;
+
+  /// No description provided for @mempoolIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Von hier holt die App Blockhöhe, Gebühren, Kurs und Lightning-Daten. Standard ist mempool.space. Wer über Tor surft, sollte die Onion-Adresse wählen — mempool.space weist Anfragen von Tor-Exit-Knoten oft ab.'**
+  String get mempoolIntro;
+
+  /// No description provided for @mempoolClearnetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Standard (Clearnet)'**
+  String get mempoolClearnetTitle;
+
+  /// No description provided for @mempoolTorTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Tor / Onion'**
+  String get mempoolTorTitle;
+
+  /// No description provided for @mempoolTorSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Offizielle .onion von mempool.space'**
+  String get mempoolTorSub;
+
+  /// No description provided for @mempoolTorHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Funktioniert nur, wenn Orbot im VPN-Modus läuft und diese App einschließt. Ohne Orbot ist eine .onion-Adresse nicht erreichbar. Tor ist langsamer — die Daten brauchen etwas länger.'**
+  String get mempoolTorHint;
+
+  /// No description provided for @mempoolCustomTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigene Instanz'**
+  String get mempoolCustomTitle;
+
+  /// No description provided for @mempoolCustomSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Eigener Node (Umbrel, Start9, RaspiBlitz …)'**
+  String get mempoolCustomSub;
+
+  /// No description provided for @mempoolSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get mempoolSave;
+
+  /// No description provided for @mempoolSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespeichert'**
+  String get mempoolSaved;
+
+  /// No description provided for @mempoolInvalidUrl.
+  ///
+  /// In de, this message translates to:
+  /// **'Das sieht nicht nach einer gültigen Adresse aus.'**
+  String get mempoolInvalidUrl;
+
+  /// No description provided for @mempoolTest.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung testen'**
+  String get mempoolTest;
+
+  /// No description provided for @mempoolTesting.
+  ///
+  /// In de, this message translates to:
+  /// **'Teste …'**
+  String get mempoolTesting;
+
+  /// No description provided for @mempoolTestOk.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung steht'**
+  String get mempoolTestOk;
+
+  /// No description provided for @mempoolTestFail.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung'**
+  String get mempoolTestFail;
+
+  /// No description provided for @mempoolTestBlocked.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Server weist die Anfrage ab. Bei Tor: Onion-Adresse wählen.'**
+  String get mempoolTestBlocked;
+
+  /// No description provided for @mempoolTestOnionFail.
+  ///
+  /// In de, this message translates to:
+  /// **'Onion nicht erreichbar. Läuft Orbot im VPN-Modus und ist diese App eingeschlossen?'**
+  String get mempoolTestOnionFail;
+
+  /// No description provided for @mempoolActive.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktive Quelle'**
+  String get mempoolActive;
+
+  /// No description provided for @dashSource.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten'**
+  String get dashSource;
+
+  /// No description provided for @dashPartial.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur teilweise geladen'**
+  String get dashPartial;
+
+  /// No description provided for @dashOfflineTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Verbindung'**
+  String get dashOfflineTitle;
+
+  /// No description provided for @dashOfflineBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Es konnten keine Daten geladen werden. Prüfe deine Internetverbindung — oder wähle eine andere Datenquelle.'**
+  String get dashOfflineBody;
+
+  /// No description provided for @dashBlockedTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Server weist Anfragen ab'**
+  String get dashBlockedTitle;
+
+  /// No description provided for @dashBlockedBody.
+  ///
+  /// In de, this message translates to:
+  /// **'mempool.space blockt diese IP-Adresse. Das passiert typischerweise über Tor, weil sich viele Nutzer einen Exit-Knoten teilen. Abhilfe: Onion-Adresse oder eigene Instanz verwenden.'**
+  String get dashBlockedBody;
+
+  /// No description provided for @dashChangeServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Datenquelle ändern'**
+  String get dashChangeServer;
 }
 
 class _AppLocalizationsDelegate

@@ -4479,4 +4479,92 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get rsvpAnon => 'Anonym';
+
+  @override
+  String get settingsMempool => 'Mempool-Server';
+
+  @override
+  String get settingsMempoolSub => 'Quelle der Bitcoin-Daten';
+
+  @override
+  String get mempoolTitle => 'Mempool-Server';
+
+  @override
+  String get mempoolIntro =>
+      'Von hier holt die App Blockhöhe, Gebühren, Kurs und Lightning-Daten. Standard ist mempool.space. Wer über Tor surft, sollte die Onion-Adresse wählen — mempool.space weist Anfragen von Tor-Exit-Knoten oft ab.';
+
+  @override
+  String get mempoolClearnetTitle => 'Standard (Clearnet)';
+
+  @override
+  String get mempoolTorTitle => 'Tor / Onion';
+
+  @override
+  String get mempoolTorSub => 'Offizielle .onion von mempool.space';
+
+  @override
+  String get mempoolTorHint =>
+      'Funktioniert nur, wenn Orbot im VPN-Modus läuft und diese App einschließt. Ohne Orbot ist eine .onion-Adresse nicht erreichbar. Tor ist langsamer — die Daten brauchen etwas länger.';
+
+  @override
+  String get mempoolCustomTitle => 'Eigene Instanz';
+
+  @override
+  String get mempoolCustomSub => 'Eigener Node (Umbrel, Start9, RaspiBlitz …)';
+
+  @override
+  String get mempoolSave => 'Speichern';
+
+  @override
+  String get mempoolSaved => 'Gespeichert';
+
+  @override
+  String get mempoolInvalidUrl =>
+      'Das sieht nicht nach einer gültigen Adresse aus.';
+
+  @override
+  String get mempoolTest => 'Verbindung testen';
+
+  @override
+  String get mempoolTesting => 'Teste …';
+
+  @override
+  String get mempoolTestOk => 'Verbindung steht';
+
+  @override
+  String get mempoolTestFail => 'Keine Verbindung';
+
+  @override
+  String get mempoolTestBlocked =>
+      'Der Server weist die Anfrage ab. Bei Tor: Onion-Adresse wählen.';
+
+  @override
+  String get mempoolTestOnionFail =>
+      'Onion nicht erreichbar. Läuft Orbot im VPN-Modus und ist diese App eingeschlossen?';
+
+  @override
+  String get mempoolActive => 'Aktive Quelle';
+
+  @override
+  String get dashSource => 'Daten';
+
+  @override
+  String get dashPartial => 'Nur teilweise geladen';
+
+  @override
+  String get dashOfflineTitle => 'Keine Verbindung';
+
+  @override
+  String get dashOfflineBody =>
+      'Es konnten keine Daten geladen werden. Prüfe deine Internetverbindung — oder wähle eine andere Datenquelle.';
+
+  @override
+  String get dashBlockedTitle => 'Server weist Anfragen ab';
+
+  @override
+  String get dashBlockedBody =>
+      'mempool.space blockt diese IP-Adresse. Das passiert typischerweise über Tor, weil sich viele Nutzer einen Exit-Knoten teilen. Abhilfe: Onion-Adresse oder eigene Instanz verwenden.';
+
+  @override
+  String get dashChangeServer => 'Datenquelle ändern';
 }

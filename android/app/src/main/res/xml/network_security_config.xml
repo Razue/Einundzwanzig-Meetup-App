@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ============================================================
+  NETWORK SECURITY CONFIG
+  ============================================================
+  Ab Android 9 (API 28) ist unverschlüsselter HTTP-Verkehr
+  standardmäßig VERBOTEN. Ohne diese Datei stirbt jeder
+  Request an eine .onion-Adresse sofort mit:
+      "Cleartext HTTP traffic to ... not permitted"
+
+  Warum .onion überhaupt http:// ist:
+  Onion-Dienste sind durch das Tor-Protokoll selbst
+  Ende-zu-Ende verschlüsselt und authentifiziert (der
+  Hostname IST der öffentliche Schlüssel). TLS obendrauf
+  ist unnötig; mempool.space bietet auf der Onion daher
+  bewusst nur http an.
+
+  WICHTIG — bewusst eng gefasst:
+  - base-config bleibt STRIKT (cleartextTrafficPermitted="false").
+    Für mempool.space, das Portal, Nostr-Relays usw. ändert
+    sich NICHTS: alles muss weiterhin über TLS laufen.
+  - Nur ".onion" und ".local" dürfen im Klartext sprechen.
+    ".local" für selbst gehostete Instanzen im Heimnetz
+    (Umbrel/Start9/RaspiBlitz melden sich als *.local).
+
+  NICHT abgedeckt: eine eigene Instanz, die über eine rohe
+  IP im LAN per http läuft (z.B. http://192.168.1.50:3006).
+  Android erlaubt in domain-config keine IP-Bereiche. Wer so
+  eine Instanz nutzt, nimmt https ODER die .onion-Adresse
+  seines eigenen Nodes — die bringen Umbrel/Start9 ohnehin mit.
+  ============================================================
+-->
+<network-security-config>
+
+    <!-- Standard für ALLES: kein Klartext. Unverändert strikt. -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Ausnahme 1: Tor Onion Services -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">onion</domain>
+    </domain-config>
+
+    <!-- Ausnahme 2: eigener Node im Heimnetz (mDNS-Namen) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">local</domain>
+    </domain-config>
+
+</network-security-config>
