@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app_logger.dart';
 import 'mempool_config.dart';
 
@@ -142,6 +143,70 @@ class MempoolService {
   /// 90 s Wartezeit beim Scannen. Für diesen Pfad wird das Zeitlimit gekappt.
   static const Duration _blockHeightMaxTimeout = Duration(seconds: 20);
 
+  // =============================================
+  // MONOTONE BLOCKHÖHE (v1.3.1)
+  // =============================================
+  // Die Blockhöhe ist die EINZIGE Kennzahl mit einer harten Invariante:
+  // sie kann nur steigen. Genau die nutzen wir, um drei Fehler auf einmal
+  // zu erschlagen:
+  //
+  // 1. RENNEN ZWISCHEN DEN AUFRUFERN. Drei Stellen holen unabhängig Daten
+  //    (Widget-Rädchen im Hintergrund-Isolate, Home-Kachel, Dashboard —
+  //    beide mit 60-s-Timer). Jeder las beim Start den alten Stand und
+  //    schrieb beim Ende. Der LANGSAMSTE gewann. Holte das Rädchen die
+  //    frische Höhe und der Vordergrund-Timer scheiterte kurz danach an
+  //    seinem eigenen Fetch, überschrieb er das Widget wieder mit dem alten
+  //    Wert -> "kurz nach dem Aktualisieren steht wieder der alte Stand da".
+  //
+  // 2. HINTERGRUND-ISOLATE HAT KEIN GEDÄCHTNIS. `lastDashboard` ist ein
+  //    static — im frischen Isolate des Refresh-Rädchens also IMMER null.
+  //    Scheiterte dort die Blockhöhe, während andere Quellen lieferten,
+  //    schrieb es eine 0 ("––") ins Widget.
+  //
+  // 3. DER ALTE 0-GUARD MASKIERTE DEN FEHLER. `height0 > 0 ? height0 : prev`
+  //    nahm bei Fehlschlag stillschweigend den alten Wert — und schrieb ihn
+  //    mit frischem "Stand HH:MM" ins Widget. Es SAH aus wie aktualisiert.
+  //
+  // Lösung: die zuletzt bekannte Höhe liegt in SharedPreferences (nicht nur
+  // im RAM eines Isolates) und darf NIE zurückgehen. Ein Fehlschlag oder eine
+  // veraltete CDN-Antwort kann einen neueren Wert damit nicht mehr kippen.
+  static const String _kLastHeight = 'mempool_last_height';
+  static int _lastKnownHeight = 0;
+
+  /// Letzte bekannte Höhe lesen — MIT `reload()`, sonst sieht der Vordergrund
+  /// nicht, was das Hintergrund-Isolate (Refresh-Rädchen) geschrieben hat:
+  /// SharedPreferences hält pro Isolate einen eigenen Cache.
+  static Future<int> _loadLastHeight() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.reload();
+      final v = p.getInt(_kLastHeight) ?? 0;
+      if (v > _lastKnownHeight) _lastKnownHeight = v;
+    } catch (_) {
+      // Prefs nicht lesbar -> mit dem Wert aus dem RAM weiterarbeiten.
+    }
+    return _lastKnownHeight;
+  }
+
+  static Future<void> _saveLastHeight(int h) async {
+    if (h <= _lastKnownHeight) return; // niemals rückwärts
+    _lastKnownHeight = h;
+    try {
+      final p = await SharedPreferences.getInstance();
+      await p.setInt(_kLastHeight, h);
+    } catch (_) {
+      // Nicht schlimm — gilt zumindest für diese Sitzung.
+    }
+  }
+
+  // =============================================
+  // SINGLE-FLIGHT
+  // =============================================
+  // Läuft schon ein Abruf, bekommen weitere Aufrufer DENSELBEN Future statt
+  // eine zweite Runde von sechs Requests. Verhindert das Rennen an der Wurzel
+  // und halbiert nebenbei die Last auf mempool.space (Rate-Limits!).
+  static Future<BitcoinDashboardData>? _inFlight;
+
   /// Letzter erfolgreich geladener Datensatz — wird angezeigt, während neu
   /// geladen wird oder falls eine Quelle mal ausfällt (keine leere Kachel).
   static BitcoinDashboardData? lastDashboard;
@@ -169,6 +234,8 @@ class MempoolService {
     final r = await _client.get(uri, headers: {
       'User-Agent': _userAgent,
       'Accept': 'application/json, text/plain, */*',
+      // Verhindert, dass uns ein CDN eine veraltete Blockhöhe unterschiebt.
+      'Cache-Control': 'no-cache',
     }).timeout(timeout);
 
     if (r.statusCode != 200) {
@@ -291,7 +358,19 @@ class MempoolService {
   /// (bzw. 0) zurück, statt die ganze Kachel leer zu lassen — ABER es wird
   /// jetzt mitgezählt, wie viele Quellen wirklich geliefert haben, und jeder
   /// Fehlschlag landet im Diagnose-Log.
-  static Future<BitcoinDashboardData> getDashboardData() async {
+  static Future<BitcoinDashboardData> getDashboardData() {
+    final running = _inFlight;
+    if (running != null) return running; // Abruf läuft schon -> mitbenutzen
+
+    final f = _fetchDashboard();
+    _inFlight = f;
+    f.whenComplete(() {
+      if (identical(_inFlight, f)) _inFlight = null;
+    });
+    return f;
+  }
+
+  static Future<BitcoinDashboardData> _fetchDashboard() async {
     await MempoolConfig.ensureLoaded();
     final prev = lastDashboard;
 
@@ -358,6 +437,27 @@ class MempoolService {
     final height0 = results[0] as int;
     if (height0 > 0) ok++; // Blockhöhe zählt als eigene Quelle
 
+    // MONOTONIE-GUARD: Die Blockhöhe darf niemals sinken.
+    // Ersetzt den alten `height0 > 0 ? height0 : prev?.blockHeight`-Guard,
+    // der bei jedem Fehlschlag stillschweigend den RAM-Stand DIESES Isolates
+    // zurückschrieb — und damit einen frischeren Wert aus einem anderen
+    // Isolate überbügelte.
+    final lastKnown = await _loadLastHeight();
+    final height = height0 > lastKnown ? height0 : lastKnown;
+
+    if (height0 > lastKnown) {
+      await _saveLastHeight(height0); // neuer Höchststand -> persistieren
+    } else if (height0 == 0 && lastKnown > 0) {
+      AppLogger.diag(_tag,
+          'Blockhöhe NICHT geladen — zeige letzten bekannten Stand ($lastKnown). '
+          'Das Widget behält damit den frischesten Wert, egal welcher Aufrufer zuletzt schreibt.');
+    } else if (height0 > 0 && height0 < lastKnown) {
+      // Kommt vor: veraltete CDN-Antwort. Früher hätte das die Anzeige
+      // zurückgesetzt — jetzt wird der Rückschritt verworfen.
+      AppLogger.diag(_tag,
+          'Veraltete Blockhöhe verworfen: Server meldet $height0, bekannt ist bereits $lastKnown.');
+    }
+
     final fees0 = results[1] as List<int>;
 
     final prices = results[2] as Map<String, double>;
@@ -372,7 +472,9 @@ class MempoolService {
     // Fehlerwerte sind jetzt eindeutig (-1 / NaN) statt 0, damit ein echter
     // Wert von 0 (z.B. Fee = 0 sat/vB gibt es nicht, aber Difficulty 0.0 %
     // sehr wohl!) nicht fälschlich als Fehler gilt.
-    final height = height0 > 0 ? height0 : (prev?.blockHeight ?? 0);
+    //
+    // `height` wird hier BEWUSST nicht mehr gesetzt — die Blockhöhe kommt
+    // oben aus dem Monotonie-Guard und ist damit isolate-übergreifend sicher.
 
     final fees = fees0[0] >= 0
         ? fees0

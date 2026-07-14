@@ -106,6 +106,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   List<String> _platformNames = [];
   MeetupSession? _activeSession;
   Timer? _sessionTimer;
+  Timer? _midnightTimer; // Wechsel Heute/Morgen exakt um 0 Uhr
   String _sessionTimeLeft = '';
   bool _deviceCompromised = false;
   bool _dismissedIntegrityWarning = false;
@@ -145,6 +146,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     WidgetService.refreshNews(); // News-Titel + NEU-Status fürs Widget
     WidgetsBinding.instance.addObserver(this); // für Widget-Ziel-Abfrage bei Resume
     _pollWidgetTarget();         // wurde die App über einen Widget-Bereich geöffnet?
+    _scheduleMidnightRefresh();  // "Heute"/"Morgen" wechselt exakt um 0 Uhr
   }
 
   /// Widget-Klick-Routing: Das Ziel liegt im lokalen Speicher (von der
@@ -158,6 +160,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _pollWidgetTarget();
+      // Der Mitternachts-Timer ist KEIN Verlass, wenn Android die App
+      // schlafen legt (Doze) — dann feuert er verspätet oder gar nicht.
+      // Deshalb beim Aufwachen immer neu rechnen und den Timer neu setzen:
+      // Handy über Nacht in der Tasche, morgens aufgeklappt -> stimmt sofort.
+      _loadNextHomeMeetup();
+      _scheduleMidnightRefresh();
     }
   }
 
@@ -270,7 +278,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
   @override
-  void dispose() { WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
+  void dispose() { WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _midnightTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
   void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
 
   bool _refreshing = false;
@@ -377,6 +385,45 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     }
   }
 
+  /// Kalendertage bis zum Meetup — NICHT volle 24-Stunden-Blöcke.
+  ///
+  /// WARUM NICHT `startTime.difference(DateTime.now()).inDays`:
+  /// `Duration.inDays` schneidet ab und zählt vergangene 24-Stunden-Blöcke.
+  /// Meetup morgen 19:00, jetzt heute 20:00 -> Differenz 23 h -> inDays = 0
+  /// -> die App schrieb "Heute", obwohl es MORGEN ist. Der Fehler trat immer
+  /// dann auf, wenn die aktuelle Uhrzeit später war als die Meetup-Uhrzeit.
+  ///
+  /// Richtig ist der Abstand zwischen den KALENDERTAGEN. Beide Zeitpunkte auf
+  /// lokale Mitternacht normalisieren, dann in Stunden messen und auf ganze
+  /// Tage runden. Das Runden ist kein Schönheitsfehler, sondern nötig:
+  /// bei Sommer-/Winterzeitumstellung hat ein Kalendertag 23 bzw. 25 Stunden —
+  /// mit `.inDays` käme sonst an genau zwei Tagen im Jahr wieder 0 statt 1 raus.
+  ///
+  /// 0 = heute, 1 = morgen, negativ = liegt in der Vergangenheit.
+  int _daysUntil(DateTime target) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final day = DateTime(target.year, target.month, target.day);
+    return (day.difference(today).inHours / 24).round();
+  }
+
+  /// Plant den Neuaufbau des Countdowns exakt auf die nächste Mitternacht.
+  /// Ohne das würde eine App, die über Mitternacht offen bleibt, weiter
+  /// "Morgen" anzeigen, obwohl es längst "Heute" ist — der Wert wird sonst
+  /// nur beim Laden berechnet.
+  void _scheduleMidnightRefresh() {
+    _midnightTimer?.cancel();
+    final now = DateTime.now();
+    final nextMidnight = DateTime(now.year, now.month, now.day + 1);
+    // 2 s Puffer, damit wir sicher NACH dem Datumswechsel rechnen.
+    final wait = nextMidnight.difference(now) + const Duration(seconds: 2);
+    _midnightTimer = Timer(wait, () {
+      if (!mounted) return;
+      _loadNextHomeMeetup();   // rechnet neu und schreibt das Widget
+      _scheduleMidnightRefresh(); // für die übernächste Mitternacht
+    });
+  }
+
   void _loadNextHomeMeetup() async {
     if (_user.homeMeetupId.isEmpty) { if (mounted) setState(() => _countdownLoading = false); return; }
     try {
@@ -394,10 +441,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         return terms.any((term) => hay.contains(term));
       }
 
-      // KULANZ wie in der Terminliste: Ein Meetup zählt noch 6 Stunden nach
-      // Beginn als "nächstes" (ein laufendes Meetup ist heute, nicht vorbei).
-      final cutoff = DateTime.now().subtract(const Duration(hours: 6));
-      final future = events.where((e) => e.startTime.isAfter(cutoff) && matches(e)).toList()
+      // KALENDERTAG-KULANZ: Ein Meetup bleibt den GANZEN Tag über das
+      // "nächste" — bis Mitternacht, nicht nur 6 Stunden nach Beginn.
+      //
+      // Vorher: cutoff = jetzt - 6h. Ein Meetup, das heute um 10:00 anfing,
+      // fiel dadurch um 16:00 DESSELBEN TAGES aus der Auswahl und der
+      // Countdown sprang aufs übernächste Meetup — obwohl noch derselbe Tag
+      // war. Jetzt zählt der Kalendertag: alles ab heute 00:00 bleibt drin,
+      // der Wechsel passiert exakt um Mitternacht.
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final future = events.where((e) => !e.startTime.isBefore(todayStart) && matches(e)).toList()
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
       if (mounted) setState(() { _nextHomeMeetup = future.isNotEmpty ? future.first : null; _countdownLoading = false; });
 
@@ -405,7 +459,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       final widgetCity = _homeMeetup?.city ?? '';
       String countdown = '';
       if (_nextHomeMeetup != null) {
-        final days = _nextHomeMeetup!.startTime.difference(DateTime.now()).inDays;
+        final days = _daysUntil(_nextHomeMeetup!.startTime);
         countdown = days <= 0 ? 'Heute' : (days == 1 ? 'Morgen' : 'in $days Tagen');
       }
       WidgetService.updateMeetup(city: widgetCity, countdown: countdown);
@@ -929,11 +983,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _buildCountdownTile() {
     if (_countdownLoading) return _tile(accentColor: cCyan, child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Icon(Icons.hourglass_top_rounded, color: cCyan, size: 22), const Spacer(), const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: cCyan)), const SizedBox(height: 8), const Text('Lade...', style: TextStyle(color: cTextTertiary, fontSize: 11))]));
     if (_nextHomeMeetup != null) {
-      final days = _nextHomeMeetup!.startTime.difference(DateTime.now()).inDays;
+      final days = _daysUntil(_nextHomeMeetup!.startTime);
       return _tile(accentColor: cCyan, opacity: 0.08, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _user.homeMeetupId))),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Icon(Icons.event_available_rounded, color: cCyan, size: 22), const Spacer(),
-          days == 0 ? const Text('Heute!', style: TextStyle(color: cCyan, fontSize: 26, fontWeight: FontWeight.w900, height: 1))
+          days <= 0 ? const Text('Heute!', style: TextStyle(color: cCyan, fontSize: 26, fontWeight: FontWeight.w900, height: 1))
             : Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Text('$days', style: TextStyle(color: cText, fontSize: 32, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)), const SizedBox(width: 4),
               Padding(padding: const EdgeInsets.only(bottom: 2), child: Text(days == 1 ? 'Tag' : 'Tage', style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)))]),
           const SizedBox(height: 4), const Text('Nächstes Meetup', style: TextStyle(color: cText, fontSize: 11))]));
@@ -1083,14 +1137,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           if (_countdownLoading)
             const SizedBox(height: 16, child: LinearProgressIndicator(color: cOrange, backgroundColor: Colors.transparent))
           else if (_nextHomeMeetup != null) Builder(builder: (_) {
-            final days = _nextHomeMeetup!.startTime.difference(DateTime.now()).inDays;
+            final days = _daysUntil(_nextHomeMeetup!.startTime);
             return Row(children: [
               const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 15),
               const SizedBox(width: 7),
               Text(
-                days == 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
+                days <= 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
                 style: TextStyle(
-                  color: days == 0 ? cOrange : days <= 3 ? cOrange.withValues(alpha: 0.8) : cTextSecondary,
+                  color: days <= 0 ? cOrange : days <= 3 ? cOrange.withValues(alpha: 0.8) : cTextSecondary,
                   fontSize: 14, fontWeight: FontWeight.w800)),
               const SizedBox(width: 5),
               Expanded(child: Text(
