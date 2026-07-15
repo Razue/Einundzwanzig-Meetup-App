@@ -28,7 +28,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_logger.dart';
-import 'secure_key_store.dart';
 import 'signing_service.dart';
 
 const String _tag = 'PortalAPI';
@@ -128,8 +127,18 @@ class PortalApiService {
     await _storage.write(key: _tokenKey, value: token);
     // Token an den aktuellen Schlüssel BINDEN: verhindert, dass ein neuer
     // Account den Portal-Login (und Organisator-Status!) des alten erbt.
-    final ownNpub = await SecureKeyStore.getNpub();
-    if (ownNpub != null) await _storage.write(key: _tokenNpubKey, value: ownNpub);
+    //
+    // WICHTIG (Bugfix v1.3.1): Hier stand SecureKeyStore.getNpub() — der
+    // kennt nur den LOKALEN Schlüssel und liefert bei Amber-Nutzern null.
+    // Folge: die Bindung wurde bei Amber NIE geschrieben, der nächste
+    // Start hielt den eigenen Token für fremd, löschte ihn und zeigte
+    // "gehört zu einem anderen Nostr-Schlüssel". Amber-Nutzer (genau die,
+    // die im Portal migriert haben!) bekamen dadurch NIE den Orga-Button.
+    // SigningService.npub() ist modus-bewusst: Amber-npub ODER lokaler npub.
+    final ownNpub = await SigningService.npub();
+    if (ownNpub != null && ownNpub.isNotEmpty) {
+      await _storage.write(key: _tokenNpubKey, value: ownNpub);
+    }
   }
 
   /// Manuelles Setzen eines Tokens (z.B. ein im Portal erzeugter persönlicher
@@ -421,12 +430,83 @@ class PortalApiService {
 
   /// Gehört der gespeicherte Portal-Token zum AKTUELLEN Nostr-Schlüssel?
   /// (Schutz gegen geerbte Logins nach Account-Wechsel.)
+  /// Gehört der gespeicherte Token zur AKTIVEN Identität?
+  ///
+  /// false heißt: BELEGT fremd — nur dann darf der Aufrufer den Token
+  /// löschen. Im Zweifel (offline, Portal nicht erreichbar) true, damit
+  /// kein funktionierender Login zerstört wird.
+  ///
+  /// Ablauf:
+  ///  1. Schneller Pfad: lokale Bindung == aktueller npub -> true.
+  ///  2. Sonst fragt die App das PORTAL (GET /user liefert den npub des
+  ///     Token-Inhabers) — das ist die Wahrheit, keine lokale Buchführung.
+  ///     Passt der Portal-npub zur aktiven Identität, wird die lokale
+  ///     Bindung GEHEILT (nachgeschrieben). Das repariert automatisch alle
+  ///     Bestandsnutzer, deren Bindung durch den Amber-Bug fehlt.
+  ///  3. 401 vom Portal -> Token ist serverseitig tot -> false.
+  ///  4. Widerspricht der Portal-npub der aktiven Identität -> false
+  ///     (echter geerbter Login).
   static Future<bool> tokenMatchesCurrentKey() async {
     final t = await getToken();
     if (t == null) return false;
+
+    // Aktive Identität — modus-bewusst (Amber ODER lokal). Der alte Code
+    // las hier SecureKeyStore.getNpub(), das bei Amber null liefert.
+    final cur = await SigningService.npub();
+    if (cur == null || cur.isEmpty) return false;
+
     final stored = await _storage.read(key: _tokenNpubKey);
-    final cur = await SecureKeyStore.getNpub();
-    return stored != null && cur != null && stored == cur;
+    if (stored != null && stored == cur) return true; // Normalfall, offlinefest
+
+    // Lokale Bindung fehlt (Altbestand/Amber-Bug) oder widerspricht
+    // (z.B. Wechsel lokal <-> Amber). Das Portal kennt die Wahrheit.
+    try {
+      final r = await http.get(
+        Uri.parse('$_apiBase/user'),
+        headers: {'Accept': 'application/json', 'Authorization': 'Bearer $t'},
+      ).timeout(_timeout);
+
+      if (r.statusCode == 401) {
+        AppLogger.diag(_tag, 'Token-Prüfung: Portal meldet 401 — Token serverseitig ungültig.');
+        return false;
+      }
+      if (r.statusCode != 200) {
+        // Portal zickt (5xx, Wartung) — kein Urteil möglich, nichts zerstören.
+        AppLogger.diag(_tag, 'Token-Prüfung: Portal antwortet ${r.statusCode} — keine Änderung.');
+        return true;
+      }
+
+      final body = jsonDecode(r.body);
+      final portalNpub = (body is Map) ? (body['nostr'] as String?)?.trim() : null;
+
+      if (portalNpub == null || portalNpub.isEmpty) {
+        // Token gehört einem Portal-Konto ohne Nostr-Identität (z.B. manuell
+        // eingetragener Token eines reinen Lightning-Kontos). Bewusst
+        // zulassen — das ist der dokumentierte manuelle Weg.
+        AppLogger.diag(_tag, 'Token-Prüfung: Portal-Konto ohne npub (manueller Token?) — zugelassen.');
+        return true;
+      }
+
+      if (portalNpub.toLowerCase() == cur.toLowerCase()) {
+        // Wahrheit bestätigt -> lokale Bindung heilen. Ab jetzt greift der
+        // schnelle Offline-Pfad oben.
+        await _storage.write(key: _tokenNpubKey, value: cur);
+        AppLogger.diag(_tag, 'Token-Prüfung: Portal bestätigt aktuellen Schlüssel — Bindung repariert.');
+        return true;
+      }
+
+      AppLogger.warn(_tag,
+          'Token-Prüfung: Portal-Konto gehört zu anderem npub (${portalNpub.substring(0, 12)}…) als die aktive Identität (${cur.substring(0, 12)}…).');
+      return false;
+    } catch (e) {
+      // Offline/Timeout: kein Urteil möglich.
+      // - Bindung fehlt (stored == null): true — nicht offline zerstören,
+      //   die Prüfung läuft beim nächsten Start erneut.
+      // - Bindung WIDERSPRICHT (stored != cur): false — das war schon vor
+      //   diesem Fix die bewusste Schutzentscheidung gegen geerbte Logins.
+      AppLogger.diag(_tag, 'Token-Prüfung: Portal nicht erreichbar ($e) — ${stored == null ? 'Token bleibt (keine Bindung, Prüfung folgt)' : 'lokale Bindung widerspricht -> fremd'}.');
+      return stored == null;
+    }
   }
 
   /// Roh-GET für Aufrufer, die Fehler (null) von leeren Daten unterscheiden

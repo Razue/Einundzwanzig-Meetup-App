@@ -579,7 +579,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // WICHTIG: alten Admin-Cache-Eintrag für den eigenen npub räumen,
         // sonst würde der Registry-Cache ihn weiter als Admin ausweisen
         // (genau der Bug: Kachel kam nach Portal-Entzug wieder).
-        final ownNpub = await SecureKeyStore.getNpub();
+        // Modus-bewusst (Amber ODER lokal) — SecureKeyStore.getNpub() lieferte
+        // bei Amber-Nutzern null, der Cache wurde dann nie geräumt.
+        final ownNpub = await SigningService.npub();
         if (ownNpub != null) await AdminRegistry.removeFromCache(ownNpub);
       }
     } catch (_) {/* still: beim nächsten Start erneut */}
