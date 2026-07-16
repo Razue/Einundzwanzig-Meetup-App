@@ -246,7 +246,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: cRed.withValues(alpha: 0.6), width: 1),
                     ),
-                    child: Text(t.rsvpCancel, style: const TextStyle(color: cRed, fontSize: 12, fontWeight: FontWeight.w700)),
+                    child: _rsvpBusy.contains(id)
+                        ? const SizedBox(width: 12, height: 12,
+                            child: CircularProgressIndicator(color: cRed, strokeWidth: 2))
+                        : Text(t.rsvpCancel, style: const TextStyle(color: cRed, fontSize: 12, fontWeight: FontWeight.w700)),
                   ),
                 ),
               ])
@@ -426,21 +429,36 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final st = (r?['status'] ?? '').toString();
         final count = _rsvpCount(r);
         final might = (r?['might'] ?? r?['might_attendees']) is int ? (r?['might'] ?? r?['might_attendees']) as int : -1;
+        // WICHTIG (UX-Fix): Der Portal-Roundtrip dauert mehrere Sekunden.
+        // Ohne sichtbares Feedback drücken Nutzer mehrfach auf den Button.
+        // Das Sheet rendert den busy-Zustand des Screens (_rsvpBusy) nicht
+        // automatisch — deshalb hier ein EIGENER Busy-Zustand, der über
+        // setSheet sofort sichtbar wird: Spinner im gedrückten Button,
+        // beide Buttons gesperrt, bis die Antwort da ist.
+        String sheetBusyStatus = '';
         Future<void> doStatus(String status) async {
-          if (id == null) return;
+          if (id == null || sheetBusyStatus.isNotEmpty) return; // Doppelklick-Schutz
+          setSheet(() => sheetBusyStatus = status);
           await _doRsvp(id, status: status);
-          setSheet(() {});
+          setSheet(() => sheetBusyStatus = '');
         }
-        Widget btn(String label, IconData ic, bool active, VoidCallback onTap) => Expanded(
-          child: GestureDetector(onTap: onTap, child: Container(
+        Widget btn(String label, IconData ic, bool active, String forStatus, VoidCallback onTap) => Expanded(
+          child: GestureDetector(onTap: sheetBusyStatus.isNotEmpty ? null : onTap, child: Container(
             padding: const EdgeInsets.symmetric(vertical: 11),
             decoration: BoxDecoration(
               color: active ? cGreen.withValues(alpha: 0.16) : cSurface,
               borderRadius: BorderRadius.circular(11),
               border: Border.all(color: active ? cGreen : cTileBorder, width: active ? 1.2 : 0.5)),
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Icon(ic, color: active ? cGreen : cTextSecondary, size: 16), const SizedBox(width: 7),
-              Text(label, style: TextStyle(color: active ? cGreen : cText, fontSize: 13.5, fontWeight: FontWeight.w700)),
+              // Spinner ERSETZT das Icon des gerade gedrückten Buttons.
+              sheetBusyStatus == forStatus || (sheetBusyStatus == 'none' && active)
+                  ? const SizedBox(width: 15, height: 15,
+                      child: CircularProgressIndicator(color: cGreen, strokeWidth: 2))
+                  : Icon(ic, color: active ? cGreen : cTextSecondary, size: 16),
+              const SizedBox(width: 7),
+              Text(label, style: TextStyle(
+                color: active ? cGreen : (sheetBusyStatus.isNotEmpty ? cTextTertiary : cText),
+                fontSize: 13.5, fontWeight: FontWeight.w700)),
             ]))));
         Widget action(String label, IconData ic, VoidCallback onTap) => Expanded(
           child: GestureDetector(onTap: onTap, child: Container(
@@ -474,9 +492,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   style: const TextStyle(color: cTextTertiary, fontSize: 12.5)),
               const SizedBox(height: 10),
               Row(children: [
-                btn(t.rsvpImComing, Icons.check_rounded, st == 'attending', () => doStatus(st == 'attending' ? 'none' : 'attending')),
+                btn(t.rsvpImComing, Icons.check_rounded, st == 'attending', 'attending', () => doStatus(st == 'attending' ? 'none' : 'attending')),
                 const SizedBox(width: 10),
-                btn(t.rsvpMaybe, Icons.help_outline_rounded, st == 'maybe', () => doStatus(st == 'maybe' ? 'none' : 'maybe')),
+                btn(t.rsvpMaybe, Icons.help_outline_rounded, st == 'maybe', 'maybe', () => doStatus(st == 'maybe' ? 'none' : 'maybe')),
               ]),
             ],
             const SizedBox(height: 12),

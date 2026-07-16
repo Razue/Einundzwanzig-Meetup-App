@@ -615,6 +615,14 @@ class PortalApiService {
   /// attendees/rsvps-Feld in der normalen RSVP-Antwort. Gibt eine Liste
   /// von {npub, name} zurück (leer, wenn das Portal keine Namen liefert).
   static Future<List<Map<String, String>>> getRsvpAttendees(int eventId) async {
+    // Roh-Einträge des Portals haben die Form "id_<userId>|<Name>"
+    // (siehe MeetupEvent::setRsvpFor im Portal-Code). Für die Anzeige
+    // zählt nur der Teil nach der Pipe.
+    String cleanName(String raw) {
+      final m = RegExp(r'^id_\d+\|').firstMatch(raw);
+      return m != null ? raw.substring(m.end) : raw;
+    }
+
     List<Map<String, String>> parse(dynamic list) {
       final out = <Map<String, String>>[];
       if (list is List) {
@@ -626,19 +634,39 @@ class PortalApiService {
             final src = (inner is Map) ? inner : item;
             final npub = (src['npub'] ?? src['pubkey'] ?? src['public_key'] ??
                           item['npub'] ?? item['pubkey'] ?? '').toString();
-            final name = (src['name'] ?? src['nickname'] ?? src['display_name'] ??
+            final name = cleanName((src['name'] ?? src['nickname'] ?? src['display_name'] ??
                           src['username'] ?? src['nick'] ??
-                          item['name'] ?? item['nickname'] ?? '').toString();
+                          item['name'] ?? item['nickname'] ?? '').toString());
             if (npub.isNotEmpty || name.isNotEmpty) {
               out.add({'npub': npub, 'name': name});
             }
           } else if (item is String && item.isNotEmpty) {
-            out.add({'npub': item, 'name': ''});
+            // Nackte String-Listen sind NAMEN (ggf. mit id_X|-Präfix),
+            // keine npubs — das Portal führt seine RSVP-Listen so.
+            out.add({'npub': '', 'name': cleanName(item)});
           }
         }
       }
       return out;
     }
+
+    // Weg 0: Das RSVP-Payload selbst (GET /meetup-events/{id}/rsvp).
+    // HEUTE liefert das Portal hier nur Zähler ('attendees' ist eine ZAHL,
+    // die parse() ignoriert). Sobald das Portal ein Namensfeld ergänzt
+    // (vorgeschlagen: 'attendee_names'), greift dieser Weg SOFORT —
+    // ohne App-Update. Respektiert serverseitig attendees_public.
+    try {
+      final body = await _get('/meetup-events/$eventId/rsvp');
+      if (body is Map) {
+        for (final key in ['attendee_names', 'attendees_list', 'names']) {
+          final parsed = parse(body[key]);
+          if (parsed.isNotEmpty) {
+            AppLogger.diag('Portal', 'Teilnehmer via /rsvp (Feld "$key"): ${parsed.length} Namen.');
+            return parsed;
+          }
+        }
+      }
+    } catch (_) {/* weiter mit Weg 1 */}
 
     // Weg 0: Der dokumentierte Organisator-Endpunkt für EIN Event
     // (/my-meetup-events/{id}). Liefert für eigene Meetups die Details

@@ -362,7 +362,10 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: cRed.withValues(alpha: 0.6), width: 1),
                         ),
-                        child: Text(t.rsvpCancel, style: const TextStyle(color: cRed, fontSize: 12, fontWeight: FontWeight.w700)),
+                        child: _busy.contains(id)
+                            ? const SizedBox(width: 12, height: 12,
+                                child: CircularProgressIndicator(color: cRed, strokeWidth: 2))
+                            : Text(t.rsvpCancel, style: const TextStyle(color: cRed, fontSize: 12, fontWeight: FontWeight.w700)),
                       ),
                     ),
                   ])
