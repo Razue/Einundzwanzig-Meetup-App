@@ -28,9 +28,13 @@ class SatoshiDuellService {
 
   static const String _base = 'https://uydjemquyogdemjtxyyv.supabase.co/rest/v1';
 
-  /// Öffentlicher anon-Key (identisch im WebApp-Bundle, RLS-begrenzt).
+  /// Öffentlicher Client-Key (Supabase "publishable key", neues Format).
+  /// Exakt der Key, den die WebApp selbst nutzt (satoshiduell-v2/.env) —
+  /// per Design öffentlich und durch Row-Level-Security begrenzt.
+  /// HINWEIS: Der ältere JWT-anon-Key des Projekts lieferte HTTP 401 —
+  /// das Projekt läuft auf dem neuen Supabase-Key-System.
   static const String _anonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5ZGplbXF1eW9nZGVtanR4eXl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5OTEzNDcsImV4cCI6MjA4NDU2NzM0N30.YPTpsDEF1_aSFnGU2Qp-nR12QSv3sTBK8CGlhD4fVIU';
+      'sb_publishable_RESZrjWqb-l_AIiqZcE7-g_JenFWO_d';
 
   static const Duration _timeout = Duration(seconds: 8);
 
