@@ -1289,32 +1289,52 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             ? 'https://satoshiduell.de/?npub=$npub'
             : 'https://satoshiduell.de/');
       },
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.bolt_rounded, color: gold, size: 22),
-          const Spacer(),
-          FutureBuilder<int>(
-            future: SatoshiDuellService.openDuelCount(),
-            builder: (_, snap) {
-              final n = snap.data ?? 0;
-              if (n <= 0) return const SizedBox.shrink();
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: gold.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(9),
-                  border: Border.all(color: gold.withValues(alpha: 0.5), width: 0.8),
+      child: FutureBuilder<DuellStatus>(
+        // EIN FutureBuilder für Badge UND Untertitel: der Untertitel sagt
+        // WAS ansteht ("Du bist dran!" > Lobby > "Warten auf Gegner"),
+        // das Badge zeigt die Zahl der Duelle, die eine Aktion erlauben.
+        future: SatoshiDuellService.fetchStatus(),
+        builder: (_, snap) {
+          final st = snap.data ?? DuellStatus.empty;
+          final t = AppLocalizations.of(context);
+          final String sub;
+          final Color subColor;
+          if (st.myTurn > 0) {
+            sub = '⚡ ${t.sdMyTurn}${st.myTurn > 1 ? ' (${st.myTurn})' : ''}';
+            subColor = gold;
+          } else if (st.lobby > 0) {
+            sub = '${st.lobby} ${t.sdLobby}';
+            subColor = gold;
+          } else if (st.waiting > 0) {
+            sub = '${t.sdWaiting}${st.waiting > 1 ? ' (${st.waiting})' : ''}';
+            subColor = cTextTertiary;
+          } else {
+            sub = t.chDuellSub;
+            subColor = cTextTertiary;
+          }
+          final n = st.myTurn + st.lobby;
+          return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              const Icon(Icons.bolt_rounded, color: gold, size: 22),
+              const Spacer(),
+              if (n > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: gold.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(9),
+                    border: Border.all(color: gold.withValues(alpha: 0.5), width: 0.8),
+                  ),
+                  child: Text('$n', style: const TextStyle(color: gold, fontSize: 11.5, fontWeight: FontWeight.w800)),
                 ),
-                child: Text('$n', style: const TextStyle(color: gold, fontSize: 11.5, fontWeight: FontWeight.w800)),
-              );
-            },
-          ),
-        ]),
-        const SizedBox(height: 12),
-        const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 3),
-        Text(AppLocalizations.of(context).chDuellSub, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
-      ]),
+            ]),
+            const SizedBox(height: 12),
+            const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Text(sub, style: TextStyle(color: subColor, fontSize: 12, fontWeight: st.myTurn > 0 ? FontWeight.w700 : FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+          ]);
+        },
+      ),
     );
   }
 

@@ -2164,5 +2164,8 @@
   "dashBlockedTitle": "El servidor rechaza las peticiones",
   "dashBlockedBody": "mempool.space está bloqueando esta dirección IP. Suele ocurrir con Tor, porque muchos usuarios comparten un nodo de salida. Solución: usa la dirección onion o tu propia instancia.",
   "dashChangeServer": "Cambiar fuente de datos",
-  "chDuellSub": "Duelos de quiz por sats — juega contra la comunidad"
+  "chDuellSub": "Duelos de quiz por sats — juega contra la comunidad",
+  "sdMyTurn": "¡Te toca!",
+  "sdWaiting": "Esperando al rival",
+  "sdLobby": "partidas abiertas en la sala"
 }

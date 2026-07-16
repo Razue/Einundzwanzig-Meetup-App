@@ -8337,6 +8337,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Quiz-Duelle um Sats — spiele gegen die Community'**
   String get chDuellSub;
+
+  /// No description provided for @sdMyTurn.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist dran!'**
+  String get sdMyTurn;
+
+  /// No description provided for @sdWaiting.
+  ///
+  /// In de, this message translates to:
+  /// **'Warten auf Gegner'**
+  String get sdWaiting;
+
+  /// No description provided for @sdLobby.
+  ///
+  /// In de, this message translates to:
+  /// **'offene Spiele in der Lobby'**
+  String get sdLobby;
 }
 
 class _AppLocalizationsDelegate

@@ -2186,5 +2186,8 @@
   "dashBlockedTitle": "Server weist Anfragen ab",
   "dashBlockedBody": "mempool.space blockt diese IP-Adresse. Das passiert typischerweise über Tor, weil sich viele Nutzer einen Exit-Knoten teilen. Abhilfe: Onion-Adresse oder eigene Instanz verwenden.",
   "dashChangeServer": "Datenquelle ändern",
-  "chDuellSub": "Quiz-Duelle um Sats — spiele gegen die Community"
+  "chDuellSub": "Quiz-Duelle um Sats — spiele gegen die Community",
+  "sdMyTurn": "Du bist dran!",
+  "sdWaiting": "Warten auf Gegner",
+  "sdLobby": "offene Spiele in der Lobby"
 }

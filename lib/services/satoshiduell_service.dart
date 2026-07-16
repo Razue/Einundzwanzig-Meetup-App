@@ -41,9 +41,9 @@ class SatoshiDuellService {
       };
 
   // RAM-Cache: das Badge muss nicht bei jedem Hub-Aufbau neu laden.
-  static int? _cachedCount;
+  static DuellStatus? _cachedStatus;
   static DateTime? _cachedAt;
-  static const Duration _ttl = Duration(minutes: 10);
+  static const Duration _ttl = Duration(minutes: 5);
 
   /// SatoshiDuell-Spielername zum npub — oder null, wenn der Nutzer dort
   /// noch nie gespielt hat. Die WebApp speichert npubs lowercase.
@@ -63,52 +63,109 @@ class SatoshiDuellService {
     return null; // noch nie gespielt
   }
 
-  /// Anzahl offener Duelle, die der Nutzer annehmen könnte.
-  /// 0 bei Fehlern jeder Art (bewusst still — siehe Kopfkommentar).
-  static Future<int> openDuelCount({bool forceRefresh = false}) async {
-    // Cache
-    if (!forceRefresh && _cachedCount != null && _cachedAt != null &&
+  /// Voller Duell-Status für die Kachel. Kategorisierung 1:1 aus der
+  /// ActiveGamesView der WebApp übernommen:
+  ///  - myTurn:  status open/active, MEIN Score ist noch null
+  ///             (Ausnahme: eigenes offenes Duell ohne Gegner = warten)
+  ///  - waiting: status open/active, mein Score gesetzt -> Gegner ist dran
+  ///  - lobby:   fremde offene Duelle, die ich annehmen könnte
+  ///
+  /// Bewusste Vereinfachung: Arena-Spiele, in denen man nur über die
+  /// participants-Liste hängt (weder creator noch challenger/target), werden
+  /// nicht als "dran/warten" erkannt — dafür bräuchte es den zweiten
+  /// Arena-Scan der WebApp. Für ein Kachel-Badge ist das die richtige
+  /// Abwägung; die WebApp selbst zeigt dann alles exakt.
+  static Future<DuellStatus> fetchStatus({bool forceRefresh = false}) async {
+    if (!forceRefresh && _cachedStatus != null && _cachedAt != null &&
         DateTime.now().difference(_cachedAt!) < _ttl) {
-      return _cachedCount!;
+      return _cachedStatus!;
     }
 
     try {
       final npub = await SigningService.npub();
-      if (npub == null || npub.isEmpty) return 0;
+      if (npub == null || npub.isEmpty) return DuellStatus.empty;
 
       final username = await _usernameFor(npub);
-      if (username == null) return 0; // dort kein Konto -> kein Badge
+      if (username == null) return DuellStatus.empty; // dort kein Konto
 
-      // Duelle zählen — Filter wie fetchOpenDuels() der WebApp.
-      // Zählung über den Content-Range-Header (Prefer: count=exact,
-      // Range 0-0), damit keine Datensätze übertragen werden.
-      final me = Uri.encodeQueryComponent(username.toLowerCase());
-      final uri = Uri.parse(
-          '$_base/duels?select=id&status=eq.open&creator=neq.$me'
-          '&or=(target_player.is.null,target_player.eq.$me)');
-      final r = await http.get(uri, headers: {
-        ..._headers,
-        'Prefer': 'count=exact',
-        'Range': '0-0',
-      }).timeout(_timeout);
+      final me = username.toLowerCase();
+      final meEnc = Uri.encodeQueryComponent(me);
 
-      if (r.statusCode != 200 && r.statusCode != 206) {
-        AppLogger.diag(_tag, 'duels-Abfrage: HTTP ${r.statusCode}');
-        return _cachedCount ?? 0;
+      // Call 1: MEINE Duelle (wie fetchUserGames der WebApp, ohne Arena-Scan).
+      final mine = await http.get(
+        Uri.parse('$_base/duels?select=status,creator,challenger,target_player,'
+            'creator_score,challenger_score'
+            '&or=(creator.eq.$meEnc,challenger.eq.$meEnc,target_player.eq.$meEnc)'
+            '&order=created_at.desc&limit=50'),
+        headers: _headers,
+      ).timeout(_timeout);
+
+      var myTurn = 0, waiting = 0;
+      if (mine.statusCode == 200) {
+        final list = jsonDecode(mine.body);
+        if (list is List) {
+          for (final g in list.whereType<Map>()) {
+            final st = (g['status'] ?? '').toString();
+            if (st != 'open' && st != 'active') continue; // finished etc.
+            final isCreator = (g['creator'] ?? '').toString().toLowerCase() == me;
+            final myScore = isCreator ? g['creator_score'] : g['challenger_score'];
+            if (myScore == null) {
+              // Eigenes offenes Duell ohne Gegner: ich warte, bin nicht dran.
+              if (st == 'open' && isCreator) {
+                waiting++;
+              } else {
+                myTurn++;
+              }
+            } else {
+              waiting++;
+            }
+          }
+        }
+      } else {
+        AppLogger.diag(_tag, 'meine-Duelle-Abfrage: HTTP ${mine.statusCode}');
       }
 
-      // Content-Range: "0-0/17" -> 17
-      final range = r.headers['content-range'] ?? '';
-      final total = int.tryParse(range.split('/').last) ??
-          // Fallback, falls der Header fehlt: gelieferte Zeilen zählen.
-          ((jsonDecode(r.body) is List) ? (jsonDecode(r.body) as List).length : 0);
+      // Call 2: Lobby — fremde offene Duelle, die ich annehmen könnte
+      // (Filter wie fetchOpenDuels der WebApp). Zählung über Content-Range.
+      var lobby = 0;
+      final open = await http.get(
+        Uri.parse('$_base/duels?select=id&status=eq.open&creator=neq.$meEnc'
+            '&or=(target_player.is.null,target_player.eq.$meEnc)'),
+        headers: {..._headers, 'Prefer': 'count=exact', 'Range': '0-0'},
+      ).timeout(_timeout);
+      if (open.statusCode == 200 || open.statusCode == 206) {
+        final range = open.headers['content-range'] ?? '';
+        lobby = int.tryParse(range.split('/').last) ?? 0;
+      } else {
+        AppLogger.diag(_tag, 'Lobby-Abfrage: HTTP ${open.statusCode}');
+      }
 
-      _cachedCount = total;
+      final status = DuellStatus(myTurn: myTurn, waiting: waiting, lobby: lobby);
+      _cachedStatus = status;
       _cachedAt = DateTime.now();
-      return total;
+      return status;
     } catch (e) {
-      AppLogger.diag(_tag, 'openDuelCount fehlgeschlagen: ${e.runtimeType}');
-      return _cachedCount ?? 0;
+      AppLogger.diag(_tag, 'fetchStatus fehlgeschlagen: ${e.runtimeType}');
+      return _cachedStatus ?? DuellStatus.empty;
     }
   }
+
+  /// Kompatibilität: Zahl der Duelle, die eine AKTION von mir erlauben
+  /// (dran + Lobby) — das ist die Badge-Zahl.
+  static Future<int> openDuelCount({bool forceRefresh = false}) async {
+    final s = await fetchStatus(forceRefresh: forceRefresh);
+    return s.myTurn + s.lobby;
+  }
+}
+
+/// Zustand meiner SatoshiDuell-Welt, kompakt fürs Kachel-Badge.
+class DuellStatus {
+  final int myTurn;  // Spiele, in denen ICH ziehen muss (inkl. Challenges an mich)
+  final int waiting; // Spiele, in denen der Gegner dran ist
+  final int lobby;   // fremde offene Spiele, die ich annehmen könnte
+
+  const DuellStatus({required this.myTurn, required this.waiting, required this.lobby});
+  static const empty = DuellStatus(myTurn: 0, waiting: 0, lobby: 0);
+
+  bool get hasAny => myTurn > 0 || waiting > 0 || lobby > 0;
 }

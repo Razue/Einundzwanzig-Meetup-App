@@ -4570,4 +4570,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chDuellSub => 'Quiz-Duelle um Sats — spiele gegen die Community';
+
+  @override
+  String get sdMyTurn => 'Du bist dran!';
+
+  @override
+  String get sdWaiting => 'Warten auf Gegner';
+
+  @override
+  String get sdLobby => 'offene Spiele in der Lobby';
 }

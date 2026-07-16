@@ -4528,4 +4528,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chDuellSub => 'Quiz duels for sats — play against the community';
+
+  @override
+  String get sdMyTurn => 'Your move!';
+
+  @override
+  String get sdWaiting => 'Waiting for opponent';
+
+  @override
+  String get sdLobby => 'open games in the lobby';
 }
