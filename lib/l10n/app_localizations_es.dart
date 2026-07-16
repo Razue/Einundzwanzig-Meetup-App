@@ -4564,4 +4564,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sdLobby => 'partidas abiertas en la sala';
+
+  @override
+  String get sdShortTurn => 'te toca';
+
+  @override
+  String get sdShortLobby => 'en la sala';
+
+  @override
+  String get sdShortWait => 'esperando rival';
 }

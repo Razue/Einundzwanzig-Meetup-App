@@ -2167,5 +2167,8 @@
   "chDuellSub": "Duelos de quiz por sats — juega contra la comunidad",
   "sdMyTurn": "¡Te toca!",
   "sdWaiting": "Esperando al rival",
-  "sdLobby": "partidas abiertas en la sala"
+  "sdLobby": "partidas abiertas en la sala",
+  "sdShortTurn": "te toca",
+  "sdShortLobby": "en la sala",
+  "sdShortWait": "esperando rival"
 }

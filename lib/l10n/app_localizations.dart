@@ -8355,6 +8355,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'offene Spiele in der Lobby'**
   String get sdLobby;
+
+  /// No description provided for @sdShortTurn.
+  ///
+  /// In de, this message translates to:
+  /// **'dran'**
+  String get sdShortTurn;
+
+  /// No description provided for @sdShortLobby.
+  ///
+  /// In de, this message translates to:
+  /// **'in der Lobby'**
+  String get sdShortLobby;
+
+  /// No description provided for @sdShortWait.
+  ///
+  /// In de, this message translates to:
+  /// **'warten auf Gegner'**
+  String get sdShortWait;
 }
 
 class _AppLocalizationsDelegate

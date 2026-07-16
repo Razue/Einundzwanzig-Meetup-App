@@ -154,21 +154,15 @@ class CommunityHubScreen extends StatelessWidget {
                 builder: (_, snap) {
                   final st = snap.data ?? DuellStatus.empty;
                   final t = AppLocalizations.of(context);
-                  final String sub;
-                  final Color subColor;
-                  if (st.myTurn > 0) {
-                    sub = '⚡ ${t.sdMyTurn}${st.myTurn > 1 ? ' (${st.myTurn})' : ''}';
-                    subColor = gold;
-                  } else if (st.lobby > 0) {
-                    sub = '${st.lobby} ${t.sdLobby}';
-                    subColor = gold;
-                  } else if (st.waiting > 0) {
-                    sub = '${t.sdWaiting}${st.waiting > 1 ? ' (${st.waiting})' : ''}';
-                    subColor = cTextTertiary;
-                  } else {
-                    sub = subtitle;
-                    subColor = cTextTertiary;
-                  }
+                  // ALLES anzeigen, nicht nur die oberste Kategorie —
+                  // sonst verdeckt "Warten auf Gegner" eine volle Lobby.
+                  final parts = <String>[
+                    if (st.myTurn > 0) '⚡ ${st.myTurn} ${t.sdShortTurn}',
+                    if (st.lobby > 0) '${st.lobby} ${t.sdShortLobby}',
+                    if (st.waiting > 0) '${st.waiting} ${t.sdShortWait}',
+                  ];
+                  final sub = parts.isEmpty ? subtitle : parts.join(' · ');
+                  final subColor = (st.myTurn > 0 || st.lobby > 0) ? gold : (parts.isEmpty ? cTextTertiary : cTextSecondary);
                   final n = st.myTurn + st.lobby;
                   return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
                     Row(children: [

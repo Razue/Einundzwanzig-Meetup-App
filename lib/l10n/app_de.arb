@@ -2189,5 +2189,8 @@
   "chDuellSub": "Quiz-Duelle um Sats — spiele gegen die Community",
   "sdMyTurn": "Du bist dran!",
   "sdWaiting": "Warten auf Gegner",
-  "sdLobby": "offene Spiele in der Lobby"
+  "sdLobby": "offene Spiele in der Lobby",
+  "sdShortTurn": "dran",
+  "sdShortLobby": "in der Lobby",
+  "sdShortWait": "warten auf Gegner"
 }

@@ -4579,4 +4579,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sdLobby => 'offene Spiele in der Lobby';
+
+  @override
+  String get sdShortTurn => 'dran';
+
+  @override
+  String get sdShortLobby => 'in der Lobby';
+
+  @override
+  String get sdShortWait => 'warten auf Gegner';
 }

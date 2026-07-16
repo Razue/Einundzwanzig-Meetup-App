@@ -47,7 +47,7 @@ class SatoshiDuellService {
   // RAM-Cache: das Badge muss nicht bei jedem Hub-Aufbau neu laden.
   static DuellStatus? _cachedStatus;
   static DateTime? _cachedAt;
-  static const Duration _ttl = Duration(minutes: 5);
+  static const Duration _ttl = Duration(minutes: 2);
 
   /// SatoshiDuell-Spielername zum npub — oder null, wenn der Nutzer dort
   /// noch nie gespielt hat. Die WebApp speichert npubs lowercase.
@@ -93,7 +93,12 @@ class SatoshiDuellService {
       if (username == null) return DuellStatus.empty; // dort kein Konto
 
       final me = username.toLowerCase();
-      final meEnc = Uri.encodeQueryComponent(me);
+      // PostgREST-or(): Kommas/Klammern im Wert wuerden die Filter-Syntax
+      // sprengen -> Wert defensiv in doppelte Anfuehrungszeichen setzen
+      // (offizielles PostgREST-Quoting), dann URL-encoden.
+      final safeName = me.replaceAll('"', '');
+      final quoted = '"' + safeName + '"';
+      final meEnc = Uri.encodeQueryComponent(quoted);
 
       // Call 1: MEINE Duelle (wie fetchUserGames der WebApp, ohne Arena-Scan).
       final mine = await http.get(
@@ -145,6 +150,8 @@ class SatoshiDuellService {
       }
 
       final status = DuellStatus(myTurn: myTurn, waiting: waiting, lobby: lobby);
+      AppLogger.diag(_tag,
+          'Status für "$me": dran=$myTurn · wartet=$waiting · Lobby=$lobby');
       _cachedStatus = status;
       _cachedAt = DateTime.now();
       return status;

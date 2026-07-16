@@ -2167,5 +2167,8 @@
   "chDuellSub": "Quiz duels for sats — play against the community",
   "sdMyTurn": "Your move!",
   "sdWaiting": "Waiting for opponent",
-  "sdLobby": "open games in the lobby"
+  "sdLobby": "open games in the lobby",
+  "sdShortTurn": "your turn",
+  "sdShortLobby": "in the lobby",
+  "sdShortWait": "awaiting opponent"
 }

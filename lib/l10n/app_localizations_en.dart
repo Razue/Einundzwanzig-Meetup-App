@@ -4537,4 +4537,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sdLobby => 'open games in the lobby';
+
+  @override
+  String get sdShortTurn => 'your turn';
+
+  @override
+  String get sdShortLobby => 'in the lobby';
+
+  @override
+  String get sdShortWait => 'awaiting opponent';
 }
