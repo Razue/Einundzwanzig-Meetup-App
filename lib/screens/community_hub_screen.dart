@@ -81,39 +81,35 @@ class CommunityHubScreen extends StatelessWidget {
   }
 
   Widget _bigCard(BuildContext context, {required IconData icon, required Color color, required String title, required String subtitle, required List<String> chips, required VoidCallback onTap}) {
+    // DASHBOARD-OPTIK (v1.3.1): neutraler Rand (cTileBorder statt Farbrand),
+    // Icon 22, Titel 15/w700, Untertitel 12 — exakt wie die Home-Kacheln,
+    // damit Hub und Dashboard aus einem Guss wirken. Die Chips sind
+    // bewusst entfallen: das Dashboard kennt keine, und der Untertitel
+    // nennt die Bereiche bereits.
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: cCard,
-          borderRadius: BorderRadius.circular(kTileRadius + 2),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cTileBorder, width: 0.5),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(kTileRadius + 2),
+          borderRadius: BorderRadius.circular(kTileRadius),
           child: Stack(children: [
-            Positioned(right: -14, bottom: -14, child: Icon(icon, size: 110, color: color.withValues(alpha: 0.07))),
+            Positioned(right: -12, bottom: -12, child: Icon(icon, size: 96, color: color.withValues(alpha: 0.10))),
             Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  Icon(icon, color: color, size: 24),
-                  const SizedBox(width: 10),
-                  Text(title, style: const TextStyle(color: cText, fontSize: 18, fontWeight: FontWeight.w800)),
+                  Icon(icon, color: color, size: 22),
                   const Spacer(),
-                  Icon(Icons.chevron_right_rounded, color: color, size: 22),
+                  Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 20),
                 ]),
-                const SizedBox(height: 6),
-                Text(subtitle, style: const TextStyle(color: cTextSecondary, fontSize: 12.5)),
                 const SizedBox(height: 12),
-                Wrap(spacing: 8, runSpacing: 8, children: [
-                  for (final c in chips)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(8)),
-                      child: Text(c, style: const TextStyle(color: cTextSecondary, fontSize: 11, fontWeight: FontWeight.w700)),
-                    ),
-                ]),
+                Text(title, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 3),
+                Text(subtitle, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
               ]),
             ),
           ]),
@@ -122,15 +118,12 @@ class CommunityHubScreen extends StatelessWidget {
     );
   }
 
-  /// SatoshiDuell-Kachel: wie die anderen Karten, aber mit dem LOGO als
-  /// Wasserzeichen (statt Icon) und Auto-Login per npub-Parameter.
   Widget _duellCard(BuildContext context, {required String subtitle}) {
     const gold = Color(0xFFFFC93C); // Blitz-Gelb des Logos
     return GestureDetector(
       onTap: () async {
         // npub der aktiven Identität (Amber ODER lokal). Die WebApp liest
         // den Parameter, loggt ein und entfernt ihn aus der Adresszeile.
-        // Ohne Schlüssel öffnet die Seite normal mit Login-Maske.
         final npub = await SigningService.npub();
         final url = (npub != null && npub.isNotEmpty)
             ? 'https://satoshiduell.de/?npub=$npub'
@@ -138,34 +131,26 @@ class CommunityHubScreen extends StatelessWidget {
         _openUrl(url);
       },
       child: Container(
-        height: 110,
+        height: 106,
         decoration: BoxDecoration(
           color: cCard,
-          borderRadius: BorderRadius.circular(kTileRadius + 2),
-          border: Border.all(color: gold.withValues(alpha: 0.35)),
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cTileBorder, width: 0.5), // neutral wie das Dashboard
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(kTileRadius + 2),
+          borderRadius: BorderRadius.circular(kTileRadius),
           child: Stack(children: [
-            // Logo als Wasserzeichen — gleiche Optik wie die Icon-Karten,
-            // nur eben mit Bild. Etwas kräftiger als 0.07, weil das Logo
-            // feiner gezeichnet ist als ein Material-Icon.
-            Positioned(right: -18, bottom: -22,
-              child: Opacity(opacity: 0.16,
+            Positioned(right: -12, bottom: -12,
+              child: Opacity(opacity: 0.13,
                 child: Image.asset('assets/images/satoshiduell.png',
-                  width: 150, height: 150, fit: BoxFit.contain,
-                  errorBuilder: (_, e, st) => Icon(Icons.bolt_rounded, size: 110, color: gold.withValues(alpha: 0.4))))),
+                  width: 100, height: 100, fit: BoxFit.contain,
+                  errorBuilder: (_, e, st) => Icon(Icons.bolt_rounded, size: 96, color: gold.withValues(alpha: 0.10))))),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
                 Row(children: [
                   const Icon(Icons.bolt_rounded, color: gold, size: 22),
-                  const SizedBox(width: 8),
-                  const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 17, fontWeight: FontWeight.w800)),
                   const Spacer(),
-                  // Badge: Anzahl offener Duelle, die der Nutzer annehmen
-                  // könnte (Zähl-Logik = fetchOpenDuels der WebApp).
-                  // Lädt still im Hintergrund; bei 0/Fehler erscheint nichts.
                   FutureBuilder<int>(
                     future: SatoshiDuellService.openDuelCount(),
                     builder: (_, snap) {
@@ -173,24 +158,22 @@ class CommunityHubScreen extends StatelessWidget {
                       if (n <= 0) return const SizedBox.shrink();
                       return Container(
                         margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
                           color: gold.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(9),
                           border: Border.all(color: gold.withValues(alpha: 0.5), width: 0.8),
                         ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.sports_esports_rounded, color: gold, size: 13),
-                          const SizedBox(width: 4),
-                          Text('$n', style: const TextStyle(color: gold, fontSize: 12, fontWeight: FontWeight.w800)),
-                        ]),
+                        child: Text('$n', style: const TextStyle(color: gold, fontSize: 11.5, fontWeight: FontWeight.w800)),
                       );
                     },
                   ),
-                  Icon(Icons.open_in_new_rounded, color: gold.withValues(alpha: 0.8), size: 17),
+                  Icon(Icons.open_in_new_rounded, color: cTextTertiary, size: 17),
                 ]),
-                const SizedBox(height: 5),
-                Text(subtitle, style: const TextStyle(color: cTextSecondary, fontSize: 12.5)),
+                const SizedBox(height: 10),
+                const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 3),
+                Text(subtitle, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
               ]),
             ),
           ]),
@@ -204,19 +187,23 @@ class CommunityHubScreen extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 130,
-        decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cTileBorder, width: 0.5),
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),
           child: Stack(children: [
-            Positioned(right: -10, bottom: -10, child: Icon(icon, size: 72, color: color.withValues(alpha: 0.07))),
+            Positioned(right: -12, bottom: -12, child: Icon(icon, size: 96, color: color.withValues(alpha: 0.10))),
             Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Icon(icon, color: color, size: 22),
                 const Spacer(),
                 Text(title, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Text(subtitle, style: const TextStyle(color: cTextTertiary, fontSize: 11.5)),
+                const SizedBox(height: 3),
+                Text(subtitle, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
               ]),
             ),
           ]),
