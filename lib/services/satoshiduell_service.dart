@@ -94,8 +94,9 @@ class SatoshiDuellService {
 
       final me = username.toLowerCase();
       // PostgREST-or(): Kommas/Klammern im Wert wuerden die Filter-Syntax
-      // sprengen -> Wert defensiv in doppelte Anfuehrungszeichen setzen
-      // (offizielles PostgREST-Quoting), dann URL-encoden.
+      // sprengen -> Wert in doppelte Anfuehrungszeichen setzen. NUR fuer
+      // or() verwenden — in Einzelfiltern (eq./neq.) wirken die Quotes
+      // NICHT als Quoting und verfaelschen den Vergleich!
       final safeName = me.replaceAll('"', '');
       final quoted = '"' + safeName + '"';
       final meEnc = Uri.encodeQueryComponent(quoted);
@@ -134,17 +135,29 @@ class SatoshiDuellService {
         AppLogger.diag(_tag, 'meine-Duelle-Abfrage: HTTP ${mine.statusCode}');
       }
 
-      // Call 2: Lobby — fremde offene Duelle, die ich annehmen könnte
-      // (Filter wie fetchOpenDuels der WebApp). Zählung über Content-Range.
+      // Call 2: Lobby — fremde offene Duelle, die ich annehmen könnte.
+      // WICHTIG (Fix): Serverseitig wird nur noch status=open gefiltert,
+      // creator/target werden CLIENTSEITIG geprüft. Grund: Das PostgREST-
+      // Quoting verhält sich in Einzelfiltern anders als in or() — ein
+      // gequoteter Wert in creator=neq. wurde wörtlich verglichen, wodurch
+      // das EIGENE offene Spiel faelschlich in der Lobby mitzaehlte.
+      // Clientseitige Filterung umgeht diese Syntax-Fallenklasse komplett;
+      // offene Lobbies sind klein, limit=100 ist mehr als genug.
       var lobby = 0;
       final open = await http.get(
-        Uri.parse('$_base/duels?select=id&status=eq.open&creator=neq.$meEnc'
-            '&or=(target_player.is.null,target_player.eq.$meEnc)'),
-        headers: {..._headers, 'Prefer': 'count=exact', 'Range': '0-0'},
+        Uri.parse('$_base/duels?select=creator,target_player&status=eq.open&limit=100'),
+        headers: _headers,
       ).timeout(_timeout);
-      if (open.statusCode == 200 || open.statusCode == 206) {
-        final range = open.headers['content-range'] ?? '';
-        lobby = int.tryParse(range.split('/').last) ?? 0;
+      if (open.statusCode == 200) {
+        final list = jsonDecode(open.body);
+        if (list is List) {
+          for (final g in list.whereType<Map>()) {
+            final creator = (g['creator'] ?? '').toString().toLowerCase();
+            final target = g['target_player']?.toString().toLowerCase();
+            if (creator == me) continue; // eigenes Spiel ist keine Lobby
+            if (target == null || target.isEmpty || target == me) lobby++;
+          }
+        }
       } else {
         AppLogger.diag(_tag, 'Lobby-Abfrage: HTTP ${open.statusCode}');
       }

@@ -4588,4 +4588,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sdShortWait => 'warten auf Gegner';
+
+  @override
+  String get chPlebrapSub => 'Bitcoin-Rap — Plebs together strong';
+
+  @override
+  String get prV4V => 'Sats an die Künstler';
+
+  @override
+  String get prPickSong => 'Song auswählen';
+
+  @override
+  String get prLoadError => 'Song konnte nicht geladen werden';
 }

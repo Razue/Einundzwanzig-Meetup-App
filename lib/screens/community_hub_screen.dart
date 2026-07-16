@@ -13,6 +13,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../services/signing_service.dart';
 import '../services/satoshiduell_service.dart';
+import 'plebrap_player_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../services/portal_api_service.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
@@ -74,6 +75,11 @@ class CommunityHubScreen extends StatelessWidget {
             // Öffnet die WebApp MIT npub in der URL: deren LoginView liest
             // ?npub=... und loggt automatisch ein -> One-Tap ins Spiel.
             _duellCard(context, subtitle: t.chDuellSub),
+            const SizedBox(height: 14),
+            // PLEBRAP — Bitcoin-Rap-Player (Songs von plebrap.de)
+            _smallCardWide(context, icon: Icons.graphic_eq_rounded, color: cOrange,
+                title: 'PlebRap', subtitle: t.chPlebrapSub,
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlebrapPlayerScreen()))),
           ],
         ),
       ),
@@ -154,15 +160,24 @@ class CommunityHubScreen extends StatelessWidget {
                 builder: (_, snap) {
                   final st = snap.data ?? DuellStatus.empty;
                   final t = AppLocalizations.of(context);
-                  // ALLES anzeigen, nicht nur die oberste Kategorie —
-                  // sonst verdeckt "Warten auf Gegner" eine volle Lobby.
-                  final parts = <String>[
-                    if (st.myTurn > 0) '⚡ ${st.myTurn} ${t.sdShortTurn}',
-                    if (st.lobby > 0) '${st.lobby} ${t.sdShortLobby}',
-                    if (st.waiting > 0) '${st.waiting} ${t.sdShortWait}',
+                  // ALLES anzeigen, farblich wie in SatoshiDuell selbst:
+                  // dran = Gold, Lobby = Orange, warten (eigenes Spiel) = Grün.
+                  final spans = <TextSpan>[
+                    if (st.myTurn > 0)
+                      TextSpan(text: '⚡ ${st.myTurn} ${t.sdShortTurn}',
+                          style: const TextStyle(color: gold, fontWeight: FontWeight.w700)),
+                    if (st.lobby > 0)
+                      TextSpan(text: '${st.lobby} ${t.sdShortLobby}',
+                          style: const TextStyle(color: cOrange, fontWeight: FontWeight.w600)),
+                    if (st.waiting > 0)
+                      TextSpan(text: '${st.waiting} ${t.sdShortWait}',
+                          style: const TextStyle(color: cGreen)),
                   ];
-                  final sub = parts.isEmpty ? subtitle : parts.join(' · ');
-                  final subColor = (st.myTurn > 0 || st.lobby > 0) ? gold : (parts.isEmpty ? cTextTertiary : cTextSecondary);
+                  final joined = <TextSpan>[];
+                  for (var i = 0; i < spans.length; i++) {
+                    if (i > 0) joined.add(const TextSpan(text: '  ·  ', style: TextStyle(color: cTextTertiary)));
+                    joined.add(spans[i]);
+                  }
                   final n = st.myTurn + st.lobby;
                   return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
                     Row(children: [
@@ -184,10 +199,47 @@ class CommunityHubScreen extends StatelessWidget {
                     const SizedBox(height: 10),
                     const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 3),
-                    Text(sub, style: TextStyle(color: subColor, fontSize: 12, fontWeight: st.myTurn > 0 ? FontWeight.w700 : FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    joined.isEmpty
+                ? Text(subtitle, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis)
+                : Text.rich(TextSpan(children: joined), style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ]);
                 },
               ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  /// Kompakte Karte ueber volle Breite — Dashboard-Optik.
+  Widget _smallCardWide(BuildContext context, {required IconData icon, required Color color, required String title, required String subtitle, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 96,
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cTileBorder, width: 0.5),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(kTileRadius),
+          child: Stack(children: [
+            Positioned(right: -12, bottom: -12, child: Icon(icon, size: 96, color: color.withValues(alpha: 0.10))),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+                Row(children: [
+                  Icon(icon, color: color, size: 22),
+                  const Spacer(),
+                  Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 20),
+                ]),
+                const SizedBox(height: 8),
+                Text(title, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 3),
+                Text(subtitle, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ]),
             ),
           ]),
         ),

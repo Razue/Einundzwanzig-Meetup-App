@@ -8373,6 +8373,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'warten auf Gegner'**
   String get sdShortWait;
+
+  /// No description provided for @chPlebrapSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitcoin-Rap — Plebs together strong'**
+  String get chPlebrapSub;
+
+  /// No description provided for @prV4V.
+  ///
+  /// In de, this message translates to:
+  /// **'Sats an die Künstler'**
+  String get prV4V;
+
+  /// No description provided for @prPickSong.
+  ///
+  /// In de, this message translates to:
+  /// **'Song auswählen'**
+  String get prPickSong;
+
+  /// No description provided for @prLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Song konnte nicht geladen werden'**
+  String get prLoadError;
 }
 
 class _AppLocalizationsDelegate

@@ -2192,5 +2192,9 @@
   "sdLobby": "offene Spiele in der Lobby",
   "sdShortTurn": "dran",
   "sdShortLobby": "in der Lobby",
-  "sdShortWait": "warten auf Gegner"
+  "sdShortWait": "warten auf Gegner",
+  "chPlebrapSub": "Bitcoin-Rap — Plebs together strong",
+  "prV4V": "Sats an die Künstler",
+  "prPickSong": "Song auswählen",
+  "prLoadError": "Song konnte nicht geladen werden"
 }

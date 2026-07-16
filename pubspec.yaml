@@ -21,6 +21,7 @@ dependencies:
   package_info_plus: ^8.0.0
   google_fonts: ^6.2.1
   image_picker: ^1.0.7
+  just_audio: ^0.9.36
 
   # Networking & Data
   http: ^1.6.0

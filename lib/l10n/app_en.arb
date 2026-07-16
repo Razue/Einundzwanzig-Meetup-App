@@ -2170,5 +2170,9 @@
   "sdLobby": "open games in the lobby",
   "sdShortTurn": "your turn",
   "sdShortLobby": "in the lobby",
-  "sdShortWait": "awaiting opponent"
+  "sdShortWait": "awaiting opponent",
+  "chPlebrapSub": "Bitcoin rap — plebs together strong",
+  "prV4V": "Sats to the artists",
+  "prPickSong": "Pick a song",
+  "prLoadError": "Could not load the song"
 }

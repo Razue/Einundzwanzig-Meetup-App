@@ -2170,5 +2170,9 @@
   "sdLobby": "partidas abiertas en la sala",
   "sdShortTurn": "te toca",
   "sdShortLobby": "en la sala",
-  "sdShortWait": "esperando rival"
+  "sdShortWait": "esperando rival",
+  "chPlebrapSub": "Rap Bitcoin — plebs together strong",
+  "prV4V": "Sats para los artistas",
+  "prPickSong": "Elige una canción",
+  "prLoadError": "No se pudo cargar la canción"
 }

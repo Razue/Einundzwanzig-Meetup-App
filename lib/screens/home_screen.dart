@@ -50,6 +50,7 @@ import 'reputation_qr.dart';
 import 'my_network_screen.dart';
 import 'relay_settings_screen.dart';
 import 'mempool_settings_screen.dart';
+import 'plebrap_player_screen.dart';
 import 'v4v_screen.dart';
 import 'bitcoin_dashboard_screen.dart';
 import 'log_screen.dart';
@@ -130,8 +131,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // Pflicht-Kacheln (nicht löschbar)
   static const _requiredTiles = {'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'organisator', 'wot_dashboard'];
-  static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area'};
+  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
+  static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
 
   late List<_TileDef> _tileDefs;
   String _appVersion = ''; // wird in initState aus package_info geladen
@@ -230,6 +231,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'podcast',      label: 'Podcast',          span: 1, builder: _buildPodcastTile),
       _TileDef(id: 'satoshiduell', label: 'SatoshiDuell',     span: 2, builder: _buildSatoshiDuellTile),
       _TileDef(id: 'portal_area',  label: 'Portal',           span: 2, builder: _buildPortalAreaTile),
+      _TileDef(id: 'plebrap',      label: 'PlebRap',          span: 1, builder: _buildPlebrapTile),
       _TileDef(id: 'nostr',        label: 'Nostr',            span: 1, builder: _buildNostrTile),
       _TileDef(id: 'portal_connect', label: 'Portal', span: 2, builder: _buildPortalConnectTile),
       _TileDef(id: 'converter',    label: 'Rechner',          span: 1, builder: _buildConverterTile),
@@ -268,8 +270,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Portal starten auch bei Bestandsnutzern ausgeblendet — wer sie will,
     // schaltet sie über "Kacheln anpassen" ein.
     if (!(prefs.getBool('mig_hide_new_tiles_v131') ?? false)) {
-      savedHidden.addAll(['satoshiduell', 'portal_area']);
+      savedHidden.addAll(['satoshiduell', 'portal_area', 'plebrap']);
       await prefs.setBool('mig_hide_new_tiles_v131', true);
+      await prefs.setStringList('tile_hidden', List<String>.from(savedHidden));
+    }
+
+    if (!(prefs.getBool('mig_hide_plebrap_v1') ?? false)) {
+      savedHidden.add('plebrap');
+      await prefs.setBool('mig_hide_plebrap_v1', true);
       await prefs.setStringList('tile_hidden', List<String>.from(savedHidden));
     }
 
@@ -1275,6 +1283,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  /// PLEBRAP: In-App-Player fuer die Songs von plebrap.de.
+  Widget _buildPlebrapTile() => _tile(
+    accentColor: cOrange,
+    watermark: Icons.graphic_eq_rounded,
+    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlebrapPlayerScreen())),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const Icon(Icons.graphic_eq_rounded, color: cOrange, size: 22),
+      const SizedBox(height: 12),
+      const Text('PlebRap', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+      const SizedBox(height: 3),
+      Text(AppLocalizations.of(context).chPlebrapSub, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+    ]),
+  );
+
   /// SATOSHIDUELL: Quiz-Duelle um Sats (satoshiduell.de). Öffnet die WebApp
   /// mit npub-Parameter -> Auto-Login. Badge = offene Duelle (Logik und
   /// Erklärung in SatoshiDuellService).
@@ -1297,15 +1319,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         builder: (_, snap) {
           final st = snap.data ?? DuellStatus.empty;
           final t = AppLocalizations.of(context);
-          // ALLES anzeigen, nicht nur die oberste Kategorie —
-          // sonst verdeckt "Warten auf Gegner" eine volle Lobby.
-          final parts = <String>[
-            if (st.myTurn > 0) '⚡ ${st.myTurn} ${t.sdShortTurn}',
-            if (st.lobby > 0) '${st.lobby} ${t.sdShortLobby}',
-            if (st.waiting > 0) '${st.waiting} ${t.sdShortWait}',
+          // ALLES anzeigen, farblich wie in SatoshiDuell selbst:
+          // dran = Gold, Lobby = Orange, warten (eigenes Spiel) = Grün.
+          final spans = <TextSpan>[
+            if (st.myTurn > 0)
+              TextSpan(text: '⚡ ${st.myTurn} ${t.sdShortTurn}',
+                  style: const TextStyle(color: gold, fontWeight: FontWeight.w700)),
+            if (st.lobby > 0)
+              TextSpan(text: '${st.lobby} ${t.sdShortLobby}',
+                  style: const TextStyle(color: cOrange, fontWeight: FontWeight.w600)),
+            if (st.waiting > 0)
+              TextSpan(text: '${st.waiting} ${t.sdShortWait}',
+                  style: const TextStyle(color: cGreen)),
           ];
-          final sub = parts.isEmpty ? t.chDuellSub : parts.join(' · ');
-          final subColor = (st.myTurn > 0 || st.lobby > 0) ? gold : (parts.isEmpty ? cTextTertiary : cTextSecondary);
+          final joined = <TextSpan>[];
+          for (var i = 0; i < spans.length; i++) {
+            if (i > 0) joined.add(const TextSpan(text: '  ·  ', style: TextStyle(color: cTextTertiary)));
+            joined.add(spans[i]);
+          }
           final n = st.myTurn + st.lobby;
           return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
@@ -1325,7 +1356,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             const SizedBox(height: 12),
             const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
             const SizedBox(height: 3),
-            Text(sub, style: TextStyle(color: subColor, fontSize: 12, fontWeight: st.myTurn > 0 ? FontWeight.w700 : FontWeight.w400), maxLines: 1, overflow: TextOverflow.ellipsis),
+            joined.isEmpty
+                ? Text(t.chDuellSub, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis)
+                : Text.rich(TextSpan(children: joined), style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
           ]);
         },
       ),
