@@ -11,6 +11,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
+import '../services/signing_service.dart';
+import '../services/satoshiduell_service.dart';
 import '../l10n/app_localizations.dart';
 import '../services/portal_api_service.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
@@ -67,6 +69,11 @@ class CommunityHubScreen extends StatelessWidget {
               Expanded(child: _smallCard(context, icon: Icons.podcasts_rounded, color: cPurple, title: t.chPodcast, subtitle: t.chPodcastSub,
                   onTap: () => _openUrl('https://einundzwanzig.space/podcast/'))),
             ]),
+            const SizedBox(height: 14),
+            // SATOSHIDUELL — Quiz-Duelle um Sats (satoshiduell.de).
+            // Öffnet die WebApp MIT npub in der URL: deren LoginView liest
+            // ?npub=... und loggt automatisch ein -> One-Tap ins Spiel.
+            _duellCard(context, subtitle: t.chDuellSub),
           ],
         ),
       ),
@@ -107,6 +114,83 @@ class CommunityHubScreen extends StatelessWidget {
                       child: Text(c, style: const TextStyle(color: cTextSecondary, fontSize: 11, fontWeight: FontWeight.w700)),
                     ),
                 ]),
+              ]),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  /// SatoshiDuell-Kachel: wie die anderen Karten, aber mit dem LOGO als
+  /// Wasserzeichen (statt Icon) und Auto-Login per npub-Parameter.
+  Widget _duellCard(BuildContext context, {required String subtitle}) {
+    const gold = Color(0xFFFFC93C); // Blitz-Gelb des Logos
+    return GestureDetector(
+      onTap: () async {
+        // npub der aktiven Identität (Amber ODER lokal). Die WebApp liest
+        // den Parameter, loggt ein und entfernt ihn aus der Adresszeile.
+        // Ohne Schlüssel öffnet die Seite normal mit Login-Maske.
+        final npub = await SigningService.npub();
+        final url = (npub != null && npub.isNotEmpty)
+            ? 'https://satoshiduell.de/?npub=$npub'
+            : 'https://satoshiduell.de/';
+        _openUrl(url);
+      },
+      child: Container(
+        height: 110,
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius + 2),
+          border: Border.all(color: gold.withValues(alpha: 0.35)),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(kTileRadius + 2),
+          child: Stack(children: [
+            // Logo als Wasserzeichen — gleiche Optik wie die Icon-Karten,
+            // nur eben mit Bild. Etwas kräftiger als 0.07, weil das Logo
+            // feiner gezeichnet ist als ein Material-Icon.
+            Positioned(right: -18, bottom: -22,
+              child: Opacity(opacity: 0.16,
+                child: Image.asset('assets/images/satoshiduell.png',
+                  width: 150, height: 150, fit: BoxFit.contain,
+                  errorBuilder: (_, e, st) => Icon(Icons.bolt_rounded, size: 110, color: gold.withValues(alpha: 0.4))))),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
+                Row(children: [
+                  const Icon(Icons.bolt_rounded, color: gold, size: 22),
+                  const SizedBox(width: 8),
+                  const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 17, fontWeight: FontWeight.w800)),
+                  const Spacer(),
+                  // Badge: Anzahl offener Duelle, die der Nutzer annehmen
+                  // könnte (Zähl-Logik = fetchOpenDuels der WebApp).
+                  // Lädt still im Hintergrund; bei 0/Fehler erscheint nichts.
+                  FutureBuilder<int>(
+                    future: SatoshiDuellService.openDuelCount(),
+                    builder: (_, snap) {
+                      final n = snap.data ?? 0;
+                      if (n <= 0) return const SizedBox.shrink();
+                      return Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: gold.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: gold.withValues(alpha: 0.5), width: 0.8),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.sports_esports_rounded, color: gold, size: 13),
+                          const SizedBox(width: 4),
+                          Text('$n', style: const TextStyle(color: gold, fontSize: 12, fontWeight: FontWeight.w800)),
+                        ]),
+                      );
+                    },
+                  ),
+                  Icon(Icons.open_in_new_rounded, color: gold.withValues(alpha: 0.8), size: 17),
+                ]),
+                const SizedBox(height: 5),
+                Text(subtitle, style: const TextStyle(color: cTextSecondary, fontSize: 12.5)),
               ]),
             ),
           ]),

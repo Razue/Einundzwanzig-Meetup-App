@@ -4551,4 +4551,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get dashChangeServer => 'Cambiar fuente de datos';
+
+  @override
+  String get chDuellSub =>
+      'Duelos de quiz por sats — juega contra la comunidad';
 }

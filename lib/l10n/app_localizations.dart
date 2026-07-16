@@ -8331,6 +8331,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Datenquelle ändern'**
   String get dashChangeServer;
+
+  /// No description provided for @chDuellSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Quiz-Duelle um Sats — spiele gegen die Community'**
+  String get chDuellSub;
 }
 
 class _AppLocalizationsDelegate

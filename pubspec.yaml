@@ -69,5 +69,6 @@ flutter:
     - assets/images/einundzwanzig_logo.svg
     - assets/images/nostr_icon.png
     - assets/icons/bitcoin.svg
+    - assets/images/satoshiduell.png
 
 

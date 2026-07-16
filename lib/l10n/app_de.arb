@@ -2185,5 +2185,6 @@
   "dashOfflineBody": "Es konnten keine Daten geladen werden. Prüfe deine Internetverbindung — oder wähle eine andere Datenquelle.",
   "dashBlockedTitle": "Server weist Anfragen ab",
   "dashBlockedBody": "mempool.space blockt diese IP-Adresse. Das passiert typischerweise über Tor, weil sich viele Nutzer einen Exit-Knoten teilen. Abhilfe: Onion-Adresse oder eigene Instanz verwenden.",
-  "dashChangeServer": "Datenquelle ändern"
+  "dashChangeServer": "Datenquelle ändern",
+  "chDuellSub": "Quiz-Duelle um Sats — spiele gegen die Community"
 }

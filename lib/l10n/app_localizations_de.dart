@@ -4567,4 +4567,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dashChangeServer => 'Datenquelle ändern';
+
+  @override
+  String get chDuellSub => 'Quiz-Duelle um Sats — spiele gegen die Community';
 }

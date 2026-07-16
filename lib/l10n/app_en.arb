@@ -2163,5 +2163,6 @@
   "dashOfflineBody": "No data could be loaded. Check your internet connection — or pick a different data source.",
   "dashBlockedTitle": "Server is rejecting requests",
   "dashBlockedBody": "mempool.space is blocking this IP address. This typically happens over Tor, because many users share one exit node. Fix: use the onion address or your own instance.",
-  "dashChangeServer": "Change data source"
+  "dashChangeServer": "Change data source",
+  "chDuellSub": "Quiz duels for sats — play against the community"
 }
