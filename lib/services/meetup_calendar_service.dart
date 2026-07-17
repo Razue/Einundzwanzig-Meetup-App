@@ -29,6 +29,29 @@ class MeetupCalendarService {
     return result;
   }
 
+  static bool _loggedUtcFormat = false;
+
+  /// Fuer Endpunkte, die die ROHE Datenbank-Zeit liefern (z.B.
+  /// /my-meetup-events im Organisator-Bereich): Laravel speichert UTC,
+  /// dieser Endpunkt gibt sie OHNE Zonenkennung heraus ("2026-07-21 16:00"
+  /// = 16:00 UTC = 18:00 MESZ). Deshalb hier: ohne Kennung -> als UTC
+  /// interpretieren und in Geraetezeit umrechnen. Mit Z/Offset -> normal.
+  /// (Gegenstueck: /meetup-events/{datum} liefert bereits Berlin-Zeit ->
+  /// dafuer gilt portalStart, NICHT diese Funktion.)
+  static DateTime? portalStartUtc(String rawIn) {
+    final s = rawIn.trim();
+    if (s.isEmpty) return null;
+    if (!_loggedUtcFormat) {
+      _loggedUtcFormat = true;
+      AppLogger.diag('Portal', 'my-meetup-events Rohformat: "' + s + '"');
+    }
+    final dt = DateTime.tryParse(s);
+    if (dt == null) return null;
+    if (dt.isUtc) return dt.toLocal(); // hatte Z/Offset
+    return DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+        .toLocal();
+  }
+
   /// WAPPEN-REGISTRY: Meetup-Name -> Logo-URL, gefüllt beim Portal-Laden.
   /// So können Home-Kachel & Co. das Wappen zum Termin/Meetup finden.
   static final Map<String, String> portalLogos = {};
