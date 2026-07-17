@@ -7,6 +7,28 @@ import 'portal_api_service.dart';
 import 'app_logger.dart';
 
 class MeetupCalendarService {
+  static bool _loggedStartFormat = false;
+
+  /// Zeitzonensicheres Parsen der Portal-'start'-Angabe.
+  /// Ohne Zone ("2026-07-21 18:00") -> ist bereits lokale Portal-Zeit.
+  /// Mit 'Z'/Offset -> als UTC parsen und in Geraetezeit umrechnen.
+  /// Loggt einmal pro Session Rohformat UND Ergebnis ins Diagnose-Log.
+  static DateTime? portalStart(String rawIn) {
+    final s = rawIn.trim();
+    if (s.isEmpty) return null;
+    final logThis = !_loggedStartFormat;
+    _loggedStartFormat = true;
+    final hasZone = s.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(s);
+    final dt = DateTime.tryParse(s);
+    if (dt == null) return null;
+    final result = hasZone ? dt.toLocal() : dt;
+    if (logThis) {
+      AppLogger.diag('Portal',
+          'start-Rohformat "$s" -> angezeigt ${result.hour.toString().padLeft(2, '0')}:${result.minute.toString().padLeft(2, '0')} (Zone erkannt: $hasZone)');
+    }
+    return result;
+  }
+
   /// WAPPEN-REGISTRY: Meetup-Name -> Logo-URL, gefüllt beim Portal-Laden.
   /// So können Home-Kachel & Co. das Wappen zum Termin/Meetup finden.
   static final Map<String, String> portalLogos = {};
@@ -32,7 +54,7 @@ class MeetupCalendarService {
       final cutoff = DateTime.now().subtract(const Duration(hours: 6));
       final events = <CalendarEvent>[];
       for (final e in portal) {
-        final start = DateTime.tryParse((e['start'] ?? '').toString());
+        final start = portalStart((e['start'] ?? '').toString());
         if (start == null || start.isBefore(cutoff)) continue;
         // WICHTIG: Die API liefert die Meetup-Felder FLACH mit Punkt-
         // Schlüsseln ("meetup.name", "meetup.logo") — nicht verschachtelt!

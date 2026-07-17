@@ -23,34 +23,37 @@ class CalendarEvent {
     try {
       final dtStart = map['dtstart'];
 
-      // VARIANTE A: Das Paket hat das Datum schon erkannt
+      // ZEITZONEN-REGEL (Fix: App zeigte 16:30 statt 18:30, exakt -2h MESZ):
+      // Endet der ICS-Rohwert auf 'Z', ist es UTC -> in Geraetezeit
+      // umrechnen. Ohne 'Z' (floating/TZID) ist es bereits lokale Zeit.
+      // WICHTIG: dtStart.toDateTime() des icalendar_parser-Pakets liefert
+      // UTC-Zeiten als NAIVES DateTime ohne isUtc-Flag — dessen .toLocal()
+      // war ein No-op und die 2 Stunden Sommerzeit fehlten still. Deshalb
+      // wird jetzt IMMER der ROHE String zeitzonenbewusst geparst. Ueber den
+      // RecurrenceExpander erben ALLE Serien-Vorkommen diese Startzeit.
+      String raw = '';
       if (dtStart is IcsDateTime) {
-        // .toLocal() ist hier wichtig!
-        start = dtStart.toDateTime()?.toLocal() ?? start;
-      } 
-      // VARIANTE B: Wir müssen den String selbst zerlegen (häufigster Fall)
-      else if (dtStart is String) {
-        // Wir entfernen alles, was keine Zahl ist (z.B. T, Z, -)
-        // Beispiel Input: "20260210T173000Z" -> "20260210173000"
-        String s = dtStart.replaceAll(RegExp(r'[^0-9]'), ''); 
-        
+        raw = dtStart.dt;
+      } else if (dtStart is String) {
+        raw = dtStart;
+      }
+
+      if (raw.isNotEmpty) {
+        final isUtc = raw.trim().endsWith('Z') || raw.trim().endsWith('z');
+        final s = raw.replaceAll(RegExp(r'[^0-9]'), '');
         if (s.length >= 8) {
           int y = int.parse(s.substring(0, 4));
           int m = int.parse(s.substring(4, 6));
           int d = int.parse(s.substring(6, 8));
           int h = 19; // Fallback, falls keine Uhrzeit dabei ist
           int min = 0;
-
-          // Wenn Uhrzeit dabei ist (String ist lang genug)
           if (s.length >= 12) {
-             h = int.parse(s.substring(8, 10));
-             min = int.parse(s.substring(10, 12));
+            h = int.parse(s.substring(8, 10));
+            min = int.parse(s.substring(10, 12));
           }
-
-          // DER ENTSCHEIDENDE FIX:
-          // 1. Wir erstellen das Datum als UTC (Weltzeit) -> DateTime.utc(...)
-          // 2. Wir wandeln es sofort in Lokale Zeit um -> .toLocal()
-          start = DateTime.utc(y, m, d, h, min).toLocal();
+          start = isUtc
+              ? DateTime.utc(y, m, d, h, min).toLocal() // UTC -> Geraetezeit
+              : DateTime(y, m, d, h, min);              // schon lokale Zeit
         }
       }
     } catch (e) {

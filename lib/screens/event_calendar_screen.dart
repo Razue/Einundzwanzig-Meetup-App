@@ -144,7 +144,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       final cportal = (c['portalLink'] ?? '').toString();
       final evs = (c['events'] is List) ? c['events'] as List : const [];
       for (final ev in evs.whereType<Map>()) {
-        final start = DateTime.tryParse((ev['from'] ?? ev['start'] ?? '').toString());
+        final start = MeetupCalendarService.portalStart((ev['from'] ?? ev['start'] ?? '').toString());
         if (start == null || start.toLocal().isBefore(cutoff)) continue;
         // Dedup: gleiche Termin-id ODER gleiche Kurs+Startzeit nur EINMAL
         final evKey = ev['id'] != null ? 'e${ev['id']}' : '$cname@${start.toIso8601String()}';

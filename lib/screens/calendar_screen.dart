@@ -53,7 +53,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final events = <CalendarEvent>[];
         _eventLogo.clear(); _eventPortalId.clear();
         for (final e in portal) {
-          final start = DateTime.tryParse((e['start'] ?? '').toString());
+          final start = MeetupCalendarService.portalStart((e['start'] ?? '').toString());
           if (start == null || start.isBefore(cutoff)) continue;
           // Meetup-Felder sind FLACH mit Punkt-Schlüsseln ("meetup.name")
           String mv(String key) {

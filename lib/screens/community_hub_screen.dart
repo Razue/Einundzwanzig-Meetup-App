@@ -9,6 +9,7 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import '../services/meetup_calendar_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../services/signing_service.dart';
@@ -364,7 +365,7 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
     // nur kommende, chronologisch
     final now = DateTime.now().subtract(const Duration(hours: 6));
     list.retainWhere((e) {
-      final d = DateTime.tryParse((e['start'] ?? '').toString());
+      final d = MeetupCalendarService.portalStart((e['start'] ?? '').toString());
       return d != null && d.isAfter(now);
     });
     list.sort((a, b) => (a['start'] ?? '').toString().compareTo((b['start'] ?? '').toString()));
@@ -402,7 +403,7 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
       .showSnackBar(SnackBar(content: Text(msg), backgroundColor: c, behavior: SnackBarBehavior.floating));
 
   String _fmt(String iso) {
-    final d = DateTime.tryParse(iso)?.toLocal();
+    final d = MeetupCalendarService.portalStart(iso);
     if (d == null) return iso;
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(d.day)}.${two(d.month)}.${d.year} · ${two(d.hour)}:${two(d.minute)}';
