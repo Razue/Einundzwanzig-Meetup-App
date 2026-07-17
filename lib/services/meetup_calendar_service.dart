@@ -21,10 +21,18 @@ class MeetupCalendarService {
     final hasZone = s.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(s);
     final dt = DateTime.tryParse(s);
     if (dt == null) return null;
-    final result = hasZone ? dt.toLocal() : dt;
+    // BEWIESEN durch Log-Kreuzvergleich mit dem Portal-Web (Hildesheim
+    // 18:00 CEST kam als "16:00" an, Bad Kissingen 18:30 als "16:30", …):
+    // Die Live-Instanz liefert ALLE Zeiten als UTC — aber OHNE Kennung.
+    // Deshalb: ohne Zone -> als UTC interpretieren und in Geraetezeit
+    // umrechnen. Mit Z/Offset -> normal umrechnen.
+    final result = hasZone
+        ? dt.toLocal()
+        : DateTime.utc(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
+            .toLocal();
     if (logThis) {
       AppLogger.diag('Portal',
-          'start-Rohformat "$s" -> angezeigt ${result.hour.toString().padLeft(2, '0')}:${result.minute.toString().padLeft(2, '0')} (Zone erkannt: $hasZone)');
+          'start-Rohformat "$s" (als UTC gedeutet) -> angezeigt ${result.hour.toString().padLeft(2, '0')}:${result.minute.toString().padLeft(2, '0')}');
     }
     return result;
   }
