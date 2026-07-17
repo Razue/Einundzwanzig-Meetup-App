@@ -101,6 +101,9 @@ class MeetupCalendarService {
       }
       if (events.isNotEmpty) {
         events.sort((a, b) => a.startTime.compareTo(b.startTime));
+        final f = events.first;
+        AppLogger.diag('Calendar',
+            'QUELLE=PORTAL (${events.length} Termine). Erster: "${f.title}" -> ${f.startTime.hour.toString().padLeft(2, '0')}:${f.startTime.minute.toString().padLeft(2, '0')}');
         return events;
       }
     } catch (e) {
@@ -117,6 +120,10 @@ class MeetupCalendarService {
 
       if (response.statusCode == 200) {
         final iCalString = utf8.decode(response.bodyBytes);
+        // DIAGNOSE: rohe DTSTART-Zeile des ICS einmalig festhalten —
+        // beweist, ob die Quelle UTC ('Z') oder lokale Zeit liefert.
+        final m = RegExp(r'DTSTART[^:\n]*:[^\r\n]+').firstMatch(iCalString);
+        AppLogger.diag('Calendar', 'QUELLE=ICS. Roh: "${m?.group(0) ?? 'kein DTSTART gefunden'}"');
         final iCalendar = ICalendar.fromString(iCalString);
         
         List<CalendarEvent> events = [];
