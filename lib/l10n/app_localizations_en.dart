@@ -4569,4 +4569,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String msSaveFavorites(int count) {
     return 'Save $count favorites';
   }
+
+  @override
+  String calFavAdded(String city) {
+    return '$city added to favorites ★';
+  }
+
+  @override
+  String calFavRemoved(String city) {
+    return '$city removed from favorites';
+  }
 }

@@ -229,6 +229,7 @@ class BackupService {
           'nickname': user.nickname,
           'fullName': user.fullName,
           'homeMeetupId': user.homeMeetupId,
+          'favoriteMeetupIds': user.favoriteMeetupIds,
           'isAdmin': user.isAdmin,
           'isAdminVerified': user.isAdminVerified,
           'isNostrVerified': user.isNostrVerified,
@@ -431,6 +432,10 @@ class BackupService {
           nickname: userData['nickname'] ?? "Anon",
           fullName: userData['fullName'] ?? "",
           homeMeetupId: userData['homeMeetupId'] ?? "",
+          // Favoriten wiederherstellen; aeltere Backups ohne das Feld
+          // fallen auf das Einzel-Home-Meetup zurueck (kein Datenverlust).
+          favoriteMeetupIds: (userData['favoriteMeetupIds'] as List?)?.map((e) => e.toString()).toList()
+              ?? ((userData['homeMeetupId'] ?? '').toString().isNotEmpty ? [userData['homeMeetupId'].toString()] : <String>[]),
           isAdmin: userData['isAdmin'] ?? false,
           isAdminVerified: userData['isAdminVerified'] ?? false,
           isNostrVerified: userData['isNostrVerified'] ?? false,

@@ -8415,6 +8415,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} Favoriten speichern'**
   String msSaveFavorites(int count);
+
+  /// No description provided for @calFavAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'{city} zu Favoriten hinzugefügt ★'**
+  String calFavAdded(String city);
+
+  /// No description provided for @calFavRemoved.
+  ///
+  /// In de, this message translates to:
+  /// **'{city} aus Favoriten entfernt'**
+  String calFavRemoved(String city);
 }
 
 class _AppLocalizationsDelegate

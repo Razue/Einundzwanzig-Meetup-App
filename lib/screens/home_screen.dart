@@ -467,9 +467,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Match-Begriffe fuer EINE Stadt (Titel/Ort/Beschreibung, Teilwoerter).
       bool matchesCity(CalendarEvent e, String cityName) {
         final city = cityName.toLowerCase().trim();
-        final terms = <String>{city, ...city.split(RegExp(r'[\s,/-]+'))}
-            .where((s) => s.length >= 3);
-        final hay = '${e.title} ${e.location} ${e.description}'.toLowerCase();
+        // Generische Woerter duerfen NIE als Suchbegriff dienen — sonst
+        // wuerde z.B. ein Favorit "Einundzwanzig Hildesheim" ueber das
+        // Wort "einundzwanzig" JEDES Event der Liste matchen.
+        const stop = {'einundzwanzig', 'bitcoin', 'meetup', 'stammtisch'};
+        var terms = <String>{city, ...city.split(RegExp(r'[\s,/-]+'))}
+            .where((s) => s.length >= 3 && !stop.contains(s));
+        if (terms.isEmpty) terms = {city}; // Notanker: ganze Angabe
+        // Nur Titel + Ort matchen. Die Beschreibung ist NICHT verlaesslich
+        // (ein Event kann andere Staedte erwaehnen -> Fehlzuordnung, die ein
+        // spaeteres Event einer Stadt als deren "naechstes" ausweist).
+        final hay = '${e.title} ${e.location}'.toLowerCase();
         return terms.any((term) => hay.contains(term));
       }
 
@@ -484,7 +492,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             .where((e) => !e.startTime.isBefore(todayStart) && matchesCity(e, cityName))
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
-        cards.add(_FavCard(city: cityName, event: upcoming.isNotEmpty ? upcoming.first : null));
+        final chosen = upcoming.isNotEmpty ? upcoming.first : null;
+        AppLogger.diag('HomeMeetup',
+            'Favorit "$cityName": ${upcoming.length} Termine, naechster = '
+            '${chosen == null ? "keiner" : "\"${chosen.title}\" am ${chosen.startTime.day}.${chosen.startTime.month}. (${_daysUntil(chosen.startTime)} Tage)"}');
+        cards.add(_FavCard(city: cityName, event: chosen));
       }
 
       // Sortierung: Staedte MIT Termin nach Datum aufsteigend; Staedte OHNE

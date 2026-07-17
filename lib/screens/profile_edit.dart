@@ -26,6 +26,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   final TextEditingController _nicknameController = TextEditingController();
 
+  List<String> _selectedFavorites = [];
   String _selectedHomeMeetup = "";
   bool _homeMeetupMissing = false; // Pflichtfeld-Markierung Home-Meetup
   List<Meetup> _allMeetups = [];
@@ -76,6 +77,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
         _nicknameController.text = user.nickname;
         _selectedHomeMeetup = user.homeMeetupId;
+        _selectedFavorites = user.favoriteMeetupIds.isNotEmpty
+            ? List<String>.from(user.favoriteMeetupIds)
+            : (user.homeMeetupId.isNotEmpty ? [user.homeMeetupId] : <String>[]);
 
         _isAmber = isAmber;
         // Im Amber-Modus gibt es keinen lokalen nsec, aber eine gültige
@@ -524,10 +528,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       builder: (context) {
         return MeetupSearchSheet(
           meetups: _allMeetups,
-          onSelect: (cityName) {
+          initialSelected: _selectedFavorites,
+          onDone: (favs) {
             setState(() {
-              _selectedHomeMeetup = cityName;
-              _homeMeetupMissing = false; // Markierung weg sobald gewählt
+              _selectedFavorites = favs;
+              // homeMeetupId = erster Favorit (Anker fuers Widget).
+              _selectedHomeMeetup = favs.isNotEmpty ? favs.first : '';
+              _homeMeetupMissing = favs.isEmpty;
             });
           },
         );
@@ -565,6 +572,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       nickname: _nicknameController.text.trim(),
       fullName: _user?.fullName ?? '', // Behalten falls vorhanden
       homeMeetupId: _selectedHomeMeetup,
+      // WICHTIG: ohne diese Zeile wuerde JEDES Profil-Speichern die
+      // Favoritenliste auf [] zuruecksetzen (neues UserProfile-Objekt!).
+      favoriteMeetupIds: _selectedFavorites.isNotEmpty
+          ? _selectedFavorites
+          : (_selectedHomeMeetup.isNotEmpty ? [_selectedHomeMeetup] : const []),
       nostrNpub: _nostrNpub,
       telegramHandle: _user?.telegramHandle ?? '', // Behalten falls vorhanden
       twitterHandle: _user?.twitterHandle ?? '',   // Behalten falls vorhanden
@@ -1127,9 +1139,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 // --- MEETUP SUCHE (unverändert) ---
 class MeetupSearchSheet extends StatefulWidget {
   final List<Meetup> meetups;
-  final Function(String) onSelect;
+  /// Bereits gewaehlte Favoriten (Sterne vorbelegt).
+  final List<String> initialSelected;
+  /// Liefert beim Schliessen die KOMPLETTE Favoritenliste.
+  final Function(List<String>) onDone;
 
-  const MeetupSearchSheet({super.key, required this.meetups, required this.onSelect});
+  const MeetupSearchSheet({super.key, required this.meetups, this.initialSelected = const [], required this.onDone});
 
   @override
   State<MeetupSearchSheet> createState() => _MeetupSearchSheetState();
@@ -1138,11 +1153,13 @@ class MeetupSearchSheet extends StatefulWidget {
 class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
   final TextEditingController _searchCtrl = TextEditingController();
   List<Meetup> _filtered = [];
+  final Set<String> _selected = {};
 
   @override
   void initState() {
     super.initState();
     _filtered = widget.meetups;
+    _selected.addAll(widget.initialSelected);
   }
 
   void _filter(String query) {
@@ -1184,14 +1201,34 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
                 itemCount: _filtered.length,
                 itemBuilder: (context, index) {
                   final meetup = _filtered[index];
+                  final active = _selected.contains(meetup.city);
                   return ListTile(
-                    title: Text(meetup.city, style: const TextStyle(color: Colors.white)),
+                    title: Text(meetup.city, style: TextStyle(color: active ? cOrange : Colors.white, fontWeight: active ? FontWeight.w700 : FontWeight.w400)),
+                    // STERN: mehrere Meetups als Favoriten anwaehlbar.
+                    trailing: Icon(active ? Icons.star_rounded : Icons.star_outline_rounded,
+                        color: active ? cOrange : cTextTertiary, size: 26),
                     onTap: () {
-                      widget.onSelect(meetup.city);
-                      Navigator.pop(context);
+                      setState(() {
+                        if (active) { _selected.remove(meetup.city); } else { _selected.add(meetup.city); }
+                      });
                     },
                   );
                 },
+              ),
+            ),
+            // Fertig-Button: uebergibt die Liste und schliesst.
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () { widget.onDone(_selected.toList()); Navigator.pop(context); },
+                    style: ElevatedButton.styleFrom(backgroundColor: cOrange, padding: const EdgeInsets.symmetric(vertical: 13)),
+                    child: Text('${_selected.length} ★',
+                        style: const TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.w800)),
+                  ),
+                ),
               ),
             ),
           ],
@@ -1200,5 +1237,3 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
     );
   }
 }
-
-

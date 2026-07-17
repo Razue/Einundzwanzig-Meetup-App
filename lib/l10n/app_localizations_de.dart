@@ -4612,4 +4612,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String msSaveFavorites(int count) {
     return '$count Favoriten speichern';
   }
+
+  @override
+  String calFavAdded(String city) {
+    return '$city zu Favoriten hinzugefügt ★';
+  }
+
+  @override
+  String calFavRemoved(String city) {
+    return '$city aus Favoriten entfernt';
+  }
 }

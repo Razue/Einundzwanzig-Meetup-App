@@ -2184,5 +2184,21 @@
         "type": "int"
       }
     }
+  },
+  "calFavAdded": "{city} added to favorites ★",
+  "@calFavAdded": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "calFavRemoved": "{city} removed from favorites",
+  "@calFavRemoved": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
   }
 }

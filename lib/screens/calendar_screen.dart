@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/user.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
@@ -21,6 +22,11 @@ class CalendarScreen extends StatefulWidget {
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
+  // FAVORITEN-STERNE: Set der favorisierten Staedte + bekannte Stadtnamen
+  // (zum Zuordnen Event -> Stadt). Beim Start geladen.
+  Set<String> _favCities = {};
+  List<String> _knownCities = [];
+
   final MeetupCalendarService _calendarService = MeetupCalendarService();
   
   List<CalendarEvent> _allEvents = [];  // Alle geladenen Events
@@ -335,9 +341,51 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return '${npub.substring(0, 10)}…${npub.substring(npub.length - 6)}';
   }
 
+
+  Future<void> _loadFavs() async {
+    final u = await UserProfile.load();
+    final ms = await MeetupService.fetchMeetups();
+    if (!mounted) return;
+    setState(() {
+      _favCities = u.favoriteMeetupIds.toSet();
+      _knownCities = ms.map((m) => m.city).toList()
+        ..sort((a, b) => b.length.compareTo(a.length)); // laengste zuerst
+    });
+  }
+
+  /// Ordnet einem Event die Meetup-Stadt zu: laengster bekannter Stadtname,
+  /// der in Titel oder Ort vorkommt. null, wenn keine Zuordnung moeglich.
+  String? _cityForEvent(CalendarEvent e) {
+    final hay = '${e.title} ${e.location}'.toLowerCase();
+    for (final c in _knownCities) {
+      if (c.length >= 3 && hay.contains(c.toLowerCase())) return c;
+    }
+    return null;
+  }
+
+  Future<void> _toggleFav(String city) async {
+    final u = await UserProfile.load();
+    final favs = List<String>.from(u.favoriteMeetupIds);
+    final added = !favs.contains(city);
+    if (added) { favs.add(city); } else { favs.remove(city); }
+    u.favoriteMeetupIds = favs;
+    u.homeMeetupId = favs.isNotEmpty ? favs.first : '';
+    await u.save();
+    if (!mounted) return;
+    setState(() => _favCities = favs.toSet());
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: added ? Colors.green : cSurface,
+      duration: const Duration(seconds: 2),
+      content: Text(added
+          ? AppLocalizations.of(context).calFavAdded(city)
+          : AppLocalizations.of(context).calFavRemoved(city)),
+    ));
+  }
+
   @override
   void initState() {
     super.initState();
+    _loadFavs();
     // Wenn ein Suchbegriff übergeben wurde (z.B. "Landau"), tragen wir ihn ein
     if (widget.initialSearch != null) {
       _searchController.text = widget.initialSearch!;
@@ -637,7 +685,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                         ],
                                       ),
                                     ),
-                                    const Icon(Icons.chevron_right, color: Colors.grey),
+                                    // STERN: Meetup dieses Termins als Favorit
+                                    // markieren -> erscheint als swipebare Karte
+                                    // auf dem Dashboard.
+                                    Builder(builder: (_) {
+                                      final favCity = _cityForEvent(event);
+                                      if (favCity == null) return const Icon(Icons.chevron_right, color: Colors.grey);
+                                      final isFav = _favCities.contains(favCity);
+                                      return Row(mainAxisSize: MainAxisSize.min, children: [
+                                        GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: () => _toggleFav(favCity),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                                            child: Icon(isFav ? Icons.star_rounded : Icons.star_outline_rounded,
+                                                color: isFav ? cOrange : Colors.grey, size: 24),
+                                          ),
+                                        ),
+                                        const Icon(Icons.chevron_right, color: Colors.grey),
+                                      ]);
+                                    }),
                                   ],
                                 ),
                                     _rsvpRow(event),

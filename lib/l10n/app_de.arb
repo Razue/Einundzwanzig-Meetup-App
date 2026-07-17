@@ -2206,5 +2206,21 @@
         "type": "int"
       }
     }
+  },
+  "calFavAdded": "{city} zu Favoriten hinzugefügt ★",
+  "@calFavAdded": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "calFavRemoved": "{city} aus Favoriten entfernt",
+  "@calFavRemoved": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
   }
 }
