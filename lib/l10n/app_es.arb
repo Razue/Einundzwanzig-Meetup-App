@@ -2174,5 +2174,15 @@
   "chPlebrapSub": "Rap Bitcoin — plebs together strong",
   "prV4V": "Sats para los artistas",
   "prPickSong": "Elige una canción",
-  "prLoadError": "No se pudo cargar la canción"
+  "prLoadError": "No se pudo cargar la canción",
+  "msFavoritesHint": "Elige tus meetups — puedes seleccionar varios.",
+  "msSaveNone": "Guardar sin favorito",
+  "msSaveFavorites": "Guardar {count} favoritos",
+  "@msSaveFavorites": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

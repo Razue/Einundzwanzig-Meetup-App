@@ -12,7 +12,11 @@ class UserProfile {
   String twitterHandle;
   bool isNostrVerified;   // Hat einen gültigen Nostr-Key
   bool isAdminVerified;
-  String homeMeetupId;
+  String homeMeetupId; // intern: Widget-Routing-Ziel = aktuell vorderstes Meetup
+  /// FAVORITEN: mehrere gleichwertige Meetups (Stadtnamen). Die Dashboard-
+  /// Kachel zeigt daraus swipebar je Favorit das naechste Event. homeMeetupId
+  /// bleibt erhalten (= erster Favorit) fuer das Homescreen-Widget-Routing.
+  List<String> favoriteMeetupIds;
   bool hasNostrKey;       // Hat der User ein Keypair in der App?
 
   // ── QUELLENUNABHÄNGIGER ADMIN-STATUS ──────────────────────────────
@@ -67,6 +71,7 @@ class UserProfile {
     this.isAdminVerified = false,
     bool isAdmin = false,
     this.homeMeetupId = "",
+    this.favoriteMeetupIds = const [],
     this.hasNostrKey = false,
     String promotionSource = "",
   }) {
@@ -112,6 +117,13 @@ class UserProfile {
       // Cache-Wert laden — wird durch reVerifyAdmin()/_checkPortalOrganizer überschrieben
       isAdmin: prefs.getBool('is_admin') ?? false,
       homeMeetupId: prefs.getString('home_meetup') ?? "",
+      // MIGRATION: Gibt es die neue Favoritenliste, nutze sie. Sonst leite
+      // sie aus dem alten Einzel-Home-Meetup ab (Bestandsnutzer verlieren
+      // nichts). Leerer Altwert -> leere Liste.
+      favoriteMeetupIds: prefs.getStringList('favorite_meetups') ??
+          (((prefs.getString('home_meetup') ?? '').isNotEmpty)
+              ? [prefs.getString('home_meetup')!]
+              : <String>[]),
       hasNostrKey: hasKey, // lokaler nsec vorhanden? (im Amber-Modus false)
       promotionSource: prefs.getString('promotion_source') ?? "",
     );
@@ -170,6 +182,7 @@ class UserProfile {
     await prefs.setBool('admin_via_vouch', adminViaVouch);
     await prefs.setBool('admin_via_seed', adminViaSeed);
     await prefs.setString('home_meetup', homeMeetupId);
+    await prefs.setStringList('favorite_meetups', favoriteMeetupIds);
     await prefs.setString('promotion_source', promotionSource);
   }
 

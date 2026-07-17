@@ -117,6 +117,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   late final AnimationController _pulseController;
   CalendarEvent? _nextHomeMeetup;
   bool _countdownLoading = true;
+  // FAVORITEN-KARTEN: je Favorit-Stadt eine Karte mit deren naechstem Event.
+  // Chronologisch sortiert (Stadt mit dem fruehesten Event vorne); Staedte
+  // ohne anstehenden Termin haengen hinten (event == null).
+  List<_FavCard> _favCards = [];
+  List<Meetup> _allMeetupsCache = [];
+  final PageController _favPageCtrl = PageController();
+  int _favPage = 0;
 
   // Profil
   String? _profilePicUrl;
@@ -197,8 +204,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         Navigator.push(context, MaterialPageRoute(builder: (_) => const BitcoinDashboardScreen()));
         break;
       case 'meetup':
-        if (_homeMeetup != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _homeMeetup!.city)));
+        // Vorderste Favoriten-Karte = global naechstes Meetup (Widget zeigt sie).
+        final frontCity = _favCards.isNotEmpty ? _favCards.first.city : _homeMeetup?.city;
+        if (frontCity != null && frontCity.isNotEmpty) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: frontCity)));
         } else {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
         }
@@ -300,7 +309,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
   @override
-  void dispose() { WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _midnightTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
+  void dispose() {
+    _favPageCtrl.dispose(); WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _midnightTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
   void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
 
   bool _refreshing = false;
@@ -447,44 +457,65 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
   void _loadNextHomeMeetup() async {
-    if (_user.homeMeetupId.isEmpty) { if (mounted) setState(() => _countdownLoading = false); return; }
+    final favs = _user.favoriteMeetupIds.isNotEmpty
+        ? _user.favoriteMeetupIds
+        : (_user.homeMeetupId.isNotEmpty ? [_user.homeMeetupId] : <String>[]);
+    if (favs.isEmpty) { if (mounted) setState(() { _favCards = []; _countdownLoading = false; }); return; }
     try {
       final events = await MeetupCalendarService().fetchMeetupsPortalFirst();
-      // Abgleich-Begriffe: Stadtname des Home-Meetups + einzelne Wörter daraus.
-      // Der iCal-Titel enthält den Stadtnamen nicht immer wörtlich, daher
-      // prüfen wir Titel, Ort UND Beschreibung und akzeptieren auch Teilwörter.
-      final city = (_homeMeetup?.city ?? _user.homeMeetupId).toLowerCase().trim();
-      final terms = <String>{city, ...city.split(RegExp(r'[\s,/-]+'))}
-          .where((s) => s.length >= 3)
-          .toList();
 
-      bool matches(CalendarEvent e) {
+      // Match-Begriffe fuer EINE Stadt (Titel/Ort/Beschreibung, Teilwoerter).
+      bool matchesCity(CalendarEvent e, String cityName) {
+        final city = cityName.toLowerCase().trim();
+        final terms = <String>{city, ...city.split(RegExp(r'[\s,/-]+'))}
+            .where((s) => s.length >= 3);
         final hay = '${e.title} ${e.location} ${e.description}'.toLowerCase();
         return terms.any((term) => hay.contains(term));
       }
 
-      // KALENDERTAG-KULANZ: Ein Meetup bleibt den GANZEN Tag über das
-      // "nächste" — bis Mitternacht, nicht nur 6 Stunden nach Beginn.
-      //
-      // Vorher: cutoff = jetzt - 6h. Ein Meetup, das heute um 10:00 anfing,
-      // fiel dadurch um 16:00 DESSELBEN TAGES aus der Auswahl und der
-      // Countdown sprang aufs übernächste Meetup — obwohl noch derselbe Tag
-      // war. Jetzt zählt der Kalendertag: alles ab heute 00:00 bleibt drin,
-      // der Wechsel passiert exakt um Mitternacht.
+      // KALENDERTAG-KULANZ: ein Meetup bleibt den ganzen Tag "naechstes".
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
-      final future = events.where((e) => !e.startTime.isBefore(todayStart) && matches(e)).toList()
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      if (mounted) setState(() { _nextHomeMeetup = future.isNotEmpty ? future.first : null; _countdownLoading = false; });
 
-      // Nächstes Meetup ins Homescreen-Widget schreiben.
-      final widgetCity = _homeMeetup?.city ?? '';
+      // Je Favorit-Stadt das naechste Event bestimmen.
+      final cards = <_FavCard>[];
+      for (final cityName in favs) {
+        final upcoming = events
+            .where((e) => !e.startTime.isBefore(todayStart) && matchesCity(e, cityName))
+            .toList()
+          ..sort((a, b) => a.startTime.compareTo(b.startTime));
+        cards.add(_FavCard(city: cityName, event: upcoming.isNotEmpty ? upcoming.first : null));
+      }
+
+      // Sortierung: Staedte MIT Termin nach Datum aufsteigend; Staedte OHNE
+      // Termin ans Ende. So steht das global naechste Meetup immer vorne.
+      cards.sort((a, b) {
+        if (a.event == null && b.event == null) return a.city.compareTo(b.city);
+        if (a.event == null) return 1;
+        if (b.event == null) return -1;
+        return a.event!.startTime.compareTo(b.event!.startTime);
+      });
+
+      if (mounted) {
+        setState(() {
+          _favCards = cards;
+          // _nextHomeMeetup weiter fuer Kompatibilitaet (Widget/Routing) setzen:
+          // das global naechste Event ueber alle Favoriten.
+          _nextHomeMeetup = cards.isNotEmpty ? cards.first.event : null;
+          _favPage = 0;
+          _countdownLoading = false;
+        });
+        if (_favPageCtrl.hasClients) _favPageCtrl.jumpToPage(0);
+      }
+
+      // Homescreen-Widget: vorderste Karte (global naechstes Meetup).
+      final front = cards.isNotEmpty ? cards.first : null;
       String countdown = '';
-      if (_nextHomeMeetup != null) {
-        final days = _daysUntil(_nextHomeMeetup!.startTime);
+      if (front?.event != null) {
+        final days = _daysUntil(front!.event!.startTime);
         countdown = days <= 0 ? 'Heute' : (days == 1 ? 'Morgen' : 'in $days Tagen');
       }
-      WidgetService.updateMeetup(city: widgetCity, countdown: countdown);
+      WidgetService.updateMeetup(city: front?.city ?? '', countdown: countdown);
     } catch (_) { if (mounted) setState(() => _countdownLoading = false); }
   }
 
@@ -508,7 +539,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   void _syncOrganicAdminsInBackground() async { try { await PromotionClaimService.syncOrganicAdmins(); } catch (_) {} }
   void _checkDeviceIntegrity() async { try { final r = await DeviceIntegrityService.check(); if (r.isCompromised && mounted) setState(() => _deviceCompromised = true); } catch (_) {} }
   Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
-  Future<void> _loadUser({bool skipOrgCheck = false}) async { final u = await UserProfile.load(); Meetup? hm; if (u.homeMeetupId.isNotEmpty) { List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups; hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull; } if (mounted) setState(() { _user = u; _homeMeetup = hm; }); if (!skipOrgCheck) _checkPortalOrganizer(); _refreshPortalConnected(); }
+  Future<void> _loadUser({bool skipOrgCheck = false}) async { final u = await UserProfile.load(); Meetup? hm;
+    // Meetup-Liste EINMAL laden und cachen — die Favoriten-Karten loesen
+    // darueber Land/Wappen/Info-Screen fuer JEDE ihrer Staedte auf.
+    if (u.homeMeetupId.isNotEmpty || u.favoriteMeetupIds.isNotEmpty) {
+      List<Meetup> m = await MeetupService.fetchMeetups(); if (m.isEmpty) m = allMeetups;
+      _allMeetupsCache = m;
+      hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull;
+    }
+    if (mounted) setState(() { _user = u; _homeMeetup = hm; }); if (!skipOrgCheck) _checkPortalOrganizer(); _refreshPortalConnected(); }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
   /// PORTAL-ORGANISATOR = APP-ADMIN (robust, mit sicherem Entzug):
   /// - Portal-Login (Nostr) + my-meetups nicht leer  -> Admin VERGEBEN
@@ -701,7 +740,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     }
   }
   void _scanAnyMeetup() async { final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0); await Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupVerificationScreen(meetup: d))); _loadBadges(); _calculateTrustScore(); }
-  void _selectHomeMeetup() async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen())); _loadUser(); _loadNextHomeMeetup(); }
+  void _selectHomeMeetup() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen()));
+    // WICHTIG: erst den User FERTIG laden (neue Favoritenliste!), DANN die
+    // Karten neu rechnen — sonst rechnet _loadNextHomeMeetup mit den alten
+    // Favoriten und schreibt veraltete Daten ins Homescreen-Widget.
+    await _loadUser();
+    _loadNextHomeMeetup();
+  }
   Future<void> _openUrl(String url) async { final uri = Uri.parse(url); if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).homeCouldNotOpen(url)))); } }
 
   Color get _levelColor { if (_trustScore == null) return cTextTertiary; switch (_trustScore!.level) { case 'VETERAN': return Colors.amber; case 'ETABLIERT': return Colors.green; case 'AKTIV': return cCyan; case 'STARTER': return cOrange; default: return cTextTertiary; } }
@@ -1038,10 +1084,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// MEETUP-WAPPEN im "Cover-Flow"-Stil (iTunes): quadratisches Wappen,
   /// linke Kante fest, kippt perspektivisch nach rechts hinten und blendet
   /// dorthin weich aus. Bewusst einfach gehalten (robust auf allen Geräten).
-  Widget _homeCrestCoverFlow({double size = 56}) {
-    String url = MeetupCalendarService.logoFor(_homeMeetup?.city ?? _user.homeMeetupId);
-    if (url.isEmpty && _homeMeetup != null) {
-      url = _homeMeetup!.logoUrl.isNotEmpty ? _homeMeetup!.logoUrl : _homeMeetup!.coverImagePath;
+  /// CoverFlow-Wappen fuer EINE Stadt (parametrisiert, damit jede
+  /// Favoriten-Karte ihr eigenes Wappen zeigt).
+  Widget _crestCoverFlow(String city, Meetup? meetup, {double size = 56}) {
+    String url = MeetupCalendarService.logoFor(city);
+    if (url.isEmpty && meetup != null) {
+      url = meetup.logoUrl.isNotEmpty ? meetup.logoUrl : meetup.coverImagePath;
     }
     if (url.isEmpty) return const SizedBox.shrink();
     return SizedBox(
@@ -1071,8 +1119,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
   Widget _buildHomeMeetupTile() {
-    final hasHome = _user.homeMeetupId.isNotEmpty;
-    final cityName = _homeMeetup?.city ?? _user.homeMeetupId;
+    final hasHome = _user.homeMeetupId.isNotEmpty || _user.favoriteMeetupIds.isNotEmpty;
 
     if (!hasHome) {
       // Call-to-Action: noch kein Home Meetup gewählt
@@ -1105,98 +1152,140 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       );
     }
 
+    // FAVORITEN: swipebare Karten (eine pro Favorit-Stadt), 3-Punkte-Indikator.
+    // Hoehe fix, damit der PageView im Grid nicht springt.
+    final cards = _favCards.isNotEmpty
+        ? _favCards
+        : [ _FavCard(city: _user.homeMeetupId, event: _nextHomeMeetup) ];
+
     return GestureDetector(
       onLongPress: _showReorderSheet,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(kTileRadius),
-          gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
-            colors: [cOrange.withValues(alpha: 0.13), cOrange.withValues(alpha: 0.04), const Color(0xFF141416)],
-            stops: const [0.0, 0.45, 1.0]),
-          border: Border.all(color: cOrange.withValues(alpha: 0.30), width: 1.0),
-          boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 5))],
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        SizedBox(
+          height: 152,
+          child: PageView.builder(
+            controller: _favPageCtrl,
+            itemCount: cards.length,
+            onPageChanged: (i) => setState(() => _favPage = i),
+            itemBuilder: (_, i) => _favCardContent(cards[i]),
+          ),
         ),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-
-          // ── Obere Zeile: Logo links + (Label, Stadt, Land, Buttons) rechts ──
-          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            _homeCrestCoverFlow(size: 68),
-            const SizedBox(width: 14),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Label + Stadt + Land in einer kompakten Gruppe
-              Row(children: [
-                Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
-                  child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
-                const SizedBox(width: 8),
-                Text(_homeMeetup?.country ?? 'DE',
-                  style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
-              ]),
-              const SizedBox(height: 6),
-              Text(cityName.toUpperCase(),
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: cText, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5, height: 1.05)),
-            ])),
-            const SizedBox(width: 10),
-            // Buttons rechts neben dem Logo/Text (feste Breite gegen Overflow)
-            SizedBox(
-              width: 88,
-              child: Column(mainAxisSize: MainAxisSize.min, children: [
-                GestureDetector(
-                  onTap: _homeMeetup != null
-                    ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _homeMeetup!.city)))
-                    : null,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 9),
-                    decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(9),
-                      boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.22), blurRadius: 8, offset: const Offset(0, 2))]),
-                    child: Center(child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.6)))),
-                ),
-                if (_homeMeetup != null) ...[
-                  const SizedBox(height: 7),
-                  GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: _homeMeetup!))),
-                    child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
-                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(9)),
-                      child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 16)),
-                  ),
-                ],
-              ]),
-            ),
+        // Seiten-Indikator (Punkte) — nur bei mehr als einer Karte.
+        if (cards.length > 1) ...[
+          const SizedBox(height: 8),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            for (int i = 0; i < cards.length; i++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: i == _favPage ? 18 : 6, height: 6,
+                decoration: BoxDecoration(
+                  color: i == _favPage ? cOrange : cTextTertiary.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(3)),
+              ),
           ]),
-
-          const SizedBox(height: 12),
-
-          // ── Nächster Termin (untere Zeile) ──
-          if (_countdownLoading)
-            const SizedBox(height: 16, child: LinearProgressIndicator(color: cOrange, backgroundColor: Colors.transparent))
-          else if (_nextHomeMeetup != null) Builder(builder: (_) {
-            final days = _daysUntil(_nextHomeMeetup!.startTime);
-            return Row(children: [
-              const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 15),
-              const SizedBox(width: 7),
-              Text(
-                days <= 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
-                style: TextStyle(
-                  color: days <= 0 ? cOrange : days <= 3 ? cOrange.withValues(alpha: 0.8) : cTextSecondary,
-                  fontSize: 14, fontWeight: FontWeight.w800)),
-              const SizedBox(width: 5),
-              Expanded(child: Text(
-                '· ${_nextHomeMeetup!.startTime.day}.${_nextHomeMeetup!.startTime.month}.${_nextHomeMeetup!.startTime.year}',
-                style: const TextStyle(color: cTextTertiary, fontSize: 13))),
-            ]);
-          })
-          else if (_user.homeMeetupId.isNotEmpty)
-            Row(children: [
-              const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 15),
-              const SizedBox(width: 7),
-              Text(AppLocalizations.of(context).homeMeetupNoDate, style: const TextStyle(color: cTextTertiary, fontSize: 13)),
-            ]),
-        ]),
-      ),
+        ],
+      ]),
     );
+  }
+
+  Meetup? _meetupForCity(String city) =>
+      _allMeetupsCache.where((x) => x.city == city).firstOrNull ??
+      allMeetups.where((x) => x.city == city).firstOrNull;
+
+  /// EINE Favoriten-Karte: CoverFlow-Wappen, Stadt, Countdown, Events/Info.
+  /// Bekommt ihre Daten als [card] — kein Zugriff mehr auf _homeMeetup/
+  /// _nextHomeMeetup, damit jede Seite ihr eigenes Meetup zeigt.
+  Widget _favCardContent(_FavCard card) {
+    final cityName = card.city;
+    final event = card.event;
+    // Meetup-Objekt (fuer Land, Info-Screen, Wappen) zur Stadt aufloesen.
+    final meetup = _meetupForCity(cityName);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(kTileRadius),
+        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [cOrange.withValues(alpha: 0.13), cOrange.withValues(alpha: 0.04), const Color(0xFF141416)],
+          stops: const [0.0, 0.45, 1.0]),
+        border: Border.all(color: cOrange.withValues(alpha: 0.30), width: 1.0),
+        boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 5))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          _crestCoverFlow(cityName, meetup, size: 68),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
+                child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
+              const SizedBox(width: 8),
+              Text(meetup?.country ?? 'DE',
+                style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+            ]),
+            const SizedBox(height: 6),
+            Text(cityName.toUpperCase(),
+              maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: cText, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5, height: 1.05)),
+          ])),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 88,
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: cityName))),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(9),
+                    boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.22), blurRadius: 8, offset: const Offset(0, 2))]),
+                  child: Center(child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.6)))),
+              ),
+              if (meetup != null) ...[
+                const SizedBox(height: 7),
+                GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: meetup))),
+                  child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
+                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(9)),
+                    child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 16)),
+                ),
+              ],
+            ]),
+          ),
+        ]),
+
+        const SizedBox(height: 12),
+
+        // Naechster Termin dieser Stadt
+        if (_countdownLoading)
+          const SizedBox(height: 16, child: LinearProgressIndicator(color: cOrange, backgroundColor: Colors.transparent))
+        else if (event != null) Builder(builder: (_) {
+          final days = _daysUntil(event.startTime);
+          return Row(children: [
+            const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 15),
+            const SizedBox(width: 7),
+            Text(
+              days <= 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
+              style: TextStyle(
+                color: days <= 0 ? cOrange : days <= 3 ? cOrange.withValues(alpha: 0.8) : cTextSecondary,
+                fontSize: 14, fontWeight: FontWeight.w800)),
+            const SizedBox(width: 5),
+            Expanded(child: Text(
+              '· ${event.startTime.day}.${event.startTime.month}.${event.startTime.year}',
+              style: const TextStyle(color: cTextTertiary, fontSize: 13))),
+          ]);
+        })
+        else
+          Row(children: [
+            const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 15),
+            const SizedBox(width: 7),
+            Text(AppLocalizations.of(context).homeMeetupNoDate, style: const TextStyle(color: cTextTertiary, fontSize: 13)),
+          ]),
+      ]),
+    );
+
   }
 
   Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
@@ -2151,4 +2240,11 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
       ],
     );
   }
+}
+
+/// Eine Favoriten-Karte: Stadt + deren naechstes Event (oder null).
+class _FavCard {
+  final String city;
+  final CalendarEvent? event;
+  const _FavCard({required this.city, required this.event});
 }

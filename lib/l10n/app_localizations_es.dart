@@ -4585,4 +4585,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get prLoadError => 'No se pudo cargar la canción';
+
+  @override
+  String get msFavoritesHint =>
+      'Elige tus meetups — puedes seleccionar varios.';
+
+  @override
+  String get msSaveNone => 'Guardar sin favorito';
+
+  @override
+  String msSaveFavorites(int count) {
+    return 'Guardar $count favoritos';
+  }
 }

@@ -8397,6 +8397,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Song konnte nicht geladen werden'**
   String get prLoadError;
+
+  /// No description provided for @msFavoritesHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle deine Meetups — du kannst mehrere auswählen.'**
+  String get msFavoritesHint;
+
+  /// No description provided for @msSaveNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Favorit speichern'**
+  String get msSaveNone;
+
+  /// No description provided for @msSaveFavorites.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Favoriten speichern'**
+  String msSaveFavorites(int count);
 }
 
 class _AppLocalizationsDelegate

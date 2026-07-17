@@ -4600,4 +4600,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get prLoadError => 'Song konnte nicht geladen werden';
+
+  @override
+  String get msFavoritesHint =>
+      'Wähle deine Meetups — du kannst mehrere auswählen.';
+
+  @override
+  String get msSaveNone => 'Ohne Favorit speichern';
+
+  @override
+  String msSaveFavorites(int count) {
+    return '$count Favoriten speichern';
+  }
 }
