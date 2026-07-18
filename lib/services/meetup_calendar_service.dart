@@ -65,12 +65,21 @@ class MeetupCalendarService {
   static final Map<String, String> portalLogos = {};
 
   /// Liefert das Wappen zu einem Titel/Stadtnamen (exakter Name oder enthalten).
+  /// Macht relative Portal-Bildpfade absolut ("/storage/x.png" ->
+  /// "https://portal.einundzwanzig.space/storage/x.png"). Image.network
+  /// scheitert an relativen Pfaden STILL — das Wappen fehlte dann einfach.
+  static String absoluteImageUrl(String url) {
+    final u = url.trim();
+    if (u.isEmpty || u.startsWith('http://') || u.startsWith('https://')) return u;
+    return 'https://portal.einundzwanzig.space${u.startsWith('/') ? '' : '/'}$u';
+  }
+
   static String logoFor(String titleOrCity) {
     final q = titleOrCity.trim().toLowerCase();
     if (q.isEmpty) return '';
     for (final entry in portalLogos.entries) {
       final name = entry.key.toLowerCase();
-      if (name == q || name.contains(q) || q.contains(name)) return entry.value;
+      if (name == q || name.contains(q) || q.contains(name)) return absoluteImageUrl(entry.value);
     }
     return '';
   }

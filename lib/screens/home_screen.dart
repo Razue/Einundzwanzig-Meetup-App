@@ -478,7 +478,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // (ein Event kann andere Staedte erwaehnen -> Fehlzuordnung, die ein
         // spaeteres Event einer Stadt als deren "naechstes" ausweist).
         final hay = '${e.title} ${e.location}'.toLowerCase();
-        return terms.any((term) => hay.contains(term));
+        // WORTGRENZEN statt contains: "Frankfurter Str." in irgendeiner
+        // Stadt matchte sonst den Favoriten "Frankfurt" — dessen Karte
+        // zeigte dann den fremden Termin (dein 4-statt-6-Tage-Fall).
+        return terms.any((term) =>
+            RegExp('\\b' + RegExp.escape(term) + '\\b').hasMatch(hay));
       }
 
       // KALENDERTAG-KULANZ: ein Meetup bleibt den ganzen Tag "naechstes".
@@ -1101,7 +1105,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _crestCoverFlow(String city, Meetup? meetup, {double size = 56}) {
     String url = MeetupCalendarService.logoFor(city);
     if (url.isEmpty && meetup != null) {
-      url = meetup.logoUrl.isNotEmpty ? meetup.logoUrl : meetup.coverImagePath;
+      // Fallback: Wappen aus /api/meetups — Pfade dort koennen RELATIV
+      // sein, deshalb normalisieren (sonst laedt Image.network still nichts
+      // und das Wappen fehlt, z.B. Darmstadt/Wiesbaden ohne Termin-Logo).
+      url = MeetupCalendarService.absoluteImageUrl(
+          meetup.logoUrl.isNotEmpty ? meetup.logoUrl : meetup.coverImagePath);
     }
     if (url.isEmpty) return const SizedBox.shrink();
     return SizedBox(
