@@ -137,6 +137,20 @@ Zusätzlich zu Meetup-Badges kann der Nutzer seine Identität über mehrere Kan�
 
 **Social Graph** — Analyse der Nostr-Follower/Following-Beziehungen für einen zusätzlichen Vertrauenssignal.
 
+### Community & Meetup-Alltag
+
+Neben dem Reputationssystem bündelt die App den praktischen Meetup-Alltag der Community:
+
+**Favoriten-Meetups & Home-Kachel** — Der Nutzer markiert beliebig viele Meetups als Favoriten (per Stern im Onboarding oder direkt in der Terminliste). Auf dem Dashboard erscheinen sie als durchswipebare Karten; ganz vorne steht immer das chronologisch nächste anstehende Event über alle Favoriten hinweg. Das jeweils nächste Meetup wird zusätzlich an das Android-Homescreen-Widget übertragen.
+
+**Portal-Anbindung** — Über die offizielle Portal-API ([portal.einundzwanzig.space](https://portal.einundzwanzig.space)) lädt die App kommende Meetup-Termine, Wappen und Orte. Organisatoren mit Leader-Rechten im Portal erhalten den Organisator-Status auch in der App (Login via Nostr/Amber, mit automatischer Wiederverbindung). RSVP („Zusagen"/„Vielleicht") ist direkt aus der Terminliste möglich.
+
+**Mempool über Tor** — Die aktuelle Blockhöhe und Netzwerkdaten können wahlweise über Clearnet, eine eigene Instanz oder das offizielle Tor-Onion von mempool.space bezogen werden (konfigurierbar).
+
+**SatoshiDuell** — Einbindung der Community-Quiz-Plattform [satoshiduell.de](https://satoshiduell.de): Ein-Klick-Login per npub und eine Live-Kachel, die offene Duelle, Lobby-Spiele und „du bist dran"-Status anzeigt.
+
+**PlebRap-Player** — Ein integrierter Musikplayer für den frei veröffentlichten Bitcoin-Rap von [plebrap.de](https://plebrap.de), mit Playlist, Album-Covern und einem Value-for-Value-Knopf zur Unterstützung der Künstler.
+
 ---
 
 ## Sicherheitsarchitektur
@@ -184,7 +198,10 @@ Das Projekt hat mehrere Sicherheitsaudits durchlaufen, darunter adversariale Ang
 | Secure Storage | `flutter_secure_storage` (Android Keystore / iOS Keychain) |
 | NFC | `nfc_manager` 4.1.1 + `nfc_manager_ndef` |
 | QR | `qr_flutter` + `mobile_scanner` |
-| Blockchain-Daten | Mempool.space API (aktuelle Blockhöhe) |
+| Blockchain-Daten | Mempool.space API (aktuelle Blockhöhe, optional über Tor) |
+| Meetup-Daten | Einundzwanzig Portal-API + iCal-Feed (Fallback) |
+| Audio | `just_audio` (PlebRap-Player) |
+| Homescreen-Widget | `home_widget` (nächstes Meetup) |
 | Design | Google Fonts (Rajdhani, Inconsolata), Bitcoin-Orange Theme |
 | Plattformen | Android, iOS, Web (PWA), Linux, macOS, Windows |
 
@@ -199,28 +216,35 @@ lib/
 │
 ├── models/
 │   ├── badge.dart                     # Badge v4 mit Claim-Binding + Proof-Hashes
-│   ├── user.dart                      # Nutzerprofil mit kryptographischer Admin-Prüfung
+│   ├── user.dart                      # Nutzerprofil mit kryptographischer Admin-Prüfung + Favoriten-Meetups
 │   ├── meetup.dart                    # Meetup-Datenmodell
 │   └── calendar_event.dart            # Kalender-Events (iCal-Import)
 │
 ├── screens/
 │   ├── app_shell.dart                 # Hauptnavigation (BottomNav + Scan-FAB)
+│   ├── home_screen.dart               # Dashboard mit konfigurierbaren Kacheln (Home-Meetup-Favoriten, Widget)
+│   ├── community_hub_screen.dart      # Community-Bereich (Portal, SatoshiDuell, PlebRap, News)
 │   ├── intro.dart                     # Onboarding (Key-Generierung, Backup-Restore)
 │   ├── badge_wallet.dart              # Badge-Sammlung mit Verifikationsstatus
 │   ├── badge_details.dart             # Einzelansicht Badge + Krypto-Details
 │   ├── meetup_verification.dart       # NFC/QR-Scanner + Badge-Claim
+│   ├── meetup_selection.dart          # Favoriten-Meetups auswählen (Multi-Select)
 │   ├── nfc_writer.dart                # NFC-Tag beschreiben (Admin)
 │   ├── rolling_qr_screen.dart         # Rolling QR generieren (Admin)
 │   ├── meetup_session_wizard.dart     # Session-Setup für Organisatoren
 │   ├── reputation_qr.dart            # Eigene Reputation als QR teilen
 │   ├── reputation_verify_screen.dart  # Fremde Reputation prüfen
 │   ├── qr_scanner.dart               # Universal-QR-Scanner
-│   ├── profile_edit.dart              # Profil bearbeiten (Nickname, Nostr, Telegram)
+│   ├── profile_edit.dart              # Profil bearbeiten (Nickname, Nostr, Favoriten)
 │   ├── platform_proof_screen.dart     # Plattform-Verknüpfungen erstellen
 │   ├── humanity_proof_screen.dart     # Lightning Humanity Proof
 │   ├── admin_panel.dart               # Organisator-Werkzeuge
 │   ├── admin_management.dart          # Admin-Verwaltung + Vouching
-│   ├── calendar_screen.dart           # Meetup-Kalender (iCal)
+│   ├── calendar_screen.dart           # Meetup-Terminliste (Portal + iCal) mit RSVP & Favoriten-Stern
+│   ├── portal_meetups_screen.dart     # Organisator-Ansicht „Meine Meetups" (Portal)
+│   ├── event_calendar_screen.dart     # Kurs-/Event-Kalender
+│   ├── mempool_settings_screen.dart   # Mempool-Quelle (Clearnet / Tor / eigene Instanz)
+│   ├── plebrap_player_screen.dart     # PlebRap-Musikplayer (plebrap.de)
 │   ├── community_portal_screen.dart   # Links zu Community-Ressourcen
 │   ├── relay_settings_screen.dart     # Nostr-Relay Konfiguration
 │   └── radar.dart                     # Meetup-Radar (Umgebungssuche)
@@ -244,7 +268,13 @@ lib/
 │   ├── nip05_service.dart             # NIP-05 Internet-Identifikator
 │   ├── device_integrity_service.dart  # Root/Jailbreak-Erkennung
 │   ├── promotion_claim_service.dart   # Auto-Promotion Claims
-│   ├── meetup_calendar_service.dart   # iCal-Feed Import
+│   ├── meetup_calendar_service.dart   # Meetup-Termine: Portal-API zuerst, iCal-Fallback (zeitzonensicher)
+│   ├── portal_api_service.dart        # Einundzwanzig Portal-API (Login, RSVP, Organisator, Token-Bindung)
+│   ├── signing_service.dart           # Nostr-Signatur (lokaler Schlüssel oder Amber/NIP-55)
+│   ├── satoshiduell_service.dart      # SatoshiDuell-Status (offene Duelle, Lobby) via Supabase-REST
+│   ├── plebrap_audio.dart             # App-weiter Zustand des PlebRap-Players
+│   ├── mempool_config.dart            # Mempool-Quelle (Clearnet / Tor-Onion / eigene Instanz)
+│   ├── widget_service.dart            # Android-Homescreen-Widget (nächstes Meetup)
 │   ├── relay_config.dart              # Relay-Verwaltung
 │   ├── mempool.dart                   # Mempool.space API (Blockhöhe)
 │   └── app_logger.dart                # Strukturiertes Logging
@@ -333,4 +363,6 @@ Was nirgendwo gespeichert wird: IP-Adressen, Geräte-IDs, Standortdaten, Zahlung
 
 - **Repository:** [github.com/louisthecat86/Einundzwanzig-Meetup-App](https://github.com/louisthecat86/Einundzwanzig-Meetup-App)
 - **Einundzwanzig Portal:** [portal.einundzwanzig.space](https://portal.einundzwanzig.space)
+- **SatoshiDuell:** [satoshiduell.de](https://satoshiduell.de)
+- **PlebRap:** [plebrap.de](https://plebrap.de)
 - **Einundzwanzig Telegram:** [t.me/einundzwanzig](https://t.me/einundzwanzig)
