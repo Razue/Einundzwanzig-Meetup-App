@@ -39,6 +39,7 @@ class MeetupService {
 
           return Meetup(
             id: json['id']?.toString() ?? json['name'] ?? "unknown",
+            name: json['name']?.toString() ?? "",
             city: json['city'] ?? json['name'] ?? "Unbekannt",
             country: json['country'] ?? "DE",
             telegramLink: json['url'] ?? "",

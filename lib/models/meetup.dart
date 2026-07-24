@@ -1,5 +1,10 @@
 class Meetup {
   final String id;
+  /// Name der Meetup-GRUPPE (z.B. "Einundzwanzig Berlin Mitte").
+  /// Wichtig, weil in groesseren Staedten MEHRERE Gruppen existieren
+  /// (Berlin 4x, Osnabrueck 4x, Budapest 4x ...). Ohne den Namen sehen
+  /// sie in jeder Liste identisch aus.
+  final String name;
   final String city;
   final String country;
   final String telegramLink;
@@ -15,6 +20,7 @@ class Meetup {
 
   Meetup({
     required this.id, 
+    this.name = "",
     required this.city, 
     required this.country, 
     required this.telegramLink,
@@ -42,7 +48,8 @@ class Meetup {
 
     return Meetup(
       id: json['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      city: json['name'] ?? 'Unbekannt',
+      name: json['name']?.toString() ?? "",
+      city: json['city'] ?? json['name'] ?? 'Unbekannt',
       country: _parseCountry(json),
       twitterUsername: json['twitter'] ?? json['twitter_username'] ?? '', 
       telegramLink: json['telegram'] ?? '',

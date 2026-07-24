@@ -178,11 +178,30 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
-                                  child: Text(
-                                    meetup.city.toUpperCase(),
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        meetup.city.toUpperCase(),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      // Gruppenname nur zeigen, wenn er WIRKLICH
+                                      // unterscheidet — sonst nur Doppelung.
+                                      if (meetup.name.isNotEmpty &&
+                                          meetup.name.toLowerCase() != meetup.city.toLowerCase())
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(meetup.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(color: cTextTertiary, fontSize: 11.5)),
+                                        ),
+                                    ],
                                   ),
                                 ),
                                 // Checkbox-Optik statt Pfeil

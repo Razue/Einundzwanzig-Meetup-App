@@ -1204,6 +1204,15 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
                   final active = _selected.contains(meetup.city);
                   return ListTile(
                     title: Text(meetup.city, style: TextStyle(color: active ? cOrange : Colors.white, fontWeight: active ? FontWeight.w700 : FontWeight.w400)),
+                    // Gruppenname als Unterzeile: In groesseren Staedten gibt
+                    // es mehrere Meetups — ohne ihn sind sie nicht zu trennen.
+                    subtitle: (meetup.name.isNotEmpty &&
+                            meetup.name.toLowerCase() != meetup.city.toLowerCase())
+                        ? Text(meetup.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(color: cTextTertiary, fontSize: 11.5))
+                        : null,
                     // STERN: mehrere Meetups als Favoriten anwaehlbar.
                     trailing: Icon(active ? Icons.star_rounded : Icons.star_outline_rounded,
                         color: active ? cOrange : cTextTertiary, size: 26),
