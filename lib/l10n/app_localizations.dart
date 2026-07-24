@@ -6403,7 +6403,7 @@ abstract class AppLocalizations {
   /// No description provided for @gpsError.
   ///
   /// In de, this message translates to:
-  /// **'Standort konnte nicht ermittelt werden.'**
+  /// **'Kein GPS-Signal erhalten. In Gebäuden dauert die Ortung oft länger – geh kurz ans Fenster oder vor die Tür und versuche es erneut.'**
   String get gpsError;
 
   /// No description provided for @gpsRetry.
@@ -8427,6 +8427,84 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{city} aus Favoriten entfernt'**
   String calFavRemoved(String city);
+
+  /// No description provided for @verifyBadgeDuplicate.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Badge ist bereits in deiner Wallet.'**
+  String get verifyBadgeDuplicate;
+
+  /// No description provided for @gpsOpenLocationSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort-Einstellungen öffnen'**
+  String get gpsOpenLocationSettings;
+
+  /// No description provided for @gpsOpenAppSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'App-Einstellungen öffnen'**
+  String get gpsOpenAppSettings;
+
+  /// No description provided for @walletSearchHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup suchen…'**
+  String get walletSearchHint;
+
+  /// No description provided for @walletGroupMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Meetup'**
+  String get walletGroupMeetup;
+
+  /// No description provided for @walletGroupYear.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Jahr'**
+  String get walletGroupYear;
+
+  /// No description provided for @walletNoResults.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Badges gefunden.'**
+  String get walletNoResults;
+
+  /// No description provided for @walletCleanupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Duplikate bereinigen'**
+  String get walletCleanupTitle;
+
+  /// No description provided for @walletCleanupConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get walletCleanupConfirm;
+
+  /// No description provided for @walletCleanupNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Duplikate gefunden.'**
+  String get walletCleanupNone;
+
+  /// No description provided for @walletCleanupHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Von jedem Meetup bleibt das ursprüngliche Badge erhalten. Bereits veröffentlichte Teilnahme-Nachweise im Netzwerk bleiben unverändert.'**
+  String get walletCleanupHint;
+
+  /// No description provided for @walletCleanupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} doppelte Badge(s) gefunden:'**
+  String walletCleanupBody(int count);
+
+  /// No description provided for @walletCleanupDone.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Duplikate entfernt.'**
+  String walletCleanupDone(int count);
 }
 
 class _AppLocalizationsDelegate

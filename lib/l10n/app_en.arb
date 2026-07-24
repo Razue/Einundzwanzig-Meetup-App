@@ -1807,7 +1807,7 @@
   "gpsRequiredScan": "Collecting this badge requires your location — as proof you're on site.",
   "gpsDenied": "Location access denied. Please allow it in settings.",
   "gpsDisabled": "Location services are disabled. Please enable them.",
-  "gpsError": "Could not determine location.",
+  "gpsError": "No GPS signal. Indoors this often takes longer – step near a window or outside and try again.",
   "gpsRetry": "Try again",
   "gpsPickMeetup": "Which meetup?",
   "gpsPickMeetupSub": "Several meetups are near you. Please pick the right one.",
@@ -2198,6 +2198,33 @@
     "placeholders": {
       "city": {
         "type": "String"
+      }
+    }
+  },
+  "verifyBadgeDuplicate": "This badge is already in your wallet.",
+  "gpsOpenLocationSettings": "Open location settings",
+  "gpsOpenAppSettings": "Open app settings",
+  "walletSearchHint": "Search meetup…",
+  "walletGroupMeetup": "By meetup",
+  "walletGroupYear": "By year",
+  "walletNoResults": "No badges found.",
+  "walletCleanupTitle": "Clean up duplicates",
+  "walletCleanupConfirm": "Remove",
+  "walletCleanupNone": "No duplicates found.",
+  "walletCleanupHint": "The original badge for each meetup is kept. Attendance proofs already published to the network stay unchanged.",
+  "walletCleanupBody": "Found {count} duplicate badge(s):",
+  "@walletCleanupBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walletCleanupDone": "Removed {count} duplicates.",
+  "@walletCleanupDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   }

@@ -130,6 +130,24 @@ class MeetupBadge {
   // SERIALISIERUNG
   // =============================================
 
+  /// EINDEUTIGKEIT eines Badges — zentraler Schluessel fuer Duplikat-Erkennung.
+  ///
+  /// Wird an ZWEI Stellen gebraucht und muss dort identisch sein:
+  ///  1. beim Hinzufuegen zur Wallet (verhindert Mehrfach-Sammeln),
+  ///  2. im Trust Score (Duplikate duerfen die Reputation nicht erhoehen).
+  ///
+  /// Reihenfolge bewusst: meetupEventId (= Meetup + Datum) ist die fachliche
+  /// Identitaet einer Veranstaltung und ueberlebt auch rotierende QR-Codes,
+  /// bei denen sich die Signatur-ID zwischen zwei Scans aendert.
+  static String identityKey(MeetupBadge b) {
+    if (b.meetupEventId.isNotEmpty) return 'evt:${b.meetupEventId}';
+    if (b.sigId.isNotEmpty) return 'sig:${b.sigId}';
+    // Fallback fuer alte/unsignierte Badges: Meetup + Kalendertag.
+    final d = b.date;
+    final day = '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    return 'nd:${b.meetupName.trim().toLowerCase()}|$day';
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

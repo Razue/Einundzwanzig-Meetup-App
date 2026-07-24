@@ -1829,7 +1829,7 @@
   "gpsRequiredScan": "Zum Sammeln dieses Badges wird dein Standort benötigt — als Nachweis, dass du vor Ort bist.",
   "gpsDenied": "Standortzugriff verweigert. Bitte in den Einstellungen erlauben.",
   "gpsDisabled": "Standortdienste sind deaktiviert. Bitte aktivieren.",
-  "gpsError": "Standort konnte nicht ermittelt werden.",
+  "gpsError": "Kein GPS-Signal erhalten. In Gebäuden dauert die Ortung oft länger – geh kurz ans Fenster oder vor die Tür und versuche es erneut.",
   "gpsRetry": "Erneut versuchen",
   "gpsPickMeetup": "Welches Meetup?",
   "gpsPickMeetupSub": "Mehrere Meetups sind in deiner Nähe. Bitte wähle das richtige.",
@@ -2220,6 +2220,33 @@
     "placeholders": {
       "city": {
         "type": "String"
+      }
+    }
+  },
+  "verifyBadgeDuplicate": "Dieses Badge ist bereits in deiner Wallet.",
+  "gpsOpenLocationSettings": "Standort-Einstellungen öffnen",
+  "gpsOpenAppSettings": "App-Einstellungen öffnen",
+  "walletSearchHint": "Meetup suchen…",
+  "walletGroupMeetup": "Nach Meetup",
+  "walletGroupYear": "Nach Jahr",
+  "walletNoResults": "Keine Badges gefunden.",
+  "walletCleanupTitle": "Duplikate bereinigen",
+  "walletCleanupConfirm": "Entfernen",
+  "walletCleanupNone": "Keine Duplikate gefunden.",
+  "walletCleanupHint": "Von jedem Meetup bleibt das ursprüngliche Badge erhalten. Bereits veröffentlichte Teilnahme-Nachweise im Netzwerk bleiben unverändert.",
+  "walletCleanupBody": "{count} doppelte Badge(s) gefunden:",
+  "@walletCleanupBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walletCleanupDone": "{count} Duplikate entfernt.",
+  "@walletCleanupDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   }

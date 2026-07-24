@@ -22,6 +22,7 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import '../services/app_logger.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:nfc_manager/nfc_manager.dart';
@@ -32,6 +33,7 @@ import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
+import '../services/meetup_service.dart';
 import '../models/badge.dart';
 import '../models/meetup.dart';
 import '../models/user.dart';
@@ -53,6 +55,8 @@ class MeetupVerificationScreen extends StatefulWidget {
 }
 
 class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> with SingleTickerProviderStateMixin {
+  bool _tagProcessing = false; // Sperre gegen Mehrfach-Erkennung desselben Tags
+
   bool _success = false;
   bool _isUnknownSigner = false; // Flag für unbekannten Signer
   String? _statusText;
@@ -170,6 +174,11 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       await NfcManager.instance.startSession(
         pollingOptions: {NfcPollingOption.iso14443, NfcPollingOption.iso15693},
         onDiscovered: (NfcTag tag) async {
+          // DEBOUNCE (Feldtest): Android meldet denselben Tag beim Auflegen
+          // oft mehrfach. Ohne Sperre lief die Verarbeitung zwei- bis
+          // dreimal parallel — daher die beobachteten Doppel-/Dreifachscans.
+          if (_tagProcessing) return;
+          _tagProcessing = true;
           try {
             final ndef = Ndef.from(tag);
             if (ndef == null) {
@@ -231,6 +240,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           } catch (e) {
             await NfcManager.instance.stopSession();
             setState(() => _statusText = AppLocalizations.of(context).verifyErrReadError(e.toString()));
+          } finally {
+            // Sperre nach kurzer Karenz wieder oeffnen: Die Mehrfach-
+            // Meldungen EINES Auflegens verpuffen damit, ein bewusster
+            // zweiter Scan (z.B. nach einem Lesefehler) bleibt moeglich.
+            Future.delayed(const Duration(milliseconds: 1500),
+                () => _tagProcessing = false);
           }
         },
       );
@@ -546,12 +561,47 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   }
 
   // Badge in Wallet speichern (nach Bestätigung)
+
+  /// Sucht die Koordinaten des Meetups, zu dem DIESES Badge gehoert.
+  ///
+  /// Hintergrund (Feldtest Juli 2026): Der Umkreis-Schutz griff faktisch nie,
+  /// weil NFC-Tags keine Koordinaten tragen und der zentrale Scan-Knopf ein
+  /// Platzhalter-Meetup ohne Koordinaten uebergibt. Statt aufzugeben, leiten
+  /// wir die Referenz jetzt aus dem Badge selbst ab: sein Meetup-Name wird
+  /// gegen die Portal-Meetup-Liste aufgeloest.
+  ///
+  /// Der Badge-Name hat die Form "Stadt, LAND" — fuer den Abgleich zaehlt
+  /// nur der Teil vor dem Komma.
+  Future<Meetup?> _lookupMeetupForBadge(String badgeMeetupName) async {
+    final city = badgeMeetupName.split(',').first.trim().toLowerCase();
+    if (city.isEmpty) return null;
+
+    List<Meetup> list = const [];
+    try {
+      list = await MeetupService.fetchMeetups();
+    } catch (_) {
+      // Offline/Portal-Stoerung -> eingebaute Liste als Rueckfallebene
+    }
+    if (list.isEmpty) list = allMeetups;
+
+    for (final m in list) {
+      if (m.lat == 0 && m.lng == 0) continue; // ohne Koordinaten nutzlos
+      final c = m.city.trim().toLowerCase();
+      if (c == city || c.contains(city) || city.contains(c)) return m;
+    }
+    return null;
+  }
+
+
   Future<void> _confirmSaveBadge() async {
     if (_pendingBadge == null) {
       if (mounted) Navigator.pop(context, false);
       return;
     }
     var badge = _pendingBadge!;
+    AppLogger.diag('Scan',
+        'Claim gestartet: "${badge.meetupName}" · Zustellung=${badge.delivery} '
+        '· sigVersion=${badge.sigVersion} · Key=${MeetupBadge.identityKey(badge)}');
 
     // ---- GPS-PFLICHT beim Sammeln: Standort als Präsenz-Nachweis ----
     // Lade-Anzeige
@@ -564,9 +614,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     if (mounted) Navigator.pop(context);
 
     if (loc.status != GpsStatus.ok) {
+      AppLogger.warn('Scan',
+          'Standort NICHT ermittelbar (${loc.status.name}) — Badge abgelehnt.');
       if (mounted) _showScanGpsError(loc.status);
       return; // hart: kein Badge ohne Standort
     }
+    AppLogger.diag('Scan', 'Standort ermittelt (Status ok).');
 
     // Radius-Check: Teilnehmer muss nah am ERFASSTEN ORGANISATOR-STANDORT sein.
     // Primäre Referenz: Organisator-Koordinaten aus dem QR (la/lo) — das ist
@@ -581,20 +634,85 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       refLat = widget.meetup.lat;
       refLng = widget.meetup.lng;
     }
+    // STUFE 3 (Feldtest-Fix): Immer noch keine Referenz? Dann das Meetup
+    // ueber den Namen IM BADGE aufloesen. Das ist der Normalfall beim Scan
+    // ueber den zentralen Scan-Knopf, der ein Platzhalter-Meetup mitgibt.
+    if (refLat == 0 && refLng == 0) {
+      final resolved = await _lookupMeetupForBadge(badge.meetupName);
+      if (resolved != null) {
+        refLat = resolved.lat;
+        refLng = resolved.lng;
+        AppLogger.diag('Scan',
+            'Referenzkoordinaten aus Meetup-Liste aufgeloest: "${resolved.city}".');
+      }
+    }
     if (!(refLat == 0 && refLng == 0)) {
       final dist = MeetupLocationService.distanceKm(loc.lat, loc.lng, refLat, refLng);
+      AppLogger.diag('Scan',
+          'Umkreis-Pruefung: ${dist.toStringAsFixed(1)} km '
+          '(erlaubt ${MeetupLocationService.participantRadiusKm} km).');
       if (dist > MeetupLocationService.participantRadiusKm) {
+        AppLogger.warn('Scan', 'Zu weit entfernt — Badge abgelehnt.');
         if (mounted) _showTooFar(dist);
         return; // zu weit weg -> kein Badge
       }
+    } else {
+      // WICHTIG (Feldtest): Genau hier faellt der Umkreis-Schutz aus. Weder
+      // der Tag noch das uebergebene Meetup liefern Koordinaten (z.B. beim
+      // Scan ueber den zentralen Scan-Button, der ein Platzhalter-Meetup
+      // ohne Koordinaten mitgibt). Wird in einem eigenen Schritt behoben —
+      // bis dahin ist es wenigstens im Log sichtbar.
+      // RESTFALL: Auch ueber den Badge-Namen war nichts aufloesbar (Meetup
+      // im Portal ohne Koordinaten oder unbekannter Name). Bewusste
+      // Entscheidung: Badge wird vergeben, statt vor Ort ein ganzes Meetup
+      // auszusperren — aber die fehlende Pruefung wird klar protokolliert.
+      AppLogger.warn('Scan',
+          'Umkreis-Pruefung UEBERSPRUNGEN — keine Referenzkoordinaten fuer '
+          '"${badge.meetupName}" (Tag: $_pendingOrgLat/$_pendingOrgLng, '
+          'Meetup: ${widget.meetup.lat}/${widget.meetup.lng}). '
+          'Badge gilt als UNGEPRUEFTE Praesenz.');
     }
 
     // Koordinaten ins Badge schreiben (Präsenz-Nachweis + Weltkarte)
     badge = badge.copyWith(lat: loc.lat, lng: loc.lng);
 
-    myBadges.add(badge);
-    await MeetupBadge.saveBadges(myBadges);
-    ReputationPublisher.publishInBackground(myBadges);
+    // ============================================
+    // DUPLIKAT-SCHUTZ (Feldtest Juli 2026)
+    // ============================================
+    // Der Duplikat-Check beim SCANNEN schuetzt nur den Scan-Vorgang selbst.
+    // Wer den Knopf "Zur Wallet hinzufuegen" erneut drueckt, lief bisher
+    // daran vorbei (_pendingBadge ist ja noch gesetzt) — dadurch landete
+    // derselbe Badge bis zu dreimal in der Wallet und hat den Trust Score
+    // vervielfacht. Deshalb hier, unmittelbar vor dem Speichern, die
+    // verbindliche Pruefung gegen den TATSAECHLICHEN Speicherstand
+    // (nicht nur gegen die evtl. veraltete Liste im Speicher).
+    final stored = await MeetupBadge.loadBadges();
+    final key = MeetupBadge.identityKey(badge);
+    if (stored.any((b) => MeetupBadge.identityKey(b) == key)) {
+      AppLogger.warn('Scan', 'Duplikat abgewiesen ($key) — Badge bereits in der Wallet.');
+      _pendingBadge = null; // verhindert weitere Versuche mit demselben Badge
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).verifyBadgeDuplicate),
+            backgroundColor: cOrange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const BadgeWalletScreen()),
+        );
+      }
+      return;
+    }
+
+    stored.add(badge);
+    await MeetupBadge.saveBadges(stored);
+    myBadges = stored; // globale Liste synchron halten
+    _pendingBadge = null; // Badge ist verbucht — kein zweites Hinzufuegen
+    AppLogger.diag('Scan', 'Badge gespeichert ($key). Wallet: ${stored.length} Badge(s).');
+    ReputationPublisher.publishInBackground(stored);
 
     // Klares Erfolgs-Feedback (unabhängig vom Einstiegspunkt)
     if (mounted) {
@@ -643,7 +761,25 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           Expanded(child: Text(t.gpsRequired, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
         ]),
         content: Text('${t.gpsRequiredScan}\n\n$msg', style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
-        actions: [TextButton(onPressed: () { Navigator.pop(ctx); _confirmSaveBadge(); }, child: Text(t.gpsRetry, style: const TextStyle(color: cOrange)))],
+        actions: [
+          // Direkter Weg in die Einstellungen — beim Feldtest stand das
+          // Meetup genau vor dieser Wand. Der Dialog bleibt bewusst OFFEN,
+          // damit man nach dem Umschalten gleich "Erneut versuchen" tippen kann.
+          if (status == GpsStatus.serviceDisabled)
+            TextButton(
+              onPressed: () => MeetupLocationService.openLocationSettings(),
+              child: Text(t.gpsOpenLocationSettings, style: const TextStyle(color: cTextSecondary)),
+            ),
+          if (status == GpsStatus.denied)
+            TextButton(
+              onPressed: () => MeetupLocationService.openAppSettings(),
+              child: Text(t.gpsOpenAppSettings, style: const TextStyle(color: cTextSecondary)),
+            ),
+          TextButton(
+            onPressed: () { Navigator.pop(ctx); _confirmSaveBadge(); },
+            child: Text(t.gpsRetry, style: const TextStyle(color: cOrange)),
+          ),
+        ],
       ),
     );
   }

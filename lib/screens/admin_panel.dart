@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -111,9 +112,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     if (mounted) Navigator.pop(context); // Lade-Dialog schließen
 
     if (locResult.status != GpsStatus.ok) {
+      // DIAGNOSE (Feldtest): Beim Meetup konnte ein Organisator das Tag
+      // nicht beschreiben, obwohl der Standort nach seiner Aussage aktiv war.
+      // Der konkrete Status unterscheidet die beiden moeglichen Ursachen:
+      //   serviceDisabled = Standortdienst des Systems ist AUS
+      //   error           = Dienst an, aber kein Fix (drinnen, Timeout)
+      //   denied          = App-Berechtigung fehlt
+      AppLogger.warn('Organisator',
+          'Standort fuer Meetup-Erstellung NICHT ermittelbar: ${locResult.status.name}');
       if (mounted) _showGpsError(locResult.status);
       return;
     }
+    AppLogger.diag('Organisator',
+        'Standort erfasst — ${locResult.candidates.length} Meetup(s) im Umkreis bekannt, '
+        '${locResult.withinCreationRadius.length} davon im Erstellungs-Radius.');
 
     // Meetups im 10km-Radius um den erfassten Standort.
     // Leer = entweder keines im Radius ODER Portal nicht erreichbar.
@@ -230,6 +242,19 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         ]),
         content: Text('${t.gpsRequiredOrg}\n\n$msg', style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
         actions: [
+          // Direkter Weg in die Einstellungen — beim Feldtest stand das
+          // Meetup genau vor dieser Wand. Der Dialog bleibt bewusst OFFEN,
+          // damit man nach dem Umschalten gleich "Erneut versuchen" tippen kann.
+          if (status == GpsStatus.serviceDisabled)
+            TextButton(
+              onPressed: () => MeetupLocationService.openLocationSettings(),
+              child: Text(t.gpsOpenLocationSettings, style: const TextStyle(color: cTextSecondary)),
+            ),
+          if (status == GpsStatus.denied)
+            TextButton(
+              onPressed: () => MeetupLocationService.openAppSettings(),
+              child: Text(t.gpsOpenAppSettings, style: const TextStyle(color: cTextSecondary)),
+            ),
           TextButton(onPressed: () { Navigator.pop(ctx); _startNewSession(); }, child: Text(t.gpsRetry, style: const TextStyle(color: cOrange))),
         ],
       ),

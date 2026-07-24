@@ -81,6 +81,14 @@ class MeetupLocationService {
     );
   }
 
+  /// Oeffnet die SYSTEM-Standorteinstellungen (wenn der Dienst aus ist).
+  /// Liegt hier statt in den Screens, damit die UI keine direkte
+  /// Geolocator-Abhaengigkeit braucht.
+  static Future<bool> openLocationSettings() => Geolocator.openLocationSettings();
+
+  /// Oeffnet die App-Einstellungen (wenn die Berechtigung verweigert wurde).
+  static Future<bool> openAppSettings() => Geolocator.openAppSettings();
+
   /// Prüft, ob ein Teilnehmer-Standort nah genug am Badge-Ort liegt.
   /// Gibt die Entfernung in km zurück (auch wenn außerhalb).
   static double distanceKm(double lat1, double lng1, double lat2, double lng2) {

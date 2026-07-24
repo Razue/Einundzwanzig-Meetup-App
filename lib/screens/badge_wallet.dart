@@ -11,6 +11,8 @@ import 'badge_world_map_screen.dart';
 import '../models/user.dart';
 import 'badge_details.dart';
 import 'reputation_qr.dart';
+import '../services/reputation_publisher.dart';
+import '../services/app_logger.dart';
 
 // ============================================================
 // GENERATIVE ART PAINTER
@@ -145,6 +147,57 @@ class BadgeWalletScreen extends StatefulWidget {
 
 class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
   bool _compactView = false;
+
+  // ============================================================
+  // BIBLIOTHEKS-ANSICHT
+  // Eine flache Liste wird ab ~15 Badges unuebersichtlich. Deshalb:
+  // Suche + umschaltbare Gruppierung + einklappbare Abschnitte.
+  // Die Badge-Karten selbst bleiben unveraendert.
+  // ============================================================
+  final TextEditingController _searchCtrl = TextEditingController();
+  String _query = '';
+  bool _groupByMeetup = true;          // false = nach Jahr gruppieren
+  final Set<String> _collapsed = <String>{};
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Badges, die zum Suchbegriff passen (Meetup-Name).
+  List<MeetupBadge> get _filteredBadges {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return myBadges;
+    return myBadges.where((b) => b.meetupName.toLowerCase().contains(q)).toList();
+  }
+
+  /// Gruppiert nach Meetup oder Jahr.
+  /// Meetup: groesste Sammlung zuerst. Jahr: neuestes zuerst.
+  /// Innerhalb einer Gruppe immer das neueste Badge zuerst.
+  List<MapEntry<String, List<MeetupBadge>>> _buildGroups() {
+    final map = <String, List<MeetupBadge>>{};
+    for (final b in _filteredBadges) {
+      final name = b.meetupName.trim();
+      final key = _groupByMeetup
+          ? (name.isEmpty ? '?' : name)
+          : b.date.year.toString();
+      map.putIfAbsent(key, () => <MeetupBadge>[]).add(b);
+    }
+    for (final list in map.values) {
+      list.sort((a, b) => b.date.compareTo(a.date));
+    }
+    final entries = map.entries.toList();
+    if (_groupByMeetup) {
+      entries.sort((a, b) {
+        final byCount = b.value.length.compareTo(a.value.length);
+        return byCount != 0 ? byCount : a.key.compareTo(b.key);
+      });
+    } else {
+      entries.sort((a, b) => b.key.compareTo(a.key));
+    }
+    return entries;
+  }
 
   void _shareAllBadges() async {
     if (myBadges.isEmpty) return;
@@ -307,6 +360,13 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
               tooltip: _compactView ? 'Normal' : 'Kompakt',
               onPressed: () => setState(() => _compactView = !_compactView),
             ),
+          // Bereinigen-Knopf NUR anzeigen, wenn es wirklich Duplikate gibt.
+          if (_duplicateBadges().isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.cleaning_services_rounded),
+              tooltip: AppLocalizations.of(context).walletCleanupTitle,
+              onPressed: _showCleanupDialog,
+            ),
           if (myBadges.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.share),
@@ -317,22 +377,308 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
       ),
       body: myBadges.isEmpty
           ? _buildEmptyState(context)
-          : GridView.builder(
-              padding: const EdgeInsets.all(12),
+          : Column(
+              children: [
+                _buildLibraryControls(context),
+                Expanded(child: _buildGroupedBadges(context)),
+              ],
+            ),
+    );
+  }
+
+  // ============================================================
+  // DUPLIKATE BEREINIGEN
+  // ============================================================
+  // Beim Feldtest konnten identische Badges mehrfach in die Wallet gelangen.
+  // Der Schutz dagegen greift jetzt beim Sammeln — die bereits entstandenen
+  // Kopien bleiben aber liegen.
+  //
+  // WARUM DAS UNBEDENKLICH IST: Ein Duplikat traegt dieselbe meetupEventId
+  // wie das Original. Die Teilnahme-Bestaetigung im Netzwerk (Kind 30079)
+  // nutzt genau diese ID als d-Tag, existiert also pro Meetup ohnehin nur
+  // EINMAL — ein Duplikat hat dort nie eine eigene Verknuepfung erzeugt.
+  // Entfernen aendert daher nur die lokale Sammlung sowie Zaehler und
+  // Proof-Hash im (ersetzbaren) Reputations-Event. Das Original bleibt
+  // IMMER erhalten: behalten wird das aelteste Badge je Schluessel.
+
+  /// Die Badges, die beim Bereinigen entfernt wuerden (alle ausser dem
+  /// jeweils aeltesten Original).
+  List<MeetupBadge> _duplicateBadges() {
+    final sorted = List<MeetupBadge>.from(myBadges)
+      ..sort((a, b) => a.date.compareTo(b.date));
+    final seen = <String>{};
+    final dups = <MeetupBadge>[];
+    for (final b in sorted) {
+      if (!seen.add(MeetupBadge.identityKey(b))) dups.add(b);
+    }
+    return dups;
+  }
+
+  void _showCleanupDialog() {
+    final t = AppLocalizations.of(context);
+    final dups = _duplicateBadges();
+
+    if (dups.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.walletCleanupNone),
+        backgroundColor: cSurface,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+
+    // Betroffene Meetups zusammenfassen: "Koblenz (2x)"
+    final counts = <String, int>{};
+    for (final b in dups) {
+      final n = b.meetupName.trim().isEmpty ? '?' : b.meetupName.trim();
+      counts[n] = (counts[n] ?? 0) + 1;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.cleaning_services_rounded, color: cOrange, size: 20),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.walletCleanupTitle,
+              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(t.walletCleanupBody(dups.length),
+              style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+          const SizedBox(height: 12),
+          ...counts.entries.map((e) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(children: [
+                  const Icon(Icons.remove_circle_outline_rounded, color: cRed, size: 14),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('${e.key} (${e.value}x)',
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: cText, fontSize: 12.5))),
+                ]),
+              )),
+          const SizedBox(height: 12),
+          Text(t.walletCleanupHint,
+              style: const TextStyle(color: cTextTertiary, fontSize: 11.5, height: 1.35)),
+        ]),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(t.dialogCancel, style: const TextStyle(color: cTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () { Navigator.pop(ctx); _removeDuplicates(dups); },
+            child: Text(t.walletCleanupConfirm,
+                style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeDuplicates(List<MeetupBadge> dups) async {
+    final t = AppLocalizations.of(context);
+    // Identitaetsvergleich: es werden genau die Objekte entfernt, die der
+    // Dialog angezeigt hat — kein erneutes Berechnen, keine Ueberraschungen.
+    final kept = myBadges.where((b) => !dups.any((d) => identical(d, b))).toList();
+    final removed = myBadges.length - kept.length;
+
+    await MeetupBadge.saveBadges(kept);
+    myBadges = kept;
+    AppLogger.diag('Wallet', '$removed doppelte Badge(s) entfernt. Neu: ${kept.length}.');
+    // Reputation neu veroeffentlichen: Zaehler und Proof-Hash aendern sich.
+    ReputationPublisher.publishInBackground(kept);
+
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(t.walletCleanupDone(removed)),
+      backgroundColor: cGreen,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  // ============================================================
+  // BIBLIOTHEK: Suchleiste + Gruppierungs-Umschalter
+  // ============================================================
+  Widget _buildLibraryControls(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    // Suchfeld erst ab 6 Badges — davor ist es nur im Weg.
+    final showSearch = myBadges.length >= 6;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+      child: Column(children: [
+        if (showSearch)
+          TextField(
+            controller: _searchCtrl,
+            style: const TextStyle(color: cText, fontSize: 14),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: t.walletSearchHint,
+              hintStyle: const TextStyle(color: cTextTertiary, fontSize: 14),
+              prefixIcon: const Icon(Icons.search_rounded, color: cOrange, size: 20),
+              suffixIcon: _query.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.clear_rounded, color: cTextTertiary, size: 18),
+                      onPressed: () {
+                        _searchCtrl.clear();
+                        setState(() => _query = '');
+                      },
+                    ),
+              filled: true,
+              fillColor: cCard,
+              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: cTileBorder, width: 0.5),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: cTileBorder, width: 0.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: cOrange, width: 1),
+              ),
+            ),
+            onChanged: (v) => setState(() => _query = v),
+          ),
+        if (showSearch) const SizedBox(height: 10),
+        Row(children: [
+          _groupChip(t.walletGroupMeetup, Icons.place_rounded, _groupByMeetup,
+              () => setState(() => _groupByMeetup = true)),
+          const SizedBox(width: 8),
+          _groupChip(t.walletGroupYear, Icons.event_rounded, !_groupByMeetup,
+              () => setState(() => _groupByMeetup = false)),
+        ]),
+      ]),
+    );
+  }
+
+  Widget _groupChip(String label, IconData icon, bool active, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: active ? cOrange.withValues(alpha: 0.16) : cCard,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+              color: active ? cOrange.withValues(alpha: 0.6) : cTileBorder,
+              width: active ? 1 : 0.5),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 15, color: active ? cOrange : cTextTertiary),
+          const SizedBox(width: 6),
+          Text(label,
+              style: TextStyle(
+                  color: active ? cOrange : cTextSecondary,
+                  fontSize: 12.5,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.w500)),
+        ]),
+      ),
+    );
+  }
+
+  // ============================================================
+  // BIBLIOTHEK: Abschnitte mit Kopfzeile (einklappbar)
+  // ============================================================
+  Widget _buildGroupedBadges(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final groups = _buildGroups();
+
+    if (groups.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.search_off_rounded, color: cTextTertiary, size: 40),
+            const SizedBox(height: 12),
+            Text(t.walletNoResults,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: cTextTertiary, fontSize: 14)),
+          ]),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+      itemCount: groups.length,
+      itemBuilder: (context, gi) {
+        final entry = groups[gi];
+        final isCollapsed = _collapsed.contains(entry.key);
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // --- Abschnitts-Kopf ---
+          GestureDetector(
+            onTap: () => setState(() {
+              if (isCollapsed) {
+                _collapsed.remove(entry.key);
+              } else {
+                _collapsed.add(entry.key);
+              }
+            }),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(2, 14, 2, 8),
+              child: Row(children: [
+                Icon(_groupByMeetup ? Icons.place_rounded : Icons.event_rounded,
+                    color: cOrange, size: 15),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(entry.key.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: cOrange,
+                          fontSize: 11.5,
+                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.w700)),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: cOrange.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(8)),
+                  child: Text('${entry.value.length}',
+                      style: const TextStyle(
+                          color: cOrange, fontSize: 11, fontWeight: FontWeight.w800)),
+                ),
+                const SizedBox(width: 4),
+                Icon(isCollapsed ? Icons.expand_more_rounded : Icons.expand_less_rounded,
+                    color: cTextTertiary, size: 20),
+              ]),
+            ),
+          ),
+          // --- Karten des Abschnitts ---
+          if (!isCollapsed)
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: _compactView ? 3 : 2,
                 childAspectRatio: _compactView ? 0.75 : 0.80,
                 crossAxisSpacing: _compactView ? 8 : 12,
                 mainAxisSpacing: _compactView ? 8 : 12,
               ),
-              itemCount: myBadges.length,
-              itemBuilder: (context, index) {
-                final badge = myBadges[index];
+              itemCount: entry.value.length,
+              itemBuilder: (context, i) {
+                final badge = entry.value[i];
+                // Nummer bleibt die Position in der GESAMTsammlung, damit
+                // "#3" ueberall dasselbe Badge meint — unabhaengig von
+                // Filter und Gruppierung.
+                final globalIndex = myBadges.indexOf(badge);
                 return _compactView
-                    ? _buildCompactCard(context, badge, index)
-                    : _buildBadgeCard(context, badge, index);
+                    ? _buildCompactCard(context, badge, globalIndex)
+                    : _buildBadgeCard(context, badge, globalIndex);
               },
             ),
+        ]);
+      },
     );
   }
 

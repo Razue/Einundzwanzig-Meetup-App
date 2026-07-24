@@ -26,6 +26,7 @@
 // ============================================
 
 import 'dart:math';
+import 'app_logger.dart';
 import '../models/badge.dart';
 
 // =============================================
@@ -292,7 +293,22 @@ class TrustScoreService {
     // und dürfen NICHT zum Trust Score beitragen (Security Audit C1).
     // sigVersion == 2 → Schnorr-signiert (BIP-340)
     // sigVersion == 0 oder 1 → Legacy oder unsigniert → ignorieren
-    final trustedBadges = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList();
+    // DEDUPLIZIERUNG (Feldtest Juli 2026): Derselbe Badge konnte mehrfach in
+    // die Wallet gelangen und hat den Score vervielfacht (activityScore ist
+    // die SUMME aller Badge-Werte). Reputation zaehlt jetzt nur noch
+    // EINDEUTIGE Badges — gleiches Meetup am gleichen Tag = ein Badge.
+    // Aeltester Eintrag gewinnt, damit der urspruengliche Claim zaehlt.
+    final _trusted = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    final _seen = <String>{};
+    final trustedBadges = <MeetupBadge>[];
+    for (final b in _trusted) {
+      if (_seen.add(MeetupBadge.identityKey(b))) trustedBadges.add(b);
+    }
+    if (trustedBadges.length != _trusted.length) {
+      AppLogger.diag('TrustScore',
+          '${_trusted.length - trustedBadges.length} doppelte Badge(s) fuer die Reputation ignoriert.');
+    }
     
     if (trustedBadges.isEmpty) {
       return _emptyScore(phase, thresholds);

@@ -3558,7 +3558,8 @@ class AppLocalizationsDe extends AppLocalizations {
       'Standortdienste sind deaktiviert. Bitte aktivieren.';
 
   @override
-  String get gpsError => 'Standort konnte nicht ermittelt werden.';
+  String get gpsError =>
+      'Kein GPS-Signal erhalten. In Gebäuden dauert die Ortung oft länger – geh kurz ans Fenster oder vor die Tür und versuche es erneut.';
 
   @override
   String get gpsRetry => 'Erneut versuchen';
@@ -4621,5 +4622,50 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String calFavRemoved(String city) {
     return '$city aus Favoriten entfernt';
+  }
+
+  @override
+  String get verifyBadgeDuplicate =>
+      'Dieses Badge ist bereits in deiner Wallet.';
+
+  @override
+  String get gpsOpenLocationSettings => 'Standort-Einstellungen öffnen';
+
+  @override
+  String get gpsOpenAppSettings => 'App-Einstellungen öffnen';
+
+  @override
+  String get walletSearchHint => 'Meetup suchen…';
+
+  @override
+  String get walletGroupMeetup => 'Nach Meetup';
+
+  @override
+  String get walletGroupYear => 'Nach Jahr';
+
+  @override
+  String get walletNoResults => 'Keine Badges gefunden.';
+
+  @override
+  String get walletCleanupTitle => 'Duplikate bereinigen';
+
+  @override
+  String get walletCleanupConfirm => 'Entfernen';
+
+  @override
+  String get walletCleanupNone => 'Keine Duplikate gefunden.';
+
+  @override
+  String get walletCleanupHint =>
+      'Von jedem Meetup bleibt das ursprüngliche Badge erhalten. Bereits veröffentlichte Teilnahme-Nachweise im Netzwerk bleiben unverändert.';
+
+  @override
+  String walletCleanupBody(int count) {
+    return '$count doppelte Badge(s) gefunden:';
+  }
+
+  @override
+  String walletCleanupDone(int count) {
+    return '$count Duplikate entfernt.';
   }
 }

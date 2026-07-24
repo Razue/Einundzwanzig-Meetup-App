@@ -55,15 +55,45 @@ class NearbyMeetupService {
           permission == LocationPermission.deniedForever) {
         return const LocationResult(LocationStatus.denied);
       }
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 12),
-        ),
-      );
-      return LocationResult(LocationStatus.ok, pos);
+      try {
+        final pos = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            // 12s waren zu knapp: In Gebaeuden (Kneipe, Restaurant, Keller)
+            // braucht ein frischer Fix regelmaessig laenger — beim Feldtest
+            // sind daran zwei Teilnehmer gescheitert, OBWOHL der Standort
+            // aktiviert und freigegeben war.
+            timeLimit: Duration(seconds: 25),
+          ),
+        );
+        AppLogger.diag('Standort',
+            'Frische Position ermittelt (Genauigkeit ${pos.accuracy.toStringAsFixed(0)} m).');
+        return LocationResult(LocationStatus.ok, pos);
+      } catch (e) {
+        // RUECKFALLEBENE: Kein frischer Fix (meist Timeout drinnen). Eine
+        // KUERZLICH bekannte Position ist fuer den Praesenz-Nachweis voellig
+        // ausreichend — der Umkreis betraegt 5 km, in 10 Minuten kommt man
+        // nicht plausibel von ausserhalb. Aeltere Positionen werden bewusst
+        // NICHT akzeptiert, sonst waere der Nachweis wertlos.
+        AppLogger.warn('Standort',
+            'Kein frischer GPS-Fix (${e.runtimeType}) — versuche letzte bekannte Position.');
+        final last = await Geolocator.getLastKnownPosition();
+        if (last != null) {
+          final age = DateTime.now().difference(last.timestamp);
+          if (age.inMinutes <= 10) {
+            AppLogger.diag('Standort',
+                'Letzte bekannte Position akzeptiert (${age.inMinutes} Min alt).');
+            return LocationResult(LocationStatus.ok, last);
+          }
+          AppLogger.warn('Standort',
+              'Letzte bekannte Position ist ${age.inMinutes} Min alt — zu alt, verworfen.');
+        } else {
+          AppLogger.warn('Standort', 'Keine letzte bekannte Position vorhanden.');
+        }
+        return const LocationResult(LocationStatus.error);
+      }
     } catch (e) {
-      AppLogger.debug('Nearby', 'Standortfehler: $e');
+      AppLogger.warn('Nearby', 'Standortfehler: $e');
       return const LocationResult(LocationStatus.error);
     }
   }

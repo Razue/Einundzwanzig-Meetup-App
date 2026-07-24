@@ -3544,7 +3544,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Los servicios de ubicación están desactivados. Actívalos.';
 
   @override
-  String get gpsError => 'No se pudo determinar la ubicación.';
+  String get gpsError =>
+      'Sin señal GPS. En interiores suele tardar más: acércate a una ventana o sal fuera e inténtalo de nuevo.';
 
   @override
   String get gpsRetry => 'Reintentar';
@@ -4606,5 +4607,49 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String calFavRemoved(String city) {
     return '$city eliminado de favoritos';
+  }
+
+  @override
+  String get verifyBadgeDuplicate => 'Esta insignia ya está en tu cartera.';
+
+  @override
+  String get gpsOpenLocationSettings => 'Abrir ajustes de ubicación';
+
+  @override
+  String get gpsOpenAppSettings => 'Abrir ajustes de la app';
+
+  @override
+  String get walletSearchHint => 'Buscar meetup…';
+
+  @override
+  String get walletGroupMeetup => 'Por meetup';
+
+  @override
+  String get walletGroupYear => 'Por año';
+
+  @override
+  String get walletNoResults => 'No se encontraron insignias.';
+
+  @override
+  String get walletCleanupTitle => 'Limpiar duplicados';
+
+  @override
+  String get walletCleanupConfirm => 'Eliminar';
+
+  @override
+  String get walletCleanupNone => 'No se encontraron duplicados.';
+
+  @override
+  String get walletCleanupHint =>
+      'Se conserva la insignia original de cada meetup. Las pruebas de asistencia ya publicadas en la red no cambian.';
+
+  @override
+  String walletCleanupBody(int count) {
+    return 'Se encontraron $count insignia(s) duplicada(s):';
+  }
+
+  @override
+  String walletCleanupDone(int count) {
+    return '$count duplicados eliminados.';
   }
 }

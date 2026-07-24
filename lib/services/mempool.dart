@@ -246,6 +246,9 @@ class MempoolService {
 
   /// Einheitliches Logging aller Fehlschläge — das ist der Kern des Fixes.
   /// Vorher: `catch (_)`, also absolute Stille im Diagnose-Log.
+  static String? _lastNetSig;
+  static DateTime? _lastNetSigAt;
+
   static void _logFailure(String source, Object e) {
     if (e is MempoolHttpException) {
       _lastError = 'HTTP ${e.statusCode}';
@@ -255,8 +258,23 @@ class MempoolService {
     } else {
       final type = e.runtimeType.toString();
       _lastError = type;
+      // ENTRAUSCHEN (Feldtest): Bei Funkloch/Offline scheitern ALLE SECHS
+      // Quellen gleichzeitig mit demselben Netzwerkfehler — das hat das
+      // Diagnose-Log geflutet und echte App-Meldungen unauffindbar gemacht.
+      // Dieselbe Stoerung wird deshalb nur EINMAL pro Abrufzyklus notiert;
+      // die Gesamtmeldung "ALLE Quellen fehlgeschlagen" bleibt erhalten.
+      final sig = '$type@${MempoolConfig.host}';
+      final now = DateTime.now();
+      if (_lastNetSig == sig &&
+          _lastNetSigAt != null &&
+          now.difference(_lastNetSigAt!) < const Duration(seconds: 30)) {
+        return;
+      }
+      _lastNetSig = sig;
+      _lastNetSigAt = now;
       AppLogger.diag(_tag,
-          '$source FEHLGESCHLAGEN — $type @ ${MempoolConfig.host} · $e');
+          '$source FEHLGESCHLAGEN — $type @ ${MempoolConfig.host} · $e '
+          '(weitere gleichartige Fehler dieses Abrufs werden unterdrueckt)');
     }
   }
 

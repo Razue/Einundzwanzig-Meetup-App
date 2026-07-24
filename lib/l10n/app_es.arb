@@ -1807,7 +1807,7 @@
   "gpsRequiredScan": "Recoger este badge requiere tu ubicación — como prueba de que estás presente.",
   "gpsDenied": "Acceso a ubicación denegado. Permítelo en ajustes.",
   "gpsDisabled": "Los servicios de ubicación están desactivados. Actívalos.",
-  "gpsError": "No se pudo determinar la ubicación.",
+  "gpsError": "Sin señal GPS. En interiores suele tardar más: acércate a una ventana o sal fuera e inténtalo de nuevo.",
   "gpsRetry": "Reintentar",
   "gpsPickMeetup": "¿Qué meetup?",
   "gpsPickMeetupSub": "Hay varios meetups cerca. Elige el correcto.",
@@ -2198,6 +2198,33 @@
     "placeholders": {
       "city": {
         "type": "String"
+      }
+    }
+  },
+  "verifyBadgeDuplicate": "Esta insignia ya está en tu cartera.",
+  "gpsOpenLocationSettings": "Abrir ajustes de ubicación",
+  "gpsOpenAppSettings": "Abrir ajustes de la app",
+  "walletSearchHint": "Buscar meetup…",
+  "walletGroupMeetup": "Por meetup",
+  "walletGroupYear": "Por año",
+  "walletNoResults": "No se encontraron insignias.",
+  "walletCleanupTitle": "Limpiar duplicados",
+  "walletCleanupConfirm": "Eliminar",
+  "walletCleanupNone": "No se encontraron duplicados.",
+  "walletCleanupHint": "Se conserva la insignia original de cada meetup. Las pruebas de asistencia ya publicadas en la red no cambian.",
+  "walletCleanupBody": "Se encontraron {count} insignia(s) duplicada(s):",
+  "@walletCleanupBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walletCleanupDone": "{count} duplicados eliminados.",
+  "@walletCleanupDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   }
