@@ -74,7 +74,7 @@ class CoAttendanceService {
   static Future<int> publishAttendance(MeetupBadge badge) async {
     // Sicherheit: nur echte, organisator-signierte Badges qualifizieren
     if (!badge.isNostrSigned || badge.meetupEventId.isEmpty) {
-      AppLogger.debug(_tag, 'Badge nicht qualifiziert (nicht Nostr-signiert)');
+      AppLogger.warn(_tag, 'Badge nicht qualifiziert (nicht Nostr-signiert)');
       return 0;
     }
 
@@ -99,7 +99,7 @@ class CoAttendanceService {
 
       return await _publish(signed);
     } catch (e) {
-      AppLogger.debug(_tag, 'Publish-Fehler: $e');
+      AppLogger.warn(_tag, 'Publish-Fehler: $e');
       return 0;
     }
   }
@@ -130,7 +130,7 @@ class CoAttendanceService {
         ws.close();
         ok++;
       } catch (e) {
-        AppLogger.debug(_tag, '$relayUrl fehlgeschlagen: $e');
+        AppLogger.warn(_tag, '$relayUrl fehlgeschlagen: $e');
       }
     }
     return ok;
@@ -198,7 +198,7 @@ class CoAttendanceService {
       ws.add(jsonEncode(['CLOSE', subId]));
       return res;
     } catch (e) {
-      AppLogger.debug(_tag, 'Fetch-Fehler $relayUrl: $e');
+      AppLogger.warn(_tag, 'Fetch-Fehler $relayUrl: $e');
       return null;
     } finally {
       ws?.close();
@@ -392,7 +392,7 @@ class CoAttendanceService {
 
       return badge;
     } catch (e) {
-      AppLogger.debug(_tag, 'Organisator-Teilnahme fehlgeschlagen: $e');
+      AppLogger.warn(_tag, 'Organisator-Teilnahme fehlgeschlagen: $e');
       return null;
     }
   }
@@ -417,7 +417,7 @@ class CoAttendanceService {
       );
       return await _publish(signed);
     } catch (e) {
-      AppLogger.debug(_tag, 'Organisator-Publish fehlgeschlagen: $e');
+      AppLogger.warn(_tag, 'Organisator-Publish fehlgeschlagen: $e');
       return 0;
     }
   }

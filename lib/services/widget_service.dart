@@ -52,7 +52,7 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('updated', '${two(now.hour)}:${two(now.minute)}');
       await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
     } catch (e) {
-      AppLogger.debug(_tag, 'Bitcoin-Widget-Update fehlgeschlagen: $e');
+      AppLogger.warn(_tag, 'Bitcoin-Widget-Update fehlgeschlagen: $e');
     }
   }
 
@@ -64,7 +64,7 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('meetupCountdown', countdown);
       await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
     } catch (e) {
-      AppLogger.debug(_tag, 'Meetup-Widget-Update fehlgeschlagen: $e');
+      AppLogger.warn(_tag, 'Meetup-Widget-Update fehlgeschlagen: $e');
     }
   }
 
@@ -85,7 +85,7 @@ class WidgetService {
       }
       await updateBitcoin(d);
     } catch (e) {
-      AppLogger.debug(_tag, 'refreshBitcoin fehlgeschlagen: $e');
+      AppLogger.warn(_tag, 'refreshBitcoin fehlgeschlagen: $e');
     }
   }
 
@@ -112,7 +112,7 @@ class WidgetService {
       await HomeWidget.saveWidgetData<bool>('newsIsNew', isNew);
       await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
     } catch (e) {
-      AppLogger.debug(_tag, 'refreshNews fehlgeschlagen: $e');
+      AppLogger.warn(_tag, 'refreshNews fehlgeschlagen: $e');
     }
   }
 
@@ -128,7 +128,7 @@ class WidgetService {
       await HomeWidget.saveWidgetData<bool>('newsIsNew', false);
       await HomeWidget.updateWidget(name: _androidProvider, androidName: _androidProvider);
     } catch (e) {
-      AppLogger.debug(_tag, 'markNewsSeen fehlgeschlagen: $e');
+      AppLogger.warn(_tag, 'markNewsSeen fehlgeschlagen: $e');
     }
   }
 }

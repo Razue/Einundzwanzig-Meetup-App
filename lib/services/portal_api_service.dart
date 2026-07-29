@@ -196,7 +196,7 @@ class PortalApiService {
       await storeToken(token);
       return PortalResult(ok: true, statusCode: r.statusCode, data: (body as Map)['user']);
     } catch (e) {
-      AppLogger.debug(_tag, 'loginWithNostr Fehler: $e');
+      AppLogger.warn(_tag, 'loginWithNostr Fehler: $e');
       return PortalResult(ok: false, statusCode: 0, error: 'Anmeldung fehlgeschlagen: $e');
     }
   }
@@ -279,7 +279,7 @@ class PortalApiService {
       final body = jsonDecode(r.body);
       return body is Map<String, dynamic> ? body : null;
     } catch (e) {
-      AppLogger.debug(_tag, 'getProfile Fehler: $e');
+      AppLogger.warn(_tag, 'getProfile Fehler: $e');
       return null;
     }
   }
@@ -297,7 +297,7 @@ class PortalApiService {
           .whereType<PortalMeetup>()
           .toList();
     } catch (e) {
-      AppLogger.debug(_tag, 'getMyMeetups Fehler: $e');
+      AppLogger.warn(_tag, 'getMyMeetups Fehler: $e');
       return [];
     }
   }
@@ -315,7 +315,7 @@ class PortalApiService {
           .whereType<PortalMeetupEvent>()
           .toList();
     } catch (e) {
-      AppLogger.debug(_tag, 'getMyMeetupEvents Fehler: $e');
+      AppLogger.warn(_tag, 'getMyMeetupEvents Fehler: $e');
       return [];
     }
   }
@@ -420,7 +420,7 @@ class PortalApiService {
       if (r.statusCode == 401) await deleteToken();
       return PortalResult(ok: false, statusCode: r.statusCode, error: _errorFrom(r));
     } catch (e) {
-      AppLogger.debug(_tag, '$method $url Fehler: $e');
+      AppLogger.warn(_tag, '$method $url Fehler: $e');
       return PortalResult(ok: false, statusCode: 0, error: 'Netzwerkfehler. Bist du online?');
     }
   }
@@ -527,7 +527,7 @@ class PortalApiService {
       if (r.statusCode != 200) return null;
       return jsonDecode(r.body);
     } catch (e) {
-      AppLogger.debug(_tag, 'GET $path Fehler: $e');
+      AppLogger.warn(_tag, 'GET $path Fehler: $e');
       return null;
     }
   }

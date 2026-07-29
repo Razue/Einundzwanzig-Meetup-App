@@ -95,7 +95,7 @@ class MeetupService {
         return [];
       }
     } catch (e) {
-      AppLogger.debug('App', "Fehler beim Laden der Meetups: $e");
+      AppLogger.warn('App', "Fehler beim Laden der Meetups: $e");
       return [];
     }
   }

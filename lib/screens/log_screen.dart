@@ -26,6 +26,8 @@ class _LogScreenState extends State<LogScreen> {
     switch (level) {
       case 'ERROR': return cRed;
       case 'WARN': return cOrange;
+      case 'SEC': return cPurple;
+      case 'DEBUG': return cTextTertiary;
       default: return cTextSecondary;
     }
   }
@@ -48,6 +50,27 @@ class _LogScreenState extends State<LogScreen> {
                 color: _onlyProblems ? cOrange : cTextSecondary, size: 20),
             tooltip: 'Nur Warnungen/Fehler',
             onPressed: () => setState(() => _onlyProblems = !_onlyProblems),
+          ),
+          // AUSFUEHRLICH-SCHALTER: Vor dem Nachstellen eines Fehlers
+          // einschalten — dann landen auch Detailmeldungen im Log.
+          IconButton(
+            icon: Icon(
+                AppLogger.isVerbose ? Icons.zoom_in_rounded : Icons.zoom_out_map_rounded,
+                color: AppLogger.isVerbose ? cOrange : cTextSecondary, size: 20),
+            tooltip: AppLogger.isVerbose
+                ? 'Ausführliches Log AN — tippen zum Ausschalten'
+                : 'Ausführliches Log einschalten (mehr Details für die Fehlersuche)',
+            onPressed: () async {
+              await AppLogger.setVerbose(!AppLogger.isVerbose);
+              if (context.mounted) {
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(AppLogger.isVerbose
+                      ? 'Ausführliches Log an — Fehler jetzt nachstellen, dann Log teilen.'
+                      : 'Ausführliches Log aus.'),
+                  behavior: SnackBarBehavior.floating));
+              }
+            },
           ),
           IconButton(
             icon: const Icon(Icons.copy_rounded, color: cTextSecondary, size: 20),

@@ -179,20 +179,34 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           // dreimal parallel — daher die beobachteten Doppel-/Dreifachscans.
           if (_tagProcessing) return;
           _tagProcessing = true;
+          AppLogger.section('NFC-SCAN');
           try {
             final ndef = Ndef.from(tag);
+            AppLogger.info('NFC',
+                'Tag erkannt · NDEF ${ndef == null ? "NICHT lesbar" : "lesbar"}');
             if (ndef == null) {
               await NfcManager.instance.stopSession();
+              AppLogger.warn('NFC',
+                  'Tag unterstuetzt kein NDEF — falscher Tag-Typ oder beschaedigt.');
               setState(() => _statusText = AppLocalizations.of(context).verifyErrNoNdef);
               return;
             }
 
             final ndefMessage = await ndef.read();
             if (ndefMessage == null || ndefMessage.records.isEmpty) {
+              // GRUND mitschreiben statt nur "leer": Ein unbeschriebener Tag
+              // ist etwas anderes als ein Tag, dessen Inhalt das System schon
+              // abgegriffen hat (App-Auswahldialog) oder der zu frueh vom
+              // Geraet genommen wurde.
+              AppLogger.warn('NFC',
+                  'Tag ohne Inhalt — ${ndefMessage == null ? "Lesen lieferte NICHTS zurueck (Tag zu frueh entfernt oder vom System bereits verarbeitet)" : "NDEF vorhanden, aber 0 Datensaetze (Tag unbeschrieben)"}.');
               await NfcManager.instance.stopSession();
               setState(() => _statusText = AppLocalizations.of(context).verifyErrTagEmpty);
               return;
             }
+            AppLogger.info('NFC',
+                'NDEF gelesen: ${ndefMessage.records.length} Datensatz/-saetze, '
+                '${ndefMessage.records.first.payload.length} Byte');
 
             final payload = ndefMessage.records.first.payload;
             if (payload.isEmpty) {
@@ -217,6 +231,9 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
               // SICHERHEITS-CHECK (Kompakt + Legacy)
               final result = BadgeSecurity.verify(tagData);
+              AppLogger.info('NFC',
+                  'Signaturpruefung: ${result.isValid ? "gueltig" : "UNGUELTIG"} '
+                  '(Version ${result.version})${result.isValid ? "" : " — ${result.message}"}');
               if (!result.isValid) {
                 setState(() {
                   _statusText = AppLocalizations.of(context).verifyErrPrefix(result.message);
@@ -233,11 +250,13 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
               tagData['delivery'] = 'nfc';
               _processFoundTagData(tagData: tagData, verifyResult: result);
 
-            } catch (e) {
+            } catch (e, st) {
+              AppLogger.error('NFC', 'Tag-Inhalt nicht auswertbar (kein gueltiges JSON?)', e, st);
               await NfcManager.instance.stopSession();
               setState(() => _statusText = AppLocalizations.of(context).verifyErrInvalidTag(e.toString()));
             }
-          } catch (e) {
+          } catch (e, st) {
+            AppLogger.error('NFC', 'Lesefehler beim Tag', e, st);
             await NfcManager.instance.stopSession();
             setState(() => _statusText = AppLocalizations.of(context).verifyErrReadError(e.toString()));
           } finally {

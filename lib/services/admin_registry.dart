@@ -214,7 +214,7 @@ class AdminRegistry {
         }
       }
     } catch (e) {
-      AppLogger.debug('AdminRegistry', 'Relay-Fetch Fehler: $e');
+      AppLogger.warn('AdminRegistry', 'Relay-Fetch Fehler: $e');
 
     }
 
@@ -255,7 +255,7 @@ class AdminRegistry {
         AppLogger.debug('AdminRegistry', 'Bootstrap Phase: Frage Relays nach Super-Admin ($superAdminHex)');
 
       } catch (e) {
-        AppLogger.debug('AdminRegistry', 'Ungültiger Super-Admin npub: $e');
+        AppLogger.warn('AdminRegistry', 'Ungültiger Super-Admin npub: $e');
 
         return null;
       }
@@ -304,12 +304,12 @@ class AdminRegistry {
           }
         }
       } catch (e) {
-        AppLogger.debug('AdminRegistry', '$relayUrl fehlgeschlagen: $e');
+        AppLogger.warn('AdminRegistry', '$relayUrl fehlgeschlagen: $e');
         continue; // Nächsten Relay versuchen
       }
     }
 
-    AppLogger.debug('AdminRegistry', 'Kein Relay erreichbar');
+    AppLogger.warn('AdminRegistry', 'Kein Relay erreichbar');
 
     return null;
   }
@@ -413,7 +413,7 @@ class AdminRegistry {
                 // Sammeln aller Admins aus allen Events
                 collectedAdmins.addAll(adminsInEvent);
               } catch (e) {
-                AppLogger.debug('AdminRegistry', 'Content-Parse Fehler: $e');
+                AppLogger.warn('AdminRegistry', 'Content-Parse Fehler: $e');
 
               }
             } 
@@ -421,7 +421,7 @@ class AdminRegistry {
               if (!completer.isCompleted) completer.complete(collectedAdmins);
             }
           } catch (e) {
-            AppLogger.debug('AdminRegistry', 'Message-Parse Fehler: $e');
+            AppLogger.warn('AdminRegistry', 'Message-Parse Fehler: $e');
 
           }
         },
@@ -660,7 +660,7 @@ class AdminRegistry {
           return 0;
         }
       } catch (e) {
-        AppLogger.debug('AdminRegistry', 'Recover von $relayUrl fehlgeschlagen: $e');
+        AppLogger.warn('AdminRegistry', 'Recover von $relayUrl fehlgeschlagen: $e');
       }
     }
     return -1; // kein Relay hat geantwortet
@@ -770,12 +770,12 @@ class AdminRegistry {
           AppLogger.debug('AdminRegistry', 'Event an $relayUrl bestätigt ✓');
         } else {
           errors.add('$relayUrl: Keine Bestätigung erhalten');
-          AppLogger.debug('AdminRegistry', '$relayUrl: Event gesendet aber nicht bestätigt');
+          AppLogger.warn('AdminRegistry', '$relayUrl: Event gesendet aber nicht bestätigt');
         }
 
       } catch (e) {
         errors.add('$relayUrl: $e');
-        AppLogger.debug('AdminRegistry', '$relayUrl fehlgeschlagen: $e');
+        AppLogger.warn('AdminRegistry', '$relayUrl fehlgeschlagen: $e');
       }
     }
 

@@ -322,7 +322,7 @@ class BackupService {
       );
       return true;
     } catch (e) {
-      AppLogger.debug('App', "Backup Fehler: $e");
+      AppLogger.warn('App', "Backup Fehler: $e");
       if (context.mounted) {
         Navigator.pop(context); // Ladeindikator weg
         ScaffoldMessenger.of(context).showSnackBar(
@@ -656,7 +656,7 @@ class BackupService {
         return false;
       }
     } catch (e) {
-      AppLogger.debug('App', "Import Fehler: $e");
+      AppLogger.warn('App', "Import Fehler: $e");
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).backupImportFailed(e.toString())), backgroundColor: Colors.red),

@@ -13,6 +13,7 @@
 // Neustart noch anzeigen und teilen kann. Ringpuffer-begrenzt.
 // ============================================
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Ein einzelner Diagnose-Eintrag.
 class LogEntry {
   final DateTime time;
-  final String level; // INFO | WARN | ERROR
+  final String level; // DEBUG | INFO | SEC | WARN | ERROR
   final String tag;
   final String message;
 
@@ -42,23 +43,45 @@ class LogEntry {
 
   String format() {
     String two(int n) => n.toString().padLeft(2, '0');
-    final t = '${two(time.hour)}:${two(time.minute)}:${two(time.second)}';
-    return '$t  $level  [$tag] $message';
+    final t = '${two(time.day)}.${two(time.month)} ${two(time.hour)}:'
+        '${two(time.minute)}:${two(time.second)}';
+    return '$t  ${level.padRight(5)} [$tag] $message';
   }
 }
 
 class AppLogger {
   // ── Persistenter Diagnose-Puffer ──
   static const String _prefsKey = 'diagnostic_log';
-  static const int _maxEntries = 300;
+  static const String _prefsVerboseKey = 'diagnostic_verbose';
+  // 800 statt 300: Mit eingeschaltetem Ausfuehrlich-Modus fuellt sich der
+  // Puffer schnell — ein kompletter Meetup-Abend muss reinpassen.
+  static const int _maxEntries = 800;
   static final List<LogEntry> _buffer = [];
   static bool _loaded = false;
+
+  /// AUSFUEHRLICH-MODUS: Wenn an, landen auch debug()-Meldungen im Puffer.
+  /// Standard aus, damit der Alltag nicht zugemuellt wird — vor dem
+  /// Nachstellen eines Fehlers einschalten (Einstellungen -> Diagnose-Log).
+  static bool _verbose = false;
+  static bool get isVerbose => _verbose;
+
+  static Future<void> setVerbose(bool on) async {
+    _verbose = on;
+    _record('INFO', 'Log', on
+        ? 'Ausfuehrliches Log EINGESCHALTET — auch Detailmeldungen werden erfasst.'
+        : 'Ausfuehrliches Log ausgeschaltet.');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_prefsVerboseKey, on);
+    } catch (_) {}
+  }
 
   /// Beim App-Start einmal aufrufen, um gespeicherte Logs zu laden.
   static Future<void> init() async {
     if (_loaded) return;
     try {
       final prefs = await SharedPreferences.getInstance();
+      _verbose = prefs.getBool(_prefsVerboseKey) ?? false;
       final raw = prefs.getString(_prefsKey);
       if (raw != null) {
         final list = jsonDecode(raw) as List;
@@ -68,6 +91,16 @@ class AppLogger {
       }
     } catch (_) {/* korrupter Puffer -> leer starten */}
     _loaded = true;
+  }
+
+  static Timer? _persistTimer;
+
+  /// Schreiben wird gebuendelt: Bei jedem Eintrag den ganzen Puffer zu
+  /// serialisieren waere im Ausfuehrlich-Modus eine Bremse. Stattdessen
+  /// wird 2 Sekunden nach der letzten Meldung EINMAL gespeichert.
+  static void _schedulePersist() {
+    _persistTimer?.cancel();
+    _persistTimer = Timer(const Duration(seconds: 2), _persist);
   }
 
   static Future<void> _persist() async {
@@ -85,7 +118,7 @@ class AppLogger {
     if (_buffer.length > _maxEntries) {
       _buffer.removeRange(0, _buffer.length - _maxEntries);
     }
-    _persist();
+    _schedulePersist();
   }
 
   /// Aktuelle Log-Einträge (neueste zuletzt).
@@ -105,12 +138,19 @@ class AppLogger {
 
   // ── Log-Level ──
 
+  /// Detail-Meldung. Landet nur im Puffer, wenn der Ausfuehrlich-Modus an
+  /// ist — sonst nur in der Debug-Konsole.
+  /// (Vorher verschwanden diese Meldungen im Release SPURLOS; genau die
+  /// Ketten, die man zur Fehlersuche braucht, fehlten deshalb im Log.)
   static void debug(String tag, String message) {
     if (kDebugMode) print('[$tag] $message');
+    if (_verbose) _record('DEBUG', tag, message);
   }
 
+  /// Normale Ablauf-Meldung — landet IMMER im Puffer.
   static void info(String tag, String message) {
     if (kDebugMode) print('[$tag] $message');
+    _record('INFO', tag, message);
   }
 
   static void warn(String tag, String message) {
@@ -118,16 +158,54 @@ class AppLogger {
     _record('WARN', tag, message);
   }
 
-  static void error(String tag, String message, [Object? error]) {
+  static void error(String tag, String message, [Object? error, StackTrace? stack]) {
     if (kDebugMode) {
       print('[ERROR:$tag] $message');
       if (error != null) print('[ERROR:$tag] $error');
+      if (stack != null) print(stack.toString());
     }
-    _record('ERROR', tag, error != null ? '$message ($error)' : message);
+    // Fehlertyp IMMER mitschreiben — "hat nicht geklappt" ohne Ursache
+    // ist der Grund, warum Logs bisher nichts wert waren.
+    final detail = error != null ? '$message — ${error.runtimeType}: $error' : message;
+    _record('ERROR', tag, detail);
+    // Erste Stack-Zeile hilft beim Einordnen, ohne das Log zu fluten.
+    if (stack != null && _verbose) {
+      final first = stack.toString().split('\n').take(3).join(' | ');
+      _record('DEBUG', tag, 'Stack: $first');
+    }
   }
 
+  /// Sicherheitsrelevantes Ereignis — landet IMMER im Puffer.
   static void security(String tag, String message) {
     if (kDebugMode) print('[SEC:$tag] $message');
+    _record('SEC', tag, message);
+  }
+
+  /// Trennlinie im Log — markiert den Beginn eines Ablaufs (App-Start,
+  /// Scan, Session-Erstellung). Macht Fehlerketten im Log auffindbar.
+  static void section(String title) {
+    _record('INFO', 'ooo', '───── $title ─────');
+  }
+
+  /// Misst die Dauer eines Ablaufs und protokolliert Erfolg ODER Fehler
+  /// mit Ursache. Ersetzt das Muster "try { ... } catch (_) {}", bei dem
+  /// Fehler spurlos verschwinden.
+  static Future<T?> measure<T>(
+    String tag,
+    String label,
+    Future<T> Function() action, {
+    bool rethrowError = false,
+  }) async {
+    final sw = Stopwatch()..start();
+    try {
+      final result = await action();
+      debug(tag, '$label ok (${sw.elapsedMilliseconds} ms)');
+      return result;
+    } catch (e, st) {
+      error(tag, '$label FEHLGESCHLAGEN nach ${sw.elapsedMilliseconds} ms', e, st);
+      if (rethrowError) rethrow;
+      return null;
+    }
   }
 
   /// Diagnose-Ereignis: landet IMMER (auch Release) im persistenten

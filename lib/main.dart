@@ -12,6 +12,7 @@ import 'services/promotion_claim_service.dart';
 import 'services/locale_controller.dart';
 import 'services/widget_service.dart';
 import 'services/app_logger.dart';
+import 'services/diagnostics_service.dart';
 
 /// Wird vom Aktualisieren-Rädchen des Homescreen-Widgets ausgelöst:
 /// läuft im HINTERGRUND (ohne die App zu öffnen), holt frische Daten
@@ -27,6 +28,10 @@ Future<void> widgetBackgroundCallback(Uri? uri) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLogger.init(); // persistente Diagnose-Logs laden
+  // Umgebungs-Steckbrief ins Log — ohne diese Angaben ist ein Bugreport
+  // kaum auswertbar (siehe Feldtest: Geraeteunterschiede blieben lange
+  // unerkannt). Laeuft im Hintergrund, blockiert den Start nicht.
+  DiagnosticsService.logEnvironment();
 
   // Hintergrund-Callback fürs Widget-Aktualisieren registrieren
   HomeWidget.registerInteractivityCallback(widgetBackgroundCallback);

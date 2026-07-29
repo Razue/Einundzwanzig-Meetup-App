@@ -340,7 +340,7 @@ class ReputationPublisher {
         AppLogger.debug('ReputationPublisher', 'Event an $relayUrl gesendet ✓');
 
       } catch (e) {
-        AppLogger.debug('ReputationPublisher', '$relayUrl fehlgeschlagen: $e');
+        AppLogger.warn('ReputationPublisher', '$relayUrl fehlgeschlagen: $e');
       }
     }
 
@@ -377,7 +377,7 @@ class ReputationPublisher {
         final result = await _fetchFromSingleRelay(relayUrl, pubkeyHex);
         if (result != null) return result;
       } catch (e) {
-        AppLogger.debug('ReputationPublisher', '$relayUrl Fetch fehlgeschlagen: $e');
+        AppLogger.warn('ReputationPublisher', '$relayUrl Fetch fehlgeschlagen: $e');
         continue;
       }
     }
@@ -423,7 +423,7 @@ class ReputationPublisher {
 
               // Signatur prüfen
               if (!event.isValid()) {
-                AppLogger.debug('ReputationPublisher', 'Ungültige Signatur von $relayUrl');
+                AppLogger.warn('ReputationPublisher', 'Ungültige Signatur von $relayUrl');
 
                 return;
               }
@@ -439,14 +439,14 @@ class ReputationPublisher {
                 );
                 if (!completer.isCompleted) completer.complete(repEvent);
               } catch (e) {
-                AppLogger.debug('ReputationPublisher', 'Content-Parse Fehler: $e');
+                AppLogger.warn('ReputationPublisher', 'Content-Parse Fehler: $e');
 
               }
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(null);
             }
           } catch (e) {
-            AppLogger.debug('ReputationPublisher', 'Message-Parse Fehler: $e');
+            AppLogger.warn('ReputationPublisher', 'Message-Parse Fehler: $e');
 
           }
         },
@@ -537,7 +537,7 @@ class ReputationPublisher {
 
       }
     }).catchError((e) {
-      AppLogger.debug('ReputationPublisher', 'Hintergrund-Publish fehlgeschlagen: $e');
+      AppLogger.warn('ReputationPublisher', 'Hintergrund-Publish fehlgeschlagen: $e');
 
     });
   }
