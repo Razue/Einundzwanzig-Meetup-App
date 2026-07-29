@@ -120,13 +120,20 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       //   denied          = App-Berechtigung fehlt
       AppLogger.warn('Organisator',
           'Standort fuer Meetup-Erstellung NICHT ermittelbar: ${locResult.status.name}');
-      if (mounted) _showGpsError(locResult.status);
-      return;
+      // WEICHE PRUEFUNG: Frueher war hier Schluss. Das hat Organisatoren auf
+      // Geraeten ohne Netzwerkortung (z.B. GrapheneOS ohne Play Services)
+      // komplett blockiert — obwohl der Standort hier ohnehin nur den
+      // Meetup-Vorschlag liefert und wer ausserhalb des Radius ist, den
+      // Namen sowieso frei eintippen darf. Der Organisator entscheidet jetzt
+      // selbst, wird aber ueber die Folge aufgeklaert.
+      if (!mounted) return;
+      final weiter = await _askContinueWithoutGps(locResult.status);
+      if (weiter != true) return;
+    } else {
+      AppLogger.diag('Organisator',
+          'Standort erfasst — ${locResult.candidates.length} Meetup(s) im Umkreis bekannt, '
+          '${locResult.withinCreationRadius.length} davon im Erstellungs-Radius.');
     }
-    AppLogger.diag('Organisator',
-        'Standort erfasst — ${locResult.candidates.length} Meetup(s) im Umkreis bekannt, '
-        '${locResult.withinCreationRadius.length} davon im Erstellungs-Radius.');
-
     // Meetups im 10km-Radius um den erfassten Standort.
     // Leer = entweder keines im Radius ODER Portal nicht erreichbar.
     // Beide Fälle führen unten zur manuellen Namenseingabe.
@@ -220,6 +227,54 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     setState(() {
       _sessionExpiry = null;
     });
+  }
+
+  /// Fragt, ob ohne Standort weitergemacht werden soll. Klaert ueber die
+  /// Folge auf: Ohne Organisator-Standort koennen Teilnehmer nicht
+  /// standortgeprueft werden — ihre Badges gelten als ungeprueft.
+  Future<bool?> _askContinueWithoutGps(GpsStatus status) {
+    final t = AppLocalizations.of(context);
+    final msg = status == GpsStatus.denied
+        ? t.gpsDenied
+        : status == GpsStatus.serviceDisabled
+            ? t.gpsDisabled
+            : t.gpsError;
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.location_off_rounded, color: cOrange, size: 20),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.orgGpsSoftTitle,
+              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Text('$msg\n\n${t.orgGpsSoftBody}',
+            style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+        actions: [
+          if (status == GpsStatus.serviceDisabled)
+            TextButton(
+              onPressed: () => MeetupLocationService.openLocationSettings(),
+              child: Text(t.gpsOpenLocationSettings, style: const TextStyle(color: cTextSecondary)),
+            ),
+          if (status == GpsStatus.denied)
+            TextButton(
+              onPressed: () => MeetupLocationService.openAppSettings(),
+              child: Text(t.gpsOpenAppSettings, style: const TextStyle(color: cTextSecondary)),
+            ),
+          TextButton(
+            onPressed: () { Navigator.pop(ctx, false); _startNewSession(); },
+            child: Text(t.gpsRetry, style: const TextStyle(color: cOrange)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.orgGpsSoftContinue,
+                style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showGpsError(GpsStatus status) {

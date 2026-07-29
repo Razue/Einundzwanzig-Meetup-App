@@ -40,7 +40,10 @@ import 'package:nostr/nostr.dart';
 import 'signing_service.dart';
 
 class BadgeSecurity {
-  static const int badgeValidityHours = 6;
+  // 4 statt 6 Stunden: Das Zeitfenster, in dem ein ausgelesener
+  // NFC-Payload weitergereicht werden koennte, wird damit kleiner.
+  // Ein Meetup dauert selten laenger.
+  static const int badgeValidityHours = 4;
 
   // =============================================
   // PUBKEY VALIDIERUNG

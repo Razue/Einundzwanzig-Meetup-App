@@ -2227,5 +2227,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "orgGpsSoftTitle": "¿Continuar sin ubicación?",
+  "orgGpsSoftBody": "Puedes crear el meetup e introducir el nombre tú mismo. Sin ubicación, los asistentes no pueden confirmarse por radio: sus insignias contarán como presencia no verificada.",
+  "orgGpsSoftContinue": "Sin ubicación",
+  "badgeUnverified": "Presencia no verificada",
+  "badgeUnverifiedInfo": "No había ubicación disponible al recogerla. La insignia es válida, pero su prueba de presencia no está confirmada adicionalmente.",
+  "verifyClose": "CERRAR",
+  "verifyOpenWallet": "ABRIR CARTERA"
 }

@@ -176,6 +176,12 @@ Verifizierbar über die Einundzwanzig Meetup App
                     valueColor: b.isClaimed ? cGreen : cRed),
                 if (b.isRetroactive)
                   _row(AppLocalizations.of(context).badgeNote, AppLocalizations.of(context).badgeClaimedLater, valueColor: cOrange),
+                // Praesenz-Kennzeichnung: nur anzeigen, wenn NICHT geprueft —
+                // der Normalfall braucht keinen Hinweis.
+                if (!b.presenceVerified)
+                  _row(AppLocalizations.of(context).badgeUnverified,
+                      AppLocalizations.of(context).badgeUnverifiedInfo,
+                      valueColor: cTextTertiary),
               ],
             ),
 

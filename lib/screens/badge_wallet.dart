@@ -784,11 +784,21 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                           color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text("#${index + 1}",
-                            style: const TextStyle(
-                                color: cOrange,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold)),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          // Kennzeichnung: Praesenz konnte beim Sammeln nicht
+                          // per Standort bestaetigt werden. Der Badge ist
+                          // gueltig, zaehlt fuer die Reputation aber weniger.
+                          if (!badge.presenceVerified) ...[
+                            const Icon(Icons.location_off_rounded,
+                                color: cTextTertiary, size: 11),
+                            const SizedBox(width: 4),
+                          ],
+                          Text("#${index + 1}",
+                              style: const TextStyle(
+                                  color: cOrange,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold)),
+                        ]),
                       ),
                     ],
                   ),

@@ -4652,4 +4652,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String walletCleanupDone(int count) {
     return '$count duplicados eliminados.';
   }
+
+  @override
+  String get orgGpsSoftTitle => '¿Continuar sin ubicación?';
+
+  @override
+  String get orgGpsSoftBody =>
+      'Puedes crear el meetup e introducir el nombre tú mismo. Sin ubicación, los asistentes no pueden confirmarse por radio: sus insignias contarán como presencia no verificada.';
+
+  @override
+  String get orgGpsSoftContinue => 'Sin ubicación';
+
+  @override
+  String get badgeUnverified => 'Presencia no verificada';
+
+  @override
+  String get badgeUnverifiedInfo =>
+      'No había ubicación disponible al recogerla. La insignia es válida, pero su prueba de presencia no está confirmada adicionalmente.';
+
+  @override
+  String get verifyClose => 'CERRAR';
+
+  @override
+  String get verifyOpenWallet => 'ABRIR CARTERA';
 }

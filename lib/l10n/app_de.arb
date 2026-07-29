@@ -2249,5 +2249,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "orgGpsSoftTitle": "Ohne Standort fortfahren?",
+  "orgGpsSoftBody": "Du kannst das Meetup trotzdem erstellen und den Namen selbst eintragen. Ohne Standort können Teilnehmer allerdings nicht per Umkreis bestätigt werden — ihre Badges gelten dann als ungeprüfte Präsenz.",
+  "orgGpsSoftContinue": "Ohne Standort",
+  "badgeUnverified": "Präsenz ungeprüft",
+  "badgeUnverifiedInfo": "Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.",
+  "verifyClose": "SCHLIESSEN",
+  "verifyOpenWallet": "ZUR WALLET"
 }

@@ -4624,4 +4624,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String walletCleanupDone(int count) {
     return 'Removed $count duplicates.';
   }
+
+  @override
+  String get orgGpsSoftTitle => 'Continue without location?';
+
+  @override
+  String get orgGpsSoftBody =>
+      'You can still create the meetup and enter the name yourself. Without a location, attendees cannot be confirmed by radius — their badges will count as unverified presence.';
+
+  @override
+  String get orgGpsSoftContinue => 'Without location';
+
+  @override
+  String get badgeUnverified => 'Presence unverified';
+
+  @override
+  String get badgeUnverifiedInfo =>
+      'No location was available when collecting. The badge is valid, but its presence proof is not additionally confirmed.';
+
+  @override
+  String get verifyClose => 'CLOSE';
+
+  @override
+  String get verifyOpenWallet => 'OPEN WALLET';
 }

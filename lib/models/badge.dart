@@ -54,6 +54,14 @@ class MeetupBadge {
   final int claimTimestamp;     // Unix-Timestamp des Claims
   final bool isRetroactive;     // true = nachträglich geclaimed (reduzierter Vertrauenswert)
   final bool isOrganizer;       // true = Organisator-Marker-Badge (zählt NICHT zum Trust Score)
+  /// PRAESENZ-PRUEFUNG beim Sammeln:
+  /// true  = Standort war ermittelbar und lag im erlaubten Umkreis
+  /// false = Standort war NICHT ermittelbar (z.B. Geraet ohne
+  ///         Netzwerkortung, drinnen kein Satellitenfix). Das Badge ist
+  ///         gueltig, sein Praesenz-Nachweis aber ungeprueft.
+  /// Aeltere Badges (vor dieser Version) gelten als geprueft, weil damals
+  /// ohne Standort gar kein Badge vergeben wurde.
+  final bool presenceVerified;
   final double lat;             // GPS-Breitengrad des Erstellungsorts (0 = unbekannt)
   final double lng;             // GPS-Längengrad des Erstellungsorts (0 = unbekannt)
 
@@ -78,6 +86,7 @@ class MeetupBadge {
     this.claimPubkey = '',
     this.claimTimestamp = 0,
     this.isRetroactive = false,
+    this.presenceVerified = true,
     this.isOrganizer = false,
     this.lat = 0,
     this.lng = 0,
@@ -170,6 +179,7 @@ class MeetupBadge {
       'claimPubkey': claimPubkey,
       'claimTimestamp': claimTimestamp,
       'isRetroactive': isRetroactive,
+      'presenceVerified': presenceVerified,
       'isOrganizer': isOrganizer,
       'lat': lat,
       'lng': lng,
@@ -198,6 +208,7 @@ class MeetupBadge {
       claimPubkey: json['claimPubkey'] as String? ?? '',
       claimTimestamp: json['claimTimestamp'] as int? ?? 0,
       isRetroactive: json['isRetroactive'] as bool? ?? false,
+      presenceVerified: json['presenceVerified'] as bool? ?? true,
       isOrganizer: json['isOrganizer'] as bool? ?? false,
       lat: (json['lat'] as num?)?.toDouble() ?? 0,
       lng: (json['lng'] as num?)?.toDouble() ?? 0,
@@ -214,6 +225,7 @@ class MeetupBadge {
     bool? isOrganizer,
     double? lat,
     double? lng,
+    bool presenceVerified = true,
   }) {
     return MeetupBadge(
       id: id,
@@ -238,6 +250,7 @@ class MeetupBadge {
       isOrganizer: isOrganizer ?? this.isOrganizer,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
+      presenceVerified: presenceVerified,
     );
   }
 
@@ -264,6 +277,7 @@ class MeetupBadge {
     String? claimPubkey,
     int? claimTimestamp,
     bool? isRetroactive,
+    bool? presenceVerified,
     bool? isOrganizer,
     double? lat,
     double? lng,
@@ -287,6 +301,7 @@ class MeetupBadge {
       claimPubkey: claimPubkey ?? this.claimPubkey,
       claimTimestamp: claimTimestamp ?? this.claimTimestamp,
       isRetroactive: isRetroactive ?? this.isRetroactive,
+      presenceVerified: presenceVerified ?? this.presenceVerified,
       isOrganizer: isOrganizer ?? this.isOrganizer,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
@@ -521,6 +536,7 @@ class MeetupBadge {
         'sig_version': b.sigVersion,
         'is_bound': b.isFullyBound,
         'is_retroactive': b.isRetroactive,
+        'presence_verified': b.presenceVerified,
         if (b.hasCryptoProof) ...{
           'sig': b.sig,
           'sig_id': b.sigId,

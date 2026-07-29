@@ -8505,6 +8505,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} Duplikate entfernt.'**
   String walletCleanupDone(int count);
+
+  /// No description provided for @orgGpsSoftTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Standort fortfahren?'**
+  String get orgGpsSoftTitle;
+
+  /// No description provided for @orgGpsSoftBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst das Meetup trotzdem erstellen und den Namen selbst eintragen. Ohne Standort können Teilnehmer allerdings nicht per Umkreis bestätigt werden — ihre Badges gelten dann als ungeprüfte Präsenz.'**
+  String get orgGpsSoftBody;
+
+  /// No description provided for @orgGpsSoftContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne Standort'**
+  String get orgGpsSoftContinue;
+
+  /// No description provided for @badgeUnverified.
+  ///
+  /// In de, this message translates to:
+  /// **'Präsenz ungeprüft'**
+  String get badgeUnverified;
+
+  /// No description provided for @badgeUnverifiedInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.'**
+  String get badgeUnverifiedInfo;
+
+  /// No description provided for @verifyClose.
+  ///
+  /// In de, this message translates to:
+  /// **'SCHLIESSEN'**
+  String get verifyClose;
+
+  /// No description provided for @verifyOpenWallet.
+  ///
+  /// In de, this message translates to:
+  /// **'ZUR WALLET'**
+  String get verifyOpenWallet;
 }
 
 class _AppLocalizationsDelegate

@@ -4668,4 +4668,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String walletCleanupDone(int count) {
     return '$count Duplikate entfernt.';
   }
+
+  @override
+  String get orgGpsSoftTitle => 'Ohne Standort fortfahren?';
+
+  @override
+  String get orgGpsSoftBody =>
+      'Du kannst das Meetup trotzdem erstellen und den Namen selbst eintragen. Ohne Standort können Teilnehmer allerdings nicht per Umkreis bestätigt werden — ihre Badges gelten dann als ungeprüfte Präsenz.';
+
+  @override
+  String get orgGpsSoftContinue => 'Ohne Standort';
+
+  @override
+  String get badgeUnverified => 'Präsenz ungeprüft';
+
+  @override
+  String get badgeUnverifiedInfo =>
+      'Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.';
+
+  @override
+  String get verifyClose => 'SCHLIESSEN';
+
+  @override
+  String get verifyOpenWallet => 'ZUR WALLET';
 }

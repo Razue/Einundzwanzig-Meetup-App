@@ -362,8 +362,16 @@ class TrustScoreService {
       final ageWeeks = DateTime.now().difference(badge.date).inDays / 7.0;
       final decayFactor = pow(0.5, ageWeeks / TrustConfig.halfLifeWeeks).toDouble();
 
-      // 4. TOTAL: base × co_attestor × signer × decay
-      final totalValue = 1.0 * coAttestorBonus * signerBonus * decayFactor;
+      // 5. PRAESENZ-FAKTOR: Konnte der Standort beim Sammeln geprueft werden?
+      //    Ein ungepruefter Nachweis (Geraet ohne Netzwerkortung, kein
+      //    Satellitenfix drinnen) ist NICHT wertlos — der Tag musste
+      //    physisch beruehrt werden. Er zaehlt aber weniger als ein
+      //    Badge, dessen Praesenz zusaetzlich per Standort belegt ist.
+      final presenceFactor = badge.presenceVerified ? 1.0 : 0.7;
+
+      // 6. TOTAL: base × co_attestor × signer × decay × praesenz
+      final totalValue =
+          1.0 * coAttestorBonus * signerBonus * decayFactor * presenceFactor;
 
       badgeValues.add(BadgeValue(
         badgeId: badge.id,

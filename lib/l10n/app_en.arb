@@ -2227,5 +2227,12 @@
         "type": "int"
       }
     }
-  }
+  },
+  "orgGpsSoftTitle": "Continue without location?",
+  "orgGpsSoftBody": "You can still create the meetup and enter the name yourself. Without a location, attendees cannot be confirmed by radius — their badges will count as unverified presence.",
+  "orgGpsSoftContinue": "Without location",
+  "badgeUnverified": "Presence unverified",
+  "badgeUnverifiedInfo": "No location was available when collecting. The badge is valid, but its presence proof is not additionally confirmed.",
+  "verifyClose": "CLOSE",
+  "verifyOpenWallet": "OPEN WALLET"
 }
