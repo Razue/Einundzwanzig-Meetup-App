@@ -2237,5 +2237,17 @@
   "writerValidity": "Valid for 4 hours",
   "apPickPortalTitle": "Select meetup",
   "apPickPortalHint": "Pick the meetup you are currently at. Its stored location serves as a reference for attendees — a wrong pick distorts their confirmation.",
-  "apEnterManually": "Enter name manually"
+  "apEnterManually": "Enter name manually",
+  "apCustomNeedsGpsTitle": "Location required",
+  "apCustomNeedsGpsBody": "A meetup with a custom name can only be created if your location is available — it is the only reference point for verifying attendance.\n\nThree options: step outside and try again, pick a meetup from the portal instead, or let someone else present with working location create the badge.",
+  "apNoRefTitle": "No reference point",
+  "apNoRefContinue": "Create anyway",
+  "apNoRefBody": "No location is stored for „{city}“ in the portal, and your own location is unavailable. Attendance therefore cannot be confirmed — the badges will count less.\n\nBetter: enable location, or let someone else present create the badge.",
+  "@apNoRefBody": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  }
 }

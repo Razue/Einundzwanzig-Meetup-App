@@ -4657,4 +4657,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apEnterManually => 'Enter name manually';
+
+  @override
+  String get apCustomNeedsGpsTitle => 'Location required';
+
+  @override
+  String get apCustomNeedsGpsBody =>
+      'A meetup with a custom name can only be created if your location is available — it is the only reference point for verifying attendance.\n\nThree options: step outside and try again, pick a meetup from the portal instead, or let someone else present with working location create the badge.';
+
+  @override
+  String get apNoRefTitle => 'No reference point';
+
+  @override
+  String get apNoRefContinue => 'Create anyway';
+
+  @override
+  String apNoRefBody(String city) {
+    return 'No location is stored for „$city“ in the portal, and your own location is unavailable. Attendance therefore cannot be confirmed — the badges will count less.\n\nBetter: enable location, or let someone else present create the badge.';
+  }
 }

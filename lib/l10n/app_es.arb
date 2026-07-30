@@ -2237,5 +2237,17 @@
   "writerValidity": "Válido durante 4 horas",
   "apPickPortalTitle": "Seleccionar meetup",
   "apPickPortalHint": "Elige el meetup en el que estás ahora. Su ubicación sirve de referencia para los asistentes: una elección errónea falsea su confirmación.",
-  "apEnterManually": "Introducir nombre"
+  "apEnterManually": "Introducir nombre",
+  "apCustomNeedsGpsTitle": "Ubicación necesaria",
+  "apCustomNeedsGpsBody": "Un meetup con nombre propio solo puede crearse si tu ubicación está disponible: es el único punto de referencia para verificar la asistencia.\n\nTres opciones: sal fuera e inténtalo de nuevo, elige un meetup del portal, o deja que otra persona presente con ubicación funcional cree la insignia.",
+  "apNoRefTitle": "Sin punto de referencia",
+  "apNoRefContinue": "Crear igualmente",
+  "apNoRefBody": "No hay ubicación registrada para „{city}“ en el portal y la tuya no está disponible. Por eso no se puede confirmar la asistencia: las insignias contarán menos.\n\nMejor: habilita la ubicación o deja que otra persona presente cree la insignia.",
+  "@apNoRefBody": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  }
 }

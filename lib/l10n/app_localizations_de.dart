@@ -4701,4 +4701,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apEnterManually => 'Name selbst eingeben';
+
+  @override
+  String get apCustomNeedsGpsTitle => 'Standort nötig';
+
+  @override
+  String get apCustomNeedsGpsBody =>
+      'Ein Meetup mit eigenem Namen lässt sich nur erstellen, wenn dein Standort ermittelbar ist — er ist der einzige Bezugspunkt, an dem die Anwesenheit der Teilnehmer geprüft werden kann.\n\nDrei Wege: Geh kurz vor die Tür und versuche es erneut, wähle stattdessen ein Meetup aus dem Portal, oder lass jemand anderen vor Ort mit funktionierender Ortung das Badge erstellen.';
+
+  @override
+  String get apNoRefTitle => 'Kein Bezugspunkt';
+
+  @override
+  String get apNoRefContinue => 'Trotzdem erstellen';
+
+  @override
+  String apNoRefBody(String city) {
+    return 'Für „$city“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.';
+  }
 }

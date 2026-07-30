@@ -160,15 +160,36 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       // Organisator waehlt sein Meetup aus der Liste; dessen Koordinaten
       // dienen dann als Referenz. Der eigene Standort ist dafuer gar nicht
       // noetig — er war nur eine Vorauswahl-Hilfe.
+      final hasMeasuredGps = !(orgLat == 0 && orgLng == 0);
       final fromPortal = await _pickAnyPortalMeetup();
       if (fromPortal == null) {
-        // Bewusst kein Portal-Meetup -> Freitext (z.B. neues Meetup, das
-        // im Portal noch nicht existiert).
+        // FREITEXT-MEETUP (steht nicht im Portal).
+        // REGEL: Nur mit EIGENEM, gemessenem Standort erlaubt. Sonst gaebe es
+        // ueberhaupt keinen Bezugspunkt — weder vom Organisator noch aus dem
+        // Portal — und niemandes Anwesenheit waere pruefbar. Ein frei
+        // benanntes Meetup ohne jeden Ortsbezug ist beliebig behauptbar.
+        if (!hasMeasuredGps) {
+          AppLogger.warn('Organisator',
+              'Freitext-Meetup ohne eigenen Standort abgelehnt — kein Bezugspunkt moeglich.');
+          if (mounted) await _showCustomNeedsLocation();
+          return;
+        }
         final manualName = await _askMeetupName();
         if (manualName == null || manualName.trim().isEmpty) return;
         meetupId = manualName.trim();
         meetupCountry = '';
       } else {
+        // PORTAL-MEETUP OHNE KOORDINATEN: Auch hier entsteht kein
+        // Bezugspunkt. Ohne eigenen Standort nur nach ausdruecklicher
+        // Bestaetigung — die Badges zaehlen dann weniger.
+        if (!hasMeasuredGps && fromPortal.lat == 0 && fromPortal.lng == 0) {
+          AppLogger.warn('Organisator',
+              'Meetup "${fromPortal.city}" hat keine Portal-Koordinaten und es gibt '
+              'keinen eigenen Standort — Rueckfrage an den Organisator.');
+          if (!mounted) return;
+          final ok = await _confirmNoReference(fromPortal.city);
+          if (ok != true) return;
+        }
         meetupId = fromPortal.city;
         meetupCountry = fromPortal.country;
         // BEWUSST werden die Portal-Koordinaten NICHT als eigener Standort
@@ -347,6 +368,70 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   /// Fragt den Meetup-Namen ab, wenn kein Portal-Meetup in der Nähe ist.
   /// Der GPS-Standort wurde bereits erfasst und wird als Veranstaltungsort
   /// genutzt — hier fehlt nur der Name.
+  /// Erklaert, warum ein selbst benanntes Meetup einen eigenen Standort
+  /// braucht — und nennt die drei Auswege.
+  Future<void> _showCustomNeedsLocation() {
+    final t = AppLocalizations.of(context);
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.wrong_location_rounded, color: cOrange, size: 20),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.apCustomNeedsGpsTitle,
+              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Text(t.apCustomNeedsGpsBody,
+            style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.45)),
+        actions: [
+          TextButton(
+            onPressed: () => MeetupLocationService.openLocationSettings(),
+            child: Text(t.gpsOpenLocationSettings, style: const TextStyle(color: cTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () { Navigator.pop(ctx); _startNewSession(); },
+            child: Text(t.gpsRetry,
+                style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Rueckfrage, wenn weder eigener Standort noch Portal-Koordinaten
+  /// vorliegen: Badges sind dann nicht pruefbar und zaehlen weniger.
+  Future<bool?> _confirmNoReference(String city) {
+    final t = AppLocalizations.of(context);
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(children: [
+          const Icon(Icons.location_off_rounded, color: cOrange, size: 20),
+          const SizedBox(width: 10),
+          Expanded(child: Text(t.apNoRefTitle,
+              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+        ]),
+        content: Text(t.apNoRefBody(city),
+            style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.45)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.dialogCancel, style: const TextStyle(color: cTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.apNoRefContinue,
+                style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Auswahl aus ALLEN Portal-Meetups (durchsuchbar) — unabhaengig vom
   /// eigenen Standort. Gibt null zurueck, wenn der Organisator stattdessen
   /// einen freien Namen eingeben moechte.

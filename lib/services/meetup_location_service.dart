@@ -50,6 +50,21 @@ class MeetupLocationService {
   /// Radius beim Erstellen: welche Meetups gelten als "hier in der Nähe".
   static const double creationRadiusKm = 10.0;
 
+  /// Radius fuer eine ABGELEITETE Referenz (Koordinaten aus der Portal-
+  /// Meetupliste statt vom Organisator vor Ort gemessen).
+  ///
+  /// Warum so grosszuegig: Manche Meetups sind keine Stadt, sondern eine
+  /// REGION — "Westerwald", "Vulkaneifel", "Chiemsee/Chiemgau". Das Portal
+  /// hinterlegt dort einen einzigen Punkt, der Treffpunkt kann 30 km davon
+  /// entfernt liegen. Mit 5 km waeren bei solchen Meetups ALLE Teilnehmer
+  /// dauerhaft abgelehnt. Auch bei Stadt-Meetups zeigt die Portal-Koordinate
+  /// oft auf das Zentrum, waehrend man sich am Rand trifft.
+  ///
+  /// 50 km deckt diese Unschaerfe ab und faengt trotzdem, worauf es ankommt:
+  /// ein versehentlich gewaehltes falsches Meetup (Aschaffenburg statt
+  /// Muenchen sind ~300 km) und das Einloesen aus der Ferne.
+  static const double derivedRadiusKm = 50.0;
+
   /// Holt den aktuellen Standort und ordnet die nächstgelegenen Meetups zu.
   static Future<LocationMeetupResult> resolveLocation() async {
     final loc = await NearbyMeetupService.getCurrentLocation();

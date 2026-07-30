@@ -2259,5 +2259,17 @@
   "writerValidity": "Gültig für 4 Stunden",
   "apPickPortalTitle": "Meetup auswählen",
   "apPickPortalHint": "Wähle das Meetup, an dem du gerade bist. Der hinterlegte Ort dient den Teilnehmern als Anhaltspunkt — ein falscher Eintrag verfälscht ihre Bestätigung.",
-  "apEnterManually": "Name selbst eingeben"
+  "apEnterManually": "Name selbst eingeben",
+  "apCustomNeedsGpsTitle": "Standort nötig",
+  "apCustomNeedsGpsBody": "Ein Meetup mit eigenem Namen lässt sich nur erstellen, wenn dein Standort ermittelbar ist — er ist der einzige Bezugspunkt, an dem die Anwesenheit der Teilnehmer geprüft werden kann.\n\nDrei Wege: Geh kurz vor die Tür und versuche es erneut, wähle stattdessen ein Meetup aus dem Portal, oder lass jemand anderen vor Ort mit funktionierender Ortung das Badge erstellen.",
+  "apNoRefTitle": "Kein Bezugspunkt",
+  "apNoRefContinue": "Trotzdem erstellen",
+  "apNoRefBody": "Für „{city}“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.",
+  "@apNoRefBody": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  }
 }

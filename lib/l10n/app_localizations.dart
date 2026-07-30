@@ -8565,6 +8565,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Name selbst eingeben'**
   String get apEnterManually;
+
+  /// No description provided for @apCustomNeedsGpsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort nötig'**
+  String get apCustomNeedsGpsTitle;
+
+  /// No description provided for @apCustomNeedsGpsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Meetup mit eigenem Namen lässt sich nur erstellen, wenn dein Standort ermittelbar ist — er ist der einzige Bezugspunkt, an dem die Anwesenheit der Teilnehmer geprüft werden kann.\n\nDrei Wege: Geh kurz vor die Tür und versuche es erneut, wähle stattdessen ein Meetup aus dem Portal, oder lass jemand anderen vor Ort mit funktionierender Ortung das Badge erstellen.'**
+  String get apCustomNeedsGpsBody;
+
+  /// No description provided for @apNoRefTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Bezugspunkt'**
+  String get apNoRefTitle;
+
+  /// No description provided for @apNoRefContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Trotzdem erstellen'**
+  String get apNoRefContinue;
+
+  /// No description provided for @apNoRefBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Für „{city}“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.'**
+  String apNoRefBody(String city);
 }
 
 class _AppLocalizationsDelegate

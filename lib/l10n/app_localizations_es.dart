@@ -4685,4 +4685,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get apEnterManually => 'Introducir nombre';
+
+  @override
+  String get apCustomNeedsGpsTitle => 'Ubicación necesaria';
+
+  @override
+  String get apCustomNeedsGpsBody =>
+      'Un meetup con nombre propio solo puede crearse si tu ubicación está disponible: es el único punto de referencia para verificar la asistencia.\n\nTres opciones: sal fuera e inténtalo de nuevo, elige un meetup del portal, o deja que otra persona presente con ubicación funcional cree la insignia.';
+
+  @override
+  String get apNoRefTitle => 'Sin punto de referencia';
+
+  @override
+  String get apNoRefContinue => 'Crear igualmente';
+
+  @override
+  String apNoRefBody(String city) {
+    return 'No hay ubicación registrada para „$city“ en el portal y la tuya no está disponible. Por eso no se puede confirmar la asistencia: las insignias contarán menos.\n\nMejor: habilita la ubicación o deja que otra persona presente cree la insignia.';
+  }
 }
