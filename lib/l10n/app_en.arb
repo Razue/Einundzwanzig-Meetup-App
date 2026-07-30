@@ -2236,6 +2236,6 @@
   "verifyOpenWallet": "OPEN WALLET",
   "writerValidity": "Valid for 4 hours",
   "apPickPortalTitle": "Select meetup",
-  "apPickPortalHint": "Pick your meetup from the portal. This lets attendees be confirmed normally even without your location.",
+  "apPickPortalHint": "Pick the meetup you are currently at. Its stored location serves as a reference for attendees — a wrong pick distorts their confirmation.",
   "apEnterManually": "Enter name manually"
 }

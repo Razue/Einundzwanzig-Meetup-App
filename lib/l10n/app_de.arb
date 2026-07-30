@@ -2258,6 +2258,6 @@
   "verifyOpenWallet": "ZUR WALLET",
   "writerValidity": "Gültig für 4 Stunden",
   "apPickPortalTitle": "Meetup auswählen",
-  "apPickPortalHint": "Wähle dein Meetup aus dem Portal. Dadurch können Teilnehmer trotz fehlendem Standort normal bestätigt werden.",
+  "apPickPortalHint": "Wähle das Meetup, an dem du gerade bist. Der hinterlegte Ort dient den Teilnehmern als Anhaltspunkt — ein falscher Eintrag verfälscht ihre Bestätigung.",
   "apEnterManually": "Name selbst eingeben"
 }

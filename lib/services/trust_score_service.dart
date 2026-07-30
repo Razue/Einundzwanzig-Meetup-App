@@ -391,8 +391,36 @@ class TrustScoreService {
     // Maturity: min(1.0, account_alter_tage / 180)
     final maturityScore = min(1.0, accountAge.inDays / 180.0) * TrustConfig.weightMaturity;
 
-    // Diversity: log2(unique_meetups + 1) × log2(unique_signers + 1)
-    final diversityScore = (log(uniqueMeetups.length + 1) / log(2)) *
+    // ============================================================
+    // DIVERSITY — geografische Reichweite
+    // ============================================================
+    // Diese Groesse belohnt "war in vielen verschiedenen Staedten". Genau
+    // DAS ist aber die Aussage, die bei ungepruefter Praesenz nicht belegt
+    // ist: Ein Badge, dessen Ort nicht bestaetigt werden konnte, taugt nur
+    // eingeschraenkt als Beleg dafuer, in einer weiteren Stadt gewesen zu
+    // sein. Wuerde es voll zaehlen, koennte man ueber ungepruefte Badges
+    // fremder Staedte den Score aufblasen, ohne je dort gewesen zu sein.
+    //
+    // Deshalb: bestaetigte Meetups zaehlen voll, nur ungeprueft belegte
+    // halb. Kein Ausschluss — wer auf einem Geraet ohne Netzwerkortung
+    // sammelt, verliert seine Reichweite nicht, sie wiegt nur weniger.
+    // Die ANGEZEIGTE Meetup-Zahl bleibt unveraendert; gewichtet wird nur
+    // die Punkteberechnung.
+    final verifiedMeetups = trustedBadges
+        .where((b) => b.presenceVerified)
+        .map((b) => b.meetupName)
+        .toSet();
+    final unverifiedOnly = uniqueMeetups.difference(verifiedMeetups);
+    final effectiveDiversity =
+        verifiedMeetups.length + 0.5 * unverifiedOnly.length;
+    if (unverifiedOnly.isNotEmpty) {
+      AppLogger.diag('TrustScore',
+          '${unverifiedOnly.length} Meetup(s) nur ungeprueft belegt — '
+          'zaehlen halb fuer die Reichweite.');
+    }
+
+    // Diversity: log2(gewichtete_meetups + 1) × log2(unique_signers + 1)
+    final diversityScore = (log(effectiveDiversity + 1) / log(2)) *
         (log(max(uniqueSigners.length, 1) + 1) / log(2)) *
         TrustConfig.weightDiversity;
 

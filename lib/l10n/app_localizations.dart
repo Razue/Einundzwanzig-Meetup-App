@@ -8557,7 +8557,7 @@ abstract class AppLocalizations {
   /// No description provided for @apPickPortalHint.
   ///
   /// In de, this message translates to:
-  /// **'Wähle dein Meetup aus dem Portal. Dadurch können Teilnehmer trotz fehlendem Standort normal bestätigt werden.'**
+  /// **'Wähle das Meetup, an dem du gerade bist. Der hinterlegte Ort dient den Teilnehmern als Anhaltspunkt — ein falscher Eintrag verfälscht ihre Bestätigung.'**
   String get apPickPortalHint;
 
   /// No description provided for @apEnterManually.

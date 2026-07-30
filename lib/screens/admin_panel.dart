@@ -171,14 +171,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       } else {
         meetupId = fromPortal.city;
         meetupCountry = fromPortal.country;
-        // Referenz vom Portal uebernehmen, wenn eigener Standort fehlt.
-        if (orgLat == 0 && orgLng == 0 && !(fromPortal.lat == 0 && fromPortal.lng == 0)) {
-          orgLat = fromPortal.lat;
-          orgLng = fromPortal.lng;
-          AppLogger.info('Organisator',
-              'Kein eigener Standort — Referenz aus dem Portal uebernommen '
-              '("${fromPortal.city}"). Teilnehmer koennen dadurch normal geprueft werden.');
-        }
+        // BEWUSST werden die Portal-Koordinaten NICHT als eigener Standort
+        // ausgegeben. Sonst saehe es fuer die Teilnehmer-App wie eine vor Ort
+        // gemessene Referenz aus — und ein Fehlgriff in der Liste (etwa
+        // Muenchen statt Aschaffenburg) wuerde JEDEN Teilnehmer hart
+        // aussperren. Der Gewinn der Auswahl liegt woanders: Das Badge traegt
+        // jetzt einen sauberen Portal-Namen, den die Teilnehmer-App zuverlaessig
+        // aufloest — als ABGELEITETE Referenz, die nie zur Ablehnung fuehrt.
+        AppLogger.info('Organisator',
+            'Kein eigener Standort — Meetup "${fromPortal.city}" aus dem Portal '
+            'gewaehlt. Teilnehmer leiten die Referenz daraus ab.');
       }
     } else {
       // Eines im Radius -> automatisch. Mehrere -> Organisator wählt.

@@ -4653,7 +4653,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apPickPortalHint =>
-      'Pick your meetup from the portal. This lets attendees be confirmed normally even without your location.';
+      'Pick the meetup you are currently at. Its stored location serves as a reference for attendees — a wrong pick distorts their confirmation.';
 
   @override
   String get apEnterManually => 'Enter name manually';

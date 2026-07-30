@@ -676,6 +676,14 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     // ablehnen oder den Check sinnlos machen).
     double refLat = _pendingOrgLat;
     double refLng = _pendingOrgLng;
+    // HERKUNFT der Referenz ist entscheidend fuer die Strenge der Pruefung:
+    //   gemessen  = Organisator stand beim Erstellen VOR ORT (QR-Felder la/lo)
+    //   abgeleitet = aus der Portal-Meetupliste erschlossen
+    // Eine abgeleitete Referenz kann schlicht falsch sein — etwa wenn ein
+    // Organisator ohne Ortung versehentlich das falsche Meetup aus der Liste
+    // waehlt (Aschaffenburg vs. Muenchen). Darauf darf NIEMAND ausgesperrt
+    // werden, deshalb wird bei abgeleiteter Referenz nie hart abgelehnt.
+    var refMeasured = !(refLat == 0 && refLng == 0);
     if (refLat == 0 && refLng == 0) {
       refLat = widget.meetup.lat;
       refLng = widget.meetup.lng;
@@ -698,20 +706,30 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           'Umkreis-Pruefung: ${dist.toStringAsFixed(1)} km '
           '(erlaubt ${MeetupLocationService.participantRadiusKm} km).');
       if (dist > MeetupLocationService.participantRadiusKm) {
-        // GEGENBEWEIS: Wir haben gemessen, dass der Teilnehmer NICHT vor Ort
-        // ist. Hier bleibt es bei der Ablehnung — sonst waere der ganze
-        // Praesenz-Nachweis wertlos.
-        AppLogger.warn('Scan', 'Zu weit entfernt — Badge abgelehnt.');
-        if (mounted) _showTooFar(dist);
-        return;
+        if (refMeasured) {
+          // GEGENBEWEIS: Der Organisator stand nachweislich vor Ort, der
+          // Teilnehmer nachweislich nicht. Ablehnung ist richtig — sonst
+          // waere der Praesenz-Nachweis wertlos.
+          AppLogger.warn('Scan',
+              'Zu weit entfernt (${dist.toStringAsFixed(1)} km) — Badge abgelehnt.');
+          if (mounted) _showTooFar(dist);
+          return;
+        }
+        // ABGELEITETE Referenz: Die Abweichung kann genauso gut daran liegen,
+        // dass der hinterlegte Meetup-Ort nicht stimmt. Badge wird vergeben,
+        // aber als ungeprueft — und der Verdacht steht im Log.
+        AppLogger.warn('Scan',
+            'Abstand ${dist.toStringAsFixed(1)} km zur ABGELEITETEN Referenz '
+            '("${badge.meetupName}") — moeglicherweise wurde beim Erstellen '
+            'das falsche Meetup gewaehlt. Badge gilt als UNGEPRUEFTE Praesenz.');
+      } else {
+        presenceVerified = true; // im Umkreis
+        if (!refMeasured) {
+          AppLogger.diag('Scan',
+              'Referenz war abgeleitet, Abstand aber plausibel — Praesenz bestaetigt.');
+        }
       }
-      presenceVerified = true; // gemessen und im Umkreis
     } else {
-      // WICHTIG (Feldtest): Genau hier faellt der Umkreis-Schutz aus. Weder
-      // der Tag noch das uebergebene Meetup liefern Koordinaten (z.B. beim
-      // Scan ueber den zentralen Scan-Button, der ein Platzhalter-Meetup
-      // ohne Koordinaten mitgibt). Wird in einem eigenen Schritt behoben —
-      // bis dahin ist es wenigstens im Log sichtbar.
       // RESTFALL: Auch ueber den Badge-Namen war nichts aufloesbar (Meetup
       // im Portal ohne Koordinaten oder unbekannter Name). Bewusste
       // Entscheidung: Badge wird vergeben, statt vor Ort ein ganzes Meetup
