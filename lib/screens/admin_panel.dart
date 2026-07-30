@@ -143,17 +143,43 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     String meetupCountry;
     // Der ECHTE erfasste GPS-Standort des Organisators wird der Meetup-Ort
     // (nicht die groben Portal-Koordinaten der Stadt).
-    final orgLat = locResult.lat;
-    final orgLng = locResult.lng;
+    var orgLat = locResult.lat;
+    var orgLng = locResult.lng;
 
     if (nearby.isEmpty) {
-      // Kein bekanntes Portal-Meetup in der Nähe -> Organisator gibt den
-      // Namen manuell ein. Standort (orgLat/orgLng) wird trotzdem erfasst,
-      // damit der 5km-Teilnehmer-Check weiter funktioniert.
-      final manualName = await _askMeetupName();
-      if (manualName == null || manualName.trim().isEmpty) return; // abgebrochen
-      meetupId = manualName.trim();
-      meetupCountry = '';
+      // Kein Portal-Meetup in der Naehe ODER (haeufiger) kein Standort.
+      //
+      // WICHTIG (Denkfehler im ersten Entwurf): Frueher ging es hier direkt
+      // in die Freitext-Eingabe. Das hatte eine unfaire Nebenwirkung — ohne
+      // Portal-Bezug fehlt den TEILNEHMERN spaeter der Referenzpunkt, ihre
+      // Badges gelten als ungeprueft und zaehlen weniger. Bestraft wuerden
+      // also Leute, die alles richtig gemacht haben, nur weil das Geraet des
+      // Organisators nicht orten konnte.
+      //
+      // Loesung: Das PORTAL weiss ohnehin, wo jedes Meetup liegt. Der
+      // Organisator waehlt sein Meetup aus der Liste; dessen Koordinaten
+      // dienen dann als Referenz. Der eigene Standort ist dafuer gar nicht
+      // noetig — er war nur eine Vorauswahl-Hilfe.
+      final fromPortal = await _pickAnyPortalMeetup();
+      if (fromPortal == null) {
+        // Bewusst kein Portal-Meetup -> Freitext (z.B. neues Meetup, das
+        // im Portal noch nicht existiert).
+        final manualName = await _askMeetupName();
+        if (manualName == null || manualName.trim().isEmpty) return;
+        meetupId = manualName.trim();
+        meetupCountry = '';
+      } else {
+        meetupId = fromPortal.city;
+        meetupCountry = fromPortal.country;
+        // Referenz vom Portal uebernehmen, wenn eigener Standort fehlt.
+        if (orgLat == 0 && orgLng == 0 && !(fromPortal.lat == 0 && fromPortal.lng == 0)) {
+          orgLat = fromPortal.lat;
+          orgLng = fromPortal.lng;
+          AppLogger.info('Organisator',
+              'Kein eigener Standort — Referenz aus dem Portal uebernommen '
+              '("${fromPortal.city}"). Teilnehmer koennen dadurch normal geprueft werden.');
+        }
+      }
     } else {
       // Eines im Radius -> automatisch. Mehrere -> Organisator wählt.
       MeetupCandidate chosen;
@@ -319,6 +345,99 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   /// Fragt den Meetup-Namen ab, wenn kein Portal-Meetup in der Nähe ist.
   /// Der GPS-Standort wurde bereits erfasst und wird als Veranstaltungsort
   /// genutzt — hier fehlt nur der Name.
+  /// Auswahl aus ALLEN Portal-Meetups (durchsuchbar) — unabhaengig vom
+  /// eigenen Standort. Gibt null zurueck, wenn der Organisator stattdessen
+  /// einen freien Namen eingeben moechte.
+  Future<Meetup?> _pickAnyPortalMeetup() async {
+    List<Meetup> all = const [];
+    try {
+      all = await MeetupService.fetchMeetups();
+    } catch (e) {
+      AppLogger.warn('Organisator', 'Portal-Meetupliste nicht ladbar: ${e.runtimeType}');
+    }
+    if (all.isEmpty) all = allMeetups;
+    if (!mounted || all.isEmpty) return null;
+
+    final search = TextEditingController();
+    final t = AppLocalizations.of(context);
+
+    return showDialog<Meetup>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setLocal) {
+        final q = search.text.trim().toLowerCase();
+        final list = q.isEmpty
+            ? all
+            : all.where((m) =>
+                m.city.toLowerCase().contains(q) ||
+                m.name.toLowerCase().contains(q)).toList();
+        return AlertDialog(
+          backgroundColor: cCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text(t.apPickPortalTitle,
+              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 380,
+            child: Column(children: [
+              Text(t.apPickPortalHint,
+                  style: const TextStyle(color: cTextTertiary, fontSize: 12, height: 1.35)),
+              const SizedBox(height: 10),
+              TextField(
+                controller: search,
+                autofocus: true,
+                style: const TextStyle(color: cText, fontSize: 14),
+                decoration: InputDecoration(
+                  isDense: true,
+                  hintText: t.profileSearchCity,
+                  hintStyle: const TextStyle(color: cTextTertiary, fontSize: 14),
+                  prefixIcon: const Icon(Icons.search_rounded, color: cOrange, size: 20),
+                  filled: true,
+                  fillColor: cDark,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onChanged: (_) => setLocal(() {}),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (_, i) {
+                    final m = list[i];
+                    final hasCoords = !(m.lat == 0 && m.lng == 0);
+                    return ListTile(
+                      dense: true,
+                      title: Text(m.city,
+                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: cText, fontSize: 14)),
+                      subtitle: (m.name.isNotEmpty &&
+                              m.name.toLowerCase() != m.city.toLowerCase())
+                          ? Text(m.name,
+                              maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: cTextTertiary, fontSize: 11.5))
+                          : null,
+                      // Ohne Koordinaten im Portal kann auch hierueber kein
+                      // Referenzpunkt entstehen — ehrlich kennzeichnen.
+                      trailing: Icon(
+                          hasCoords ? Icons.place_rounded : Icons.location_off_rounded,
+                          color: hasCoords ? cGreen : cTextTertiary, size: 16),
+                      onTap: () => Navigator.pop(ctx, m),
+                    );
+                  },
+                ),
+              ),
+            ]),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: Text(t.apEnterManually, style: const TextStyle(color: cTextSecondary)),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
   Future<String?> _askMeetupName() {
     final t = AppLocalizations.of(context);
     final ctrl = TextEditingController();

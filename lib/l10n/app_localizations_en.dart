@@ -4647,4 +4647,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get writerValidity => 'Valid for 4 hours';
+
+  @override
+  String get apPickPortalTitle => 'Select meetup';
+
+  @override
+  String get apPickPortalHint =>
+      'Pick your meetup from the portal. This lets attendees be confirmed normally even without your location.';
+
+  @override
+  String get apEnterManually => 'Enter name manually';
 }

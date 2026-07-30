@@ -2234,5 +2234,8 @@
   "badgeUnverifiedInfo": "No había ubicación disponible al recogerla. La insignia es válida, pero su prueba de presencia no está confirmada adicionalmente.",
   "verifyClose": "CERRAR",
   "verifyOpenWallet": "ABRIR CARTERA",
-  "writerValidity": "Válido durante 4 horas"
+  "writerValidity": "Válido durante 4 horas",
+  "apPickPortalTitle": "Seleccionar meetup",
+  "apPickPortalHint": "Elige tu meetup del portal. Así los asistentes pueden confirmarse con normalidad aunque falte tu ubicación.",
+  "apEnterManually": "Introducir nombre"
 }

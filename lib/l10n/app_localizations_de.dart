@@ -4691,4 +4691,14 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get writerValidity => 'Gültig für 4 Stunden';
+
+  @override
+  String get apPickPortalTitle => 'Meetup auswählen';
+
+  @override
+  String get apPickPortalHint =>
+      'Wähle dein Meetup aus dem Portal. Dadurch können Teilnehmer trotz fehlendem Standort normal bestätigt werden.';
+
+  @override
+  String get apEnterManually => 'Name selbst eingeben';
 }

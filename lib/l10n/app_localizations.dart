@@ -8547,6 +8547,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Gültig für 4 Stunden'**
   String get writerValidity;
+
+  /// No description provided for @apPickPortalTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup auswählen'**
+  String get apPickPortalTitle;
+
+  /// No description provided for @apPickPortalHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle dein Meetup aus dem Portal. Dadurch können Teilnehmer trotz fehlendem Standort normal bestätigt werden.'**
+  String get apPickPortalHint;
+
+  /// No description provided for @apEnterManually.
+  ///
+  /// In de, this message translates to:
+  /// **'Name selbst eingeben'**
+  String get apEnterManually;
 }
 
 class _AppLocalizationsDelegate

@@ -2234,5 +2234,8 @@
   "badgeUnverifiedInfo": "No location was available when collecting. The badge is valid, but its presence proof is not additionally confirmed.",
   "verifyClose": "CLOSE",
   "verifyOpenWallet": "OPEN WALLET",
-  "writerValidity": "Valid for 4 hours"
+  "writerValidity": "Valid for 4 hours",
+  "apPickPortalTitle": "Select meetup",
+  "apPickPortalHint": "Pick your meetup from the portal. This lets attendees be confirmed normally even without your location.",
+  "apEnterManually": "Enter name manually"
 }

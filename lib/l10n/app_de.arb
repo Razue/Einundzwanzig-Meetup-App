@@ -2256,5 +2256,8 @@
   "badgeUnverifiedInfo": "Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.",
   "verifyClose": "SCHLIESSEN",
   "verifyOpenWallet": "ZUR WALLET",
-  "writerValidity": "Gültig für 4 Stunden"
+  "writerValidity": "Gültig für 4 Stunden",
+  "apPickPortalTitle": "Meetup auswählen",
+  "apPickPortalHint": "Wähle dein Meetup aus dem Portal. Dadurch können Teilnehmer trotz fehlendem Standort normal bestätigt werden.",
+  "apEnterManually": "Name selbst eingeben"
 }
