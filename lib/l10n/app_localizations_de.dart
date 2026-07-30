@@ -1252,7 +1252,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get writerSuccess => 'ERFOLG!';
 
   @override
-  String get writerValid6h => 'Gültig für 6 Stunden';
+  String writerValidHours(Object hours) {
+    return '⏱️ Gültig für ${hours}h\n\n';
+  }
 
   @override
   String get writerHoldTag => 'Halte Tag an das Gerät...';
@@ -1706,11 +1708,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String writerValidHours(Object hours) {
-    return '⏱️ Gültig für ${hours}h\n\n';
-  }
-
-  @override
   String get verifyErrNoNdef => '✗ Kein NDEF Tag';
 
   @override
@@ -1910,7 +1907,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apNewMeetupBody =>
-      'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.';
+      'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 4 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.';
 
   @override
   String get apSessionEndBody =>
@@ -1918,7 +1915,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apGeneratesProof =>
-      'Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.';
+      'Generiert einen neuen kryptographischen Beweis für die nächsten 4 Stunden.';
 
   @override
   String get humTitle => 'PROOF OF HUMANITY';
@@ -4691,4 +4688,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get verifyOpenWallet => 'ZUR WALLET';
+
+  @override
+  String get writerValidity => 'Gültig für 4 Stunden';
 }

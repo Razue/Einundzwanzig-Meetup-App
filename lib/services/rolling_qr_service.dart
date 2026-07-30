@@ -5,7 +5,7 @@
 // Kombiniert zwei Sicherheitskonzepte und erzwingt EINE
 // einheitliche Signatur für NFC und QR.
 //
-// 1. SESSION (6h gültig, überlebt App-Neustart)
+// 1. SESSION (4h gültig, überlebt App-Neustart)
 //    → Generiert EINMALIG den signierten Base-Payload (Schnorr)
 //    → Speichert diesen Base-Payload in SharedPreferences
 //    → NFC Writer liest exakt diesen Payload.
@@ -60,8 +60,12 @@ class RollingQRService {
   // Toleranz: akzeptiere ±1 Intervall (also bis 20s alt)
   static const int toleranceSteps = 1;
 
-  // Session-Gültigkeit
-  static const int sessionValidityHours = 6;
+  // Session-Gültigkeit — MUSS zu BadgeSecurity.badgeValidityHours passen!
+  // Eine laengere Session wuerde in ihren letzten Stunden Badges erzeugen,
+  // die beim Scannen bereits als abgelaufen abgelehnt werden.
+  // Kuerzeres Fenster = weniger Zeit, einen ausgelesenen Payload
+  // weiterzureichen. Ein Meetup dauert selten laenger als 4 Stunden.
+  static const int sessionValidityHours = 4;
 
   // =============================================
   // SECURITY AUDIT C3: Session Seed in SecureStorage

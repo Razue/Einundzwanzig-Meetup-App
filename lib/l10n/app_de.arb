@@ -475,7 +475,7 @@
   "writerCreateMeetupTag": "MEETUP TAG ERSTELLEN",
   "writerMeetupTag": "MEETUP TAG",
   "writerSuccess": "ERFOLG!",
-  "writerValid6h": "Gültig für 6 Stunden",
+  "writerValidHours": "⏱️ Gültig für {hours}h\n\n",
   "writerHoldTag": "Halte Tag an das Gerät...",
   "writerHoldTagInstruction": "Halte einen NFC Tag an das Gerät.\nTeilnehmer scannen diesen Tag um ein Badge zu sammeln.",
   "writerFormatting": "Formatiere leeren Tag...",
@@ -800,7 +800,6 @@
       }
     }
   },
-  "writerValidHours": "⏱️ Gültig für {hours}h\n\n",
   "@writerValidHours": {
     "placeholders": {
       "hours": {
@@ -930,9 +929,9 @@
   "apEnd": "Beenden",
   "apSeedAdmin": "Seed Admin",
   "apViaTrustScore": "Via Trust Score",
-  "apNewMeetupBody": "Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.",
+  "apNewMeetupBody": "Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 4 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.",
   "apSessionEndBody": "Damit sperrst du die aktuelle Blockzeit. Du kannst danach eine neue Session starten.",
-  "apGeneratesProof": "Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.",
+  "apGeneratesProof": "Generiert einen neuen kryptographischen Beweis für die nächsten 4 Stunden.",
   "humTitle": "PROOF OF HUMANITY",
   "humVerified": "MENSCH VERIFIZIERT",
   "humNotVerified": "NICHT VERIFIZIERT",
@@ -2256,5 +2255,6 @@
   "badgeUnverified": "Präsenz ungeprüft",
   "badgeUnverifiedInfo": "Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.",
   "verifyClose": "SCHLIESSEN",
-  "verifyOpenWallet": "ZUR WALLET"
+  "verifyOpenWallet": "ZUR WALLET",
+  "writerValidity": "Gültig für 4 Stunden"
 }

@@ -2440,11 +2440,11 @@ abstract class AppLocalizations {
   /// **'ERFOLG!'**
   String get writerSuccess;
 
-  /// No description provided for @writerValid6h.
+  /// No description provided for @writerValidHours.
   ///
   /// In de, this message translates to:
-  /// **'Gültig für 6 Stunden'**
-  String get writerValid6h;
+  /// **'⏱️ Gültig für {hours}h\n\n'**
+  String writerValidHours(Object hours);
 
   /// No description provided for @writerHoldTag.
   ///
@@ -3184,12 +3184,6 @@ abstract class AppLocalizations {
   /// **'📦 {size}B (kompakt)\n'**
   String writerCompactSize(Object size);
 
-  /// No description provided for @writerValidHours.
-  ///
-  /// In de, this message translates to:
-  /// **'⏱️ Gültig für {hours}h\n\n'**
-  String writerValidHours(Object hours);
-
   /// No description provided for @verifyErrNoNdef.
   ///
   /// In de, this message translates to:
@@ -3529,7 +3523,7 @@ abstract class AppLocalizations {
   /// No description provided for @apNewMeetupBody.
   ///
   /// In de, this message translates to:
-  /// **'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.'**
+  /// **'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 4 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.'**
   String get apNewMeetupBody;
 
   /// No description provided for @apSessionEndBody.
@@ -3541,7 +3535,7 @@ abstract class AppLocalizations {
   /// No description provided for @apGeneratesProof.
   ///
   /// In de, this message translates to:
-  /// **'Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.'**
+  /// **'Generiert einen neuen kryptographischen Beweis für die nächsten 4 Stunden.'**
   String get apGeneratesProof;
 
   /// No description provided for @humTitle.
@@ -8547,6 +8541,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'ZUR WALLET'**
   String get verifyOpenWallet;
+
+  /// No description provided for @writerValidity.
+  ///
+  /// In de, this message translates to:
+  /// **'Gültig für 4 Stunden'**
+  String get writerValidity;
 }
 
 class _AppLocalizationsDelegate

@@ -453,7 +453,7 @@
   "writerCreateMeetupTag": "CREAR ETIQUETA MEETUP",
   "writerMeetupTag": "ETIQUETA MEETUP",
   "writerSuccess": "¡ÉXITO!",
-  "writerValid6h": "Válido por 6 horas",
+  "writerValidHours": "⏱️ Válido por {hours}h\n\n",
   "writerHoldTag": "Acerca la etiqueta al dispositivo...",
   "writerHoldTagInstruction": "Acerca una etiqueta NFC al dispositivo.\nLos participantes la escanean para recoger una insignia.",
   "writerFormatting": "Formateando etiqueta vacía...",
@@ -778,7 +778,6 @@
       }
     }
   },
-  "writerValidHours": "⏱️ Válido por {hours}h\n\n",
   "@writerValidHours": {
     "placeholders": {
       "hours": {
@@ -908,9 +907,9 @@
   "apEnd": "Finalizar",
   "apSeedAdmin": "Seed Admin",
   "apViaTrustScore": "Vía Trust Score",
-  "apNewMeetupBody": "Esto crea una firma única (tiempo de bloque) para las próximas 6 horas. Durante este tiempo, la creación de nuevas sesiones queda bloqueada.",
+  "apNewMeetupBody": "Esto crea una firma única (tiempo de bloque) para las próximas 4 horas. Durante ese periodo no se pueden crear nuevas sesiones.",
   "apSessionEndBody": "Esto bloquea el tiempo de bloque actual. Después puedes iniciar una nueva sesión.",
-  "apGeneratesProof": "Genera una nueva prueba criptográfica para las próximas 6 horas.",
+  "apGeneratesProof": "Genera una nueva prueba criptográfica para las próximas 4 horas.",
   "humTitle": "PROOF OF HUMANITY",
   "humVerified": "HUMANO VERIFICADO",
   "humNotVerified": "NO VERIFICADO",
@@ -2234,5 +2233,6 @@
   "badgeUnverified": "Presencia no verificada",
   "badgeUnverifiedInfo": "No había ubicación disponible al recogerla. La insignia es válida, pero su prueba de presencia no está confirmada adicionalmente.",
   "verifyClose": "CERRAR",
-  "verifyOpenWallet": "ABRIR CARTERA"
+  "verifyOpenWallet": "ABRIR CARTERA",
+  "writerValidity": "Válido durante 4 horas"
 }

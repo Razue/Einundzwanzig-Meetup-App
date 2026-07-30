@@ -8,7 +8,7 @@
 //
 // Features:
 //   • Kompakt-Signatur (Schnorr, unfälschbar)
-//   • 6h Ablaufzeit → Überschreibbar für nächstes Meetup
+//   • 4h Ablaufzeit → Überschreibbar für nächstes Meetup
 //   • Payload-Größe wird VOR dem Schreiben angezeigt
 //   • Funktioniert mit NTAG213 (137B), 215 (492B), 216 (872B)
 //   • NFC-Simulation ENTFERNT — kein Fake-Schreiben mehr möglich.
@@ -422,7 +422,7 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
                           Row(children: [
                             const Icon(Icons.timer, color: cCyan, size: 16),
                             const SizedBox(width: 6),
-                            Text(AppLocalizations.of(context).writerValid6h, style: const TextStyle(color: cCyan, fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(AppLocalizations.of(context).writerValidity, style: const TextStyle(color: cCyan, fontSize: 12, fontWeight: FontWeight.bold)),
                           ]),
                           const SizedBox(height: 6),
                           Row(children: [

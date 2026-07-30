@@ -1249,7 +1249,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get writerSuccess => '¡ÉXITO!';
 
   @override
-  String get writerValid6h => 'Válido por 6 horas';
+  String writerValidHours(Object hours) {
+    return '⏱️ Válido por ${hours}h\n\n';
+  }
 
   @override
   String get writerHoldTag => 'Acerca la etiqueta al dispositivo...';
@@ -1697,11 +1699,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String writerValidHours(Object hours) {
-    return '⏱️ Válido por ${hours}h\n\n';
-  }
-
-  @override
   String get verifyErrNoNdef => '✗ Sin etiqueta NDEF';
 
   @override
@@ -1897,7 +1894,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get apNewMeetupBody =>
-      'Esto crea una firma única (tiempo de bloque) para las próximas 6 horas. Durante este tiempo, la creación de nuevas sesiones queda bloqueada.';
+      'Esto crea una firma única (tiempo de bloque) para las próximas 4 horas. Durante ese periodo no se pueden crear nuevas sesiones.';
 
   @override
   String get apSessionEndBody =>
@@ -1905,7 +1902,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get apGeneratesProof =>
-      'Genera una nueva prueba criptográfica para las próximas 6 horas.';
+      'Genera una nueva prueba criptográfica para las próximas 4 horas.';
 
   @override
   String get humTitle => 'PROOF OF HUMANITY';
@@ -4675,4 +4672,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get verifyOpenWallet => 'ABRIR CARTERA';
+
+  @override
+  String get writerValidity => 'Válido durante 4 horas';
 }

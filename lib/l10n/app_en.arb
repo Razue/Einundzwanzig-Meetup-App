@@ -453,7 +453,7 @@
   "writerCreateMeetupTag": "CREATE MEETUP TAG",
   "writerMeetupTag": "MEETUP TAG",
   "writerSuccess": "SUCCESS!",
-  "writerValid6h": "Valid for 6 hours",
+  "writerValidHours": "⏱️ Valid for {hours}h\n\n",
   "writerHoldTag": "Hold tag to the device...",
   "writerHoldTagInstruction": "Hold an NFC tag to the device.\nParticipants scan this tag to collect a badge.",
   "writerFormatting": "Formatting empty tag...",
@@ -778,7 +778,6 @@
       }
     }
   },
-  "writerValidHours": "⏱️ Valid for {hours}h\n\n",
   "@writerValidHours": {
     "placeholders": {
       "hours": {
@@ -908,9 +907,9 @@
   "apEnd": "End",
   "apSeedAdmin": "Seed Admin",
   "apViaTrustScore": "Via Trust Score",
-  "apNewMeetupBody": "This creates a unique signature (block time) for the next 6 hours. During this time, creating new sessions is locked.",
+  "apNewMeetupBody": "This creates a unique signature (block time) for the next 4 hours. Creating new sessions is locked during this period.",
   "apSessionEndBody": "This locks the current block time. You can start a new session afterwards.",
-  "apGeneratesProof": "Generates a new cryptographic proof for the next 6 hours.",
+  "apGeneratesProof": "Generates a new cryptographic proof for the next 4 hours.",
   "humTitle": "PROOF OF HUMANITY",
   "humVerified": "HUMAN VERIFIED",
   "humNotVerified": "NOT VERIFIED",
@@ -2234,5 +2233,6 @@
   "badgeUnverified": "Presence unverified",
   "badgeUnverifiedInfo": "No location was available when collecting. The badge is valid, but its presence proof is not additionally confirmed.",
   "verifyClose": "CLOSE",
-  "verifyOpenWallet": "OPEN WALLET"
+  "verifyOpenWallet": "OPEN WALLET",
+  "writerValidity": "Valid for 4 hours"
 }
