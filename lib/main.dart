@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:home_widget/home_widget.dart';
@@ -33,8 +34,12 @@ void main() async {
   // unerkannt). Laeuft im Hintergrund, blockiert den Start nicht.
   DiagnosticsService.logEnvironment();
 
-  // Hintergrund-Callback fürs Widget-Aktualisieren registrieren
-  HomeWidget.registerInteractivityCallback(widgetBackgroundCallback);
+  // Register only the Android home-widget callback. The current iOS target has
+  // no widget extension/App Group, and home_widget otherwise throws
+  // "AppGroupId not set" during simulator startup.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    HomeWidget.registerInteractivityCallback(widgetBackgroundCallback);
+  }
 
   // Gespeicherte Sprache laden, bevor die App startet
   await LocaleController.load();
@@ -190,5 +195,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
-
 
