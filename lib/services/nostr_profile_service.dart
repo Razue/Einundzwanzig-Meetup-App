@@ -52,17 +52,25 @@ class NostrProfileService {
     }
 
     // Parallel über alle Relays abfragen — das erste Treffer-Bild gewinnt.
-    final futures = relays.map((r) => _fetchFromRelay(r, pubkeyHex)).toList();
-    for (final f in futures) {
+    // Die Fehlerbehandlung muss BEIM ERSTELLEN im Future stecken, nicht erst
+    // in der Schleife weiter unten: die Abfragen laufen ab hier gleichzeitig,
+    // und bricht eine ab, bevor die sequentielle Schleife bei ihr angekommen
+    // ist, hat noch niemand zugehört — Dart meldet das dann als unbehandelten
+    // Fehler und die App stuerzt ab.
+    final futures = relays.map((r) async {
       try {
-        final picture = await f;
-        if (picture != null && picture.isNotEmpty) {
-          await prefs.setString(cacheKey, picture);
-          await prefs.setInt(cacheTimeKey, now);
-          return picture;
-        }
+        return await _fetchFromRelay(r, pubkeyHex);
       } catch (e) {
         AppLogger.debug('NostrProfile', 'Relay-Abfrage fehlgeschlagen: $e');
+        return null;
+      }
+    }).toList();
+    for (final f in futures) {
+      final picture = await f;
+      if (picture != null && picture.isNotEmpty) {
+        await prefs.setString(cacheKey, picture);
+        await prefs.setInt(cacheTimeKey, now);
+        return picture;
       }
     }
     return null;
