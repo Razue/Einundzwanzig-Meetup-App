@@ -138,7 +138,10 @@ class CommunityHubScreen extends StatelessWidget {
         _openUrl(url);
       },
       child: Container(
-        height: 106,
+        // 106 war zu knapp: Icon 22 + 10 + Titel + 3 + Untertitel brauchen
+        // zusammen mit dem Padding (16/18) mehr Platz — auf dem Geraet lief
+        // die Karte um 5px ueber. 120 laesst Reserve fuer groessere Schrift.
+        height: 120,
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(kTileRadius),
@@ -218,7 +221,9 @@ class CommunityHubScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 96,
+        // 96 war zu knapp: Icon 22 + 8 + Titel + 3 + Untertitel passten mit
+        // dem Padding (2x16) nicht — auf dem Geraet 11px Ueberlauf.
+        height: 112,
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(kTileRadius),
