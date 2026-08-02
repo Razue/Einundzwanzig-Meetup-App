@@ -809,7 +809,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     final rows = _buildTileRows(excludeHomeMeetup: true);
     if (rows.isEmpty) return const SizedBox.shrink();
 
-    const double minRowHeight = 112; // darunter wird gescrollt, bevor kompakte Tiles überlaufen
+    // Darunter wird gescrollt. Eine Kachel braucht ~84px Inhalt (Icon 22 +
+    // 12 + Titel + 3 + Untertitel). Zusammen mit dem Tile-Padding von 2x14
+    // reichten 112 gerade so; gemessen lief das auf dem Geraet noch um 1px
+    // ueber. 118 laesst Luft und traegt auch dann, wenn das Padding wieder
+    // auf die urspruenglichen 16/18 zurueckgesetzt wird.
+    const double minRowHeight = 118;
     return LayoutBuilder(builder: (context, c) {
       final gaps = (rows.length - 1) * kTileGap;
       final avail = c.maxHeight - gaps;
