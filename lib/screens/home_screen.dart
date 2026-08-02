@@ -805,7 +805,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     final rows = _buildTileRows(excludeHomeMeetup: true);
     if (rows.isEmpty) return const SizedBox.shrink();
 
-    const double minRowHeight = 92; // darunter wird gescrollt
+    const double minRowHeight = 112; // darunter wird gescrollt, bevor kompakte Tiles überlaufen
     return LayoutBuilder(builder: (context, c) {
       final gaps = (rows.length - 1) * kTileGap;
       final avail = c.maxHeight - gaps;
@@ -988,7 +988,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 ),
               Positioned.fill(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                   child: child,
                 ),
               ),
