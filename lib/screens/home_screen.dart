@@ -140,7 +140,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // Pflicht-Kacheln (nicht löschbar)
   static const _requiredTiles = {'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
+  // REIHENFOLGE-HINWEIS: _buildTileRows packt die Kacheln gierig in Reihen
+  // (max. Span 3). Deshalb steht 'trust_network' (Span 2) direkt hinter
+  // 'btc_dashboard' (Span 2): 2+2 passt nicht in eine Reihe, also bleibt
+  // Bitcoin allein und damit voll breit. Stuende 'reputation' (Span 1) dort,
+  // wuerde es sich zu Bitcoin in die Reihe setzen (2+1=3) und Bitcoin auf
+  // zwei Drittel schrumpfen.
+  static const _defaultOrder = ['home_meetup', 'community', 'nostr', 'converter', 'btc_dashboard', 'trust_network', 'reputation', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
 
   late List<_TileDef> _tileDefs;
@@ -290,6 +296,28 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       savedHidden.add('plebrap');
       await prefs.setBool('mig_hide_plebrap_v1', true);
       await prefs.setStringList('tile_hidden', List<String>.from(savedHidden));
+    }
+
+    // EINMALIGE MIGRATION: Reputation und Vertrauensnetzwerk wandern unter
+    // die Bitcoin-Kachel. Ohne diesen Schritt bliebe die Aenderung an
+    // _defaultOrder wirkungslos — Bestandsnutzer haben eine gespeicherte
+    // Reihenfolge, und die gewinnt weiter unten beim Merge.
+    // Wer die Kacheln danach anders haben will, sortiert sie ueber
+    // "Kacheln anpassen" (langer Druck auf eine Kachel) selbst um.
+    if (!(prefs.getBool('mig_rep_below_btc_v1') ?? false)) {
+      if (saved != null && saved.isNotEmpty) {
+        saved.removeWhere((id) => id == 'reputation' || id == 'trust_network');
+        final btcIdx = saved.indexOf('btc_dashboard');
+        // Reihenfolge trust_network -> reputation, damit Bitcoin allein in
+        // seiner Reihe bleibt (siehe Hinweis bei _defaultOrder).
+        if (btcIdx >= 0) {
+          saved.insertAll(btcIdx + 1, ['trust_network', 'reputation']);
+        } else {
+          saved.addAll(['trust_network', 'reputation']);
+        }
+        await prefs.setStringList('tile_order', saved);
+      }
+      await prefs.setBool('mig_rep_below_btc_v1', true);
     }
 
     if (saved != null && saved.isNotEmpty) {
