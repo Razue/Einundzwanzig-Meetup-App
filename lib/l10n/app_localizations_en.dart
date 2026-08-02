@@ -4675,4 +4675,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String apNoRefBody(String city) {
     return 'No location is stored for „$city“ in the portal, and your own location is unavailable. Attendance therefore cannot be confirmed — the badges will count less.\n\nBetter: enable location, or let someone else present create the badge.';
   }
+
+  @override
+  String get apConfirmPickTitle => 'Are you here?';
+
+  @override
+  String get apConfirmPickBody =>
+      'This name is permanently stored in every attendee\'s badge and cannot be changed later. If the location does not match the people present, they will see „too far away“ and receive no badge.';
+
+  @override
+  String get apConfirmPickYes => 'Yes, I am here';
 }

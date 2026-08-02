@@ -2249,5 +2249,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "apConfirmPickTitle": "¿Estás aquí?",
+  "apConfirmPickBody": "Este nombre queda de forma permanente en la insignia de cada asistente y no puede cambiarse después. Si el lugar no coincide con los presentes, verán „demasiado lejos“ y no recibirán insignia.",
+  "apConfirmPickYes": "Sí, estoy aquí"
 }

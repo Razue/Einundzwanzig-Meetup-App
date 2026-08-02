@@ -4719,4 +4719,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String apNoRefBody(String city) {
     return 'Für „$city“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.';
   }
+
+  @override
+  String get apConfirmPickTitle => 'Bist du hier?';
+
+  @override
+  String get apConfirmPickBody =>
+      'Dieser Name steht dauerhaft im Badge jedes Teilnehmers und lässt sich nachträglich nicht ändern. Passt der Ort nicht zu den Anwesenden, bekommen sie die Meldung „zu weit entfernt“ und kein Badge.';
+
+  @override
+  String get apConfirmPickYes => 'Ja, hier bin ich';
 }

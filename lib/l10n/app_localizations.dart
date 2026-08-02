@@ -8595,6 +8595,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Für „{city}“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.'**
   String apNoRefBody(String city);
+
+  /// No description provided for @apConfirmPickTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bist du hier?'**
+  String get apConfirmPickTitle;
+
+  /// No description provided for @apConfirmPickBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Name steht dauerhaft im Badge jedes Teilnehmers und lässt sich nachträglich nicht ändern. Passt der Ort nicht zu den Anwesenden, bekommen sie die Meldung „zu weit entfernt“ und kein Badge.'**
+  String get apConfirmPickBody;
+
+  /// No description provided for @apConfirmPickYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja, hier bin ich'**
+  String get apConfirmPickYes;
 }
 
 class _AppLocalizationsDelegate

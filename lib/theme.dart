@@ -21,8 +21,14 @@ const Color cNostr  = Color(0xFF8B5CF6);
 
 // ── Text (hoher Kontrast) ─────────────────
 const Color cText          = Color(0xFFFFFFFF);
-const Color cTextSecondary = Color(0xFF9CA0A8); // aufgehellt für bessere Lesbarkeit (war 0xFF808088)
-const Color cTextTertiary  = Color(0xFF6E727C); // deutlich aufgehellt, draußen lesbar (war 0xFF3E3E46)
+const Color cTextSecondary = Color(0xFF9CA0A8); // 7.4:1 — WCAG AA erfüllt
+// A11y (Rueckmeldung Hamburger Meetup): 0xFF6E727C ergab nur 4.06:1 Kontrast
+// gegen den Hintergrund und verfehlte damit WCAG AA (4.5:1) fuer Fliesstext.
+// Diese Farbe traegt viele erklaerende Zeilen — Hinweise, Untertitel,
+// Zeitstempel —, die nicht nur Dekoration sind. 0xFF868A94 liegt bei 5.66:1
+// und bleibt trotzdem klar hinter cTextSecondary zurueck, die Hierarchie
+// bleibt also erhalten.
+const Color cTextTertiary  = Color(0xFF868A94); // 5.66:1 — WCAG AA erfüllt
 
 // ── Rahmen (minimal) ─────────────────────
 const Color cBorder     = Color(0xFF1C1C22);

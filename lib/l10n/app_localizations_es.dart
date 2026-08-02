@@ -4703,4 +4703,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String apNoRefBody(String city) {
     return 'No hay ubicación registrada para „$city“ en el portal y la tuya no está disponible. Por eso no se puede confirmar la asistencia: las insignias contarán menos.\n\nMejor: habilita la ubicación o deja que otra persona presente cree la insignia.';
   }
+
+  @override
+  String get apConfirmPickTitle => '¿Estás aquí?';
+
+  @override
+  String get apConfirmPickBody =>
+      'Este nombre queda de forma permanente en la insignia de cada asistente y no puede cambiarse después. Si el lugar no coincide con los presentes, verán „demasiado lejos“ y no recibirán insignia.';
+
+  @override
+  String get apConfirmPickYes => 'Sí, estoy aquí';
 }

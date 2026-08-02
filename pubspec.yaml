@@ -1,7 +1,7 @@
 name: einundzwanzig_meetup_app
 description: "Einundzwanzig Meetup App – Badge-System mit NFC, QR & Nostr Web of Trust"
 publish_to: 'none'
-version: 1.4.3+12
+version: 1.4.4+13
 
 environment:
   sdk: ^3.10.8

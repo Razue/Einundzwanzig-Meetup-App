@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../services/portal_api_service.dart';
 import '../services/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -432,6 +433,50 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
+  /// Rueckfrage nach der Meetup-Auswahl. Bewusst mit dem Ortsnamen gross
+  /// im Text: Ein Fehltipp ist nicht korrigierbar, weil der Name in die
+  /// Signatur eingeht und in jedem Teilnehmer-Badge steht.
+  Future<bool?> _confirmPickedMeetup(Meetup m) {
+    final t = AppLocalizations.of(context);
+    return showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(t.apConfirmPickTitle,
+            style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+            decoration: BoxDecoration(
+              color: cOrange.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: cOrange.withValues(alpha: 0.4)),
+            ),
+            child: Text(m.city.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: cOrange, fontSize: 18, fontWeight: FontWeight.w900)),
+          ),
+          const SizedBox(height: 12),
+          Text(t.apConfirmPickBody,
+              style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.45)),
+        ]),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(t.dialogCancel, style: const TextStyle(color: cTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(t.apConfirmPickYes,
+                style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Auswahl aus ALLEN Portal-Meetups (durchsuchbar) — unabhaengig vom
   /// eigenen Standort. Gibt null zurueck, wenn der Organisator stattdessen
   /// einen freien Namen eingeben moechte.
@@ -444,6 +489,31 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     }
     if (all.isEmpty) all = allMeetups;
     if (!mounted || all.isEmpty) return null;
+
+    // EIGENE MEETUPS ZUERST (Feldtest Hamburg): Ein Organisator steht fast
+    // immer bei seinem EIGENEN Meetup. Frueher kam eine unsortierte Liste
+    // aller ~200 Portal-Meetups in API-Reihenfolge — ein Fehltipp landete
+    // dann bei einem beliebigen fremden Meetup (in Hamburg wurde daraus
+    // "Pfaeffikon SZ"). Jetzt: eigene oben, alles andere alphabetisch.
+    final mineNames = <String>{};
+    try {
+      for (final pm in await PortalApiService.getMyMeetups()) {
+        mineNames.add(pm.name.trim().toLowerCase());
+      }
+    } catch (e) {
+      AppLogger.warn('Organisator', 'Eigene Meetups nicht ladbar: ${e.runtimeType}');
+    }
+    bool isMine(Meetup m) =>
+        mineNames.contains(m.name.trim().toLowerCase()) ||
+        mineNames.contains(m.city.trim().toLowerCase());
+
+    final mine = all.where(isMine).toList()
+      ..sort((a, b) => a.city.toLowerCase().compareTo(b.city.toLowerCase()));
+    final others = all.where((m) => !isMine(m)).toList()
+      ..sort((a, b) => a.city.toLowerCase().compareTo(b.city.toLowerCase()));
+    all = [...mine, ...others];
+    AppLogger.diag('Organisator',
+        'Meetup-Auswahl: ${mine.length} eigene(s) oben, ${others.length} weitere alphabetisch.');
 
     final search = TextEditingController();
     final t = AppLocalizations.of(context);
@@ -491,8 +561,12 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   itemBuilder: (_, i) {
                     final m = list[i];
                     final hasCoords = !(m.lat == 0 && m.lng == 0);
+                    final own = isMine(m);
                     return ListTile(
                       dense: true,
+                      leading: own
+                          ? const Icon(Icons.star_rounded, color: cOrange, size: 18)
+                          : const SizedBox(width: 18),
                       title: Text(m.city,
                           maxLines: 1, overflow: TextOverflow.ellipsis,
                           style: const TextStyle(color: cText, fontSize: 14)),
@@ -507,7 +581,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       trailing: Icon(
                           hasCoords ? Icons.place_rounded : Icons.location_off_rounded,
                           color: hasCoords ? cGreen : cTextTertiary, size: 16),
-                      onTap: () => Navigator.pop(ctx, m),
+                      // BESTAETIGUNG statt Sofort-Uebernahme: Der gewaehlte
+                      // Name landet DAUERHAFT im Badge jedes Teilnehmers und
+                      // ist nachtraeglich nicht korrigierbar.
+                      onTap: () async {
+                        final ok = await _confirmPickedMeetup(m);
+                        if (ok == true && ctx.mounted) Navigator.pop(ctx, m);
+                      },
                     );
                   },
                 ),

@@ -2249,5 +2249,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "apConfirmPickTitle": "Are you here?",
+  "apConfirmPickBody": "This name is permanently stored in every attendee's badge and cannot be changed later. If the location does not match the people present, they will see „too far away“ and receive no badge.",
+  "apConfirmPickYes": "Yes, I am here"
 }
