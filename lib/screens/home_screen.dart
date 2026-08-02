@@ -628,12 +628,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
       if (meetups.isNotEmpty && !_user.adminViaPortal) {
         // VERGEBEN: nur das Portal-Flag setzen (Vouch/Seed unberührt).
-        if (mounted) {
-          setState(() {
-            _user.adminViaPortal = true;
-            _user.isAdminVerified = _user.isAdmin;
-          });
-        }
+        // Die Daten werden IMMER gesetzt, nur das UI-Update haengt an
+        // mounted: sonst wuerde _user.save() unten den alten Stand
+        // speichern, falls der Screen zwischenzeitlich verlassen wurde.
+        _user.adminViaPortal = true;
+        _user.isAdminVerified = _user.isAdmin;
+        if (mounted) setState(() {});
         await _user.save();
         // Organizer-Claim an Nostr publizieren (best effort): macht den
         // Status für Dritte sichtbar; kein manuelles Register nötig.
@@ -650,12 +650,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       } else if (meetups.isEmpty && _user.adminViaPortal) {
         // ENTZIEHEN: nur das Portal-Flag löschen. Bleibt der Nutzer über
         // WoT-Bürgschaft/Seed berechtigt, behält er isAdmin (abgeleitet).
-        if (mounted) {
-          setState(() {
-            _user.adminViaPortal = false;
-            _user.isAdminVerified = _user.isAdmin;
-          });
-        }
+        // Daten immer setzen, UI-Update nur wenn noch gemountet (s.o.).
+        _user.adminViaPortal = false;
+        _user.isAdminVerified = _user.isAdmin;
+        if (mounted) setState(() {});
         await _user.save();
         // WICHTIG: alten Admin-Cache-Eintrag für den eigenen npub räumen,
         // sonst würde der Registry-Cache ihn weiter als Admin ausweisen
