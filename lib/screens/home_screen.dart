@@ -422,6 +422,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       await _checkPortalOrganizer();      // Portal-Weg (räumt ggf. Cache)
       await _reVerifyAdminStatus();       // WoT/Bürgen-Weg (sieht sauberen Cache)
       _loadNextHomeMeetup();              // void (feuert async intern)
+      _loadNewsCounts();                  // News-Zaehler mit auffrischen
     } catch (_) {/* einzelne Fehler ignorieren, Rest läuft */}
     if (!mounted) return;
     setState(() => _refreshing = false);
