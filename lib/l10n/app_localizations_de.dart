@@ -4729,4 +4729,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apConfirmPickYes => 'Ja, hier bin ich';
+
+  @override
+  String get badgeOrganizerTitle => 'ORGANISATOR-NACHWEIS';
+
+  @override
+  String get badgeOrganizerDesc =>
+      'Du hast dieses Meetup selbst erstellt. Dieses Badge dokumentiert das — es ist nicht signiert und zählt nicht zur Reputation. Dafür braucht es die Bestätigung anderer.';
+
+  @override
+  String get walletOrganizerSection => 'Von dir erstellt';
+
+  @override
+  String reputationOrganizerNote(int count) {
+    return '$count Badge(s) zählen nicht: von dir selbst erstellte Meetups.';
+  }
 }

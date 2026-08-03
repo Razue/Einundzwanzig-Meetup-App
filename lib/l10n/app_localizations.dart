@@ -8613,6 +8613,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ja, hier bin ich'**
   String get apConfirmPickYes;
+
+  /// No description provided for @badgeOrganizerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'ORGANISATOR-NACHWEIS'**
+  String get badgeOrganizerTitle;
+
+  /// No description provided for @badgeOrganizerDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast dieses Meetup selbst erstellt. Dieses Badge dokumentiert das — es ist nicht signiert und zählt nicht zur Reputation. Dafür braucht es die Bestätigung anderer.'**
+  String get badgeOrganizerDesc;
+
+  /// No description provided for @walletOrganizerSection.
+  ///
+  /// In de, this message translates to:
+  /// **'Von dir erstellt'**
+  String get walletOrganizerSection;
+
+  /// No description provided for @reputationOrganizerNote.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badge(s) zählen nicht: von dir selbst erstellte Meetups.'**
+  String reputationOrganizerNote(int count);
 }
 
 class _AppLocalizationsDelegate

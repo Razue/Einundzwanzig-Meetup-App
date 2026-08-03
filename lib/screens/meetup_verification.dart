@@ -370,7 +370,13 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     final todayStr = DateTime.now().toIso8601String().substring(0, 10);
     final prospectiveEventId =
         '${meetupName.toLowerCase().replaceAll(' ', '-')}-$todayStr';
-    final bool alreadyCollected = storedNow.any((b) =>
+    // WICHTIG: Organisator-Marker sind KEINE gesammelten Badges. Sie tragen
+    // aber dieselbe meetupEventId wie ein echtes Badge desselben Meetups.
+    // Ohne diesen Ausschluss blockiert der eigene, unsignierte Marker das
+    // echte, signierte Badge — genau der Fall, wenn zwei Organisatoren sich
+    // auf demselben Meetup gegenseitig bestaetigen (Kempten, Aug. 2026).
+    final collectible = storedNow.where((b) => !b.isOrganizer);
+    final bool alreadyCollected = collectible.any((b) =>
         (b.meetupEventId.isNotEmpty && b.meetupEventId == prospectiveEventId) ||
         (b.meetupName == fullName &&
             b.date.year == DateTime.now().year &&
@@ -774,7 +780,10 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     // (nicht nur gegen die evtl. veraltete Liste im Speicher).
     final stored = await MeetupBadge.loadBadges();
     final key = MeetupBadge.identityKey(badge);
-    if (stored.any((b) => MeetupBadge.identityKey(b) == key)) {
+    // Organisator-Marker vom Vergleich ausnehmen (siehe oben): Ein eigener
+    // Marker darf das echte Badge desselben Meetups nicht verdraengen.
+    if (stored.where((b) => !b.isOrganizer)
+        .any((b) => MeetupBadge.identityKey(b) == key)) {
       AppLogger.warn('Scan', 'Duplikat abgewiesen ($key) — Badge bereits in der Wallet.');
       _pendingBadge = null; // verhindert weitere Versuche mit demselben Badge
       if (mounted) {

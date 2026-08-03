@@ -159,6 +159,9 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
   bool _groupByMeetup = true;          // false = nach Jahr gruppieren
   final Set<String> _collapsed = <String>{};
 
+  /// Interner Gruppenschluessel fuer Organisator-Marker.
+  static const String _organizerGroupKey = '\u0000organizer';
+
   @override
   void dispose() {
     _searchCtrl.dispose();
@@ -179,9 +182,12 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
     final map = <String, List<MeetupBadge>>{};
     for (final b in _filteredBadges) {
       final name = b.meetupName.trim();
-      final key = _groupByMeetup
-          ? (name.isEmpty ? '?' : name)
-          : b.date.year.toString();
+      // Organisator-Marker bekommen einen EIGENEN Abschnitt — sonst stehen
+      // sie unter derselben Ueberschrift wie echte Badges desselben Meetups
+      // und sehen aus wie Duplikate.
+      final key = b.isOrganizer
+          ? _organizerGroupKey
+          : (_groupByMeetup ? (name.isEmpty ? '?' : name) : b.date.year.toString());
       map.putIfAbsent(key, () => <MeetupBadge>[]).add(b);
     }
     for (final list in map.values) {
@@ -196,6 +202,9 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
     } else {
       entries.sort((a, b) => b.key.compareTo(a.key));
     }
+    // Organisator-Abschnitt immer ans Ende, egal wie gruppiert wird.
+    final orgIdx = entries.indexWhere((e) => e.key == _organizerGroupKey);
+    if (orgIdx >= 0) entries.add(entries.removeAt(orgIdx));
     return entries;
   }
 
@@ -404,7 +413,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   /// Die Badges, die beim Bereinigen entfernt wuerden (alle ausser dem
   /// jeweils aeltesten Original).
   List<MeetupBadge> _duplicateBadges() {
-    final sorted = List<MeetupBadge>.from(myBadges)
+    // Organisator-Marker ausklammern: Sie teilen sich die meetupEventId mit
+    // dem echten Badge desselben Meetups, sind aber etwas anderes — sie
+    // duerfen weder als Duplikat gelten noch eines verdraengen.
+    final sorted = myBadges.where((b) => !b.isOrganizer).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
     final seen = <String>{};
     final dups = <MeetupBadge>[];
@@ -625,15 +637,22 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             child: Padding(
               padding: const EdgeInsets.fromLTRB(2, 14, 2, 8),
               child: Row(children: [
-                Icon(_groupByMeetup ? Icons.place_rounded : Icons.event_rounded,
-                    color: cOrange, size: 15),
+                Icon(
+                    entry.key == _organizerGroupKey
+                        ? Icons.shield_outlined
+                        : (_groupByMeetup ? Icons.place_rounded : Icons.event_rounded),
+                    color: entry.key == _organizerGroupKey ? cTextSecondary : cOrange,
+                    size: 15),
                 const SizedBox(width: 7),
                 Expanded(
-                  child: Text(entry.key.toUpperCase(),
+                  child: Text(
+                      entry.key == _organizerGroupKey
+                          ? AppLocalizations.of(context).walletOrganizerSection.toUpperCase()
+                          : entry.key.toUpperCase(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: cOrange,
+                      style: TextStyle(
+                          color: entry.key == _organizerGroupKey ? cTextSecondary : cOrange,
                           fontSize: 11.5,
                           letterSpacing: 1.2,
                           fontWeight: FontWeight.w700)),
@@ -785,10 +804,17 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          // Organisator-Marker: selbst erstelltes Meetup,
+                          // unsigniert, zaehlt nicht zur Reputation.
+                          if (badge.isOrganizer) ...[
+                            const Icon(Icons.shield_outlined,
+                                color: cTextSecondary, size: 11),
+                            const SizedBox(width: 4),
+                          ],
                           // Kennzeichnung: Praesenz konnte beim Sammeln nicht
                           // per Standort bestaetigt werden. Der Badge ist
                           // gueltig, zaehlt fuer die Reputation aber weniger.
-                          if (!badge.presenceVerified) ...[
+                          if (!badge.presenceVerified && !badge.isOrganizer) ...[
                             const Icon(Icons.location_off_rounded,
                                 color: cTextTertiary, size: 11),
                             const SizedBox(width: 4),

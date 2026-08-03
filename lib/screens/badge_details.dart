@@ -278,14 +278,25 @@ Verifizierbar über die Einundzwanzig Meetup App
           const SizedBox(height: 16),
           const Divider(color: cBorder),
           const SizedBox(height: 12),
+          // ORGANISATOR-MARKER klar abgrenzen: Er ist unsigniert und
+          // dokumentiert nur, dass man dieses Meetup selbst erstellt hat.
+          // Frueher stand hier auch bei ihm "bestaetigt kryptografisch,
+          // dass du physisch vor Ort warst" — bei einem Badge ganz OHNE
+          // Signatur. Das hat den Score von 0 unerklaerlich gemacht.
           Text(
-            AppLocalizations.of(context).badgeProofOfAttendance,
-            style: const TextStyle(
-                color: cOrange, fontWeight: FontWeight.bold, letterSpacing: 1.5),
+            b.isOrganizer
+                ? AppLocalizations.of(context).badgeOrganizerTitle
+                : AppLocalizations.of(context).badgeProofOfAttendance,
+            style: TextStyle(
+                color: b.isOrganizer ? cTextSecondary : cOrange,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5),
           ),
           const SizedBox(height: 6),
           Text(
-            AppLocalizations.of(context).badgeProofDesc,
+            b.isOrganizer
+                ? AppLocalizations.of(context).badgeOrganizerDesc
+                : AppLocalizations.of(context).badgeProofDesc,
             textAlign: TextAlign.center,
             style: const TextStyle(color: cTextSecondary, fontSize: 12),
           ),

@@ -4685,4 +4685,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apConfirmPickYes => 'Yes, I am here';
+
+  @override
+  String get badgeOrganizerTitle => 'ORGANIZER RECORD';
+
+  @override
+  String get badgeOrganizerDesc =>
+      'You created this meetup yourself. This badge records that — it is unsigned and does not count towards reputation. That requires confirmation by others.';
+
+  @override
+  String get walletOrganizerSection => 'Created by you';
+
+  @override
+  String reputationOrganizerNote(int count) {
+    return '$count badge(s) do not count: meetups you created yourself.';
+  }
 }

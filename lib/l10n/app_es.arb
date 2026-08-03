@@ -2252,5 +2252,16 @@
   },
   "apConfirmPickTitle": "¿Estás aquí?",
   "apConfirmPickBody": "Este nombre queda de forma permanente en la insignia de cada asistente y no puede cambiarse después. Si el lugar no coincide con los presentes, verán „demasiado lejos“ y no recibirán insignia.",
-  "apConfirmPickYes": "Sí, estoy aquí"
+  "apConfirmPickYes": "Sí, estoy aquí",
+  "badgeOrganizerTitle": "REGISTRO DE ORGANIZADOR",
+  "badgeOrganizerDesc": "Creaste este meetup tú mismo. Esta insignia lo documenta: no está firmada y no cuenta para la reputación. Para eso hace falta la confirmación de otros.",
+  "walletOrganizerSection": "Creados por ti",
+  "reputationOrganizerNote": "{count} insignia(s) no cuentan: meetups creados por ti.",
+  "@reputationOrganizerNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

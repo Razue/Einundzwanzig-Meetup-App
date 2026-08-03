@@ -4713,4 +4713,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get apConfirmPickYes => 'Sí, estoy aquí';
+
+  @override
+  String get badgeOrganizerTitle => 'REGISTRO DE ORGANIZADOR';
+
+  @override
+  String get badgeOrganizerDesc =>
+      'Creaste este meetup tú mismo. Esta insignia lo documenta: no está firmada y no cuenta para la reputación. Para eso hace falta la confirmación de otros.';
+
+  @override
+  String get walletOrganizerSection => 'Creados por ti';
+
+  @override
+  String reputationOrganizerNote(int count) {
+    return '$count insignia(s) no cuentan: meetups creados por ti.';
+  }
 }

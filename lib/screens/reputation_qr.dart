@@ -72,8 +72,19 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       return;
     }
 
-    final uniqueMeetups = myBadges.map((b) => b.meetupName).toSet();
-    final uniqueSigners = myBadges.map((b) => b.signerNpub).where((s) => s.isNotEmpty).toSet();
+    // ZAEHLGRUNDLAGE (Fix Aug. 2026): Bisher wurde hier ueber ALLE Badges
+    // gezaehlt — auch ueber unsignierte Organisator-Marker, die man sich
+    // durch blosses Erstellen eines Meetups selbst ausstellt. Der lokale
+    // Score liess sie korrekt weg, das VEROEFFENTLICHTE Reputations-Event
+    // zaehlte sie aber mit. Wer 50 Sessions anlegt, haette den Relays
+    // "50 Badges, 50 Meetups" gemeldet, ohne je bestaetigt worden zu sein.
+    // Ab jetzt gilt ueberall dieselbe Regel wie im Trust Score:
+    // signiert UND nicht selbst ausgestellt.
+    final countedBadges =
+        myBadges.where((b) => b.isNostrSigned && !b.isOrganizer).toList();
+    final uniqueMeetups = countedBadges.map((b) => b.meetupName).toSet();
+    final uniqueSigners =
+        countedBadges.map((b) => b.signerNpub).where((s) => s.isNotEmpty).toSet();
 
     // Trust Score
     final sortedByDate = List<MeetupBadge>.from(myBadges)
@@ -104,7 +115,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     final Map<String, dynamic> reputation = {
       'sc': double.parse(trustScore.totalScore.toStringAsFixed(1)),
       'lv': trustScore.level,
-      'bc': myBadges.length,
+      'bc': countedBadges.length,
       'vc': verifiedCount,
       'mc': uniqueMeetups.length,
       'si': uniqueSigners.length,
@@ -126,7 +137,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       'bp': badgeProof,
       'pv': badgeProofV2.isNotEmpty ? 2 : 1,
       'vc': verifiedCount,
-      'tc': myBadges.length,
+      'tc': countedBadges.length,
       'bb': boundCount,
     };
 
@@ -326,7 +337,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
                   const SizedBox(height: 20),
 
                   // Stats
-                  _buildStatsRow(context),
+                  _buildStatsBlock(context),
 
                   const SizedBox(height: 20),
 
@@ -547,7 +558,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   Widget _buildStatsRow(BuildContext context) {
     final score = _trustScore;
     return Row(children: [
-      _buildStat(Icons.military_tech, "${myBadges.length}", AppLocalizations.of(context).reputationBadges, cOrange),
+      _buildStat(Icons.military_tech, "${score?.totalBadges ?? 0}", AppLocalizations.of(context).reputationBadges, cOrange),
       const SizedBox(width: 10),
       _buildStat(Icons.location_on, "${score?.uniqueMeetups ?? 0}", AppLocalizations.of(context).reputationMeetups, cCyan),
       const SizedBox(width: 10),
@@ -556,6 +567,50 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       _buildStat(Icons.link, "$_boundBadgeCount", AppLocalizations.of(context).reputationBound, Colors.green),
     ]);
   }
+
+  /// Statistik-Reihe plus Erklaerzeile zu nicht gezaehlten Badges.
+  Widget _buildStatsBlock(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildStatsRow(context),
+          _organizerHint(context),
+        ],
+      );
+
+  /// Erklaert die Luecke zwischen Wallet-Anzahl und gezaehlten Badges.
+
+  /// Ohne diesen Hinweis wirkt "1 Badge, 0 Meetups, Score 0.0" wie ein Fehler.
+
+  Widget _organizerHint(BuildContext context) {
+
+    final n = myBadges.where((b) => b.isOrganizer).length;
+
+    if (n == 0) return const SizedBox.shrink();
+
+    return Padding(
+
+      padding: const EdgeInsets.only(top: 10),
+
+      child: Row(children: [
+
+        const Icon(Icons.shield_outlined, color: cTextSecondary, size: 13),
+
+        const SizedBox(width: 7),
+
+        Expanded(
+
+          child: Text(AppLocalizations.of(context).reputationOrganizerNote(n),
+
+              style: const TextStyle(color: cTextTertiary, fontSize: 11.5, height: 1.35)),
+
+        ),
+
+      ]),
+
+    );
+
+  }
+
 
   Widget _buildStat(IconData icon, String value, String label, Color color) {
     return Expanded(
@@ -578,7 +633,10 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   }
 
   Widget _buildProofStatus(BuildContext context) {
-    final total = myBadges.length;
+    // Auch hier nur zaehlbare Badges: Ein unsignierter Organisator-Marker
+    // haette "alle verifiziert" sonst dauerhaft verhindert, obwohl er gar
+    // nicht verifizierbar IST.
+    final total = myBadges.where((b) => b.isNostrSigned && !b.isOrganizer).length;
     final verified = _verifiedBadgeCount;
     final bound = _boundBadgeCount;
     final allBound = total > 0 && bound == total;
