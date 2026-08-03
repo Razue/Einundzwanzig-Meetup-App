@@ -4742,6 +4742,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String reputationOrganizerNote(int count) {
-    return '$count Badge(s) zählen nicht: von dir selbst erstellte Meetups.';
+    return '$count Meetup(s) von dir organisiert — zählt nicht zum Score, da man sich nicht selbst bestätigen kann.';
   }
+
+  @override
+  String get apCrossConfirmTitle => 'Zweiter Organisator dabei?';
+
+  @override
+  String get apCrossConfirmBody =>
+      'Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.';
 }

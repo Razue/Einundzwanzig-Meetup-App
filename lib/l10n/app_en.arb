@@ -2256,12 +2256,14 @@
   "badgeOrganizerTitle": "ORGANIZER RECORD",
   "badgeOrganizerDesc": "You created this meetup yourself. The badge records that, but it is unsigned and does not count towards reputation — nobody can confirm themselves. You get a counting badge when another organizer on site starts their own session and you scan their code.",
   "walletOrganizerSection": "Created by you",
-  "reputationOrganizerNote": "{count} badge(s) do not count: meetups you created yourself.",
+  "reputationOrganizerNote": "{count} meetup(s) organized by you — not counted in the score, since nobody can confirm themselves.",
   "@reputationOrganizerNote": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
-  }
+  },
+  "apCrossConfirmTitle": "Another organizer present?",
+  "apCrossConfirmBody": "You don't get a counting badge for your own meetup — nobody can confirm themselves. If you both start a session and scan each other, you both get a real record of the evening."
 }

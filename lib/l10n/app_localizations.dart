@@ -8635,8 +8635,20 @@ abstract class AppLocalizations {
   /// No description provided for @reputationOrganizerNote.
   ///
   /// In de, this message translates to:
-  /// **'{count} Badge(s) zählen nicht: von dir selbst erstellte Meetups.'**
+  /// **'{count} Meetup(s) von dir organisiert — zählt nicht zum Score, da man sich nicht selbst bestätigen kann.'**
   String reputationOrganizerNote(int count);
+
+  /// No description provided for @apCrossConfirmTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zweiter Organisator dabei?'**
+  String get apCrossConfirmTitle;
+
+  /// No description provided for @apCrossConfirmBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.'**
+  String get apCrossConfirmBody;
 }
 
 class _AppLocalizationsDelegate

@@ -4726,6 +4726,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String reputationOrganizerNote(int count) {
-    return '$count insignia(s) no cuentan: meetups creados por ti.';
+    return '$count meetup(s) organizados por ti: no cuentan para la puntuación, ya que nadie puede confirmarse a sí mismo.';
   }
+
+  @override
+  String get apCrossConfirmTitle => '¿Hay otro organizador?';
+
+  @override
+  String get apCrossConfirmBody =>
+      'No obtienes una insignia que cuente por tu propio meetup: nadie puede confirmarse a sí mismo. Si ambos iniciáis una sesión y os escaneáis mutuamente, los dos tenéis una prueba real de la noche.';
 }

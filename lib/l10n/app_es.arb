@@ -2256,12 +2256,14 @@
   "badgeOrganizerTitle": "REGISTRO DE ORGANIZADOR",
   "badgeOrganizerDesc": "Creaste este meetup tú mismo. La insignia lo documenta, pero no está firmada y no cuenta para la reputación: nadie puede confirmarse a sí mismo. Obtienes una insignia que cuenta cuando otro organizador presente inicia su propia sesión y escaneas su código.",
   "walletOrganizerSection": "Creados por ti",
-  "reputationOrganizerNote": "{count} insignia(s) no cuentan: meetups creados por ti.",
+  "reputationOrganizerNote": "{count} meetup(s) organizados por ti: no cuentan para la puntuación, ya que nadie puede confirmarse a sí mismo.",
   "@reputationOrganizerNote": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
-  }
+  },
+  "apCrossConfirmTitle": "¿Hay otro organizador?",
+  "apCrossConfirmBody": "No obtienes una insignia que cuente por tu propio meetup: nadie puede confirmarse a sí mismo. Si ambos iniciáis una sesión y os escaneáis mutuamente, los dos tenéis una prueba real de la noche."
 }

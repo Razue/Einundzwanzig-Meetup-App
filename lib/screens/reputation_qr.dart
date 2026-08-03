@@ -583,7 +583,16 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
 
   Widget _organizerHint(BuildContext context) {
 
-    final n = myBadges.where((b) => b.isOrganizer).length;
+    // Eigene Meetups SICHTBAR machen, statt sie nur wegzurechnen: Wer
+    // organisiert, leistet den Aufwand — das gehoert gewuerdigt, nur eben
+    // klar getrennt vom Score (man kann sich nicht selbst bestaetigen).
+    // Gezaehlt werden MEETUPS, nicht Marker-Badges: zwei Marker fuer
+    // denselben Abend waeren sonst zwei "organisierte Meetups".
+    final n = myBadges
+        .where((b) => b.isOrganizer)
+        .map((b) => b.meetupEventId.isNotEmpty ? b.meetupEventId : b.id)
+        .toSet()
+        .length;
 
     if (n == 0) return const SizedBox.shrink();
 

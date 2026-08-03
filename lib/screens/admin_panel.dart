@@ -985,6 +985,34 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     AppLocalizations.of(context).apHowStep4,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.6, color: cTextSecondary),
                   ),
+                  // GEGENSEITIGE BESTAETIGUNG: Wer selbst ein Meetup erstellt,
+                  // bekommt dafuer nur einen unsignierten Marker — niemand kann
+                  // sich selbst bestaetigen. Der einzige Weg zu einem zaehlenden
+                  // Badge fuer den eigenen Abend ist ein zweiter Organisator vor
+                  // Ort. Das war bisher nirgends erklaert und wurde beim Feldtest
+                  // nur zufaellig entdeckt.
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: cCyan.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: cCyan.withValues(alpha: 0.35)),
+                    ),
+                    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Icon(Icons.handshake_outlined, color: cCyan, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(AppLocalizations.of(context).apCrossConfirmTitle,
+                              style: const TextStyle(color: cCyan, fontWeight: FontWeight.w700, fontSize: 12.5)),
+                          const SizedBox(height: 4),
+                          Text(AppLocalizations.of(context).apCrossConfirmBody,
+                              style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.45)),
+                        ]),
+                      ),
+                    ]),
+                  ),
                 ],
               ),
             ),

@@ -2278,12 +2278,14 @@
   "badgeOrganizerTitle": "ORGANISATOR-NACHWEIS",
   "badgeOrganizerDesc": "Du hast dieses Meetup selbst erstellt. Das Badge dokumentiert es, ist aber nicht signiert und zählt nicht zur Reputation — niemand kann sich selbst bestätigen. Ein zählendes Badge bekommst du, wenn ein anderer Organisator vor Ort eine eigene Session startet und du dessen Code scannst.",
   "walletOrganizerSection": "Von dir erstellt",
-  "reputationOrganizerNote": "{count} Badge(s) zählen nicht: von dir selbst erstellte Meetups.",
+  "reputationOrganizerNote": "{count} Meetup(s) von dir organisiert — zählt nicht zum Score, da man sich nicht selbst bestätigen kann.",
   "@reputationOrganizerNote": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
-  }
+  },
+  "apCrossConfirmTitle": "Zweiter Organisator dabei?",
+  "apCrossConfirmBody": "Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend."
 }
