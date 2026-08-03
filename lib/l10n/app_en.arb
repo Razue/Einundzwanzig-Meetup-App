@@ -1898,6 +1898,7 @@
   "convUnitBtc": "Bitcoin",
   "convSource": "Rate from mempool.space",
   "tileNews": "News",
+  "newsNew": "new",
   "tileNewsSub": "Read Einundzwanzig articles",
   "newsTitle": "News",
   "newsEmpty": "No articles found.",

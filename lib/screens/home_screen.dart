@@ -58,6 +58,7 @@ import 'bitcoin_dashboard_screen.dart';
 import 'log_screen.dart';
 import '../services/mempool.dart';
 import '../services/widget_service.dart';
+import '../services/news_service.dart';
 import '../services/signing_service.dart';
 import '../services/satoshiduell_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -128,6 +129,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // Profil
   String? _profilePicUrl;
   String? _localProfilePic;
+
+  // News-Leiste unter der Home-Meetup-Kachel.
+  // _newsNew  = Artikel, die seit dem letzten Oeffnen dazugekommen sind
+  // _newsTotal= Artikel im Feed (der RSS-Feed liefert ein rollierendes
+  //             Fenster, aktuell 35 — NICHT das Gesamtarchiv)
+  int _newsNew = 0;
+  int _newsTotal = 0;
+  int _newsLatestTs = 0; // Zeitstempel des neuesten Artikels, fuer "gelesen"
+  static const _kNewsSeenTs = 'news_last_seen_ts';
 
   // Nostr
   bool _nostrHasNew = false;
@@ -221,9 +231,52 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     }
   }
 
-  void _openNews() {
-    WidgetService.markNewsSeen(); // NEU-Markierung entfernen
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen()));
+  void _openNews() async {
+    WidgetService.markNewsSeen(); // NEU-Markierung im Homescreen-Widget
+    // Alles bis zum neuesten Artikel als gelesen merken -> Zaehler auf 0.
+    if (_newsLatestTs > 0) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_kNewsSeenTs, _newsLatestTs);
+      if (mounted) setState(() => _newsNew = 0);
+    }
+    if (mounted) {
+      await Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen()));
+    }
+  }
+
+  /// Zahlen fuer die News-Leiste: wie viele Artikel sind seit dem letzten
+  /// Oeffnen dazugekommen, und wie viele liegen insgesamt im Feed.
+  ///
+  /// HINWEIS zur zweiten Zahl: fetchArticles liest einen RSS-Feed, und der
+  /// enthaelt ein rollierendes Fenster der juengsten Artikel (aktuell 35),
+  /// nicht das komplette Archiv. "_newsTotal" ist also "Artikel im Feed".
+  Future<void> _loadNewsCounts() async {
+    try {
+      final articles = await NewsService.fetchArticles();
+      if (articles.isEmpty) return;
+      final prefs = await SharedPreferences.getInstance();
+      final seenTs = prefs.getInt(_kNewsSeenTs) ?? 0;
+      final latestTs = articles
+          .map((a) => a.publishedAt)
+          .reduce((a, b) => a > b ? a : b);
+      // Erster Start: nichts als "neu" markieren, sonst stuenden sofort 35
+      // ungelesene Artikel da. Stattdessen den aktuellen Stand als gelesen
+      // verbuchen und ab jetzt zaehlen.
+      if (seenTs == 0) {
+        await prefs.setInt(_kNewsSeenTs, latestTs);
+      }
+      final newCount =
+          seenTs == 0 ? 0 : articles.where((a) => a.publishedAt > seenTs).length;
+      if (mounted) {
+        setState(() {
+          _newsNew = newCount;
+          _newsTotal = articles.length;
+          _newsLatestTs = latestTs;
+        });
+      }
+    } catch (e) {
+      AppLogger.debug('News', 'Zaehler nicht ermittelbar: $e');
+    }
   }
 
   Future<void> _loadAppVersion() async {
@@ -385,7 +438,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (_user.nickname == 'Anon' || _user.nickname.isEmpty) { if (mounted) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); await _loadUser(); } }
     await _loadBadges(); await _calculateTrustScore(); await _reVerifyAdminStatus();
     _loadIdentityData(); _checkActiveSession(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
-    _loadNextHomeMeetup(); _loadProfilePicture(); _checkNostrNew();
+    _loadNextHomeMeetup(); _loadProfilePicture(); _checkNostrNew(); _loadNewsCounts();
   }
 
   void _loadProfilePicture() async {
@@ -801,6 +854,52 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   // ============================================================
   // BUILD
+  /// Schmale News-Leiste direkt unter der Home-Meetup-Kachel.
+  /// Links Symbol + "News", rechts zwei Zahlen: neue Artikel seit dem
+  /// letzten Oeffnen (orange, nur wenn > 0) und Artikel im Feed (grau).
+  Widget _buildNewsStrip() {
+    final t = AppLocalizations.of(context);
+    return GestureDetector(
+      onTap: _openNews,
+      child: Container(
+        height: 52,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cTileBorder, width: 0.5),
+        ),
+        child: Row(children: [
+          const Icon(Icons.article_rounded, color: cOrange, size: 20),
+          const SizedBox(width: 10),
+          Text(t.tileNews,
+              style: const TextStyle(
+                  color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+          const Spacer(),
+          if (_newsNew > 0) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: cOrange.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: cOrange.withValues(alpha: 0.5), width: 0.8),
+              ),
+              child: Text('$_newsNew ${t.newsNew}',
+                  style: const TextStyle(
+                      color: cOrange, fontSize: 11.5, fontWeight: FontWeight.w800)),
+            ),
+            const SizedBox(width: 10),
+          ],
+          if (_newsTotal > 0)
+            Text('$_newsTotal',
+                style: const TextStyle(color: cTextTertiary, fontSize: 12.5)),
+          const SizedBox(width: 6),
+          const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 18),
+        ]),
+      ),
+    );
+  }
+
   // ============================================================
   @override
   Widget build(BuildContext context) {
@@ -820,6 +919,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         if (_activeSession != null) ...[_buildActiveSessionTile(), const SizedBox(height: kTileGap)],
         // Fixe Home-Meetup-Kachel (immer gleiche Größe)
         _buildHomeMeetupTile(),
+        const SizedBox(height: kTileGap),
+        // Schmale News-Leiste — bewusst HIER und nicht im Kachel-Block:
+        // dort haben alle Zeilen dieselbe Hoehe, eine flache Kachel waere
+        // gar nicht moeglich.
+        _buildNewsStrip(),
         const SizedBox(height: kTileGap),
         // Restlicher Raum: Kachel-Block füllt exakt bis zur unteren Leiste
         Expanded(child: _buildScaledTileBlock()),

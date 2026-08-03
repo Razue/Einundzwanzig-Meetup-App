@@ -1920,6 +1920,7 @@
   "convUnitBtc": "Bitcoin",
   "convSource": "Kurs von mempool.space",
   "tileNews": "News",
+  "newsNew": "neu",
   "tileNewsSub": "Einundzwanzig Artikel lesen",
   "newsTitle": "News",
   "newsEmpty": "Keine Artikel gefunden.",

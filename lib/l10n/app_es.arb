@@ -1898,6 +1898,7 @@
   "convUnitBtc": "Bitcoin",
   "convSource": "Tasa de mempool.space",
   "tileNews": "Noticias",
+  "newsNew": "nuevo",
   "tileNewsSub": "Leer artículos de Einundzwanzig",
   "newsTitle": "Noticias",
   "newsEmpty": "No se encontraron artículos.",
