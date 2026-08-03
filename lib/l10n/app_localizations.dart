@@ -8623,7 +8623,7 @@ abstract class AppLocalizations {
   /// No description provided for @badgeOrganizerDesc.
   ///
   /// In de, this message translates to:
-  /// **'Du hast dieses Meetup selbst erstellt. Dieses Badge dokumentiert das — es ist nicht signiert und zählt nicht zur Reputation. Dafür braucht es die Bestätigung anderer.'**
+  /// **'Du hast dieses Meetup selbst erstellt. Das Badge dokumentiert es, ist aber nicht signiert und zählt nicht zur Reputation — niemand kann sich selbst bestätigen. Ein zählendes Badge bekommst du, wenn ein anderer Organisator vor Ort eine eigene Session startet und du dessen Code scannst.'**
   String get badgeOrganizerDesc;
 
   /// No description provided for @walletOrganizerSection.

@@ -2254,7 +2254,7 @@
   "apConfirmPickBody": "This name is permanently stored in every attendee's badge and cannot be changed later. If the location does not match the people present, they will see „too far away“ and receive no badge.",
   "apConfirmPickYes": "Yes, I am here",
   "badgeOrganizerTitle": "ORGANIZER RECORD",
-  "badgeOrganizerDesc": "You created this meetup yourself. This badge records that — it is unsigned and does not count towards reputation. That requires confirmation by others.",
+  "badgeOrganizerDesc": "You created this meetup yourself. The badge records that, but it is unsigned and does not count towards reputation — nobody can confirm themselves. You get a counting badge when another organizer on site starts their own session and you scan their code.",
   "walletOrganizerSection": "Created by you",
   "reputationOrganizerNote": "{count} badge(s) do not count: meetups you created yourself.",
   "@reputationOrganizerNote": {

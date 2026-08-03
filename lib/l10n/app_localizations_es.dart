@@ -4719,7 +4719,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get badgeOrganizerDesc =>
-      'Creaste este meetup tú mismo. Esta insignia lo documenta: no está firmada y no cuenta para la reputación. Para eso hace falta la confirmación de otros.';
+      'Creaste este meetup tú mismo. La insignia lo documenta, pero no está firmada y no cuenta para la reputación: nadie puede confirmarse a sí mismo. Obtienes una insignia que cuenta cuando otro organizador presente inicia su propia sesión y escaneas su código.';
 
   @override
   String get walletOrganizerSection => 'Creados por ti';

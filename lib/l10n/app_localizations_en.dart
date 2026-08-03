@@ -4691,7 +4691,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get badgeOrganizerDesc =>
-      'You created this meetup yourself. This badge records that — it is unsigned and does not count towards reputation. That requires confirmation by others.';
+      'You created this meetup yourself. The badge records that, but it is unsigned and does not count towards reputation — nobody can confirm themselves. You get a counting badge when another organizer on site starts their own session and you scan their code.';
 
   @override
   String get walletOrganizerSection => 'Created by you';
