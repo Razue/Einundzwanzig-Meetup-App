@@ -1275,10 +1275,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             children: [
               // Wasserzeichen: großes, transparentes Symbol unten rechts
               if (watermark != null)
+                // WASSERZEICHEN — bewusst BEIBEHALTEN: Sie sind eine
+                // Wiedererkennungshilfe, sobald man die Kacheln kennt.
+                // Geaendert wurde nur ihre Zurueckhaltung: kleiner und
+                // weiter in die Ecke geschoben, damit sie nicht mehr unter
+                // dem Text liegen. Ihre Farbe folgt dem Akzent der Kachel —
+                // mit den neuen Bereichsfarben unterscheiden sie sich damit
+                // von selbst und tragen zur Orientierung bei, statt als
+                // gleichfoermiges Muster zu flimmern.
                 Positioned(
-                  right: -12,
-                  bottom: -12,
-                  child: Icon(watermark, size: 96, color: accentColor.withValues(alpha: 0.10)),
+                  right: -18,
+                  bottom: -18,
+                  child: Icon(watermark, size: 84, color: accentColor.withValues(alpha: 0.10)),
                 ),
               // Bild-Wasserzeichen (z.B. SatoshiDuell-Logo) — gleiche
               // Position/Wirkung wie das Icon-Wasserzeichen.
@@ -1714,17 +1722,19 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
   Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: _heroContent(
       icon: Icons.account_tree_rounded,
-      accent: cOrange,
-      label: AppLocalizations.of(context).tileTrustNetwork,
-      value: AppLocalizations.of(context).tileTrustNetworkSub,
+      accent: cGreen,
+      label: AppLocalizations.of(context).tileActEncounters,
+      value: AppLocalizations.of(context).tileTrustNetwork,
       valueSize: 17,
+      sub: AppLocalizations.of(context).tileTrustNetworkSub,
     ));
   Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: _heroContent(
       icon: Icons.hub_rounded,
-      accent: cCyan,
-      label: AppLocalizations.of(context).tileCommunity,
-      value: AppLocalizations.of(context).tileCommunityPortal,
+      accent: cGreen,
+      label: AppLocalizations.of(context).tileActExchange,
+      value: AppLocalizations.of(context).tileCommunity,
       valueSize: 17,
+      sub: AppLocalizations.of(context).tileCommunityPortal,
     ));
   Widget _buildEventsTile() {
     final t = AppLocalizations.of(context);
@@ -1827,13 +1837,23 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     child: const _BtcDashboardTileContent(),
   );
 
-  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: _heroContent(
+  Widget _buildConverterTile() {
+    // Echter Wert statt Wegweiser: Der Kurs liegt ohnehin vor, also
+    // zeigt die Kachel gleich, was ein Euro heute in Sats ist.
+    final price = MempoolService.lastDashboard?.priceEur ?? 0;
+    final satsPerEur = price > 0 ? (100000000 / price).round() : 0;
+    return _tile(accentColor: cCyan, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: _heroContent(
       icon: Icons.swap_vert_rounded,
-      accent: cOrange,
-      label: AppLocalizations.of(context).tileConverter,
-      value: AppLocalizations.of(context).tileConverterSub,
+      accent: cCyan,
+      label: AppLocalizations.of(context).tileActConvert,
+      value: satsPerEur > 0
+          ? '1 € = ${satsPerEur.toString().replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+$)"), (m) => "${m[1]}.")} sats'
+          : AppLocalizations.of(context).tileConverter,
       valueSize: 17,
+      sub: AppLocalizations.of(context).tileConverterSub,
     ));
+  }
+
   Widget _buildNewsTile() => _tile(
     accentColor: cOrange,
     opacity: 0.07,
@@ -1864,25 +1884,28 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: _heroContent(
       icon: Icons.groups_rounded,
-      accent: cOrange,
-      label: AppLocalizations.of(context).tilePortal,
-      value: AppLocalizations.of(context).tilePortalSub,
+      accent: cCyan,
+      label: AppLocalizations.of(context).tileActLookup,
+      value: AppLocalizations.of(context).tilePortal,
       valueSize: 17,
+      sub: AppLocalizations.of(context).tilePortalSub,
       trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: _heroContent(
       icon: Icons.campaign_rounded,
       accent: cOrange,
-      label: AppLocalizations.of(context).tileShoutout,
-      value: AppLocalizations.of(context).tileShoutoutSend,
+      label: AppLocalizations.of(context).tileActSend,
+      value: AppLocalizations.of(context).tileShoutout,
       valueSize: 17,
+      sub: AppLocalizations.of(context).tileShoutoutSend,
     ));
   Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: _heroContent(
       icon: Icons.podcasts_rounded,
-      accent: cPurple,
-      label: AppLocalizations.of(context).tilePodcast,
-      value: AppLocalizations.of(context).tilePodcastListen,
+      accent: cPurpleLight,
+      label: AppLocalizations.of(context).tileActListen,
+      value: AppLocalizations.of(context).tilePodcast,
       valueSize: 17,
+      sub: AppLocalizations.of(context).tilePodcastListen,
     ));
   /// PLEBRAP: Die Kachel IST der Player — Play/Pause/Weiter direkt auf dem
   /// Dashboard, Bibliotheks-Knopf oeffnet die volle Titelliste. Player-
@@ -2072,8 +2095,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _buildOrganisatorTile() => _tile(accentColor: cOrange, watermark: Icons.admin_panel_settings_rounded, onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())); _checkActiveSession(); }, child: _heroContent(
       icon: Icons.admin_panel_settings_rounded,
       accent: cOrange,
-      label: AppLocalizations.of(context).tileOrganizer,
-      value: AppLocalizations.of(context).tileOrganizerPanel,
+      label: AppLocalizations.of(context).tileActManage,
+      value: AppLocalizations.of(context).tileOrganizer,
+      sub: AppLocalizations.of(context).tileOrganizerPanel,
       valueSize: 17,
       trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ));
@@ -2084,10 +2108,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WotDashboardScreen())),
     child: _heroContent(
       icon: Icons.account_tree_rounded,
-      accent: cOrange,
-      label: AppLocalizations.of(context).tileWot,
-      value: AppLocalizations.of(context).tileWotSubtitle,
+      accent: cGreen,
+      label: AppLocalizations.of(context).tileActNetwork,
+      value: AppLocalizations.of(context).tileWot,
       valueSize: 17,
+      sub: AppLocalizations.of(context).tileWotSubtitle,
       trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ),
   );

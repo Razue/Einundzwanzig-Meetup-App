@@ -2285,5 +2285,14 @@
         "type": "int"
       }
     }
-  }
+  },
+  "tileActListen": "Para escuchar",
+  "tileActConvert": "Convertir",
+  "tileActExchange": "Intercambio",
+  "tileActSend": "Enviar",
+  "tileActExplore": "Explorar",
+  "tileActLookup": "Consultar",
+  "tileActNetwork": "Red",
+  "tileActEncounters": "Encuentros",
+  "tileActManage": "Gestionar"
 }

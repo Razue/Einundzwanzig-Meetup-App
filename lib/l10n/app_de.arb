@@ -2307,5 +2307,14 @@
         "type": "int"
       }
     }
-  }
+  },
+  "tileActListen": "Zum Hören",
+  "tileActConvert": "Umrechnen",
+  "tileActExchange": "Austausch",
+  "tileActSend": "Senden",
+  "tileActExplore": "Entdecken",
+  "tileActLookup": "Nachschlagen",
+  "tileActNetwork": "Netzwerk",
+  "tileActEncounters": "Begegnungen",
+  "tileActManage": "Verwalten"
 }
