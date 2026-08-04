@@ -14,7 +14,7 @@ import 'package:http/http.dart' as http;
 import '../services/app_logger.dart';
 
 /// Ziel-Lightning-Adresse für Spenden ans Projekt.
-const String kV4VLightningAddress = 'wolpertinger1@breez.fun';
+const String kV4VLightningAddress = 'wolpertinger1@timecatcher.lnbits.de';
 
 class V4VResult {
   final bool ok;
