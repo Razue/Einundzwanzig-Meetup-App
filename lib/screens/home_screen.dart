@@ -1654,14 +1654,22 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
       Row(children: [
-        Icon(icon, color: accent, size: 15),
-        const SizedBox(width: 7),
+        Icon(icon, color: accent, size: 16),
+        const SizedBox(width: 6),
+        // Das Etikett ist der Aufhaenger: in der Akzentfarbe der Kachel und
+        // fett, damit man in einem Blick weiss, WAS man da sieht.
+        // FittedBox statt Abschneiden — "REPUTATION" passte in einer
+        // Drittel-Kachel sonst nicht und wurde zu "REPUTATI…".
         Expanded(
-          child: Text(label.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  color: cTextSecondary, fontSize: 10.5, letterSpacing: 1.2, fontWeight: FontWeight.w600)),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(label.toUpperCase(),
+                maxLines: 1,
+                softWrap: false,
+                style: TextStyle(
+                    color: accent, fontSize: 12, letterSpacing: 1.1, fontWeight: FontWeight.w800)),
+          ),
         ),
         if (trailing != null) trailing,
       ]),
@@ -1676,7 +1684,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         Text(sub,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: cTextSecondary, fontSize: 12)),
+            style: const TextStyle(color: cTextSecondary, fontSize: 12.5)),
       ],
     ]);
   }
@@ -1697,12 +1705,27 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         sub: counted > 0
             ? AppLocalizations.of(context).tileReputationBadges(counted)
             : AppLocalizations.of(context).tileReputationCheck,
-        valueColor: _levelColor,
+        // Weiss statt Stufenfarbe: Die Stufenfarben (Amber, Gruen, Cyan)
+        // haben auf dem goldenen Untergrund zu wenig Kontrast — die Zahl
+        // war schlechter lesbar als der Rest der Kachel.
+        valueSize: 26,
       ),
     );
   }
-  Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.account_tree_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
-  Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: _heroContent(
+      icon: Icons.account_tree_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tileTrustNetwork,
+      value: AppLocalizations.of(context).tileTrustNetworkSub,
+      valueSize: 17,
+    ));
+  Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: _heroContent(
+      icon: Icons.hub_rounded,
+      accent: cCyan,
+      label: AppLocalizations.of(context).tileCommunity,
+      value: AppLocalizations.of(context).tileCommunityPortal,
+      valueSize: 17,
+    ));
   Widget _buildEventsTile() {
     final t = AppLocalizations.of(context);
     final hasToday = _eventsToday > 0;
@@ -1804,7 +1827,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     child: const _BtcDashboardTileContent(),
   );
 
-  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: _heroContent(
+      icon: Icons.swap_vert_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tileConverter,
+      value: AppLocalizations.of(context).tileConverterSub,
+      valueSize: 17,
+    ));
   Widget _buildNewsTile() => _tile(
     accentColor: cOrange,
     opacity: 0.07,
@@ -1833,9 +1862,28 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     ),
   );
 
-  Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextSecondary, fontSize: 13))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
-  Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
-  Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: _heroContent(
+      icon: Icons.groups_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tilePortal,
+      value: AppLocalizations.of(context).tilePortalSub,
+      valueSize: 17,
+      trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
+    ));
+  Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: _heroContent(
+      icon: Icons.campaign_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tileShoutout,
+      value: AppLocalizations.of(context).tileShoutoutSend,
+      valueSize: 17,
+    ));
+  Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: _heroContent(
+      icon: Icons.podcasts_rounded,
+      accent: cPurple,
+      label: AppLocalizations.of(context).tilePodcast,
+      value: AppLocalizations.of(context).tilePodcastListen,
+      valueSize: 17,
+    ));
   /// PLEBRAP: Die Kachel IST der Player — Play/Pause/Weiter direkt auf dem
   /// Dashboard, Bibliotheks-Knopf oeffnet die volle Titelliste. Player-
   /// Zustand kommt aus dem app-weiten PlebrapAudio-Service, laeuft also
@@ -1939,27 +1987,38 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             joined.add(spans[i]);
           }
           final n = st.myTurn + st.lobby;
-          return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Wert der Kachel ist die Anzahl offener Partien. Steht nichts an,
+          // traegt der Name die Kachel — eine grosse Null waere truebselig.
+          return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
             Row(children: [
-              const Icon(Icons.bolt_rounded, color: gold, size: 22),
-              const Spacer(),
-              if (n > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: gold.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(9),
-                    border: Border.all(color: gold.withValues(alpha: 0.5), width: 0.8),
-                  ),
-                  child: Text('$n', style: const TextStyle(color: gold, fontSize: 11.5, fontWeight: FontWeight.w800)),
+              const Icon(Icons.bolt_rounded, color: gold, size: 16),
+              const SizedBox(width: 6),
+              const Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('SATOSHIDUELL',
+                      maxLines: 1,
+                      softWrap: false,
+                      style: TextStyle(
+                          color: gold, fontSize: 12, letterSpacing: 1.1, fontWeight: FontWeight.w800)),
                 ),
+              ),
             ]),
-            const SizedBox(height: 12),
-            const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 3),
-            joined.isEmpty
-                ? Text(t.chDuellSub, style: const TextStyle(color: cTextSecondary, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)
-                : Text.rich(TextSpan(children: joined), style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 7),
+            Text(n > 0 ? '$n' : t.chDuellSub,
+                maxLines: n > 0 ? 1 : 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: n > 0 ? cText : cTextSecondary,
+                    fontSize: n > 0 ? 26 : 14,
+                    fontWeight: FontWeight.w800,
+                    height: 1.12)),
+            if (joined.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text.rich(TextSpan(children: joined),
+                  style: const TextStyle(fontSize: 12.5), maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
           ]);
         },
       ),
@@ -1972,13 +2031,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     accentColor: cOrange,
     watermark: Icons.public_rounded,
     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalAreaScreen())),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Icon(Icons.public_rounded, color: cOrange, size: 22),
-      const SizedBox(height: 12),
-      const Text('Portal', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-      const SizedBox(height: 3),
-      Text(AppLocalizations.of(context).chPortalSub, style: const TextStyle(color: cTextSecondary, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-    ]),
+    child: _heroContent(
+      icon: Icons.public_rounded,
+      accent: cOrange,
+      label: 'Portal',
+      value: AppLocalizations.of(context).chPortalSub,
+      valueSize: 17,
+    ),
   );
 
   Widget _buildNostrTile() => _tile(
@@ -2010,22 +2069,27 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       ),
     ]),
   );
-  Widget _buildOrganisatorTile() => _tile(accentColor: cOrange, watermark: Icons.admin_panel_settings_rounded, onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())); _checkActiveSession(); }, child: Row(children: [const Icon(Icons.admin_panel_settings_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileOrganizer, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileOrganizerPanel, style: const TextStyle(color: cTextSecondary, fontSize: 13))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
+  Widget _buildOrganisatorTile() => _tile(accentColor: cOrange, watermark: Icons.admin_panel_settings_rounded, onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())); _checkActiveSession(); }, child: _heroContent(
+      icon: Icons.admin_panel_settings_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tileOrganizer,
+      value: AppLocalizations.of(context).tileOrganizerPanel,
+      valueSize: 17,
+      trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
+    ));
 
   Widget _buildWotDashboardTile() => _tile(
     accentColor: cOrange,
     watermark: Icons.account_tree_rounded,
     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WotDashboardScreen())),
-    child: Row(children: [
-      const Icon(Icons.account_tree_rounded, color: cTextSecondary, size: 22),
-      const SizedBox(width: 12),
-      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(AppLocalizations.of(context).tileWot, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 3),
-        Text(AppLocalizations.of(context).tileWotSubtitle, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
-      ])),
-      const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
-    ]),
+    child: _heroContent(
+      icon: Icons.account_tree_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tileWot,
+      value: AppLocalizations.of(context).tileWotSubtitle,
+      valueSize: 17,
+      trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
+    ),
   );
 
   Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, __) => GestureDetector(
