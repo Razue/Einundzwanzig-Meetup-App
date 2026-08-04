@@ -129,6 +129,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // damit sie das Dashboard nicht ausbremsen.
   int _unreadNews = 0;
   int _eventsToday = 0;
+  /// Titel des neuesten Artikels — macht aus der News-Kachel einen echten
+  /// Anreiz statt einer blossen Beschriftung.
+  String _latestNewsTitle = '';
 
   /// Graue "Verfuegbar"-Sektion eingeklappt? Standard: ja, damit der
   /// Alltagsblick knapp bleibt.
@@ -251,7 +254,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // --- News: seit dem letzten Besuch dazugekommen ---
     try {
       final n = await NewsService.unreadCount();
-      if (mounted && n != _unreadNews) setState(() => _unreadNews = n);
+      final articles = await NewsService.cachedArticles();
+      // Nicht auf die Feed-Reihenfolge verlassen — den juengsten Artikel
+      // ueber den Zeitstempel bestimmen.
+      String title = '';
+      if (articles.isNotEmpty) {
+        final newest = articles.reduce((a, b) => a.publishedAt >= b.publishedAt ? a : b);
+        title = newest.title.trim();
+      }
+      if (mounted && (n != _unreadNews || title != _latestNewsTitle)) {
+        setState(() {
+          _unreadNews = n;
+          _latestNewsTitle = title;
+        });
+      }
     } catch (e) {
       AppLogger.warn('Dashboard', 'News-Zaehler fehlgeschlagen: ${e.runtimeType}');
     }
@@ -1074,7 +1090,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           if (i > 0) const SizedBox(height: kTileGap),
           // Leicht gedaempft. Die eigentliche Abgrenzung leistet inzwischen
           // der Anstrich (schlicht statt gold), deshalb reicht ein Hauch.
-          Opacity(opacity: 0.8, child: SizedBox(height: 96, child: rows[i])),
+          Opacity(opacity: 0.8, child: SizedBox(height: 118, child: rows[i])),
         ],
     ]);
   }
@@ -1096,7 +1112,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     final rows = _buildTileRows(excludeHomeMeetup: true);
     if (rows.isEmpty) return const SizedBox.shrink();
 
-    const double minRowHeight = 92;
+    // 118 statt 92 — der Wert stammt aus Razues PR #8: Icon 22 + Abstand +
+    // Titel + Untertitel brauchen mit dem Innenabstand zusammen mehr Platz.
+    // Mein Umbau des Blocks hatte den Wert versehentlich zurueckgesetzt,
+    // wodurch Kacheln wieder aus ihrem Kasten liefen.
+    const double minRowHeight = 118;
     final gaps = (rows.length - 1) * kTileGap;
     final perRow = (targetHeight - gaps) / rows.length;
     // Fuellen, solange es reicht — sonst Mindesthoehe und ueberstehen lassen.
@@ -1550,9 +1570,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
             ]),
             const SizedBox(height: 6),
+            // Der Ortsname wird NICHT mehr abgeschnitten: Bei laengeren
+            // Namen schrumpft die Schrift und darf auf zwei Zeilen umbrechen
+            // ("3 Länder Eck Hessen BaWü Baye"). Die Staffelung ist bewusst
+            // grob — feinere Abstufungen bringen optisch nichts.
             Text(cityName.toUpperCase(),
-              maxLines: 1, overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: cText, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5, height: 1.05)),
+              maxLines: 2,
+              softWrap: true,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: cText,
+                  fontSize: cityName.length > 22 ? 14 : cityName.length > 14 ? 17 : 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                  height: 1.05)),
           ])),
           const SizedBox(width: 10),
           SizedBox(
@@ -1736,32 +1767,47 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       const Icon(Icons.article_rounded, color: cOrange, size: 22),
       const SizedBox(width: 12),
       Expanded(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(AppLocalizations.of(context).tileNews,
-              style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 3),
-          // Untertitel wechselt: Zaehler statt Standardtext, sobald es
-          // wirklich etwas Neues gibt.
-          Text(
-            _unreadNews > 0
-                ? AppLocalizations.of(context).tileNewsUnread(_unreadNews)
-                : AppLocalizations.of(context).tileNewsSub,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                color: _unreadNews > 0 ? cOrange : cTextTertiary, fontSize: 12),
-          ),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(children: [
+              Text(AppLocalizations.of(context).tileNews,
+                  style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+              // Zaehler direkt neben dem Titel statt am Zeilenende — dort
+              // faellt er eher ins Auge.
+              if (_unreadNews > 0) ...[
+                const SizedBox(width: 7),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                  decoration: BoxDecoration(
+                      color: cRed, borderRadius: BorderRadius.circular(8)),
+                  child: Text('$_unreadNews',
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800)),
+                ),
+              ],
+            ]),
+            const SizedBox(height: 3),
+            // DER ANREIZ: die echte Schlagzeile des neuesten Artikels statt
+            // "Einundzwanzig Artikel lesen". Wer sie sieht, weiss sofort,
+            // ob es sich lohnt. Erst wenn nichts geladen ist, greift der
+            // alte Standardtext.
+            Text(
+              _latestNewsTitle.isNotEmpty
+                  ? _latestNewsTitle
+                  : AppLocalizations.of(context).tileNewsSub,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: _unreadNews > 0 ? cText : cTextTertiary,
+                  fontSize: 12,
+                  height: 1.3),
+            ),
+          ],
+        ),
       ),
-      if (_unreadNews > 0)
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-          decoration: BoxDecoration(color: cRed, borderRadius: BorderRadius.circular(9)),
-          child: Text('$_unreadNews',
-              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
-        )
-      else
-        const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
+      const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ]));
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
