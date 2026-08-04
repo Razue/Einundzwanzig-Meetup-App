@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../services/haptic_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -350,7 +351,7 @@ class _QrScanScreenState extends State<_QrScanScreen> {
         final npub = _extractNpub(raw);
         if (npub != null) {
           setState(() => _done = true);
-          HapticFeedback.mediumImpact();
+          HapticService.medium();
           Navigator.pop(context, npub);
           return;
         }

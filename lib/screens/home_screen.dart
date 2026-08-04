@@ -19,6 +19,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'package:image_picker/image_picker.dart';
 import '../theme.dart';
+import '../services/haptic_service.dart';
+import '../widgets/pressable.dart';
 import '../models/user.dart';
 import '../models/meetup.dart';
 import '../models/badge.dart';
@@ -1235,11 +1237,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // Flat tile — kein Gradient, kein farbiger Hintergrund
   // accentColor + opacity bleiben als Parameter (Rückwärtskompatibilität), werden aber ignoriert.
   Widget _tile({required Widget child, required Color accentColor, VoidCallback? onTap, double opacity = 0.06, IconData? watermark, String? watermarkAsset}) {
-    return GestureDetector(
-      onTap: onTap,
-      // KEIN onLongPress mehr: Der Langdruck gehoert jetzt _wrapEditable,
-      // das den Bearbeiten-Modus oeffnet. Ein Erkenner hier drinnen wuerde
-      // ihn abfangen, bevor die Huelle ihn sieht (innere Geste gewinnt).
+    // Pressable statt GestureDetector: Die Kachel sinkt beim Antippen leicht
+    // ein und gibt einen kurzen Haptik-Impuls. KEIN onLongPress hier — der
+    // Langdruck gehoert _wrapEditable (Bearbeiten-Modus); ein Erkenner an
+    // dieser Stelle wuerde ihn abfangen, bevor die Huelle ihn sieht.
+    return Pressable(
+      onTap: onTap == null
+          ? null
+          : () {
+              HapticService.light();
+              onTap();
+            },
       child: Container(
         // ANGEHEFTET: derselbe goldene Verlauf wie die Home-Meetup-Kachel,
         // damit oben alles zusammengehoerig wirkt. VERFUEGBAR: schlicht.

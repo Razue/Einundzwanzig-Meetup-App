@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/haptic_service.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../theme.dart';
@@ -380,7 +381,7 @@ class _NpubScanScreenState extends State<_NpubScanScreen> {
         if (code.startsWith('nostr:')) code = code.replaceFirst('nostr:', '');
         if (code.startsWith('npub1') && code.length > 50) {
           setState(() => _done = true);
-          HapticFeedback.mediumImpact();
+          HapticService.medium();
           Navigator.pop(context, code);
           return;
         }

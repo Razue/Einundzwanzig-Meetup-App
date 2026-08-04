@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../services/haptic_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,7 +26,7 @@ class _AppShellState extends State<AppShell> {
 
   Future<void> _doHaptic() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('haptic_enabled') ?? true) HapticFeedback.selectionClick();
+    if (prefs.getBool('haptic_enabled') ?? true) HapticService.light();
   }
 
   void _onTabTap(int index) {
@@ -51,7 +52,7 @@ class _AppShellState extends State<AppShell> {
   // Öffnet das Scan-Auswahlmenü mit drei Optionen
   void _openScanner() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('haptic_enabled') ?? true) HapticFeedback.mediumImpact();
+    if (prefs.getBool('haptic_enabled') ?? true) HapticService.medium();
 
     if (!mounted) return;
     showModalBottomSheet(

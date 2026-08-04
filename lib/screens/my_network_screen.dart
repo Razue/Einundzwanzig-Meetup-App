@@ -1,4 +1,5 @@
 import 'dart:math';
+import '../services/haptic_service.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -282,7 +283,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
       if (d < best) { best = d; hit = n; }
     }
     if (hit != null) {
-      HapticFeedback.selectionClick();
+      HapticService.light();
       _showNodeDetail(t, hit.contact!);
     }
   }
