@@ -2443,8 +2443,8 @@ abstract class AppLocalizations {
   /// No description provided for @writerValidHours.
   ///
   /// In de, this message translates to:
-  /// **'⏱️ Gültig für {hours}h\n\n'**
-  String writerValidHours(Object hours);
+  /// **'Gültig für 6 Stunden'**
+  String get writerValidity;
 
   /// No description provided for @writerHoldTag.
   ///
@@ -3184,6 +3184,12 @@ abstract class AppLocalizations {
   /// **'📦 {size}B (kompakt)\n'**
   String writerCompactSize(Object size);
 
+  /// No description provided for @writerValidHours.
+  ///
+  /// In de, this message translates to:
+  /// **'⏱️ Gültig für {hours}h\n\n'**
+  String writerValidHours(Object hours);
+
   /// No description provided for @verifyErrNoNdef.
   ///
   /// In de, this message translates to:
@@ -3523,7 +3529,7 @@ abstract class AppLocalizations {
   /// No description provided for @apNewMeetupBody.
   ///
   /// In de, this message translates to:
-  /// **'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 4 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.'**
+  /// **'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.'**
   String get apNewMeetupBody;
 
   /// No description provided for @apSessionEndBody.
@@ -3535,7 +3541,7 @@ abstract class AppLocalizations {
   /// No description provided for @apGeneratesProof.
   ///
   /// In de, this message translates to:
-  /// **'Generiert einen neuen kryptographischen Beweis für die nächsten 4 Stunden.'**
+  /// **'Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.'**
   String get apGeneratesProof;
 
   /// No description provided for @humTitle.
@@ -8499,192 +8505,96 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} Duplikate entfernt.'**
   String walletCleanupDone(int count);
-
   /// No description provided for @orgGpsSoftTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Ohne Standort fortfahren?'**
   String get orgGpsSoftTitle;
 
   /// No description provided for @orgGpsSoftBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Du kannst das Meetup trotzdem erstellen und den Namen selbst eintragen. Ohne Standort können Teilnehmer allerdings nicht per Umkreis bestätigt werden — ihre Badges gelten dann als ungeprüfte Präsenz.'**
   String get orgGpsSoftBody;
 
   /// No description provided for @orgGpsSoftContinue.
-  ///
-  /// In de, this message translates to:
-  /// **'Ohne Standort'**
   String get orgGpsSoftContinue;
 
   /// No description provided for @badgeUnverified.
-  ///
-  /// In de, this message translates to:
-  /// **'Präsenz ungeprüft'**
   String get badgeUnverified;
 
   /// No description provided for @badgeUnverifiedInfo.
-  ///
-  /// In de, this message translates to:
-  /// **'Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.'**
   String get badgeUnverifiedInfo;
 
   /// No description provided for @verifyClose.
-  ///
-  /// In de, this message translates to:
-  /// **'SCHLIESSEN'**
   String get verifyClose;
 
   /// No description provided for @verifyOpenWallet.
-  ///
-  /// In de, this message translates to:
-  /// **'ZUR WALLET'**
   String get verifyOpenWallet;
 
-  /// No description provided for @writerValidity.
-  ///
-  /// In de, this message translates to:
-  /// **'Gültig für 4 Stunden'**
-  String get writerValidity;
-
   /// No description provided for @apPickPortalTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Meetup auswählen'**
   String get apPickPortalTitle;
 
   /// No description provided for @apPickPortalHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Wähle das Meetup, an dem du gerade bist. Der hinterlegte Ort dient den Teilnehmern als Anhaltspunkt — ein falscher Eintrag verfälscht ihre Bestätigung.'**
   String get apPickPortalHint;
 
   /// No description provided for @apEnterManually.
-  ///
-  /// In de, this message translates to:
-  /// **'Name selbst eingeben'**
   String get apEnterManually;
 
   /// No description provided for @apCustomNeedsGpsTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Standort nötig'**
   String get apCustomNeedsGpsTitle;
 
   /// No description provided for @apCustomNeedsGpsBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Ein Meetup mit eigenem Namen lässt sich nur erstellen, wenn dein Standort ermittelbar ist — er ist der einzige Bezugspunkt, an dem die Anwesenheit der Teilnehmer geprüft werden kann.\n\nDrei Wege: Geh kurz vor die Tür und versuche es erneut, wähle stattdessen ein Meetup aus dem Portal, oder lass jemand anderen vor Ort mit funktionierender Ortung das Badge erstellen.'**
   String get apCustomNeedsGpsBody;
 
   /// No description provided for @apNoRefTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Kein Bezugspunkt'**
   String get apNoRefTitle;
 
   /// No description provided for @apNoRefContinue.
-  ///
-  /// In de, this message translates to:
-  /// **'Trotzdem erstellen'**
   String get apNoRefContinue;
 
   /// No description provided for @apNoRefBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Für „{city}“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.'**
   String apNoRefBody(String city);
 
   /// No description provided for @apConfirmPickTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Bist du hier?'**
   String get apConfirmPickTitle;
 
   /// No description provided for @apConfirmPickBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Dieser Name steht dauerhaft im Badge jedes Teilnehmers und lässt sich nachträglich nicht ändern. Passt der Ort nicht zu den Anwesenden, bekommen sie die Meldung „zu weit entfernt“ und kein Badge.'**
   String get apConfirmPickBody;
 
   /// No description provided for @apConfirmPickYes.
-  ///
-  /// In de, this message translates to:
-  /// **'Ja, hier bin ich'**
   String get apConfirmPickYes;
 
   /// No description provided for @badgeOrganizerTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'ORGANISATOR-NACHWEIS'**
   String get badgeOrganizerTitle;
 
   /// No description provided for @badgeOrganizerDesc.
-  ///
-  /// In de, this message translates to:
-  /// **'Du hast dieses Meetup selbst erstellt. Das Badge dokumentiert es, ist aber nicht signiert und zählt nicht zur Reputation — niemand kann sich selbst bestätigen. Ein zählendes Badge bekommst du, wenn ein anderer Organisator vor Ort eine eigene Session startet und du dessen Code scannst.'**
   String get badgeOrganizerDesc;
 
   /// No description provided for @walletOrganizerSection.
-  ///
-  /// In de, this message translates to:
-  /// **'Von dir erstellt'**
   String get walletOrganizerSection;
 
   /// No description provided for @reputationOrganizerNote.
-  ///
-  /// In de, this message translates to:
-  /// **'{count} Meetup(s) von dir organisiert — zählt nicht zum Score, da man sich nicht selbst bestätigen kann.'**
   String reputationOrganizerNote(int count);
 
   /// No description provided for @apCrossConfirmTitle.
-  ///
-  /// In de, this message translates to:
-  /// **'Zweiter Organisator dabei?'**
   String get apCrossConfirmTitle;
 
   /// No description provided for @apCrossConfirmBody.
-  ///
-  /// In de, this message translates to:
-  /// **'Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.'**
   String get apCrossConfirmBody;
 
   /// No description provided for @tileEventsToday.
-  ///
-  /// In de, this message translates to:
-  /// **'heute im Veranstaltungskalender'**
   String get tileEventsToday;
 
   /// No description provided for @tileNewsUnread.
-  ///
-  /// In de, this message translates to:
-  /// **'{count} neu seit deinem Besuch'**
   String tileNewsUnread(int count);
 
   /// No description provided for @tilesAvailable.
-  ///
-  /// In de, this message translates to:
-  /// **'Verfügbar'**
   String get tilesAvailable;
 
   /// No description provided for @tilesEditHint.
-  ///
-  /// In de, this message translates to:
-  /// **'Auf eine andere Kachel ziehen zum Verschieben · Nadel zum An- und Abheften'**
   String get tilesEditHint;
 
   /// No description provided for @tilesEditDone.
-  ///
-  /// In de, this message translates to:
-  /// **'Fertig'**
   String get tilesEditDone;
 
   /// No description provided for @tileReputationBadges.
-  ///
-  /// In de, this message translates to:
-  /// **'{count} gezählte Badges'**
   String tileReputationBadges(int count);
+
 }
 
 class _AppLocalizationsDelegate
