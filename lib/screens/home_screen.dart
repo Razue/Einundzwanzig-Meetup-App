@@ -324,7 +324,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'trust_score',  label: 'Trust Score',      span: 2, removable: false, builder: _buildTrustScoreTile),
       // countdown-Kachel wurde in Home Meetup integriert
       _TileDef(id: 'home_meetup',  label: 'Home Meetup',      span: 3, removable: false, builder: _buildHomeMeetupTile),
-      _TileDef(id: 'reputation',   label: 'Reputation',       span: 1, removable: false, builder: _buildReputationTile),
+      _TileDef(id: 'reputation',   label: 'Reputation',       span: 1, builder: _buildReputationTile),
       // ── Optionale Kacheln (removable: true) ──
       _TileDef(id: 'community',    label: 'Community',        span: 2, builder: _buildCommunityTile),
       _TileDef(id: 'trust_network', label: 'Vertrauensnetzwerk', span: 2, builder: _buildTrustNetworkTile),
@@ -333,7 +333,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'podcast',      label: 'Podcast',          span: 1, builder: _buildPodcastTile),
       _TileDef(id: 'satoshiduell', label: 'SatoshiDuell',     span: 2, builder: _buildSatoshiDuellTile),
       _TileDef(id: 'portal_area',  label: 'Portal',           span: 2, builder: _buildPortalAreaTile),
-      _TileDef(id: 'plebrap',      label: 'PlebRap',          span: 2, builder: _buildPlebrapTile),
+      // Volle Breite: Der Mini-Player traegt Titel, Kuenstler und drei
+      // Bedienelemente — auf zwei Dritteln ueberlappten sie sich.
+      _TileDef(id: 'plebrap',      label: 'PlebRap',          span: 3, builder: _buildPlebrapTile),
       _TileDef(id: 'nostr',        label: 'Nostr',            span: 1, builder: _buildNostrTile),
       _TileDef(id: 'portal_connect', label: 'Portal', span: 2, builder: _buildPortalConnectTile),
       _TileDef(id: 'converter',    label: 'Rechner',          span: 1, builder: _buildConverterTile),
@@ -1579,7 +1581,16 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   color: cText,
-                  fontSize: cityName.length > 22 ? 14 : cityName.length > 14 ? 17 : 22,
+                  // Feiner gestaffelt als zuvor: Bei ~188 px nutzbarer Breite
+                  // passen in 22 pt nur rund zehn Grossbuchstaben. "ASCHAFFENBURG"
+                  // (13) brach deshalb trotz Staffelung noch um.
+                  fontSize: cityName.length > 20
+                      ? 13
+                      : cityName.length > 15
+                          ? 15
+                          : cityName.length > 10
+                              ? 17
+                              : 22,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
                   height: 1.05)),
@@ -1661,13 +1672,22 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(Icons.event_rounded, color: hasToday ? cOrange : cTextSecondary, size: 22),
         const SizedBox(height: 12),
-        if (hasToday)
-          Text('$_eventsToday',
-              style: const TextStyle(
-                  color: cText, fontSize: 22, fontWeight: FontWeight.w800, height: 1))
-        else
+        // Der Name bleibt IMMER stehen — sonst weiss niemand, wofuer die
+        // Kachel steht. Die Anzahl sitzt als Plakette daneben, wie bei News.
+        Row(children: [
           Text(AppLocalizations.of(context).tileEvents,
               style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+          if (hasToday) ...[
+            const SizedBox(width: 7),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(color: cOrange, borderRadius: BorderRadius.circular(8)),
+              child: Text('$_eventsToday',
+                  style: const TextStyle(
+                      color: Colors.black, fontSize: 11, fontWeight: FontWeight.w800)),
+            ),
+          ],
+        ]),
         const SizedBox(height: 3),
         Text(
           hasToday
@@ -1835,7 +1855,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     fontWeight: song != null ? FontWeight.w600 : FontWeight.w400),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             if (song != null)
-              Text(song.artist, style: const TextStyle(color: cTextTertiary, fontSize: 10.5),
+              Text(song.artist, style: const TextStyle(color: cTextSecondary, fontSize: 12),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
           ])),
           // Play/Pause — Spinner waehrend des Ladens

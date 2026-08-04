@@ -1249,9 +1249,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get writerSuccess => '¡ÉXITO!';
 
   @override
-  String writerValidHours(Object hours) {
-    return '⏱️ Válido por ${hours}h\n\n';
-  }
+  String get writerValidity => 'Válido durante 4 horas';
 
   @override
   String get writerHoldTag => 'Acerca la etiqueta al dispositivo...';
@@ -1699,6 +1697,11 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String writerValidHours(Object hours) {
+    return '⏱️ Válido por ${hours}h\n\n';
+  }
+
+  @override
   String get verifyErrNoNdef => '✗ Sin etiqueta NDEF';
 
   @override
@@ -1894,7 +1897,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get apNewMeetupBody =>
-      'Esto crea una firma única (tiempo de bloque) para las próximas 4 horas. Durante ese periodo no se pueden crear nuevas sesiones.';
+      'Esto crea una firma única (tiempo de bloque) para las próximas 6 horas. Durante este tiempo, la creación de nuevas sesiones queda bloqueada.';
 
   @override
   String get apSessionEndBody =>
@@ -1902,7 +1905,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get apGeneratesProof =>
-      'Genera una nueva prueba criptográfica para las próximas 4 horas.';
+      'Genera una nueva prueba criptográfica para las próximas 6 horas.';
 
   @override
   String get humTitle => 'PROOF OF HUMANITY';
@@ -4649,13 +4652,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String walletCleanupDone(int count) {
     return '$count duplicados eliminados.';
   }
-
   @override
   String get orgGpsSoftTitle => '¿Continuar sin ubicación?';
 
   @override
-  String get orgGpsSoftBody =>
-      'Puedes crear el meetup e introducir el nombre tú mismo. Sin ubicación, los asistentes no pueden confirmarse por radio: sus insignias contarán como presencia no verificada.';
+  String get orgGpsSoftBody => 'Puedes crear el meetup e introducir el nombre tú mismo. Sin ubicación, los asistentes no pueden confirmarse por radio: sus insignias contarán como presencia no verificada.';
 
   @override
   String get orgGpsSoftContinue => 'Sin ubicación';
@@ -4664,8 +4665,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get badgeUnverified => 'Presencia no verificada';
 
   @override
-  String get badgeUnverifiedInfo =>
-      'No había ubicación disponible al recogerla. La insignia es válida, pero su prueba de presencia no está confirmada adicionalmente.';
+  String get badgeUnverifiedInfo => 'No había ubicación disponible al recogerla. La insignia es válida, pero su prueba de presencia no está confirmada adicionalmente.';
 
   @override
   String get verifyClose => 'CERRAR';
@@ -4674,14 +4674,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get verifyOpenWallet => 'ABRIR CARTERA';
 
   @override
-  String get writerValidity => 'Válido durante 4 horas';
-
-  @override
   String get apPickPortalTitle => 'Seleccionar meetup';
 
   @override
-  String get apPickPortalHint =>
-      'Elige el meetup en el que estás ahora. Su ubicación sirve de referencia para los asistentes: una elección errónea falsea su confirmación.';
+  String get apPickPortalHint => 'Elige el meetup en el que estás ahora. Su ubicación sirve de referencia para los asistentes: una elección errónea falsea su confirmación.';
 
   @override
   String get apEnterManually => 'Introducir nombre';
@@ -4690,8 +4686,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get apCustomNeedsGpsTitle => 'Ubicación necesaria';
 
   @override
-  String get apCustomNeedsGpsBody =>
-      'Un meetup con nombre propio solo puede crearse si tu ubicación está disponible: es el único punto de referencia para verificar la asistencia.\n\nTres opciones: sal fuera e inténtalo de nuevo, elige un meetup del portal, o deja que otra persona presente con ubicación funcional cree la insignia.';
+  String get apCustomNeedsGpsBody => 'Un meetup con nombre propio solo puede crearse si tu ubicación está disponible: es el único punto de referencia para verificar la asistencia.\n\nTres opciones: sal fuera e inténtalo de nuevo, elige un meetup del portal, o deja que otra persona presente con ubicación funcional cree la insignia.';
 
   @override
   String get apNoRefTitle => 'Sin punto de referencia';
@@ -4700,16 +4695,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get apNoRefContinue => 'Crear igualmente';
 
   @override
-  String apNoRefBody(String city) {
-    return 'No hay ubicación registrada para „$city“ en el portal y la tuya no está disponible. Por eso no se puede confirmar la asistencia: las insignias contarán menos.\n\nMejor: habilita la ubicación o deja que otra persona presente cree la insignia.';
-  }
+  String apNoRefBody(String city) => 'No hay ubicación registrada para „${city}“ en el portal y la tuya no está disponible. Por eso no se puede confirmar la asistencia: las insignias contarán menos.\n\nMejor: habilita la ubicación o deja que otra persona presente cree la insignia.';
 
   @override
   String get apConfirmPickTitle => '¿Estás aquí?';
 
   @override
-  String get apConfirmPickBody =>
-      'Este nombre queda de forma permanente en la insignia de cada asistente y no puede cambiarse después. Si el lugar no coincide con los presentes, verán „demasiado lejos“ y no recibirán insignia.';
+  String get apConfirmPickBody => 'Este nombre queda de forma permanente en la insignia de cada asistente y no puede cambiarse después. Si el lugar no coincide con los presentes, verán „demasiado lejos“ y no recibirán insignia.';
 
   @override
   String get apConfirmPickYes => 'Sí, estoy aquí';
@@ -4718,39 +4710,33 @@ class AppLocalizationsEs extends AppLocalizations {
   String get badgeOrganizerTitle => 'REGISTRO DE ORGANIZADOR';
 
   @override
-  String get badgeOrganizerDesc =>
-      'Creaste este meetup tú mismo. La insignia lo documenta, pero no está firmada y no cuenta para la reputación: nadie puede confirmarse a sí mismo. Obtienes una insignia que cuenta cuando otro organizador presente inicia su propia sesión y escaneas su código.';
+  String get badgeOrganizerDesc => 'Creaste este meetup tú mismo. La insignia lo documenta, pero no está firmada y no cuenta para la reputación: nadie puede confirmarse a sí mismo. Obtienes una insignia que cuenta cuando otro organizador presente inicia su propia sesión y escaneas su código.';
 
   @override
   String get walletOrganizerSection => 'Creados por ti';
 
   @override
-  String reputationOrganizerNote(int count) {
-    return '$count meetup(s) organizados por ti: no cuentan para la puntuación, ya que nadie puede confirmarse a sí mismo.';
-  }
+  String reputationOrganizerNote(int count) => '${count} meetup(s) organizados por ti: no cuentan para la puntuación, ya que nadie puede confirmarse a sí mismo.';
 
   @override
   String get apCrossConfirmTitle => '¿Hay otro organizador?';
 
   @override
-  String get apCrossConfirmBody =>
-      'No obtienes una insignia que cuente por tu propio meetup: nadie puede confirmarse a sí mismo. Si ambos iniciáis una sesión y os escaneáis mutuamente, los dos tenéis una prueba real de la noche.';
+  String get apCrossConfirmBody => 'No obtienes una insignia que cuente por tu propio meetup: nadie puede confirmarse a sí mismo. Si ambos iniciáis una sesión y os escaneáis mutuamente, los dos tenéis una prueba real de la noche.';
 
   @override
-  String get tileEventsToday => 'hoy en el calendario';
+  String get tileEventsToday => 'hoy en el calendario de eventos';
 
   @override
-  String tileNewsUnread(int count) {
-    return '$count nuevos desde tu visita';
-  }
+  String tileNewsUnread(int count) => '${count} nuevos desde tu visita';
 
   @override
   String get tilesAvailable => 'Disponibles';
 
   @override
-  String get tilesEditHint =>
-      'Arrastra sobre otra tarjeta para mover · Chincheta para fijar o soltar';
+  String get tilesEditHint => 'Arrastra sobre otra tarjeta para mover · Chincheta para fijar o soltar';
 
   @override
   String get tilesEditDone => 'Listo';
+
 }

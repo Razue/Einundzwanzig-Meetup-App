@@ -2288,7 +2288,7 @@
   },
   "apCrossConfirmTitle": "Zweiter Organisator dabei?",
   "apCrossConfirmBody": "Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.",
-  "tileEventsToday": "heute im Kalender",
+  "tileEventsToday": "heute im Veranstaltungskalender",
   "tileNewsUnread": "{count} neu seit deinem Besuch",
   "@tileNewsUnread": {
     "placeholders": {
