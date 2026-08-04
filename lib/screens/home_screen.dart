@@ -106,7 +106,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   UserProfile _user = UserProfile();
   Meetup? _homeMeetup;
   TrustScore? _trustScore;
-  bool _justPromoted = false;
   int _platformProofCount = 0;
   bool _humanityVerified = false;
   bool _nip05Verified = false;
@@ -756,7 +755,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     } catch (_) {/* still: beim nächsten Start erneut */}
   }
 
-  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { setState(() => _justPromoted = true); ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
+  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
   void _resetApp() async {
     final t = AppLocalizations.of(context);
     // 1. Erste Bestätigung (wie bisher)
@@ -1488,7 +1487,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               const SizedBox(height: 5),
               Text(AppLocalizations.of(context).homeMeetupChoose, style: const TextStyle(color: cText, fontSize: 17, fontWeight: FontWeight.w800)),
               const SizedBox(height: 3),
-              Text(AppLocalizations.of(context).homeMeetupChooseSub, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
+              Text(AppLocalizations.of(context).homeMeetupChooseSub, style: const TextStyle(color: cTextSecondary, fontSize: 12.5)),
             ])),
             const Icon(Icons.chevron_right_rounded, color: cOrange, size: 24),
           ]),
@@ -1644,9 +1643,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
   Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
-  Widget _buildReputationTile() => _tile(accentColor: Colors.amber, watermark: Icons.workspace_premium_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileReputation, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? AppLocalizations.of(context).tileReputationShare : AppLocalizations.of(context).tileReputationCheck, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.account_tree_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildReputationTile() => _tile(accentColor: Colors.amber, watermark: Icons.workspace_premium_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileReputation, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? AppLocalizations.of(context).tileReputationShare : AppLocalizations.of(context).tileReputationCheck, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.account_tree_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
   Widget _buildEventsTile() {
     final hasToday = _eventsToday > 0;
     return _tile(
@@ -1668,7 +1667,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                   color: cText, fontSize: 22, fontWeight: FontWeight.w800, height: 1))
         else
           Text(AppLocalizations.of(context).tileEvents,
-              style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
         const SizedBox(height: 3),
         Text(
           hasToday
@@ -1676,7 +1675,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               : AppLocalizations.of(context).tileEventsCalendar,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: hasToday ? cOrange : cTextTertiary, fontSize: 12),
+          style: TextStyle(color: hasToday ? cOrange : cTextSecondary, fontSize: 13),
         ),
       ]),
     );
@@ -1699,9 +1698,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(on ? t.portalConnected : t.portalConnect,
-              style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 3),
-          Text(t.portalTileSub, style: const TextStyle(color: cTextTertiary, fontSize: 11.5)),
+          Text(t.portalTileSub, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
         ])),
         // Optischer Schalter
         Container(
@@ -1757,7 +1756,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     child: const _BtcDashboardTileContent(),
   );
 
-  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
   Widget _buildNewsTile() => _tile(
     accentColor: cOrange,
     opacity: 0.07,
@@ -1773,7 +1772,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           children: [
             Row(children: [
               Text(AppLocalizations.of(context).tileNews,
-                  style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                  style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
               // Zaehler direkt neben dem Titel statt am Zeilenende — dort
               // faellt er eher ins Auge.
               if (_unreadNews > 0) ...[
@@ -1809,9 +1808,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       ),
       const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ]));
-  Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
-  Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextSecondary, fontSize: 13))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
+  Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
   /// PLEBRAP: Die Kachel IST der Player — Play/Pause/Weiter direkt auf dem
   /// Dashboard, Bibliotheks-Knopf oeffnet die volle Titelliste. Player-
   /// Zustand kommt aus dem app-weiten PlebrapAudio-Service, laeuft also
@@ -1828,11 +1827,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             Row(children: [
               const Icon(Icons.graphic_eq_rounded, color: cOrange, size: 20),
               const SizedBox(width: 8),
-              const Text('PlebRap', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+              const Text('PlebRap', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
             ]),
             const SizedBox(height: 6),
             Text(song?.title ?? AppLocalizations.of(context).chPlebrapSub,
-                style: TextStyle(color: song != null ? cOrange : cTextTertiary, fontSize: 12,
+                style: TextStyle(color: song != null ? cOrange : cTextSecondary, fontSize: 13,
                     fontWeight: song != null ? FontWeight.w600 : FontWeight.w400),
                 maxLines: 1, overflow: TextOverflow.ellipsis),
             if (song != null)
@@ -1935,10 +1934,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 ),
             ]),
             const SizedBox(height: 12),
-            const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+            const Text('SatoshiDuell', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
             const SizedBox(height: 3),
             joined.isEmpty
-                ? Text(t.chDuellSub, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis)
+                ? Text(t.chDuellSub, style: const TextStyle(color: cTextSecondary, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)
                 : Text.rich(TextSpan(children: joined), style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
           ]);
         },
@@ -1955,9 +1954,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Icon(Icons.public_rounded, color: cOrange, size: 22),
       const SizedBox(height: 12),
-      const Text('Portal', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+      const Text('Portal', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
       const SizedBox(height: 3),
-      Text(AppLocalizations.of(context).chPortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+      Text(AppLocalizations.of(context).chPortalSub, style: const TextStyle(color: cTextSecondary, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
     ]),
   );
 
@@ -1977,9 +1976,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           ),
         ),
         const SizedBox(height: 12),
-        Text(AppLocalizations.of(context).tileNostr, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+        Text(AppLocalizations.of(context).tileNostr, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
         const SizedBox(height: 3),
-        Text(AppLocalizations.of(context).tileNostrCommunity, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+        Text(AppLocalizations.of(context).tileNostrCommunity, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
       ]),
       if (_nostrHasNew) Positioned(
         top: 0, right: 0,
@@ -1990,7 +1989,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       ),
     ]),
   );
-  Widget _buildOrganisatorTile() => _tile(accentColor: cOrange, watermark: Icons.admin_panel_settings_rounded, onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())); _checkActiveSession(); }, child: Row(children: [Icon(Icons.admin_panel_settings_rounded, color: _justPromoted ? cGreen : cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileOrganizer, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(_justPromoted ? AppLocalizations.of(context).tileOrganizerNew : AppLocalizations.of(context).tileOrganizerPanel, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
+  Widget _buildOrganisatorTile() => _tile(accentColor: cOrange, watermark: Icons.admin_panel_settings_rounded, onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminPanelScreen())); _checkActiveSession(); }, child: Row(children: [const Icon(Icons.admin_panel_settings_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileOrganizer, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileOrganizerPanel, style: const TextStyle(color: cTextSecondary, fontSize: 13))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
 
   Widget _buildWotDashboardTile() => _tile(
     accentColor: cOrange,
@@ -2000,9 +1999,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       const Icon(Icons.account_tree_rounded, color: cTextSecondary, size: 22),
       const SizedBox(width: 12),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(AppLocalizations.of(context).tileWot, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+        Text(AppLocalizations.of(context).tileWot, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
         const SizedBox(height: 3),
-        Text(AppLocalizations.of(context).tileWotSubtitle, style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+        Text(AppLocalizations.of(context).tileWotSubtitle, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
       ])),
       const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ]),
@@ -2079,7 +2078,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     Text(AppLocalizations.of(context).settingsHeaderTitle,
                         style: const TextStyle(color: cText, fontSize: 20, fontWeight: FontWeight.w800)),
                     Text(AppLocalizations.of(context).settingsHeaderSub,
-                        style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+                        style: const TextStyle(color: cTextSecondary, fontSize: 13)),
                   ]),
                 ]),
               ),
@@ -2637,10 +2636,10 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
                   Row(children: [
                     SvgPicture.asset('assets/icons/bitcoin.svg', width: 22, height: 22),
                     const SizedBox(width: 8),
-                    const Text('Bitcoin', style: TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                    const Text('Bitcoin', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
                   ]),
                   const SizedBox(height: 4),
-                  const Text('Netzwerk & Kurs', style: TextStyle(color: cTextTertiary, fontSize: 12)),
+                  const Text('Netzwerk & Kurs', style: TextStyle(color: cTextSecondary, fontSize: 13)),
                   if (d != null && d.priceEur > 0) ...[
                     const SizedBox(height: 8),
                     Text('${_fmtInt(d.priceEur.round())} €',
