@@ -4735,4 +4735,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get apCrossConfirmBody =>
       'No obtienes una insignia que cuente por tu propio meetup: nadie puede confirmarse a sí mismo. Si ambos iniciáis una sesión y os escaneáis mutuamente, los dos tenéis una prueba real de la noche.';
+
+  @override
+  String get tileEventsToday => 'hoy en el calendario';
+
+  @override
+  String tileNewsUnread(int count) {
+    return '$count nuevos desde tu visita';
+  }
+
+  @override
+  String get tilesAvailable => 'Disponibles';
+
+  @override
+  String get tilesEditHint =>
+      'Arrastra sobre otra tarjeta para mover · Chincheta para fijar o soltar';
+
+  @override
+  String get tilesEditDone => 'Listo';
 }

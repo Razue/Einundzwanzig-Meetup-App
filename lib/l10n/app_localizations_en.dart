@@ -4707,4 +4707,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get apCrossConfirmBody =>
       'You don\'t get a counting badge for your own meetup — nobody can confirm themselves. If you both start a session and scan each other, you both get a real record of the evening.';
+
+  @override
+  String get tileEventsToday => 'today in the calendar';
+
+  @override
+  String tileNewsUnread(int count) {
+    return '$count new since your visit';
+  }
+
+  @override
+  String get tilesAvailable => 'Available';
+
+  @override
+  String get tilesEditHint =>
+      'Drag onto another tile to move · Pin to attach or detach';
+
+  @override
+  String get tilesEditDone => 'Done';
 }

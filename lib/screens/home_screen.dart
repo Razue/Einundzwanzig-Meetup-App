@@ -23,6 +23,8 @@ import '../models/user.dart';
 import '../models/meetup.dart';
 import '../models/badge.dart';
 import '../models/calendar_event.dart';
+import '../services/calendar_event_service.dart';
+import '../services/news_service.dart';
 import '../services/meetup_service.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/trust_score_service.dart';
@@ -40,6 +42,7 @@ import 'intro.dart';
 import 'admin_panel.dart';
 import 'converter_screen.dart';
 import 'news_screen.dart';
+import 'event_calendar_screen.dart';
 import 'portal_meetups_screen.dart';
 import 'rolling_qr_screen.dart';
 import 'community_hub_screen.dart';
@@ -121,6 +124,22 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // Chronologisch sortiert (Stadt mit dem fruehesten Event vorne); Staedte
   // ohne anstehenden Termin haengen hinten (event == null).
   List<_FavCard> _favCards = [];
+
+  // ZAEHLER auf den Kacheln — werden nach dem ersten Aufbau nachgeladen,
+  // damit sie das Dashboard nicht ausbremsen.
+  int _unreadNews = 0;
+  int _eventsToday = 0;
+
+  /// Graue "Verfuegbar"-Sektion eingeklappt? Standard: ja, damit der
+  /// Alltagsblick knapp bleibt.
+  bool _availableCollapsed = true;
+
+  /// BEARBEITEN-MODUS: id der gerade markierten Kachel, sonst null.
+  /// Langes Druecken markiert eine Kachel — sie bekommt einen Rahmen, eine
+  /// Pinnadel und laesst sich auf eine andere Kachel ziehen. Alle uebrigen
+  /// Kacheln werden dabei zu Ablagezielen. Bewusst nur EINE Kachel
+  /// gleichzeitig: So bleibt der Normalzustand frei von Symbolen.
+  String? _editTileId;
   List<Meetup> _allMeetupsCache = [];
   final PageController _favPageCtrl = PageController();
   int _favPage = 0;
@@ -149,6 +168,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   @override
   void initState() {
     super.initState();
+    _loadTileCounters();
     _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
     _initTileDefs();
     _loadTileOrder();
@@ -215,8 +235,55 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     }
   }
 
+  /// Laedt die Kachel-Zaehler. Bewusst getrennt vom uebrigen Aufbau und
+  /// ohne await im initState: Wenn ein Feed haengt, soll das Dashboard
+  /// trotzdem sofort stehen — die Zahl trudelt dann eben nach.
+  Future<void> _loadTileCounters() async {
+    // --- News: seit dem letzten Besuch dazugekommen ---
+    try {
+      final n = await NewsService.unreadCount();
+      if (mounted && n != _unreadNews) setState(() => _unreadNews = n);
+    } catch (e) {
+      AppLogger.warn('Dashboard', 'News-Zaehler fehlgeschlagen: ${e.runtimeType}');
+    }
+
+    // --- Events heute ---
+    // Gezaehlt werden Portal-Meetups und Nostr-Events. KURSE bleiben aussen
+    // vor: Die wuerden pro Kurs einen eigenen Portal-Abruf brauchen, was auf
+    // dem Dashboard zu teuer waere. Findet an einem Tag ausschliesslich ein
+    // Kurs statt, zeigt die Kachel deshalb 0, der Kalender aber einen Eintrag.
+    try {
+      final now = DateTime.now();
+      final dayStart = DateTime(now.year, now.month, now.day);
+      final dayEnd = dayStart.add(const Duration(days: 1));
+      bool isToday(DateTime d) {
+        final l = d.toLocal();
+        return !l.isBefore(dayStart) && l.isBefore(dayEnd);
+      }
+
+      final results = await Future.wait([
+        MeetupCalendarService().fetchMeetupsPortalFirst(),
+        CalendarEventService.fetchEvents(),
+      ]);
+      var count = 0;
+      for (final e in (results[0] as List<CalendarEvent>)) {
+        if (isToday(e.startTime)) count++;
+      }
+      for (final e in (results[1] as List<NostrCalendarEvent>)) {
+        if (isToday(e.start)) count++;
+      }
+      if (mounted && count != _eventsToday) setState(() => _eventsToday = count);
+      AppLogger.diag('Dashboard', 'Kachel-Zaehler: $_unreadNews News, $count Event(s) heute.');
+    } catch (e) {
+      AppLogger.warn('Dashboard', 'Event-Zaehler fehlgeschlagen: ${e.runtimeType}');
+    }
+  }
+
   void _openNews() {
     WidgetService.markNewsSeen(); // NEU-Markierung entfernen
+    // Zaehler zuruecksetzen und Kachel sofort aktualisieren.
+    NewsService.markRead();
+    setState(() => _unreadNews = 0);
     Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen()));
   }
 
@@ -296,9 +363,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Merge: gespeicherte Reihenfolge + neue Tiles die noch nicht drin sind
       final known = saved.where((id) => _defaultOrder.contains(id)).toList();
       for (final id in _defaultOrder) { if (!known.contains(id)) known.add(id); }
-      if (mounted) setState(() { _tileOrder = known; _hiddenTiles = savedHidden; });
+      setState(() { _tileOrder = known; _hiddenTiles = savedHidden; });
     } else {
-      if (mounted) setState(() { _tileOrder = List.from(_defaultOrder); _hiddenTiles = Set.from(_defaultHidden); });
+      setState(() { _tileOrder = List.from(_defaultOrder); _hiddenTiles = Set.from(_defaultHidden); });
     }
   }
 
@@ -550,11 +617,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     } catch (_) {}
   }
 
-  void _checkActiveSession() async { final s = await RollingQRService.loadSession(); if (s != null && !s.isExpired) { if (mounted) setState(() => _activeSession = s); _startSessionTimer(); } else { _sessionTimer?.cancel(); if (mounted) setState(() => _activeSession = null); } }
+  void _checkActiveSession() async { final s = await RollingQRService.loadSession(); if (s != null && !s.isExpired) { setState(() => _activeSession = s); _startSessionTimer(); } else { _sessionTimer?.cancel(); if (mounted) setState(() => _activeSession = null); } }
   void _startSessionTimer() { _sessionTimer?.cancel(); _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) { if (_activeSession == null || _activeSession!.isExpired) { _sessionTimer?.cancel(); if (mounted) setState(() => _activeSession = null); return; } if (mounted) setState(() { final r = _activeSession!.remainingTime; _sessionTimeLeft = '${r.inHours}h ${(r.inMinutes % 60).toString().padLeft(2, '0')}m'; }); }); }
   void _syncOrganicAdminsInBackground() async { try { await PromotionClaimService.syncOrganicAdmins(); } catch (_) {} }
   void _checkDeviceIntegrity() async { try { final r = await DeviceIntegrityService.check(); if (r.isCompromised && mounted) setState(() => _deviceCompromised = true); } catch (_) {} }
-  Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); if (mounted) setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
+  Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
   Future<void> _loadUser({bool skipOrgCheck = false}) async { final u = await UserProfile.load(); Meetup? hm;
     // Meetup-Liste EINMAL laden und cachen — die Favoriten-Karten loesen
     // darueber Land/Wappen/Info-Screen fuer JEDE ihrer Staedte auf.
@@ -564,7 +631,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull;
     }
     if (mounted) setState(() { _user = u; _homeMeetup = hm; }); if (!skipOrgCheck) _checkPortalOrganizer(); _refreshPortalConnected(); }
-  Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
+  Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
   /// PORTAL-ORGANISATOR = APP-ADMIN (robust, mit sicherem Entzug):
   /// - Portal-Login (Nostr) + my-meetups nicht leer  -> Admin VERGEBEN
   ///   und automatisch einen signierten Organizer-Claim an Nostr
@@ -628,12 +695,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
       if (meetups.isNotEmpty && !_user.adminViaPortal) {
         // VERGEBEN: nur das Portal-Flag setzen (Vouch/Seed unberührt).
-        // Die Daten werden IMMER gesetzt, nur das UI-Update haengt an
-        // mounted: sonst wuerde _user.save() unten den alten Stand
-        // speichern, falls der Screen zwischenzeitlich verlassen wurde.
-        _user.adminViaPortal = true;
-        _user.isAdminVerified = _user.isAdmin;
-        if (mounted) setState(() {});
+        setState(() {
+          _user.adminViaPortal = true;
+          _user.isAdminVerified = _user.isAdmin;
+        });
         await _user.save();
         // Organizer-Claim an Nostr publizieren (best effort): macht den
         // Status für Dritte sichtbar; kein manuelles Register nötig.
@@ -650,10 +715,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       } else if (meetups.isEmpty && _user.adminViaPortal) {
         // ENTZIEHEN: nur das Portal-Flag löschen. Bleibt der Nutzer über
         // WoT-Bürgschaft/Seed berechtigt, behält er isAdmin (abgeleitet).
-        // Daten immer setzen, UI-Update nur wenn noch gemountet (s.o.).
-        _user.adminViaPortal = false;
-        _user.isAdminVerified = _user.isAdmin;
-        if (mounted) setState(() {});
+        setState(() {
+          _user.adminViaPortal = false;
+          _user.isAdminVerified = _user.isAdmin;
+        });
         await _user.save();
         // WICHTIG: alten Admin-Cache-Eintrag für den eigenen npub räumen,
         // sonst würde der Registry-Cache ihn weiter als Admin ausweisen
@@ -793,10 +858,215 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Fixe Home-Meetup-Kachel (immer gleiche Größe)
         _buildHomeMeetupTile(),
         const SizedBox(height: kTileGap),
-        // Restlicher Raum: Kachel-Block füllt exakt bis zur unteren Leiste
-        Expanded(child: _buildScaledTileBlock()),
+        // Restlicher Raum: Der angeheftete Block fuellt weiterhin den
+        // sichtbaren Bereich; die graue Reserve haengt darunter und wird
+        // durch Scrollen erreicht. Ist etwas verfuegbar, bleibt unten Platz
+        // fuer den Sektionskopf, damit man sieht, dass da noch etwas ist.
+        Expanded(
+          child: LayoutBuilder(builder: (context, c) {
+            final hasAvailable =
+                _buildTileRows(excludeHomeMeetup: true, pinned: false).isNotEmpty;
+            final pinnedHeight =
+                hasAvailable ? (c.maxHeight - 34).clamp(120.0, c.maxHeight) : c.maxHeight;
+            return SingleChildScrollView(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                if (_editTileId != null) _buildEditBar(),
+                SizedBox(height: pinnedHeight, child: _buildScaledTileBlock()),
+                _buildAvailableSection(),
+                const SizedBox(height: 8),
+              ]),
+            );
+          }),
+        ),
       ]),
     );
+  }
+
+  /// Verschiebt [draggedId] an die Position von [targetId] und speichert.
+  Future<void> _moveTile(String draggedId, String targetId) async {
+    if (draggedId == targetId) return;
+    final order = List<String>.from(_tileOrder);
+    final from = order.indexOf(draggedId);
+    final to = order.indexOf(targetId);
+    if (from < 0 || to < 0) return;
+    order.removeAt(from);
+    order.insert(to, draggedId);
+    setState(() => _tileOrder = order);
+    await _saveTileOrder();
+    AppLogger.diag('Dashboard', 'Kachel "$draggedId" vor "$targetId" einsortiert.');
+  }
+
+  /// Heftet an bzw. loest die Verankerung. Pflichtkacheln bleiben unberuehrt.
+  Future<void> _togglePin(_TileDef tile) async {
+    if (!tile.removable) return;
+    setState(() {
+      if (_hiddenTiles.contains(tile.id)) {
+        _hiddenTiles.remove(tile.id);   // -> angeheftet
+      } else {
+        _hiddenTiles.add(tile.id);      // -> verfuegbar
+      }
+    });
+    await _saveTileOrder();
+    AppLogger.diag('Dashboard',
+        'Kachel "${tile.id}" ${_hiddenTiles.contains(tile.id) ? "geloest" : "angeheftet"}.');
+  }
+
+  /// Huelle um jede Kachel: im Normalzustand nur ein Langdruck-Erkenner,
+  /// im Bearbeiten-Modus Ziehen, Ablegen und Pinnadel.
+  Widget _wrapEditable(_TileDef tile, Widget child) {
+    final isEditing = _editTileId != null;
+    final isSelected = _editTileId == tile.id;
+    final isPinned = !_hiddenTiles.contains(tile.id);
+
+    if (!isEditing) {
+      return GestureDetector(
+        onLongPress: () => setState(() => _editTileId = tile.id),
+        child: child,
+      );
+    }
+
+    if (isSelected) {
+      final marked = Stack(clipBehavior: Clip.none, children: [
+        // Rahmen + leichte Vergroesserung heben die Kachel heraus.
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(kTileRadius),
+            border: Border.all(color: cOrange, width: 2),
+            boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.25), blurRadius: 14)],
+          ),
+          child: ClipRRect(borderRadius: BorderRadius.circular(kTileRadius), child: child),
+        ),
+        const Positioned(
+          top: 9, left: 9,
+          child: Icon(Icons.open_with_rounded, color: cOrange, size: 15),
+        ),
+        // PINNADEL: gefuellt = angeheftet, hohl = verfuegbar.
+        if (tile.removable)
+          Positioned(
+            top: -9, right: -7,
+            child: GestureDetector(
+              onTap: () => _togglePin(tile),
+              child: Container(
+                width: 30, height: 30,
+                decoration: BoxDecoration(
+                  color: isPinned ? cOrange : cCard,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: cOrange, width: 1.5),
+                ),
+                child: Icon(isPinned ? Icons.push_pin_rounded : Icons.push_pin_outlined,
+                    color: isPinned ? Colors.black : cOrange, size: 15),
+              ),
+            ),
+          ),
+      ]);
+
+      return Draggable<String>(
+        data: tile.id,
+        feedback: Opacity(
+          opacity: 0.9,
+          child: SizedBox(width: 190, height: 96,
+              child: Material(color: Colors.transparent, child: child)),
+        ),
+        childWhenDragging: DottedPlaceholder(),
+        child: marked,
+      );
+    }
+
+    // Nicht markiert: Ablageziel fuer die gezogene Kachel.
+    return DragTarget<String>(
+      onWillAcceptWithDetails: (d) => d.data != tile.id,
+      onAcceptWithDetails: (d) => _moveTile(d.data, tile.id),
+      builder: (context, cand, rej) => Container(
+        decoration: cand.isNotEmpty
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(kTileRadius),
+                border: Border.all(color: cOrange.withValues(alpha: 0.7), width: 1.5))
+            : null,
+        child: Opacity(opacity: cand.isNotEmpty ? 0.6 : 1.0, child: child),
+      ),
+    );
+  }
+
+  /// Leiste im Bearbeiten-Modus.
+  Widget _buildEditBar() {
+    final t = AppLocalizations.of(context);
+    return Container(
+      margin: const EdgeInsets.only(bottom: kTileGap),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: cOrange.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: cOrange.withValues(alpha: 0.35), width: 0.5),
+      ),
+      child: Row(children: [
+        const Icon(Icons.open_with_rounded, color: cOrange, size: 16),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Text(t.tilesEditHint,
+              maxLines: 2,
+              style: const TextStyle(color: cOrange, fontSize: 12, height: 1.3)),
+        ),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: () => setState(() => _editTileId = null),
+          child: Text(t.tilesEditDone,
+              style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)),
+        ),
+      ]),
+    );
+  }
+
+  /// Sektionskopf ueber einer Kachelgruppe.
+  Widget _sectionHeader(String label, {int? count, bool? collapsed, VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      // Langer Druck auf den Sektionskopf oeffnet die vollstaendige
+      // Kachel-Liste — der erweiterte Weg, wenn man mehrere auf einmal
+      // umsortieren oder anheften will.
+      onLongPress: _showReorderSheet,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(2, 2, 2, 8),
+        child: Row(children: [
+          Text(label.toUpperCase(),
+              style: const TextStyle(
+                  color: cTextTertiary, fontSize: 10.5, letterSpacing: 1.4, fontWeight: FontWeight.w700)),
+          if (count != null) ...[
+            const SizedBox(width: 7),
+            Text('$count',
+                style: const TextStyle(color: cTextTertiary, fontSize: 10.5, fontWeight: FontWeight.w700)),
+          ],
+          const Spacer(),
+          if (collapsed != null)
+            Icon(collapsed ? Icons.expand_more_rounded : Icons.expand_less_rounded,
+                color: cTextTertiary, size: 18),
+        ]),
+      ),
+    );
+  }
+
+  /// Die graue Reserve: alles, was nicht angeheftet ist. Gedaempft
+  /// dargestellt, aber voll bedienbar — ein Tipp oeffnet die Funktion wie
+  /// gewohnt. Angeheftet wird spaeter im Bearbeiten-Modus.
+  Widget _buildAvailableSection() {
+    final rows = _buildTileRows(excludeHomeMeetup: true, pinned: false);
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const SizedBox(height: kTileGap),
+      _sectionHeader(
+        AppLocalizations.of(context).tilesAvailable,
+        count: rows.length,
+        collapsed: _availableCollapsed,
+        onTap: () => setState(() => _availableCollapsed = !_availableCollapsed),
+      ),
+      if (!_availableCollapsed || _editTileId != null)
+        for (int i = 0; i < rows.length; i++) ...[
+          if (i > 0) const SizedBox(height: kTileGap),
+          // Gedaempft: halbe Deckkraft trennt sie klar von den goldenen.
+          Opacity(opacity: 0.55, child: SizedBox(height: 96, child: rows[i])),
+        ],
+    ]);
   }
 
   /// Kachel-Block: füllt den Raum zwischen Home-Meetup-Kachel und unterer
@@ -807,7 +1077,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     final rows = _buildTileRows(excludeHomeMeetup: true);
     if (rows.isEmpty) return const SizedBox.shrink();
 
-    const double minRowHeight = 112; // darunter wird gescrollt, bevor kompakte Tiles überlaufen
+    const double minRowHeight = 92; // darunter wird gescrollt
     return LayoutBuilder(builder: (context, c) {
       final gaps = (rows.length - 1) * kTileGap;
       final avail = c.maxHeight - gaps;
@@ -823,24 +1093,27 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         ]);
       }
       // SCROLLEN: Reihen behalten Mindesthöhe.
-      return SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(children: [
+      // KEIN eigener Scroll-Bereich mehr: Das Dashboard scrollt inzwischen
+      // als Ganzes (angeheftet + verfuegbar). Ein zweiter Scroller darin
+      // wuerde die Gesten schlucken und die graue Sektion unerreichbar
+      // machen. Stattdessen einfach in Mindesthoehe wachsen lassen.
+      return Column(children: [
           for (int i = 0; i < rows.length; i++) ...[
             if (i > 0) const SizedBox(height: kTileGap),
             SizedBox(height: minRowHeight, child: rows[i]),
           ],
-        ]),
-      );
+      ]);
     });
   }
 
   /// Baut die sichtbaren Kacheln als REIHEN (jede Reihe ein Row-Widget mit
   /// stretch), damit sie sich vertikal dehnen lassen.
-  List<Widget> _buildTileRows({bool excludeHomeMeetup = false}) {
+  List<Widget> _buildTileRows({bool excludeHomeMeetup = false, bool pinned = true}) {
+    // pinned=true  -> angeheftete Kacheln (bisher "sichtbar")
+    // pinned=false -> verfuegbare Kacheln (bisher "ausgeblendet"), grau
     final visibleTiles = _tileOrder
       .map((id) => _tileDefs.where((t) => t.id == id).firstOrNull)
-      .where((t) => t != null && t.visible() && !_hiddenTiles.contains(t!.id))
+      .where((t) => t != null && t.visible() && (_hiddenTiles.contains(t!.id) != pinned))
       .cast<_TileDef>()
       .where((t) => !excludeHomeMeetup || t.id != 'home_meetup')
       .toList();
@@ -851,7 +1124,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       final tile = visibleTiles[i];
       if (tile.span == 3) {
         rows.add(Row(crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [Expanded(child: tile.builder())]));
+          children: [Expanded(child: _wrapEditable(tile, tile.builder()))]));
         i++;
       } else {
         final row = <_TileDef>[tile];
@@ -866,7 +1139,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         rows.add(Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           for (int j = 0; j < row.length; j++) ...[
             if (j > 0) const SizedBox(width: kTileGap),
-            Expanded(flex: row[j].span, child: row[j].builder()),
+            Expanded(flex: row[j].span, child: _wrapEditable(row[j], row[j].builder())),
           ],
         ]));
         i += row.length;
@@ -958,7 +1231,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _tile({required Widget child, required Color accentColor, VoidCallback? onTap, double opacity = 0.06, IconData? watermark, String? watermarkAsset}) {
     return GestureDetector(
       onTap: onTap,
-      onLongPress: _showReorderSheet,
+      // KEIN onLongPress mehr: Der Langdruck gehoert jetzt _wrapEditable,
+      // das den Bearbeiten-Modus oeffnet. Ein Erkenner hier drinnen wuerde
+      // ihn abfangen, bevor die Huelle ihn sieht (innere Geste gewinnt).
       child: Container(
         decoration: BoxDecoration(
           color: cCard,
@@ -990,7 +1265,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 ),
               Positioned.fill(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
                   child: child,
                 ),
               ),
@@ -1031,7 +1306,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // das volle Reputations-Profil ("Als Bild teilen"-Ansicht).
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationCardScreen())),
-      onLongPress: _showReorderSheet,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
@@ -1314,7 +1588,40 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _buildReputationTile() => _tile(accentColor: Colors.amber, watermark: Icons.workspace_premium_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileReputation, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? AppLocalizations.of(context).tileReputationShare : AppLocalizations.of(context).tileReputationCheck, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.account_tree_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildEventsTile() => _tile(accentColor: cTextTertiary, watermark: Icons.event_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.event_rounded, color: cTextSecondary, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileEvents, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileEventsCalendar, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
+  Widget _buildEventsTile() {
+    final hasToday = _eventsToday > 0;
+    return _tile(
+      // Sobald heute etwas ansteht, wird die Kachel orange — sonst bleibt
+      // sie zurueckhaltend grau.
+      accentColor: hasToday ? cOrange : cTextTertiary,
+      watermark: Icons.event_rounded,
+      // Direkt in die Tagesuebersicht des Veranstaltungskalenders springen.
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => EventCalendarScreen(initialDay: DateTime.now()))),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(Icons.event_rounded, color: hasToday ? cOrange : cTextSecondary, size: 22),
+        const SizedBox(height: 12),
+        if (hasToday)
+          Text('$_eventsToday',
+              style: const TextStyle(
+                  color: cText, fontSize: 22, fontWeight: FontWeight.w800, height: 1))
+        else
+          Text(AppLocalizations.of(context).tileEvents,
+              style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 3),
+        Text(
+          hasToday
+              ? AppLocalizations.of(context).tileEventsToday
+              : AppLocalizations.of(context).tileEventsCalendar,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: hasToday ? cOrange : cTextTertiary, fontSize: 12),
+        ),
+      ]),
+    );
+  }
   bool _portalConnected = false;
 
   /// PORTAL-VERBINDUNG als Schieberegler auf dem Dashboard: rot/aus = nicht
@@ -1392,7 +1699,42 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   );
 
   Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
-  Widget _buildNewsTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.article_rounded, onTap: _openNews, child: Row(children: [const Icon(Icons.article_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tileNews, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileNewsSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
+  Widget _buildNewsTile() => _tile(
+    accentColor: cOrange,
+    opacity: 0.07,
+    watermark: Icons.article_rounded,
+    onTap: _openNews,
+    child: Row(children: [
+      const Icon(Icons.article_rounded, color: cOrange, size: 22),
+      const SizedBox(width: 12),
+      Expanded(
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(AppLocalizations.of(context).tileNews,
+              style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 3),
+          // Untertitel wechselt: Zaehler statt Standardtext, sobald es
+          // wirklich etwas Neues gibt.
+          Text(
+            _unreadNews > 0
+                ? AppLocalizations.of(context).tileNewsUnread(_unreadNews)
+                : AppLocalizations.of(context).tileNewsSub,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                color: _unreadNews > 0 ? cOrange : cTextTertiary, fontSize: 12),
+          ),
+        ]),
+      ),
+      if (_unreadNews > 0)
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+          decoration: BoxDecoration(color: cRed, borderRadius: BorderRadius.circular(9)),
+          child: Text('$_unreadNews',
+              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+        )
+      else
+        const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
+    ]));
   Widget _buildPortalTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.groups_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())), child: Row(children: [const Icon(Icons.groups_rounded, color: cOrange, size: 22), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).tilePortal, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePortalSub, style: const TextStyle(color: cTextTertiary, fontSize: 12))])), const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16)]));
   Widget _buildShoutoutTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.campaign_rounded, onTap: () => _openUrl('https://shoutout.einundzwanzig.space'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.campaign_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileShoutout, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileShoutoutSend, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
   Widget _buildPodcastTile() => _tile(accentColor: cPurple, opacity: 0.07, watermark: Icons.podcasts_rounded, onTap: () => _openUrl('https://einundzwanzig.space/podcast/'), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.podcasts_rounded, color: cPurple, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tilePodcast, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tilePodcastListen, style: const TextStyle(color: cTextTertiary, fontSize: 12))]));
@@ -2269,4 +2611,19 @@ class _FavCard {
   final String city;
   final CalendarEvent? event;
   const _FavCard({required this.city, required this.event});
+}
+
+/// Gestrichelter Platzhalter an der Stelle, von der eine Kachel gerade
+/// weggezogen wird.
+class DottedPlaceholder extends StatelessWidget {
+  const DottedPlaceholder({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          color: cOrange.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cOrange.withValues(alpha: 0.45), width: 1),
+        ),
+      );
 }

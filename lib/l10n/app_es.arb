@@ -2265,5 +2265,17 @@
     }
   },
   "apCrossConfirmTitle": "¿Hay otro organizador?",
-  "apCrossConfirmBody": "No obtienes una insignia que cuente por tu propio meetup: nadie puede confirmarse a sí mismo. Si ambos iniciáis una sesión y os escaneáis mutuamente, los dos tenéis una prueba real de la noche."
+  "apCrossConfirmBody": "No obtienes una insignia que cuente por tu propio meetup: nadie puede confirmarse a sí mismo. Si ambos iniciáis una sesión y os escaneáis mutuamente, los dos tenéis una prueba real de la noche.",
+  "tileEventsToday": "hoy en el calendario",
+  "tileNewsUnread": "{count} nuevos desde tu visita",
+  "@tileNewsUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tilesAvailable": "Disponibles",
+  "tilesEditHint": "Arrastra sobre otra tarjeta para mover · Chincheta para fijar o soltar",
+  "tilesEditDone": "Listo"
 }

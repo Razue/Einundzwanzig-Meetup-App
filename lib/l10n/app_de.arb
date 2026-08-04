@@ -2287,5 +2287,17 @@
     }
   },
   "apCrossConfirmTitle": "Zweiter Organisator dabei?",
-  "apCrossConfirmBody": "Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend."
+  "apCrossConfirmBody": "Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.",
+  "tileEventsToday": "heute im Kalender",
+  "tileNewsUnread": "{count} neu seit deinem Besuch",
+  "@tileNewsUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tilesAvailable": "Verfügbar",
+  "tilesEditHint": "Auf eine andere Kachel ziehen zum Verschieben · Nadel zum An- und Abheften",
+  "tilesEditDone": "Fertig"
 }

@@ -4751,4 +4751,22 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get apCrossConfirmBody =>
       'Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.';
+
+  @override
+  String get tileEventsToday => 'heute im Kalender';
+
+  @override
+  String tileNewsUnread(int count) {
+    return '$count neu seit deinem Besuch';
+  }
+
+  @override
+  String get tilesAvailable => 'Verfügbar';
+
+  @override
+  String get tilesEditHint =>
+      'Auf eine andere Kachel ziehen zum Verschieben · Nadel zum An- und Abheften';
+
+  @override
+  String get tilesEditDone => 'Fertig';
 }

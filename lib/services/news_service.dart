@@ -8,6 +8,7 @@
 // ============================================
 
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -60,6 +61,77 @@ class NewsService {
   ];
 
   /// Lädt die Artikel aus dem RSS-Feed der Einundzwanzig-News-Seite.
+  // ============================================================
+  // UNGELESEN-ZAEHLER
+  // ============================================================
+  // Merkt sich den Veroeffentlichungs-Zeitstempel des neuesten Artikels,
+  // den der Nutzer gesehen hat. Alles Neuere gilt als ungelesen.
+  //
+  // Bewusst der ARTIKEL-Zeitstempel und nicht "jetzt": RSS-Beitraege
+  // trudeln mit aelterem pubDate nach. Wuerde man die Uhrzeit des
+  // Lesens speichern, blieben solche Nachzuegler dauerhaft unsichtbar.
+  static const String _kLastReadTs = 'news_last_read_ts';
+
+  // Kurzlebiger Zwischenspeicher: Das Dashboard fragt den Zaehler bei
+  // jedem Aufbau ab — ohne Cache waere das ein Feed-Abruf pro Rueckkehr
+  // auf die Startseite.
+  static List<NewsArticle>? _cache;
+  static DateTime? _cachedAt;
+  static const Duration _cacheTtl = Duration(minutes: 10);
+
+  /// Artikel mit Zwischenspeicher — fuer Zaehler und Kacheln.
+  static Future<List<NewsArticle>> cachedArticles({int limit = 50}) async {
+    final c = _cache;
+    if (c != null &&
+        _cachedAt != null &&
+        DateTime.now().difference(_cachedAt!) < _cacheTtl) {
+      return c;
+    }
+    final fresh = await fetchArticles(limit: limit);
+    if (fresh.isNotEmpty) {
+      _cache = fresh;
+      _cachedAt = DateTime.now();
+    }
+    return fresh;
+  }
+
+  /// Anzahl der Artikel, die seit dem letzten Besuch dazugekommen sind.
+  /// Beim allerersten Aufruf 0 — sonst begruesst die App neue Nutzer mit
+  /// "50 neue Artikel".
+  static Future<int> unreadCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lastRead = prefs.getInt(_kLastReadTs);
+      final articles = await cachedArticles();
+      if (articles.isEmpty) return 0;
+      if (lastRead == null) {
+        await _storeNewest(articles);
+        return 0;
+      }
+      return articles.where((a) => a.publishedAt > lastRead).length;
+    } catch (e) {
+      AppLogger.warn(_tag, 'Ungelesen-Zaehler fehlgeschlagen: ${e.runtimeType}');
+      return 0;
+    }
+  }
+
+  /// Setzt den Zaehler zurueck — beim Oeffnen der News.
+  static Future<void> markRead() async {
+    try {
+      final articles = await cachedArticles();
+      if (articles.isNotEmpty) await _storeNewest(articles);
+    } catch (e) {
+      AppLogger.warn(_tag, 'markRead fehlgeschlagen: ${e.runtimeType}');
+    }
+  }
+
+  static Future<void> _storeNewest(List<NewsArticle> articles) async {
+    final newest =
+        articles.map((a) => a.publishedAt).reduce((a, b) => a > b ? a : b);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kLastReadTs, newest);
+  }
+
   static Future<List<NewsArticle>> fetchArticles({int limit = 50}) async {
     try {
       final r = await http

@@ -70,7 +70,12 @@ class _CalItem {
 }
 
 class EventCalendarScreen extends StatefulWidget {
-  const EventCalendarScreen({super.key});
+  /// Tag, der beim Oeffnen ausgewaehlt sein soll. Wird von der
+  /// Dashboard-Kachel gesetzt, damit man direkt in der Tagesuebersicht
+  /// landet statt im aktuellen Monat ohne Auswahl.
+  final DateTime? initialDay;
+
+  const EventCalendarScreen({super.key, this.initialDay});
 
   @override
   State<EventCalendarScreen> createState() => _EventCalendarScreenState();
@@ -78,8 +83,8 @@ class EventCalendarScreen extends StatefulWidget {
 
 class _EventCalendarScreenState extends State<EventCalendarScreen> {
   _CalView _view = _CalView.month;
-  DateTime _focused = DateTime.now();      // aktuell angezeigter Monat/Jahr
-  DateTime _selected = DateTime.now();     // gewählter Tag (Monatsansicht)
+  late DateTime _focused;   // aktuell angezeigter Monat/Jahr
+  late DateTime _selected;  // gewählter Tag (Monatsansicht)
   bool _loading = true;
   List<_CalItem> _allItems = [];       // alle geladenen (ungefiltert)
   List<_CalItem> _events = [];         // aktuell angezeigte (gefiltert)
@@ -101,6 +106,9 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   @override
   void initState() {
     super.initState();
+    final start = widget.initialDay ?? DateTime.now();
+    _focused = DateTime(start.year, start.month);
+    _selected = DateTime(start.year, start.month, start.day);
     _load();
   }
 

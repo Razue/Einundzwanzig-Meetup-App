@@ -8649,6 +8649,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.'**
   String get apCrossConfirmBody;
+
+  /// No description provided for @tileEventsToday.
+  ///
+  /// In de, this message translates to:
+  /// **'heute im Kalender'**
+  String get tileEventsToday;
+
+  /// No description provided for @tileNewsUnread.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} neu seit deinem Besuch'**
+  String tileNewsUnread(int count);
+
+  /// No description provided for @tilesAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Verfügbar'**
+  String get tilesAvailable;
+
+  /// No description provided for @tilesEditHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf eine andere Kachel ziehen zum Verschieben · Nadel zum An- und Abheften'**
+  String get tilesEditHint;
+
+  /// No description provided for @tilesEditDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get tilesEditDone;
 }
 
 class _AppLocalizationsDelegate
