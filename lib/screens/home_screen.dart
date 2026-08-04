@@ -896,7 +896,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 hasAvailable ? (c.maxHeight - 34).clamp(120.0, c.maxHeight) : c.maxHeight;
             return SingleChildScrollView(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                if (_editTileId != null) _buildEditBar(),
                 _buildScaledTileBlock(pinnedHeight),
                 _buildAvailableSection(),
                 const SizedBox(height: 8),
@@ -917,7 +916,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (from < 0 || to < 0) return;
     order.removeAt(from);
     order.insert(to, draggedId);
-    setState(() => _tileOrder = order);
+    // Aktion ausgefuehrt -> Modus SOFORT beenden. Ein zusaetzliches
+    // "Fertig" waere ein Klick zu viel: Der Nutzer hat sein Ziel erreicht,
+    // die App soll das erkennen statt nachzufragen.
+    setState(() {
+      _tileOrder = order;
+      _editTileId = null;
+    });
     await _saveTileOrder();
     AppLogger.diag('Dashboard', 'Kachel "$draggedId" vor "$targetId" einsortiert.');
   }
@@ -931,6 +936,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       } else {
         _hiddenTiles.add(tile.id);      // -> verfuegbar
       }
+      _editTileId = null; // Aktion erledigt -> Modus zu
     });
     await _saveTileOrder();
     AppLogger.diag('Dashboard',
@@ -952,7 +958,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     }
 
     if (isSelected) {
-      final marked = Stack(clipBehavior: Clip.none, children: [
+      // Nochmal antippen = abbrechen, ohne etwas zu aendern.
+      final marked = GestureDetector(
+        onTap: () => setState(() => _editTileId = null),
+        child: Stack(clipBehavior: Clip.none, children: [
         // Rahmen + leichte Vergroesserung heben die Kachel heraus.
         Container(
           decoration: BoxDecoration(
@@ -984,7 +993,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               ),
             ),
           ),
-      ]);
+      ]));
 
       return Draggable<String>(
         data: tile.id,
@@ -1010,35 +1019,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             : null,
         child: Opacity(opacity: cand.isNotEmpty ? 0.6 : 1.0, child: child),
       ),
-    );
-  }
-
-  /// Leiste im Bearbeiten-Modus.
-  Widget _buildEditBar() {
-    final t = AppLocalizations.of(context);
-    return Container(
-      margin: const EdgeInsets.only(bottom: kTileGap),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: cOrange.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: cOrange.withValues(alpha: 0.35), width: 0.5),
-      ),
-      child: Row(children: [
-        const Icon(Icons.open_with_rounded, color: cOrange, size: 16),
-        const SizedBox(width: 9),
-        Expanded(
-          child: Text(t.tilesEditHint,
-              maxLines: 2,
-              style: const TextStyle(color: cOrange, fontSize: 12, height: 1.3)),
-        ),
-        const SizedBox(width: 8),
-        GestureDetector(
-          onTap: () => setState(() => _editTileId = null),
-          child: Text(t.tilesEditDone,
-              style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)),
-        ),
-      ]),
     );
   }
 
