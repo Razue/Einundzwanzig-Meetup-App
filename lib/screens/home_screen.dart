@@ -140,6 +140,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// Kacheln werden dabei zu Ablagezielen. Bewusst nur EINE Kachel
   /// gleichzeitig: So bleibt der Normalzustand frei von Symbolen.
   String? _editTileId;
+
+  /// Wird unmittelbar vor jedem tile.builder()-Aufruf gesetzt und von
+  /// _tile() gelesen: angeheftete Kacheln bekommen den goldenen Anstrich
+  /// der Home-Meetup-Kachel, verfuegbare bleiben zurueckhaltend.
+  ///
+  /// Ein schlichtes Feld statt eines Parameters, weil _tile() an rund
+  /// fuenfzehn Stellen aufgerufen wird — der Bau laeuft synchron, das
+  /// Feld ist beim Lesen also garantiert der richtige Wert.
+  bool _buildingPinnedTile = true;
   List<Meetup> _allMeetupsCache = [];
   final PageController _favPageCtrl = PageController();
   int _favPage = 0;
@@ -871,7 +880,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             return SingleChildScrollView(
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 if (_editTileId != null) _buildEditBar(),
-                SizedBox(height: pinnedHeight, child: _buildScaledTileBlock()),
+                _buildScaledTileBlock(pinnedHeight),
                 _buildAvailableSection(),
                 const SizedBox(height: 8),
               ]),
@@ -1063,8 +1072,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       if (!_availableCollapsed || _editTileId != null)
         for (int i = 0; i < rows.length; i++) ...[
           if (i > 0) const SizedBox(height: kTileGap),
-          // Gedaempft: halbe Deckkraft trennt sie klar von den goldenen.
-          Opacity(opacity: 0.55, child: SizedBox(height: 96, child: rows[i])),
+          // Leicht gedaempft. Die eigentliche Abgrenzung leistet inzwischen
+          // der Anstrich (schlicht statt gold), deshalb reicht ein Hauch.
+          Opacity(opacity: 0.8, child: SizedBox(height: 96, child: rows[i])),
         ],
     ]);
   }
@@ -1073,42 +1083,37 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// Leiste VOLLSTÄNDIG. Jede Reihe bekommt exakt dieselbe berechnete Höhe,
   /// sodass alle Reihen zusammen die volle Höhe ausfüllen (keine Lücke).
   /// Bis die Reihenhöhe unter die Mindesthöhe fällt -> dann scrollbar.
-  Widget _buildScaledTileBlock() {
+  /// [targetHeight] ist der Platz, den der Block im Idealfall ausfuellen
+  /// soll. Passen die Reihen nicht in dieser Hoehe, waechst der Block ueber
+  /// sie hinaus — das Dashboard scrollt ohnehin.
+  ///
+  /// WICHTIG (Fehler in der ersten Fassung): Frueher steckte der Block in
+  /// einer SizedBox mit fester Hoehe und rechnete intern per LayoutBuilder.
+  /// Brauchten die Reihen mehr Platz, lief der Inhalt aus der SizedBox
+  /// heraus und ueberlappte die darunterliegende Sektion. Deshalb gibt der
+  /// Block seine Hoehe jetzt SELBST vor und wird nicht mehr beschnitten.
+  Widget _buildScaledTileBlock(double targetHeight) {
     final rows = _buildTileRows(excludeHomeMeetup: true);
     if (rows.isEmpty) return const SizedBox.shrink();
 
-    const double minRowHeight = 92; // darunter wird gescrollt
-    return LayoutBuilder(builder: (context, c) {
-      final gaps = (rows.length - 1) * kTileGap;
-      final avail = c.maxHeight - gaps;
-      final perRow = avail / rows.length;
+    const double minRowHeight = 92;
+    final gaps = (rows.length - 1) * kTileGap;
+    final perRow = (targetHeight - gaps) / rows.length;
+    // Fuellen, solange es reicht — sonst Mindesthoehe und ueberstehen lassen.
+    final rowHeight = perRow >= minRowHeight ? perRow : minRowHeight;
 
-      if (perRow >= minRowHeight) {
-        // FÜLLEN: jede Reihe exakt perRow hoch -> Summe = volle Höhe.
-        return Column(children: [
-          for (int i = 0; i < rows.length; i++) ...[
-            if (i > 0) const SizedBox(height: kTileGap),
-            SizedBox(height: perRow, child: rows[i]),
-          ],
-        ]);
-      }
-      // SCROLLEN: Reihen behalten Mindesthöhe.
-      // KEIN eigener Scroll-Bereich mehr: Das Dashboard scrollt inzwischen
-      // als Ganzes (angeheftet + verfuegbar). Ein zweiter Scroller darin
-      // wuerde die Gesten schlucken und die graue Sektion unerreichbar
-      // machen. Stattdessen einfach in Mindesthoehe wachsen lassen.
-      return Column(children: [
-          for (int i = 0; i < rows.length; i++) ...[
-            if (i > 0) const SizedBox(height: kTileGap),
-            SizedBox(height: minRowHeight, child: rows[i]),
-          ],
-      ]);
-    });
+    return Column(children: [
+      for (int i = 0; i < rows.length; i++) ...[
+        if (i > 0) const SizedBox(height: kTileGap),
+        SizedBox(height: rowHeight, child: rows[i]),
+      ],
+    ]);
   }
 
   /// Baut die sichtbaren Kacheln als REIHEN (jede Reihe ein Row-Widget mit
   /// stretch), damit sie sich vertikal dehnen lassen.
   List<Widget> _buildTileRows({bool excludeHomeMeetup = false, bool pinned = true}) {
+    _buildingPinnedTile = pinned;
     // pinned=true  -> angeheftete Kacheln (bisher "sichtbar")
     // pinned=false -> verfuegbare Kacheln (bisher "ausgeblendet"), grau
     final visibleTiles = _tileOrder
@@ -1235,11 +1240,34 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // das den Bearbeiten-Modus oeffnet. Ein Erkenner hier drinnen wuerde
       // ihn abfangen, bevor die Huelle ihn sieht (innere Geste gewinnt).
       child: Container(
-        decoration: BoxDecoration(
-          color: cCard,
-          borderRadius: BorderRadius.circular(kTileRadius),
-          border: Border.all(color: cTileBorder, width: 0.5),
-        ),
+        // ANGEHEFTET: derselbe goldene Verlauf wie die Home-Meetup-Kachel,
+        // damit oben alles zusammengehoerig wirkt. VERFUEGBAR: schlicht.
+        decoration: _buildingPinnedTile
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(kTileRadius),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    cOrange.withValues(alpha: 0.13),
+                    cOrange.withValues(alpha: 0.04),
+                    const Color(0xFF141416),
+                  ],
+                  stops: const [0.0, 0.45, 1.0],
+                ),
+                border: Border.all(color: cOrange.withValues(alpha: 0.30), width: 1.0),
+                boxShadow: [
+                  BoxShadow(
+                      color: cOrange.withValues(alpha: 0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 5)),
+                ],
+              )
+            : BoxDecoration(
+                color: cCard,
+                borderRadius: BorderRadius.circular(kTileRadius),
+                border: Border.all(color: cTileBorder, width: 0.5),
+              ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),
           child: Stack(
