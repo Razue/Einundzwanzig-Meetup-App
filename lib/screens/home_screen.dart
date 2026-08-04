@@ -1634,52 +1634,230 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
   Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
-  Widget _buildReputationTile() => _tile(accentColor: Colors.amber, watermark: Icons.workspace_premium_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.workspace_premium_rounded, color: Colors.amber, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileReputation, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(myBadges.isNotEmpty ? AppLocalizations.of(context).tileReputationShare : AppLocalizations.of(context).tileReputationCheck, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  /// WERT-KACHEL: kleines Etikett oben, grosser Wert darunter, Zusatz klein.
+  ///
+  /// Der Unterschied zur bisherigen Bauform ist inhaltlich, nicht kosmetisch:
+  /// Frueher stand ueberall der NAME der Funktion gross und darunter eine
+  /// Beschreibung ("Bitcoin / Netzwerk & Kurs"). Damit sahen fuenfzehn Kacheln
+  /// gleich aus und keine sagte etwas. Jetzt traegt der WERT die Kachel und
+  /// der Name schrumpft auf eine unauffaellige Zeile — dadurch unterscheiden
+  /// sich die Kacheln von selbst und man sieht auf einen Blick, was los ist.
+  Widget _heroContent({
+    required IconData icon,
+    required Color accent,
+    required String label,
+    required String value,
+    String? sub,
+    Color? valueColor,
+    double valueSize = 24,
+    Widget? trailing,
+  }) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+      Row(children: [
+        Icon(icon, color: accent, size: 15),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Text(label.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: cTextSecondary, fontSize: 10.5, letterSpacing: 1.2, fontWeight: FontWeight.w600)),
+        ),
+        if (trailing != null) trailing,
+      ]),
+      const SizedBox(height: 7),
+      Text(value,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+              color: valueColor ?? cText, fontSize: valueSize, fontWeight: FontWeight.w800, height: 1.12)),
+      if (sub != null && sub.isNotEmpty) ...[
+        const SizedBox(height: 3),
+        Text(sub,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: cTextSecondary, fontSize: 12)),
+      ],
+    ]);
+  }
+
+  Widget _buildReputationTile() {
+    final score = _trustScore;
+    final counted = myBadges.where((b) => b.isNostrSigned && !b.isOrganizer).length;
+    return _tile(
+      accentColor: Colors.amber,
+      watermark: Icons.workspace_premium_rounded,
+      onTap: () => Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const ReputationQRScreen())),
+      child: _heroContent(
+        icon: Icons.workspace_premium_rounded,
+        accent: Colors.amber,
+        label: AppLocalizations.of(context).tileReputation,
+        value: score != null ? score.totalScore.toStringAsFixed(1) : '—',
+        sub: counted > 0
+            ? AppLocalizations.of(context).tileReputationBadges(counted)
+            : AppLocalizations.of(context).tileReputationCheck,
+        valueColor: _levelColor,
+      ),
+    );
+  }
   Widget _buildTrustNetworkTile() => _tile(accentColor: cOrange, watermark: Icons.account_tree_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyNetworkScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.account_tree_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileTrustNetwork, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileTrustNetworkSub, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
   Widget _buildCommunityTile() => _tile(accentColor: cCyan, watermark: Icons.hub_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CommunityHubScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.hub_rounded, color: cCyan, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileCommunity, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileCommunityPortal, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
   Widget _buildEventsTile() {
+    final t = AppLocalizations.of(context);
     final hasToday = _eventsToday > 0;
     return _tile(
-      // Sobald heute etwas ansteht, wird die Kachel orange — sonst bleibt
-      // sie zurueckhaltend grau.
       accentColor: hasToday ? cOrange : cTextTertiary,
       watermark: Icons.event_rounded,
-      // Direkt in die Tagesuebersicht des Veranstaltungskalenders springen.
       onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
               builder: (_) => EventCalendarScreen(initialDay: DateTime.now()))),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(Icons.event_rounded, color: hasToday ? cOrange : cTextSecondary, size: 22),
-        const SizedBox(height: 12),
-        // Der Name bleibt IMMER stehen — sonst weiss niemand, wofuer die
-        // Kachel steht. Die Anzahl sitzt als Plakette daneben, wie bei News.
-        Row(children: [
-          Text(AppLocalizations.of(context).tileEvents,
+      child: _heroContent(
+        icon: Icons.event_rounded,
+        accent: hasToday ? cOrange : cTextSecondary,
+        label: t.tileEvents,
+        // Steht heute etwas an, traegt die ZAHL die Kachel. Sonst waere eine
+        // grosse "0" nur truebselig — dann steht dort die Funktion selbst,
+        // eine Stufe kleiner.
+        value: hasToday ? '$_eventsToday' : t.tileEventsCalendar,
+        valueSize: hasToday ? 26 : 16,
+        valueColor: hasToday ? cText : cTextSecondary,
+        sub: hasToday ? t.tileEventsToday : null,
+      ),
+    );
+  }
+
+  bool _portalConnected = false;
+
+  /// PORTAL-VERBINDUNG als Schieberegler auf dem Dashboard: rot/aus = nicht
+  /// verbunden, grün/an = verbunden. Antippen verbindet (Nostr-Login) bzw.
+  /// trennt. Macht das Portal-Login sichtbar statt versteckt.
+  Widget _buildPortalConnectTile() {
+    final t = AppLocalizations.of(context);
+    final on = _portalConnected;
+    return _tile(
+      accentColor: on ? cGreen : cRed,
+      watermark: Icons.hub_rounded,
+      onTap: _togglePortalConnection,
+      child: Row(children: [
+        Icon(on ? Icons.check_circle_rounded : Icons.power_settings_new_rounded,
+            color: on ? cGreen : cRed, size: 22),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(on ? t.portalConnected : t.portalConnect,
               style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-          if (hasToday) ...[
-            const SizedBox(width: 7),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(color: cOrange, borderRadius: BorderRadius.circular(8)),
-              child: Text('$_eventsToday',
-                  style: const TextStyle(
-                      color: Colors.black, fontSize: 11, fontWeight: FontWeight.w800)),
-            ),
-          ],
-        ]),
-        const SizedBox(height: 3),
-        Text(
-          hasToday
-              ? AppLocalizations.of(context).tileEventsToday
-              : AppLocalizations.of(context).tileEventsCalendar,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: hasToday ? cOrange : cTextSecondary, fontSize: 13),
+          const SizedBox(height: 3),
+          Text(t.portalTileSub, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
+        ])),
+        // Optischer Schalter
+        Container(
+          width: 46, height: 26,
+          decoration: BoxDecoration(
+            color: on ? cGreen : Colors.white.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 180),
+            alignment: on ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(width: 20, height: 20, margin: const EdgeInsets.symmetric(horizontal: 3),
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+          ),
         ),
       ]),
     );
   }
+
+  Future<void> _refreshPortalConnected() async {
+    final c = await PortalApiService.tokenMatchesCurrentKey();
+    if (mounted && c != _portalConnected) setState(() => _portalConnected = c);
+  }
+
+  Future<void> _togglePortalConnection() async {
+    final t = AppLocalizations.of(context);
+    if (_portalConnected) {
+      await PortalApiService.logout();
+      if (mounted) setState(() => _portalConnected = false);
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.portalConnecting), backgroundColor: cCard,
+        duration: const Duration(seconds: 8), behavior: SnackBarBehavior.floating));
+    final res = await PortalApiService.loginWithNostr();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    if (res.ok) {
+      setState(() => _portalConnected = true);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.portalConnected), backgroundColor: Colors.green.shade700, behavior: SnackBarBehavior.floating));
+      _checkPortalOrganizer();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('${t.portalLoginFailed}: ${res.error ?? ''}'), backgroundColor: cRed, behavior: SnackBarBehavior.floating));
+    }
+  }
+
+  Widget _buildBtcDashboardTile() => _tile(
+    accentColor: cOrange,
+    opacity: 0.07,
+    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BitcoinDashboardScreen())),
+    child: const _BtcDashboardTileContent(),
+  );
+
+  Widget _buildConverterTile() => _tile(accentColor: cOrange, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Icon(Icons.swap_vert_rounded, color: cOrange, size: 22), const SizedBox(height: 12), Text(AppLocalizations.of(context).tileConverter, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)), const SizedBox(height: 3), Text(AppLocalizations.of(context).tileConverterSub, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextSecondary, fontSize: 13))]));
+  Widget _buildNewsTile() => _tile(
+    accentColor: cOrange,
+    opacity: 0.07,
+    watermark: Icons.article_rounded,
+    onTap: _openNews,
+    child: _heroContent(
+      icon: Icons.article_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tileNews,
+      // Die Schlagzeile IST der Wert — sie sagt in einem Blick, ob sich
+      // das Antippen lohnt.
+      value: _latestNewsTitle.isNotEmpty
+          ? _latestNewsTitle
+          : AppLocalizations.of(context).tileNewsSub,
+      valueSize: 14,
+      valueColor: _latestNewsTitle.isNotEmpty ? cText : cTextSecondary,
+      trailing: _unreadNews > 0
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(color: cRed, borderRadius: BorderRadius.circular(8)),
+              child: Text('$_unreadNews',
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800)),
+            )
+          : null,
+    ),
+  );
+
+  Widget _buildEventsTile() {
+    final t = AppLocalizations.of(context);
+    final hasToday = _eventsToday > 0;
+    return _tile(
+      accentColor: hasToday ? cOrange : cTextTertiary,
+      watermark: Icons.event_rounded,
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => EventCalendarScreen(initialDay: DateTime.now()))),
+      child: _heroContent(
+        icon: Icons.event_rounded,
+        accent: hasToday ? cOrange : cTextSecondary,
+        label: t.tileEvents,
+        // Steht heute etwas an, traegt die ZAHL die Kachel. Sonst waere eine
+        // grosse "0" nur truebselig — dann steht dort die Funktion selbst,
+        // eine Stufe kleiner.
+        value: hasToday ? '$_eventsToday' : t.tileEventsCalendar,
+        valueSize: hasToday ? 26 : 16,
+        valueColor: hasToday ? cText : cTextSecondary,
+        sub: hasToday ? t.tileEventsToday : null,
+      ),
+    );
+  }
+
   bool _portalConnected = false;
 
   /// PORTAL-VERBINDUNG als Schieberegler auf dem Dashboard: rot/aus = nicht
@@ -1823,21 +2001,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       builder: (_, idx, __) {
         final song = idx != null ? kPlebSongs[idx] : null;
         return Row(children: [
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-            Row(children: [
-              const Icon(Icons.graphic_eq_rounded, color: cOrange, size: 20),
-              const SizedBox(width: 8),
-              const Text('PlebRap', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-            ]),
-            const SizedBox(height: 6),
-            Text(song?.title ?? AppLocalizations.of(context).chPlebrapSub,
-                style: TextStyle(color: song != null ? cOrange : cTextSecondary, fontSize: 13,
-                    fontWeight: song != null ? FontWeight.w600 : FontWeight.w400),
-                maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (song != null)
-              Text(song.artist, style: const TextStyle(color: cTextSecondary, fontSize: 12),
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-          ])),
+          Expanded(child: _heroContent(
+            icon: Icons.graphic_eq_rounded,
+            accent: cOrange,
+            label: 'PlebRap',
+            // Laeuft etwas, steht der TITEL da — sonst der Hinweis, worum
+            // es geht. Der Kuenstler rutscht in die Zusatzzeile.
+            value: song?.title ?? AppLocalizations.of(context).chPlebrapSub,
+            valueSize: song != null ? 17 : 14,
+            valueColor: song != null ? cText : cTextSecondary,
+            sub: song?.artist,
+          )),
           // Play/Pause — Spinner waehrend des Ladens
           ValueListenableBuilder<bool>(
             valueListenable: PlebrapAudio.loading,

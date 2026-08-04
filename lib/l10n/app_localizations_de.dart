@@ -1252,7 +1252,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get writerSuccess => 'ERFOLG!';
 
   @override
-  String get writerValidity => 'Gültig für 4 Stunden';
+  String writerValidHours(Object hours) {
+    return '⏱️ Gültig für ${hours}h\n\n';
+  }
 
   @override
   String get writerHoldTag => 'Halte Tag an das Gerät...';
@@ -1706,11 +1708,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String writerValidHours(Object hours) {
-    return '⏱️ Gültig für ${hours}h\n\n';
-  }
-
-  @override
   String get verifyErrNoNdef => '✗ Kein NDEF Tag';
 
   @override
@@ -1910,7 +1907,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apNewMeetupBody =>
-      'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 6 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.';
+      'Dies erstellt eine eindeutige Signatur (Blockzeit) für die nächsten 4 Stunden. In dieser Zeit ist die Erstellung neuer Sessions gesperrt.';
 
   @override
   String get apSessionEndBody =>
@@ -1918,7 +1915,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get apGeneratesProof =>
-      'Generiert einen neuen kryptographischen Beweis für die nächsten 6 Stunden.';
+      'Generiert einen neuen kryptographischen Beweis für die nächsten 4 Stunden.';
 
   @override
   String get humTitle => 'PROOF OF HUMANITY';
@@ -4668,11 +4665,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String walletCleanupDone(int count) {
     return '$count Duplikate entfernt.';
   }
+
   @override
   String get orgGpsSoftTitle => 'Ohne Standort fortfahren?';
 
   @override
-  String get orgGpsSoftBody => 'Du kannst das Meetup trotzdem erstellen und den Namen selbst eintragen. Ohne Standort können Teilnehmer allerdings nicht per Umkreis bestätigt werden — ihre Badges gelten dann als ungeprüfte Präsenz.';
+  String get orgGpsSoftBody =>
+      'Du kannst das Meetup trotzdem erstellen und den Namen selbst eintragen. Ohne Standort können Teilnehmer allerdings nicht per Umkreis bestätigt werden — ihre Badges gelten dann als ungeprüfte Präsenz.';
 
   @override
   String get orgGpsSoftContinue => 'Ohne Standort';
@@ -4681,7 +4680,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get badgeUnverified => 'Präsenz ungeprüft';
 
   @override
-  String get badgeUnverifiedInfo => 'Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.';
+  String get badgeUnverifiedInfo =>
+      'Beim Sammeln war kein Standort verfügbar. Der Badge ist gültig, sein Präsenz-Nachweis aber nicht zusätzlich bestätigt.';
 
   @override
   String get verifyClose => 'SCHLIESSEN';
@@ -4690,10 +4690,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get verifyOpenWallet => 'ZUR WALLET';
 
   @override
+  String get writerValidity => 'Gültig für 4 Stunden';
+
+  @override
   String get apPickPortalTitle => 'Meetup auswählen';
 
   @override
-  String get apPickPortalHint => 'Wähle das Meetup, an dem du gerade bist. Der hinterlegte Ort dient den Teilnehmern als Anhaltspunkt — ein falscher Eintrag verfälscht ihre Bestätigung.';
+  String get apPickPortalHint =>
+      'Wähle das Meetup, an dem du gerade bist. Der hinterlegte Ort dient den Teilnehmern als Anhaltspunkt — ein falscher Eintrag verfälscht ihre Bestätigung.';
 
   @override
   String get apEnterManually => 'Name selbst eingeben';
@@ -4702,7 +4706,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get apCustomNeedsGpsTitle => 'Standort nötig';
 
   @override
-  String get apCustomNeedsGpsBody => 'Ein Meetup mit eigenem Namen lässt sich nur erstellen, wenn dein Standort ermittelbar ist — er ist der einzige Bezugspunkt, an dem die Anwesenheit der Teilnehmer geprüft werden kann.\n\nDrei Wege: Geh kurz vor die Tür und versuche es erneut, wähle stattdessen ein Meetup aus dem Portal, oder lass jemand anderen vor Ort mit funktionierender Ortung das Badge erstellen.';
+  String get apCustomNeedsGpsBody =>
+      'Ein Meetup mit eigenem Namen lässt sich nur erstellen, wenn dein Standort ermittelbar ist — er ist der einzige Bezugspunkt, an dem die Anwesenheit der Teilnehmer geprüft werden kann.\n\nDrei Wege: Geh kurz vor die Tür und versuche es erneut, wähle stattdessen ein Meetup aus dem Portal, oder lass jemand anderen vor Ort mit funktionierender Ortung das Badge erstellen.';
 
   @override
   String get apNoRefTitle => 'Kein Bezugspunkt';
@@ -4711,13 +4716,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get apNoRefContinue => 'Trotzdem erstellen';
 
   @override
-  String apNoRefBody(String city) => 'Für „${city}“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.';
+  String apNoRefBody(String city) {
+    return 'Für „$city“ ist im Portal kein Ort hinterlegt, und dein Standort ist nicht ermittelbar. Die Anwesenheit der Teilnehmer kann deshalb nicht bestätigt werden — ihre Badges zählen weniger.\n\nBesser: Ortung ermöglichen oder jemand anderen vor Ort das Badge erstellen lassen.';
+  }
 
   @override
   String get apConfirmPickTitle => 'Bist du hier?';
 
   @override
-  String get apConfirmPickBody => 'Dieser Name steht dauerhaft im Badge jedes Teilnehmers und lässt sich nachträglich nicht ändern. Passt der Ort nicht zu den Anwesenden, bekommen sie die Meldung „zu weit entfernt“ und kein Badge.';
+  String get apConfirmPickBody =>
+      'Dieser Name steht dauerhaft im Badge jedes Teilnehmers und lässt sich nachträglich nicht ändern. Passt der Ort nicht zu den Anwesenden, bekommen sie die Meldung „zu weit entfernt“ und kein Badge.';
 
   @override
   String get apConfirmPickYes => 'Ja, hier bin ich';
@@ -4726,33 +4734,44 @@ class AppLocalizationsDe extends AppLocalizations {
   String get badgeOrganizerTitle => 'ORGANISATOR-NACHWEIS';
 
   @override
-  String get badgeOrganizerDesc => 'Du hast dieses Meetup selbst erstellt. Das Badge dokumentiert es, ist aber nicht signiert und zählt nicht zur Reputation — niemand kann sich selbst bestätigen. Ein zählendes Badge bekommst du, wenn ein anderer Organisator vor Ort eine eigene Session startet und du dessen Code scannst.';
+  String get badgeOrganizerDesc =>
+      'Du hast dieses Meetup selbst erstellt. Das Badge dokumentiert es, ist aber nicht signiert und zählt nicht zur Reputation — niemand kann sich selbst bestätigen. Ein zählendes Badge bekommst du, wenn ein anderer Organisator vor Ort eine eigene Session startet und du dessen Code scannst.';
 
   @override
   String get walletOrganizerSection => 'Von dir erstellt';
 
   @override
-  String reputationOrganizerNote(int count) => '${count} Meetup(s) von dir organisiert — zählt nicht zum Score, da man sich nicht selbst bestätigen kann.';
+  String reputationOrganizerNote(int count) {
+    return '$count Meetup(s) von dir organisiert — zählt nicht zum Score, da man sich nicht selbst bestätigen kann.';
+  }
 
   @override
   String get apCrossConfirmTitle => 'Zweiter Organisator dabei?';
 
   @override
-  String get apCrossConfirmBody => 'Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.';
+  String get apCrossConfirmBody =>
+      'Für dein eigenes Meetup bekommst du kein zählendes Badge — niemand kann sich selbst bestätigen. Startet ihr beide eine Session und scannt euch gegenseitig, habt ihr beide einen echten Nachweis für diesen Abend.';
 
   @override
   String get tileEventsToday => 'heute im Veranstaltungskalender';
 
   @override
-  String tileNewsUnread(int count) => '${count} neu seit deinem Besuch';
+  String tileNewsUnread(int count) {
+    return '$count neu seit deinem Besuch';
+  }
 
   @override
   String get tilesAvailable => 'Verfügbar';
 
   @override
-  String get tilesEditHint => 'Auf eine andere Kachel ziehen zum Verschieben · Nadel zum An- und Abheften';
+  String get tilesEditHint =>
+      'Auf eine andere Kachel ziehen zum Verschieben · Nadel zum An- und Abheften';
 
   @override
   String get tilesEditDone => 'Fertig';
 
+  @override
+  String tileReputationBadges(int count) {
+    return '$count gezählte Badges';
+  }
 }

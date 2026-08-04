@@ -2277,5 +2277,13 @@
   },
   "tilesAvailable": "Available",
   "tilesEditHint": "Drag onto another tile to move · Pin to attach or detach",
-  "tilesEditDone": "Done"
+  "tilesEditDone": "Done",
+  "tileReputationBadges": "{count} counted badges",
+  "@tileReputationBadges": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

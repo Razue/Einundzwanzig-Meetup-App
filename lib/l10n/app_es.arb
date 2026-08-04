@@ -2277,5 +2277,13 @@
   },
   "tilesAvailable": "Disponibles",
   "tilesEditHint": "Arrastra sobre otra tarjeta para mover · Chincheta para fijar o soltar",
-  "tilesEditDone": "Listo"
+  "tilesEditDone": "Listo",
+  "tileReputationBadges": "{count} insignias contadas",
+  "@tileReputationBadges": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

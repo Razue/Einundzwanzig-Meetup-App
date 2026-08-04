@@ -8653,7 +8653,7 @@ abstract class AppLocalizations {
   /// No description provided for @tileEventsToday.
   ///
   /// In de, this message translates to:
-  /// **'heute im Kalender'**
+  /// **'heute im Veranstaltungskalender'**
   String get tileEventsToday;
 
   /// No description provided for @tileNewsUnread.
@@ -8679,6 +8679,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Fertig'**
   String get tilesEditDone;
+
+  /// No description provided for @tileReputationBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} gezählte Badges'**
+  String tileReputationBadges(int count);
 }
 
 class _AppLocalizationsDelegate
