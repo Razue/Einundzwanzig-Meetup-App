@@ -4758,4 +4758,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String tileReputationBadges(int count) {
     return '$count insignias contadas';
   }
+
+  @override
+  String get tileActListen => 'Para escuchar';
+
+  @override
+  String get tileActConvert => 'Convertir';
+
+  @override
+  String get tileActExchange => 'Intercambio';
+
+  @override
+  String get tileActSend => 'Enviar';
+
+  @override
+  String get tileActExplore => 'Explorar';
+
+  @override
+  String get tileActLookup => 'Consultar';
+
+  @override
+  String get tileActNetwork => 'Red';
+
+  @override
+  String get tileActEncounters => 'Encuentros';
+
+  @override
+  String get tileActManage => 'Gestionar';
+
+  @override
+  String get emptyFindMeetup => 'Buscar meetup';
+
+  @override
+  String get reputationScoreLabel => 'Puntuación de confianza';
+
+  @override
+  String get reputationUnsigned => 'Sin firmar';
 }

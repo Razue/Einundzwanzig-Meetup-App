@@ -8685,6 +8685,78 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} gezählte Badges'**
   String tileReputationBadges(int count);
+
+  /// No description provided for @tileActListen.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Hören'**
+  String get tileActListen;
+
+  /// No description provided for @tileActConvert.
+  ///
+  /// In de, this message translates to:
+  /// **'Umrechnen'**
+  String get tileActConvert;
+
+  /// No description provided for @tileActExchange.
+  ///
+  /// In de, this message translates to:
+  /// **'Austausch'**
+  String get tileActExchange;
+
+  /// No description provided for @tileActSend.
+  ///
+  /// In de, this message translates to:
+  /// **'Senden'**
+  String get tileActSend;
+
+  /// No description provided for @tileActExplore.
+  ///
+  /// In de, this message translates to:
+  /// **'Entdecken'**
+  String get tileActExplore;
+
+  /// No description provided for @tileActLookup.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachschlagen'**
+  String get tileActLookup;
+
+  /// No description provided for @tileActNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk'**
+  String get tileActNetwork;
+
+  /// No description provided for @tileActEncounters.
+  ///
+  /// In de, this message translates to:
+  /// **'Begegnungen'**
+  String get tileActEncounters;
+
+  /// No description provided for @tileActManage.
+  ///
+  /// In de, this message translates to:
+  /// **'Verwalten'**
+  String get tileActManage;
+
+  /// No description provided for @emptyFindMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup finden'**
+  String get emptyFindMeetup;
+
+  /// No description provided for @reputationScoreLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauenswert'**
+  String get reputationScoreLabel;
+
+  /// No description provided for @reputationUnsigned.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht signiert'**
+  String get reputationUnsigned;
 }
 
 class _AppLocalizationsDelegate

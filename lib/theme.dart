@@ -18,6 +18,9 @@ const Color cCourse = Color(0xFF9AA0AA); // Kurse im Kalender – neutrales Grau
 const Color cCyanDim = Color(0xFF3D2E00);
 const Color cPurple = Color(0xFF9B45E8); // Podcast, Nostr
 const Color cNostr  = Color(0xFF8B5CF6);
+// Aufgehelltes Violett fuer TEXT auf den goldenen Kacheln: cPurple erreicht
+// dort nur 3,4:1 Kontrast und waere als Etikett schlecht lesbar. 6,8:1.
+const Color cPurpleLight = Color(0xFFBE96F2);
 
 // ── Text (hoher Kontrast) ─────────────────
 const Color cText          = Color(0xFFFFFFFF);

@@ -24,6 +24,7 @@ import '../services/zap_verification_service.dart';
 import '../services/nip05_service.dart';
 import '../services/relay_config.dart';
 import '../theme.dart';
+import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/shadows.dart';
 
@@ -307,6 +308,9 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
           controller: _scannerController,
           onDetect: _onDetect,
         ),
+        // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
+        // dass die App tatsaechlich sucht.
+        const ScannerOverlay(),
         Positioned(
           bottom: 60, left: 24, right: 24,
           child: Column(

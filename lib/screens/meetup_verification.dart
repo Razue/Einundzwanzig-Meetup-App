@@ -30,6 +30,7 @@ import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';    // Ndef (cross-platf
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nostr/nostr.dart';
 import '../theme.dart';
+import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/shadows.dart';
 import '../services/coattendance_service.dart';
@@ -1216,6 +1217,9 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
       appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
       body: Stack(children: [
         MobileScanner(onDetect: _onDetect),
+        // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
+        // dass die App tatsaechlich sucht.
+        const ScannerOverlay(),
         Positioned(
           bottom: 60, left: 40, right: 40,
           child: Container(
