@@ -307,8 +307,8 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
           controller: _scannerController,
           onDetect: _onDetect,
         ),
-        // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt, dass
-        // die App tatsaechlich sucht.
+        // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
+        // dass die App tatsaechlich sucht.
         const ScannerOverlay(),
         Positioned(
           bottom: 60, left: 24, right: 24,

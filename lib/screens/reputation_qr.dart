@@ -508,8 +508,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       signedLabel: t.reputationSchnorrSigned,
       unsignedLabel: t.reputationUnsigned,
       // 220 statt 260: Der QR sitzt jetzt in einer gestalteten Karte und
-      // muss sich den Platz mit Kopf, Wert und Zahlen teilen. Fuer das
-      // Abscannen vom Bildschirm reicht das mit Abstand.
+      // teilt sich den Platz. Zum Abscannen reicht das mit Abstand.
       qrCode: QrImageView(
         data: _qrData,
         version: QrVersions.auto,

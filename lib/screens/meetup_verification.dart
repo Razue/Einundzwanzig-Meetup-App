@@ -1185,8 +1185,8 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
       appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
       body: Stack(children: [
         MobileScanner(onDetect: _onDetect),
-        // Derselbe Rahmen wie im allgemeinen Scanner — hier zaehlt er am
-        // meisten, weil an dieser Stelle die Badges eingesammelt werden.
+        // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
+        // dass die App tatsaechlich sucht.
         const ScannerOverlay(),
         Positioned(
           bottom: 60, left: 40, right: 40,

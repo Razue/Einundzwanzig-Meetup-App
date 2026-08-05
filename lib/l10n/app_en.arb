@@ -2286,6 +2286,15 @@
       }
     }
   },
+  "tileActListen": "To listen",
+  "tileActConvert": "Convert",
+  "tileActExchange": "Exchange",
+  "tileActSend": "Send",
+  "tileActExplore": "Explore",
+  "tileActLookup": "Look up",
+  "tileActNetwork": "Network",
+  "tileActEncounters": "Encounters",
+  "tileActManage": "Manage",
   "emptyFindMeetup": "Find a meetup",
   "reputationScoreLabel": "Trust score",
   "reputationUnsigned": "Unsigned"

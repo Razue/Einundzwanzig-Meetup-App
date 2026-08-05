@@ -2308,6 +2308,15 @@
       }
     }
   },
+  "tileActListen": "Zum Hören",
+  "tileActConvert": "Umrechnen",
+  "tileActExchange": "Austausch",
+  "tileActSend": "Senden",
+  "tileActExplore": "Entdecken",
+  "tileActLookup": "Nachschlagen",
+  "tileActNetwork": "Netzwerk",
+  "tileActEncounters": "Begegnungen",
+  "tileActManage": "Verwalten",
   "emptyFindMeetup": "Meetup finden",
   "reputationScoreLabel": "Vertrauenswert",
   "reputationUnsigned": "Nicht signiert"

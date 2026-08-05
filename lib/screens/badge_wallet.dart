@@ -708,8 +708,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   // ============================================================
   Widget _buildEmptyState(BuildContext context) {
     // Statt eines stummen grauen Symbols: Erklaerung plus konkreter Weg
-    // nach vorn. Wer noch kein Badge hat, braucht zuerst ein Meetup —
-    // also fuehrt der Knopf genau dorthin.
+    // nach vorn. Wer noch kein Badge hat, braucht zuerst ein Meetup.
     return EmptyState(
       icon: Icons.collections_bookmark_outlined,
       title: AppLocalizations.of(context).walletNoBadges,
@@ -721,9 +720,6 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
     );
   }
 
-  // ============================================================
-  // NORMAL VIEW (2 Spalten)
-  // ============================================================
   Widget _buildBadgeCard(BuildContext context, MeetupBadge badge, int index) {
     final seed = "${badge.meetupName}:${badge.blockHeight}";
 
