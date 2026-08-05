@@ -30,6 +30,7 @@ import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';    // Ndef (cross-platf
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nostr/nostr.dart';
 import '../theme.dart';
+import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
@@ -1184,6 +1185,9 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
       appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
       body: Stack(children: [
         MobileScanner(onDetect: _onDetect),
+        // Derselbe Rahmen wie im allgemeinen Scanner — hier zaehlt er am
+        // meisten, weil an dieser Stelle die Badges eingesammelt werden.
+        const ScannerOverlay(),
         Positioned(
           bottom: 60, left: 40, right: 40,
           child: Container(

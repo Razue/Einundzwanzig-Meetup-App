@@ -4774,4 +4774,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String tileReputationBadges(int count) {
     return '$count gezählte Badges';
   }
+  @override
+  String get emptyFindMeetup => 'Meetup finden';
+
+  @override
+  String get reputationScoreLabel => 'Vertrauenswert';
+
+  @override
+  String get reputationUnsigned => 'Nicht signiert';
+
 }

@@ -4730,4 +4730,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String tileReputationBadges(int count) {
     return '$count counted badges';
   }
+  @override
+  String get emptyFindMeetup => 'Find a meetup';
+
+  @override
+  String get reputationScoreLabel => 'Trust score';
+
+  @override
+  String get reputationUnsigned => 'Unsigned';
+
 }

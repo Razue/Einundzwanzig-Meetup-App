@@ -4758,4 +4758,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String tileReputationBadges(int count) {
     return '$count insignias contadas';
   }
+  @override
+  String get emptyFindMeetup => 'Buscar meetup';
+
+  @override
+  String get reputationScoreLabel => 'Puntuación de confianza';
+
+  @override
+  String get reputationUnsigned => 'Sin firmar';
+
 }

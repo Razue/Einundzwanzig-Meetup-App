@@ -2285,5 +2285,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "emptyFindMeetup": "Buscar meetup",
+  "reputationScoreLabel": "Puntuación de confianza",
+  "reputationUnsigned": "Sin firmar"
 }

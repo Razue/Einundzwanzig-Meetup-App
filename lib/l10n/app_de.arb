@@ -2307,5 +2307,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "emptyFindMeetup": "Meetup finden",
+  "reputationScoreLabel": "Vertrauenswert",
+  "reputationUnsigned": "Nicht signiert"
 }

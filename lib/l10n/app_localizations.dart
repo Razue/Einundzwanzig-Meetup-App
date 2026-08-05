@@ -8685,6 +8685,15 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} gezählte Badges'**
   String tileReputationBadges(int count);
+  /// No description provided for @emptyFindMeetup.
+  String get emptyFindMeetup;
+
+  /// No description provided for @reputationScoreLabel.
+  String get reputationScoreLabel;
+
+  /// No description provided for @reputationUnsigned.
+  String get reputationUnsigned;
+
 }
 
 class _AppLocalizationsDelegate

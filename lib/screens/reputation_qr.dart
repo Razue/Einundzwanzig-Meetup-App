@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import '../theme.dart';
+import '../widgets/reputation_card_visual.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
@@ -486,74 +487,38 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   }
 
   Widget _buildQRCard(BuildContext context) {
-    // Nickname bestimmen
+    final t = AppLocalizations.of(context);
     final nickname = _user.nickname.isNotEmpty ? _user.nickname : 'Anon';
+    final level = _trustScore?.level ?? '';
 
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 8))],
+    return ReputationCardVisual(
+      nickname: nickname,
+      score: _trustScore?.totalScore ?? 0.0,
+      level: level,
+      badgeCount: _verifiedBadgeCount,
+      meetupCount: _trustScore?.uniqueMeetups ?? 0,
+      signerCount: _trustScore?.uniqueSigners ?? 0,
+      isSigned: _hasIdentity,
+      levelColor: levelColor(level),
+      levelIcon: levelIcon(level),
+      scoreLabel: t.reputationScoreLabel,
+      badgesLabel: t.reputationBadges,
+      meetupsLabel: t.reputationMeetups,
+      signersLabel: t.reputationSigners,
+      signedLabel: t.reputationSchnorrSigned,
+      unsignedLabel: t.reputationUnsigned,
+      // 220 statt 260: Der QR sitzt jetzt in einer gestalteten Karte und
+      // muss sich den Platz mit Kopf, Wert und Zahlen teilen. Fuer das
+      // Abscannen vom Bildschirm reicht das mit Abstand.
+      qrCode: QrImageView(
+        data: _qrData,
+        version: QrVersions.auto,
+        size: 220,
+        backgroundColor: Colors.white,
+        errorCorrectionLevel: QrErrorCorrectLevel.L,
       ),
-      child: Column(children: [
-        // =============================================
-        // NEU: Nickname oben auf der Karte
-        // =============================================
-        Text(
-          AppLocalizations.of(context).reputationCodeFrom,
-          style: TextStyle(
-            color: Colors.grey.shade500,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          nickname,
-          style: TextStyle(
-            color: Colors.grey.shade800,
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // QR Code
-        QrImageView(
-          data: _qrData,
-          version: QrVersions.auto,
-          size: 260,
-          backgroundColor: Colors.white,
-          errorCorrectionLevel: QrErrorCorrectLevel.L,
-        ),
-        const SizedBox(height: 12),
-
-        // Signatur-Status
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              _hasIdentity ? Icons.verified_user : Icons.lock_outline,
-              color: _hasIdentity ? Colors.green.shade700 : Colors.grey,
-              size: 16,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              _hasIdentity ? AppLocalizations.of(context).reputationSchnorrSigned : AppLocalizations.of(context).reputationSignedNoId,
-              style: TextStyle(
-                color: _hasIdentity ? Colors.green.shade700 : Colors.grey,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ]),
     );
   }
-
 
   Widget _buildStatsRow(BuildContext context) {
     final score = _trustScore;

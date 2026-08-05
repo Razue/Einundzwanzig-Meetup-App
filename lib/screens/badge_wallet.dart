@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'calendar_screen.dart';
+import '../widgets/empty_state.dart';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -705,29 +707,17 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   // EMPTY STATE
   // ============================================================
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.collections_bookmark_outlined,
-              size: 100, color: Colors.grey.withValues(alpha: 0.3)),
-          const SizedBox(height: 20),
-          Text(AppLocalizations.of(context).walletNoBadges,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(color: cTextSecondary)),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              AppLocalizations.of(context).walletNoBadgesSub,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-          ),
-        ],
-      ),
+    // Statt eines stummen grauen Symbols: Erklaerung plus konkreter Weg
+    // nach vorn. Wer noch kein Badge hat, braucht zuerst ein Meetup —
+    // also fuehrt der Knopf genau dorthin.
+    return EmptyState(
+      icon: Icons.collections_bookmark_outlined,
+      title: AppLocalizations.of(context).walletNoBadges,
+      subtitle: AppLocalizations.of(context).walletNoBadgesSub,
+      actionLabel: AppLocalizations.of(context).emptyFindMeetup,
+      onAction: () => Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const CalendarScreen())),
+      accentColor: cOrange,
     );
   }
 
