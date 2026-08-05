@@ -152,10 +152,10 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1A1207), cCard, cDark],
+          colors: [Color(0xFF1A1207), Color(0xFF23140B), cDark],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: cOrange.withValues(alpha: 0.45), width: 1.2),
         boxShadow: shadowForElevation(4, accent: cOrange),
       ),
       child: Stack(
@@ -168,7 +168,7 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
               height: 140,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: cOrange.withValues(alpha: 0.08),
+                color: cOrange.withValues(alpha: 0.16),
               ),
             ),
           ),

@@ -492,9 +492,16 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 8))],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, const Color(0xFFF7E7D8)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cOrange.withValues(alpha: 0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(color: cOrange.withValues(alpha: 0.18), blurRadius: 24, offset: const Offset(0, 10)),
+        ],
       ),
       child: Column(children: [
         // =============================================

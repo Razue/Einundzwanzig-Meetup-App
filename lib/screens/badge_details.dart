@@ -19,6 +19,23 @@ class BadgeDetailsScreen extends StatefulWidget {
 class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
   MeetupBadge get b => widget.badge;
 
+  @override
+  void initState() {
+    super.initState();
+    _primePortalLogos();
+  }
+
+  Future<void> _primePortalLogos() async {
+    try {
+      await MeetupCalendarService().fetchMeetupsPortalFirst();
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (_) {
+      // Fallback: die Ansicht bleibt mit dem bestehenden Badge-Cover nutzbar.
+    }
+  }
+
   String _formatBlock(int h) {
     if (h == 0) return AppLocalizations.of(context).badgeUnknown;
     final s = h.toString();
@@ -221,29 +238,47 @@ Verifizierbar über die Einundzwanzig Meetup App
 
   // ── WIDGETS ───────────────────────────────────────────────────
 
+  String _resolvedCoverUrl() {
+    if (b.coverUrl.isNotEmpty) {
+      final direct = MeetupCalendarService.absoluteImageUrl(b.coverUrl);
+      if (direct.isNotEmpty) return direct;
+    }
+
+    final portalLogo = MeetupCalendarService.logoFor(b.meetupName);
+    if (portalLogo.isNotEmpty) return portalLogo;
+
+    return '';
+  }
+
   Widget _heroCard(BuildContext context) {
-    final coverUrl = b.coverUrl.isNotEmpty ? MeetupCalendarService.absoluteImageUrl(b.coverUrl) : '';
+    final coverUrl = _resolvedCoverUrl();
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            cCard.withValues(alpha: 0.98),
-            cSurface.withValues(alpha: 0.98),
+            cCard.withValues(alpha: 0.99),
+            cSurface.withValues(alpha: 0.96),
           ],
         ),
-        border: Border.all(color: cOrange.withValues(alpha: 0.36), width: 1.2),
+        border: Border.all(color: cOrange.withValues(alpha: 0.48), width: 1.4),
         boxShadow: [
           BoxShadow(
-            color: cOrange.withValues(alpha: 0.14),
-            blurRadius: 28,
-            offset: const Offset(0, 8),
-          )
+            color: cOrange.withValues(alpha: 0.2),
+            blurRadius: 34,
+            spreadRadius: -2,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.22),
+            blurRadius: 20,
+            offset: const Offset(0, 12),
+          ),
         ],
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         children: [
@@ -254,7 +289,7 @@ Verifizierbar über die Einundzwanzig Meetup App
                   borderRadius: BorderRadius.circular(24),
                   child: Image.network(
                     coverUrl,
-                    height: 170,
+                    height: 186,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
@@ -291,7 +326,7 @@ Verifizierbar über die Einundzwanzig Meetup App
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.48),
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: cOrange.withValues(alpha: 0.36), width: 0.8),
+                      border: Border.all(color: cOrange.withValues(alpha: 0.55), width: 1.0),
                     ),
                     child: Row(
                       children: [

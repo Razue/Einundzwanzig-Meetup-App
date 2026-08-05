@@ -184,6 +184,7 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
   Future<void> _loadCoverLookup() async {
     if (_coversLoaded) return;
     try {
+      await MeetupCalendarService().fetchMeetupsPortalFirst();
       final meetups = await MeetupService.fetchMeetups();
       final lookup = <String, String>{};
       for (final meetup in meetups) {
@@ -211,8 +212,15 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
 
   String _resolvedCoverUrl(MeetupBadge badge) {
     if (badge.coverUrl.isNotEmpty) {
-      return MeetupCalendarService.absoluteImageUrl(badge.coverUrl);
+      final direct = MeetupCalendarService.absoluteImageUrl(badge.coverUrl);
+      if (direct.isNotEmpty) return direct;
     }
+
+    final portalLogo = MeetupCalendarService.logoFor(badge.meetupName);
+    if (portalLogo.isNotEmpty) {
+      return portalLogo;
+    }
+
     final aliases = <String>{
       badge.meetupName.trim().toLowerCase(),
       badge.meetupName.split(',').first.trim().toLowerCase(),
@@ -840,6 +848,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   Widget _buildBadgeCard(BuildContext context, MeetupBadge badge, int index) {
     final seed = "${badge.meetupName}:${badge.blockHeight}";
     final coverUrl = _resolvedCoverUrl(badge);
+    final hasCover = coverUrl.isNotEmpty;
 
     return Pressable(
       onTap: () {
@@ -851,20 +860,27 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           color: cCard,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: cOrange.withValues(alpha: 0.34), width: 1.0),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: cOrange.withValues(alpha: 0.42), width: 1.2),
           boxShadow: [
             BoxShadow(
-                color: cOrange.withValues(alpha: 0.12),
-                blurRadius: 16,
-                offset: const Offset(0, 6)),
+              color: cOrange.withValues(alpha: 0.18),
+              blurRadius: 24,
+              spreadRadius: -2,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
           ],
         ),
         child: Stack(
           fit: StackFit.expand,
           children: [
             // 1. COVER ODER GENERATIVE ART
-            if (coverUrl.isNotEmpty)
+            if (hasCover)
               Image.network(
                 coverUrl,
                 fit: BoxFit.cover,
@@ -873,21 +889,58 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             else
               CustomPaint(painter: BadgeArtPainter(seed: seed)),
 
+            if (!hasCover)
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        cOrange.withValues(alpha: 0.24),
+                        cCard.withValues(alpha: 0.92),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
             // 2. FEINER OVERLAY-VERLAUF
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0.0, 0.45, 1.0],
+                  stops: const [0.0, 0.35, 1.0],
                   colors: [
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.18),
-                    Colors.black.withValues(alpha: 0.82),
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.black.withValues(alpha: 0.9),
                   ],
                 ),
               ),
             ),
+            if (!hasCover)
+              Positioned(
+                top: 14,
+                right: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: cOrange.withValues(alpha: 0.45), width: 0.9),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.auto_awesome_rounded, color: cOrange, size: 12),
+                      SizedBox(width: 4),
+                      Text('COLLECTIBLE', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.8)),
+                    ],
+                  ),
+                ),
+              ),
             Positioned(
               top: 0,
               left: 0,
@@ -918,22 +971,21 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(6),
+                        padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.5),
+                          color: Colors.black.withValues(alpha: 0.6),
                           shape: BoxShape.circle,
-                          border:
-                              Border.all(color: cOrange.withValues(alpha: 0.5)),
+                          border: Border.all(color: cOrange.withValues(alpha: 0.72), width: 1.1),
                         ),
                         child: const Icon(Icons.verified,
                             color: cOrange, size: 20),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.black.withValues(alpha: 0.68),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.14), width: 0.8),
                         ),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
                           // Organisator-Marker: selbst erstelltes Meetup,
