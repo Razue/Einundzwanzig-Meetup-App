@@ -47,17 +47,23 @@ class HapticService {
     await HapticFeedback.selectionClick();
   }
 
+  static Future<void> lightImpact() => light();
+
   /// Zustandswechsel: angeheftet, umgeschaltet, ausgewaehlt.
   static Future<void> medium() async {
     if (!await _isEnabled()) return;
     await HapticFeedback.mediumImpact();
   }
 
+  static Future<void> mediumImpact() => medium();
+
   /// Gewichtige Aktion: Session gestartet, Tag beschrieben.
   static Future<void> heavy() async {
     if (!await _isEnabled()) return;
     await HapticFeedback.heavyImpact();
   }
+
+  static Future<void> heavyImpact() => heavy();
 
   /// Erfolg — zwei kurze Stoesse. Fuehlt sich anders an als ein einzelner
   /// und markiert damit den Unterschied zwischen "getippt" und "geschafft".

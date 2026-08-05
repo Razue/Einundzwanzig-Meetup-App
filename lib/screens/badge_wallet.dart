@@ -17,6 +17,7 @@ import '../services/meetup_service.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/haptic_service.dart';
 import '../widgets/pressable.dart';
+import '../widgets/shadows.dart';
 
 // ============================================================
 // GENERATIVE ART PAINTER
