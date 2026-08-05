@@ -21,6 +21,7 @@ import 'package:image_picker/image_picker.dart';
 import '../theme.dart';
 import '../services/haptic_service.dart';
 import '../widgets/pressable.dart';
+import '../widgets/shadows.dart';
 import '../models/user.dart';
 import '../models/meetup.dart';
 import '../models/badge.dart';
@@ -1265,17 +1266,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                   stops: const [0.0, 0.45, 1.0],
                 ),
                 border: Border.all(color: cOrange.withValues(alpha: 0.30), width: 1.0),
-                boxShadow: [
-                  BoxShadow(
-                      color: cOrange.withValues(alpha: 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 5)),
-                ],
+                boxShadow: shadowForElevation(4, accent: cOrange),
               )
             : BoxDecoration(
                 color: cCard,
                 borderRadius: BorderRadius.circular(kTileRadius),
                 border: Border.all(color: cTileBorder, width: 0.5),
+                boxShadow: shadowForElevation(2, accent: cOrange),
               ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),

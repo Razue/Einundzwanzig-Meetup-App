@@ -13,6 +13,10 @@ import 'badge_details.dart';
 import 'reputation_qr.dart';
 import '../services/reputation_publisher.dart';
 import '../services/app_logger.dart';
+import '../services/meetup_service.dart';
+import '../services/meetup_calendar_service.dart';
+import '../services/haptic_service.dart';
+import '../widgets/pressable.dart';
 
 // ============================================================
 // GENERATIVE ART PAINTER
@@ -147,6 +151,8 @@ class BadgeWalletScreen extends StatefulWidget {
 
 class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
   bool _compactView = false;
+  final Map<String, String> _coverLookup = <String, String>{};
+  bool _coversLoaded = false;
 
   // ============================================================
   // BIBLIOTHEKS-ANSICHT
@@ -163,9 +169,60 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
   static const String _organizerGroupKey = '\u0000organizer';
 
   @override
+  void initState() {
+    super.initState();
+    _loadCoverLookup();
+  }
+
+  @override
   void dispose() {
     _searchCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCoverLookup() async {
+    if (_coversLoaded) return;
+    try {
+      final meetups = await MeetupService.fetchMeetups();
+      final lookup = <String, String>{};
+      for (final meetup in meetups) {
+        final aliases = <String>{
+          meetup.name.trim().toLowerCase(),
+          meetup.city.trim().toLowerCase(),
+          meetup.name.split(',').first.trim().toLowerCase(),
+        }..removeWhere((value) => value.isEmpty);
+        final image = meetup.coverImagePath.isNotEmpty ? meetup.coverImagePath : meetup.logoUrl;
+        if (image.isEmpty) continue;
+        for (final alias in aliases) {
+          lookup[alias] = image;
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _coverLookup.addAll(lookup);
+          _coversLoaded = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _coversLoaded = true);
+    }
+  }
+
+  String _resolvedCoverUrl(MeetupBadge badge) {
+    if (badge.coverUrl.isNotEmpty) {
+      return MeetupCalendarService.absoluteImageUrl(badge.coverUrl);
+    }
+    final aliases = <String>{
+      badge.meetupName.trim().toLowerCase(),
+      badge.meetupName.split(',').first.trim().toLowerCase(),
+    }..removeWhere((value) => value.isEmpty);
+    for (final alias in aliases) {
+      final hit = _coverLookup[alias];
+      if (hit != null && hit.isNotEmpty) {
+        return MeetupCalendarService.absoluteImageUrl(hit);
+      }
+    }
+    return '';
   }
 
   /// Badges, die zum Suchbegriff passen (Meetup-Name).
@@ -571,8 +628,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   }
 
   Widget _groupChip(String label, IconData icon, bool active, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
+    return Pressable(
+      onTap: () {
+        HapticService.lightImpact();
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
@@ -625,15 +685,17 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         final isCollapsed = _collapsed.contains(entry.key);
         return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // --- Abschnitts-Kopf ---
-          GestureDetector(
-            onTap: () => setState(() {
-              if (isCollapsed) {
-                _collapsed.remove(entry.key);
-              } else {
-                _collapsed.add(entry.key);
-              }
-            }),
-            behavior: HitTestBehavior.opaque,
+          Pressable(
+            onTap: () {
+              HapticService.lightImpact();
+              setState(() {
+                if (isCollapsed) {
+                  _collapsed.remove(entry.key);
+                } else {
+                  _collapsed.add(entry.key);
+                }
+              });
+            },
             child: Padding(
               padding: const EdgeInsets.fromLTRB(2, 14, 2, 8),
               child: Row(children: [
@@ -706,27 +768,67 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   // ============================================================
   Widget _buildEmptyState(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.collections_bookmark_outlined,
-              size: 100, color: Colors.grey.withValues(alpha: 0.3)),
-          const SizedBox(height: 20),
-          Text(AppLocalizations.of(context).walletNoBadges,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(color: cTextSecondary)),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              AppLocalizations.of(context).walletNoBadgesSub,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                cCard.withValues(alpha: 0.96),
+                cSurface.withValues(alpha: 0.96),
+              ],
             ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: cOrange.withValues(alpha: 0.22), width: 1),
+            boxShadow: shadowForElevation(3, accent: cOrange),
           ),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cOrange.withValues(alpha: 0.12),
+                  border: Border.all(color: cOrange.withValues(alpha: 0.24), width: 1),
+                ),
+                child: const Icon(Icons.collections_bookmark_outlined, size: 34, color: cOrange),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                AppLocalizations.of(context).walletNoBadges,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: cText, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                AppLocalizations.of(context).walletNoBadgesSub,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: cOrange.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.qr_code_scanner_rounded, color: cOrange, size: 16),
+                    SizedBox(width: 6),
+                    Text('Scanne einen Badge, um zu starten', style: TextStyle(color: cOrange, fontSize: 12, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -736,41 +838,70 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   // ============================================================
   Widget _buildBadgeCard(BuildContext context, MeetupBadge badge, int index) {
     final seed = "${badge.meetupName}:${badge.blockHeight}";
+    final coverUrl = _resolvedCoverUrl(badge);
 
-    return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (c) => BadgeDetailsScreen(badge: badge))),
+    return Pressable(
+      onTap: () {
+        HapticService.lightImpact();
+        Navigator.push(context,
+            MaterialPageRoute(builder: (c) => BadgeDetailsScreen(badge: badge)));
+      },
       child: Container(
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           color: cCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cOrange.withValues(alpha: 0.4)),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: cOrange.withValues(alpha: 0.34), width: 1.0),
           boxShadow: [
             BoxShadow(
                 color: cOrange.withValues(alpha: 0.12),
-                blurRadius: 12,
-                offset: const Offset(0, 4)),
+                blurRadius: 16,
+                offset: const Offset(0, 6)),
           ],
         ),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // 1. GENERATIVE ART
-            CustomPaint(painter: BadgeArtPainter(seed: seed)),
+            // 1. COVER ODER GENERATIVE ART
+            if (coverUrl.isNotEmpty)
+              Image.network(
+                coverUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => CustomPaint(painter: BadgeArtPainter(seed: seed)),
+              )
+            else
+              CustomPaint(painter: BadgeArtPainter(seed: seed)),
 
-            // 2. DUNKLER VERLAUF UNTEN
+            // 2. FEINER OVERLAY-VERLAUF
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0.0, 0.35, 1.0],
+                  stops: const [0.0, 0.45, 1.0],
                   colors: [
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.15),
-                    Colors.black.withValues(alpha: 0.8),
+                    Colors.black.withValues(alpha: 0.18),
+                    Colors.black.withValues(alpha: 0.82),
                   ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 70,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.28),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -907,34 +1038,70 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   Widget _buildCompactCard(
       BuildContext context, MeetupBadge badge, int index) {
     final seed = "${badge.meetupName}:${badge.blockHeight}";
+    final coverUrl = _resolvedCoverUrl(badge);
     // Kurzer Name: "München, DE" → "MÜNCHEN"
     String shortName = badge.meetupName.split(',').first.trim().toUpperCase();
 
-    return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (c) => BadgeDetailsScreen(badge: badge))),
+    return Pressable(
+      onTap: () {
+        HapticService.lightImpact();
+        Navigator.push(context,
+            MaterialPageRoute(builder: (c) => BadgeDetailsScreen(badge: badge)));
+      },
       child: Container(
         clipBehavior: Clip.hardEdge,
         decoration: BoxDecoration(
           color: cCard,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.8),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: cOrange.withValues(alpha: 0.28), width: 0.9),
+          boxShadow: [
+            BoxShadow(
+              color: cOrange.withValues(alpha: 0.10),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CustomPaint(painter: BadgeArtPainter(seed: seed)),
+            if (coverUrl.isNotEmpty)
+              Image.network(
+                coverUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => CustomPaint(painter: BadgeArtPainter(seed: seed)),
+              )
+            else
+              CustomPaint(painter: BadgeArtPainter(seed: seed)),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0.0, 0.5, 1.0],
+                  stops: const [0.0, 0.45, 1.0],
                   colors: [
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.18),
                     Colors.black.withValues(alpha: 0.8),
                   ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.22),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),

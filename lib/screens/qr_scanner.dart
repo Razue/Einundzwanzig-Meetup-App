@@ -25,6 +25,7 @@ import '../services/nip05_service.dart';
 import '../services/relay_config.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/shadows.dart';
 
 class SecureQRScanner extends StatefulWidget {
   const SecureQRScanner({super.key});
@@ -323,6 +324,7 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    elevation: 0,
                   ),
                 ),
               ),
@@ -330,8 +332,17 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      cCard.withValues(alpha: 0.94),
+                      cSurface.withValues(alpha: 0.94),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: cOrange.withValues(alpha: 0.24), width: 1),
+                  boxShadow: shadowForElevation(3, accent: cOrange),
                 ),
                 child: Text(
                   AppLocalizations.of(context).qrScanHint,

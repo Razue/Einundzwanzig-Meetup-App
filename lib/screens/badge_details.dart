@@ -5,6 +5,7 @@ import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
+import '../services/meetup_calendar_service.dart';
 
 class BadgeDetailsScreen extends StatefulWidget {
   final MeetupBadge badge;
@@ -221,31 +222,100 @@ Verifizierbar über die Einundzwanzig Meetup App
   // ── WIDGETS ───────────────────────────────────────────────────
 
   Widget _heroCard(BuildContext context) {
+    final coverUrl = b.coverUrl.isNotEmpty ? MeetupCalendarService.absoluteImageUrl(b.coverUrl) : '';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       decoration: BoxDecoration(
-        color: cCard,
-        border: Border.all(color: cOrange.withValues(alpha: 0.5), width: 1.5),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            cCard.withValues(alpha: 0.98),
+            cSurface.withValues(alpha: 0.98),
+          ],
+        ),
+        border: Border.all(color: cOrange.withValues(alpha: 0.36), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: cOrange.withValues(alpha: 0.15),
-            blurRadius: 30,
+            color: cOrange.withValues(alpha: 0.14),
+            blurRadius: 28,
             offset: const Offset(0, 8),
           )
         ],
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: cOrange.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
+          if (coverUrl.isNotEmpty)
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.network(
+                    coverUrl,
+                    height: 170,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: cOrange.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.verified, size: 72, color: cOrange),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(24),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.18),
+                          Colors.black.withValues(alpha: 0.55),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 12,
+                  bottom: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.48),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: cOrange.withValues(alpha: 0.36), width: 0.8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.verified_rounded, color: cOrange, size: 14),
+                        const SizedBox(width: 6),
+                        Text(
+                          AppLocalizations.of(context).badgeProofOfAttendance,
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: cOrange.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.verified, size: 72, color: cOrange),
             ),
-            child: const Icon(Icons.verified, size: 72, color: cOrange),
-          ),
           const SizedBox(height: 20),
           Text(
             b.meetupName.toUpperCase(),

@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/shadows.dart';
 import '../l10n/level_labels.dart';
 import '../models/user.dart';
 import '../models/badge.dart';
@@ -155,8 +156,22 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 1),
+        boxShadow: shadowForElevation(4, accent: cOrange),
       ),
-      child: Column(children: [
+      child: Stack(children: [
+        Positioned(
+          right: -24,
+          top: -24,
+          child: Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: cOrange.withValues(alpha: 0.08),
+            ),
+          ),
+        ),
+        Column(children: [
         // Header: Branding
         Row(mainAxisAlignment: MainAxisAlignment.center, children: [
           const Icon(Icons.bolt, color: cOrange, size: 18),
@@ -182,11 +197,37 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
 
         if (!hasData) ...[
           const SizedBox(height: 12),
-          const Icon(Icons.emoji_events_outlined, color: cTextTertiary, size: 48),
-          const SizedBox(height: 12),
-          Text(t.rcNoData,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: cSurface.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: cTileBorder, width: 0.5),
+            ),
+            child: Column(children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cOrange.withValues(alpha: 0.13),
+                  border: Border.all(color: cOrange.withValues(alpha: 0.24), width: 1),
+                ),
+                child: const Icon(Icons.auto_awesome_rounded, color: cOrange, size: 28),
+              ),
+              const SizedBox(height: 12),
+              Text(t.rcNoData,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
+              const SizedBox(height: 8),
+              Text(
+                'Scanne deinen ersten Badge bei einem Meetup, um deine Reputation sichtbar zu machen.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: cTextTertiary, fontSize: 11, height: 1.45),
+              ),
+            ]),
+          ),
           const SizedBox(height: 12),
         ] else ...[
           // Score-Hero
@@ -201,7 +242,8 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
         const SizedBox(height: 12),
         Text('21Adress · Web of Trust',
             style: TextStyle(color: cTextTertiary, fontSize: 9, letterSpacing: 1, fontFamily: fontMono)),
-      ]),
+        ],
+      ),
     );
   }
 

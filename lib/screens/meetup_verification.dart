@@ -31,6 +31,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nostr/nostr.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/shadows.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
 import '../services/meetup_service.dart';
@@ -551,6 +552,10 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         meetupName: fullName,
         date: DateTime.now(),
         iconPath: "assets/badge_icon.png",
+        coverUrl: (widget.meetup.coverImagePath.isNotEmpty ? widget.meetup.coverImagePath : '')
+            .isNotEmpty
+            ? (widget.meetup.coverImagePath.isNotEmpty ? widget.meetup.coverImagePath : '')
+            : '',
         blockHeight: currentBlockHeight,
         signerNpub: signerNpub,
         meetupEventId: meetupEventId,
@@ -755,6 +760,9 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       lat: loc.lat,
       lng: loc.lng,
       presenceVerified: presenceVerified,
+      coverUrl: badge.coverUrl.isNotEmpty
+          ? badge.coverUrl
+          : (widget.meetup.coverImagePath.isNotEmpty ? widget.meetup.coverImagePath : ''),
     );
     AppLogger.diag('Scan',
         'Praesenz ${presenceVerified ? "GEPRUEFT" : "UNGEPRUEFT"} — Badge wird gespeichert.');
@@ -994,9 +1002,17 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: cCard,
-              borderRadius: BorderRadius.circular(kTileRadius),
-              border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 0.5),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  cCard.withValues(alpha: 0.96),
+                  cSurface.withValues(alpha: 0.96),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(kTileRadius + 4),
+              border: Border.all(color: accentColor.withValues(alpha: 0.22), width: 1),
+              boxShadow: shadowForElevation(2, accent: accentColor),
             ),
             child: Text(
               _statusText ?? AppLocalizations.of(context).verifyReadyToScan,
@@ -1093,8 +1109,16 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                       width: 200, height: 200,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: cOrange, width: 4),
-                        boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 5)],
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            cOrange.withValues(alpha: 0.18),
+                            cOrange.withValues(alpha: 0.04),
+                          ],
+                        ),
+                        border: Border.all(color: cOrange.withValues(alpha: 0.45), width: 3),
+                        boxShadow: shadowForElevation(4, accent: cOrange),
                       ),
                       child: const Center(child: Icon(Icons.nfc, size: 80, color: Colors.white)),
                     ),
@@ -1117,7 +1141,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                       onPressed: _startNfcRead,
                       icon: const Icon(Icons.nfc, color: Colors.white),
                       label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: cOrange,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1129,7 +1158,10 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                       onPressed: _startQRScan,
                       icon: const Icon(Icons.qr_code_scanner, color: cCyan),
                       label: Text(AppLocalizations.of(context).verifyScanQrCaps, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
-                      style: OutlinedButton.styleFrom(side: const BorderSide(color: cCyan, width: 2)),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: cCyan, width: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -1188,7 +1220,19 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
           bottom: 60, left: 40, right: 40,
           child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  cCard.withValues(alpha: 0.94),
+                  cSurface.withValues(alpha: 0.94),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: cOrange.withValues(alpha: 0.25), width: 1),
+              boxShadow: shadowForElevation(3, accent: cOrange),
+            ),
             child: Text(AppLocalizations.of(context).verifyScanQrInstruction,
               style: const TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
           ),

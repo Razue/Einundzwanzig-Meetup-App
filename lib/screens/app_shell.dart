@@ -1,5 +1,6 @@
 import 'dart:ui';
 import '../services/haptic_service.dart';
+import '../widgets/shadows.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -140,7 +141,7 @@ class _AppShellState extends State<AppShell> {
                       gradient: gradientOrange,
                       shape: BoxShape.circle,
                       border: Border.all(color: cDark, width: 3),
-                      boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 20, spreadRadius: -2, offset: const Offset(0, 4))],
+                      boxShadow: shadowForElevation(4, accent: cOrange),
                     ),
                     child: const Icon(Icons.qr_code_scanner_rounded, color: Colors.black, size: 26),
                   ),
