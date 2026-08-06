@@ -32,7 +32,6 @@ import 'package:nostr/nostr.dart';
 import '../theme.dart';
 import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/shadows.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
 import '../services/meetup_service.dart';
@@ -472,7 +471,35 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       final signerNpub = normalized['admin_npub'] as String? ?? '';
       final delivery = normalized['delivery'] as String? ?? tagData['delivery'] as String? ?? 'nfc';
       final dateStr = DateTime.now().toIso8601String().substring(0, 10);
-      final meetupEventId = '${meetupName.toLowerCase().replaceAll(' ', '-')}-$dateStr';
+
+      // KENNUNG NUR AUS EINEM ECHTEN NAMEN BILDEN.
+      //
+      // Fehlerbild (August 2026): Traegt ein Tag keinen Meetup-Namen, war
+      // `meetupName` ein LEERER String — und weil leer nicht null ist, griff
+      // die Ersatzbezeichnung nicht. Die Kennung wurde dann zu "-2026-02-25":
+      // nicht leer, also durch alle Filter, und fuer JEDEN auf der Welt
+      // gleich, der an dem Tag einen namenlosen Tag scannte. Im
+      // Vertrauensnetz erschienen dadurch wildfremde Leute als "direkt
+      // getroffen" — etwa jemand aus Koblenz bei einem Aschaffenburger.
+      //
+      // Ohne belastbaren Namen gibt es deshalb GAR KEINE Kennung. Das Badge
+      // bleibt gueltig, es wird nur keine Anwesenheit veroeffentlicht —
+      // besser keine Verknuepfung als eine falsche.
+      final nameSlug = meetupName.trim().toLowerCase().replaceAll(' ', '-');
+      final unknownSlug = AppLocalizations.of(context)
+          .verifyUnknownMeetup
+          .trim()
+          .toLowerCase()
+          .replaceAll(' ', '-');
+      final usableName = nameSlug.isNotEmpty &&
+          nameSlug != unknownSlug &&
+          nameSlug.replaceAll('-', '').isNotEmpty;
+      final meetupEventId = usableName ? '$nameSlug-$dateStr' : '';
+      if (!usableName) {
+        AppLogger.warn('Scan',
+            'Tag ohne verwertbaren Meetup-Namen — keine Kennung vergeben, '
+            'Anwesenheit wird nicht veroeffentlicht.');
+      }
 
       // Kryptographischen Beweis extrahieren
       final sig = normalized['sig'] as String? ?? tagData['s'] as String? ?? '';
@@ -553,10 +580,6 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         meetupName: fullName,
         date: DateTime.now(),
         iconPath: "assets/badge_icon.png",
-        coverUrl: (widget.meetup.coverImagePath.isNotEmpty ? widget.meetup.coverImagePath : '')
-            .isNotEmpty
-            ? (widget.meetup.coverImagePath.isNotEmpty ? widget.meetup.coverImagePath : '')
-            : '',
         blockHeight: currentBlockHeight,
         signerNpub: signerNpub,
         meetupEventId: meetupEventId,
@@ -761,9 +784,6 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       lat: loc.lat,
       lng: loc.lng,
       presenceVerified: presenceVerified,
-      coverUrl: badge.coverUrl.isNotEmpty
-          ? badge.coverUrl
-          : (widget.meetup.coverImagePath.isNotEmpty ? widget.meetup.coverImagePath : ''),
     );
     AppLogger.diag('Scan',
         'Praesenz ${presenceVerified ? "GEPRUEFT" : "UNGEPRUEFT"} — Badge wird gespeichert.');
@@ -1003,17 +1023,9 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  cCard.withValues(alpha: 0.96),
-                  cSurface.withValues(alpha: 0.96),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(kTileRadius + 4),
-              border: Border.all(color: accentColor.withValues(alpha: 0.22), width: 1),
-              boxShadow: shadowForElevation(2, accent: accentColor),
+              color: cCard,
+              borderRadius: BorderRadius.circular(kTileRadius),
+              border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 0.5),
             ),
             child: Text(
               _statusText ?? AppLocalizations.of(context).verifyReadyToScan,
@@ -1110,16 +1122,8 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                       width: 200, height: 200,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            cOrange.withValues(alpha: 0.18),
-                            cOrange.withValues(alpha: 0.04),
-                          ],
-                        ),
-                        border: Border.all(color: cOrange.withValues(alpha: 0.45), width: 3),
-                        boxShadow: shadowForElevation(4, accent: cOrange),
+                        border: Border.all(color: cOrange, width: 4),
+                        boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 5)],
                       ),
                       child: const Center(child: Icon(Icons.nfc, size: 80, color: Colors.white)),
                     ),
@@ -1142,12 +1146,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                       onPressed: _startNfcRead,
                       icon: const Icon(Icons.nfc, color: Colors.white),
                       label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: cOrange,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
+                      style: ElevatedButton.styleFrom(backgroundColor: cOrange),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1159,10 +1158,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                       onPressed: _startQRScan,
                       icon: const Icon(Icons.qr_code_scanner, color: cCyan),
                       label: Text(AppLocalizations.of(context).verifyScanQrCaps, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: cCyan, width: 2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
+                      style: OutlinedButton.styleFrom(side: const BorderSide(color: cCyan, width: 2)),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -1224,19 +1220,7 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
           bottom: 60, left: 40, right: 40,
           child: Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  cCard.withValues(alpha: 0.94),
-                  cSurface.withValues(alpha: 0.94),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: cOrange.withValues(alpha: 0.25), width: 1),
-              boxShadow: shadowForElevation(3, accent: cOrange),
-            ),
+            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(12)),
             child: Text(AppLocalizations.of(context).verifyScanQrInstruction,
               style: const TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
           ),

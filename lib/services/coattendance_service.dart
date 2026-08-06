@@ -73,7 +73,7 @@ class CoAttendanceService {
   /// Gibt Anzahl erreichter Relays zurück (0 = Fehlschlag).
   static Future<int> publishAttendance(MeetupBadge badge) async {
     // Sicherheit: nur echte, organisator-signierte Badges qualifizieren
-    if (!badge.isNostrSigned || badge.meetupEventId.isEmpty) {
+    if (!badge.isNostrSigned || _isDegenerateEventId(badge.meetupEventId)) {
       AppLogger.warn(_tag, 'Badge nicht qualifiziert (nicht Nostr-signiert)');
       return 0;
     }
@@ -137,6 +137,34 @@ class CoAttendanceService {
   }
 
   /// Lädt ALLE Co-Attendance-Events von den Relays und baut Knoten auf.
+  /// Erkennt Kennungen, die kein echtes Meetup bezeichnen.
+  ///
+  /// Notwendig fuer BESTEHENDE Daten: Vor dem Fix konnte ein Tag ohne
+  /// Meetup-Namen die Kennung "-2026-02-25" erzeugen — nicht leer, aber
+  /// weltweit identisch fuer alle, die an dem Tag scannten. Wer solche
+  /// Datensaetze veroeffentlicht hat, wuerde sonst dauerhaft mit Fremden
+  /// verknuepft. Sie liegen auf den Relays und lassen sich nicht
+  /// zurueckholen, also werden sie hier ignoriert.
+  ///
+  /// Verworfen wird alles, was vor dem Datum keinen Ortsteil hat, sowie
+  /// die uebersetzten Platzhalter fuer "unbekanntes Meetup".
+  static bool _isDegenerateEventId(String id) {
+    final v = id.trim().toLowerCase();
+    if (v.isEmpty) return true;
+    if (v.startsWith('-')) return true; // "-2026-02-25"
+    const placeholders = [
+      'unbekanntes-meetup',
+      'unknown-meetup',
+      'meetup-desconocido',
+    ];
+    for (final p in placeholders) {
+      if (v.startsWith(p)) return true;
+    }
+    // Reine Datumsangabe ohne Ort.
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return true;
+    return false;
+  }
+
   static Future<Map<String, CoAttNode>> _loadAllNodes() async {
     final relays = await RelayConfig.getActiveRelays();
     final nodes = <String, CoAttNode>{};
@@ -145,6 +173,9 @@ class CoAttendanceService {
       final records = await _fetchFromRelay(relayUrl);
       if (records == null) continue;
       for (final r in records) {
+        // Fehl-Kennungen ueberspringen — sonst entstehen Verknuepfungen
+        // zwischen Leuten, die sich nie begegnet sind.
+        if (_isDegenerateEventId(r.meetupEventId)) continue;
         final node = nodes.putIfAbsent(r.npub, () => CoAttNode(r.npub));
         node.meetups.add(r.meetupEventId);
       }
