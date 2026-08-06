@@ -1,0 +1,64 @@
+name: Deploy Web (PWA) to GitHub Pages
+
+# Baut die Flutter-Web-Version und veroeffentlicht sie als GitHub Page.
+# Zweck: Testern eine installierbare PWA geben, ohne Apple-Developer-Account
+# und ohne TestFlight — Link oeffnen, "Zum Home-Bildschirm hinzufuegen".
+#
+# Laeuft NUR auf dem Integrationsbranch, nicht auf main: main ist der
+# Upstream-Stand und startet auf Web nicht (home_widget wirft in main()).
+# Der Fix dafuer steckt in diesem Branch.
+
+on:
+  push:
+    branches: [ integration/ios-complete ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Parallele Deployments vermeiden; laufende abbrechen, wenn neue kommen.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Flutter einrichten
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.8'
+          cache: true
+
+      - name: Abhaengigkeiten
+        run: flutter pub get
+
+      - name: Tests
+        run: flutter test
+
+      # base-href muss auf das Repo-Unterverzeichnis zeigen, sonst findet
+      # die Seite ihre Assets nicht (Pages liefert unter /<repo>/ aus).
+      - name: Web bauen
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Artefakt hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Auf GitHub Pages veroeffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4
