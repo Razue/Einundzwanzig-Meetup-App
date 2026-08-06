@@ -65,3 +65,40 @@ class MeetupCrestWatermark extends StatelessWidget {
     );
   }
 }
+
+/// Das Wappen als eigenstaendiges Bildelement — ohne Daempfung, ohne
+/// Positionierung. Gedacht fuer Stellen, an denen es NICHT Hintergrund ist,
+/// sondern selbst das Motiv: etwa im Medaillon der Badge-Detailansicht.
+///
+/// Faellt auf [fallback] zurueck, wenn kein Wappen vorliegt oder das Bild
+/// nicht laedt — dort steht dann wieder das gewohnte Symbol.
+class MeetupCrestFace extends StatelessWidget {
+  final String meetupName;
+  final Widget fallback;
+
+  const MeetupCrestFace({
+    super.key,
+    required this.meetupName,
+    required this.fallback,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final city = meetupName.split(',').first.trim();
+    if (city.isEmpty) return fallback;
+
+    final url = MeetupCalendarService.absoluteImageUrl(
+      MeetupCalendarService.logoFor(city),
+    );
+    if (url.isEmpty) return fallback;
+
+    return Image.network(
+      url,
+      fit: BoxFit.contain,
+      // Waehrend des Ladens das gewohnte Symbol zeigen statt einer Luecke —
+      // die Karte soll nie halbfertig wirken.
+      loadingBuilder: (_, child, progress) => progress == null ? child : fallback,
+      errorBuilder: (_, error, stack) => fallback,
+    );
+  }
+}

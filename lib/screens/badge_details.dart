@@ -242,21 +242,48 @@ Verifizierbar über die Einundzwanzig Meetup App
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Stack(children: [
-          Positioned.fill(
-            child: MeetupCrestWatermark(
-                meetupName: b.meetupName, opacity: 0.12, widthFactor: 0.62),
-          ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
             child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: cOrange.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.verified, size: 72, color: cOrange),
+          // MEDAILLON: Frueher lag das Wappen frei ueber der Karte und wirkte
+          // aufgeklebt. Jetzt sitzt es IM Kreis, wo vorher nur der Haken war
+          // — der Kreis war ohnehin schon der Blickfang. Der Haken rutscht
+          // als kleine Plakette an den Rand und bleibt damit lesbar.
+          // Ohne Wappen sieht die Karte exakt aus wie bisher.
+          SizedBox(
+            width: 132,
+            height: 132,
+            child: Stack(clipBehavior: Clip.none, children: [
+              Container(
+                width: 132,
+                height: 132,
+                decoration: BoxDecoration(
+                  color: cOrange.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      color: cOrange.withValues(alpha: 0.35), width: 1.5),
+                ),
+                child: ClipOval(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: MeetupCrestFace(
+                      meetupName: b.meetupName,
+                      fallback: const Icon(Icons.verified, size: 72, color: cOrange),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 2,
+                bottom: 2,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(color: cCard, shape: BoxShape.circle),
+                  child: const Icon(Icons.verified_rounded, size: 22, color: cOrange),
+                ),
+              ),
+            ]),
           ),
           const SizedBox(height: 20),
           Text(
