@@ -1,0 +1,67 @@
+import 'package:flutter/material.dart';
+import '../services/meetup_calendar_service.dart';
+
+/// Das Wappen des Meetups als Wasserzeichen hinter der generativen Grafik.
+///
+/// Warum das mehr ist als Zierrat: Bisher sahen alle Badges gleich aus —
+/// dieselbe Grafik, nur mit anderem Startwert. Das Wappen macht jedes Badge
+/// auf den ersten Blick zuordenbar, ohne dass man den Namen lesen muss. Und
+/// es verbindet das Badge sichtbar mit der Gemeinschaft, aus der es stammt.
+///
+/// AUSFALLSICHER: Gibt es kein Wappen — weil das Portal keines liefert, das
+/// Bild nicht laedt oder man offline ist —, bleibt schlicht nichts uebrig
+/// und die generative Grafik darunter traegt die Karte allein. Niemals ein
+/// leerer Kasten oder ein kaputtes Bildsymbol.
+class MeetupCrestWatermark extends StatelessWidget {
+  /// Meetup-Name aus dem Badge, Form "Stadt, LAND".
+  final String meetupName;
+
+  /// Deckkraft. Zurueckhaltend, damit Titel und Datum lesbar bleiben.
+  final double opacity;
+
+  /// Anteil der Kartenbreite, den das Wappen einnimmt.
+  final double widthFactor;
+
+  const MeetupCrestWatermark({
+    super.key,
+    required this.meetupName,
+    this.opacity = 0.16,
+    this.widthFactor = 0.78,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Der Badge-Name traegt das Land hinten dran — fuer die Wappen-Suche
+    // zaehlt nur der Teil davor.
+    final city = meetupName.split(',').first.trim();
+    if (city.isEmpty) return const SizedBox.shrink();
+
+    final url = MeetupCalendarService.absoluteImageUrl(
+      MeetupCalendarService.logoFor(city),
+    );
+    if (url.isEmpty) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, c) {
+        final side = c.maxWidth * widthFactor;
+        return Align(
+          alignment: const Alignment(0.35, -0.35),
+          child: Opacity(
+            opacity: opacity,
+            child: Image.network(
+              url,
+              width: side,
+              height: side,
+              fit: BoxFit.contain,
+              // Kein Platzhalter waehrend des Ladens: Ein aufblitzender
+              // Kasten waere stoerender als das spaetere Erscheinen.
+              loadingBuilder: (_, child, progress) =>
+                  progress == null ? child : const SizedBox.shrink(),
+              errorBuilder: (_, error, stack) => const SizedBox.shrink(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

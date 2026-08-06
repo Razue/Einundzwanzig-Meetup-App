@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'calendar_screen.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/meetup_crest_watermark.dart';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -745,6 +746,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             // 1. GENERATIVE ART
             CustomPaint(painter: BadgeArtPainter(seed: seed)),
 
+            // 1b. MEETUP-WAPPEN als Wasserzeichen darueber. Macht jedes
+            // Badge auf einen Blick zuordenbar. Faellt still weg, wenn
+            // kein Wappen vorliegt — dann traegt die Grafik allein.
+            MeetupCrestWatermark(meetupName: badge.meetupName),
+
             // 2. DUNKLER VERLAUF UNTEN
             Container(
               decoration: BoxDecoration(
@@ -910,6 +916,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           fit: StackFit.expand,
           children: [
             CustomPaint(painter: BadgeArtPainter(seed: seed)),
+            // Wappen auch hier, aber zurueckhaltender — die kompakte
+            // Karte hat weniger Platz und mehr Text pro Flaeche.
+            MeetupCrestWatermark(
+                meetupName: badge.meetupName, opacity: 0.13, widthFactor: 0.68),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
