@@ -36,6 +36,10 @@
 	<string>Diese App nutzt deinen Standort, um Meetups in deiner Nähe anzuzeigen.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Diese App nutzt deine Fotomediathek, um Profilbilder auszuwählen.</string>
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<array>
+		<string>TAG</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
