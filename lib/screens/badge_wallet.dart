@@ -919,7 +919,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             // Wappen auch hier, aber zurueckhaltender — die kompakte
             // Karte hat weniger Platz und mehr Text pro Flaeche.
             MeetupCrestWatermark(
-                meetupName: badge.meetupName, opacity: 0.13, widthFactor: 0.68),
+                meetupName: badge.meetupName, opacity: 0.17, widthFactor: 0.95),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

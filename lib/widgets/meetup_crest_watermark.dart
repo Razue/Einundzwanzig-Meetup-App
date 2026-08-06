@@ -25,8 +25,8 @@ class MeetupCrestWatermark extends StatelessWidget {
   const MeetupCrestWatermark({
     super.key,
     required this.meetupName,
-    this.opacity = 0.16,
-    this.widthFactor = 0.78,
+    this.opacity = 0.20,
+    this.widthFactor = 1.05,
   });
 
   @override
@@ -45,19 +45,36 @@ class MeetupCrestWatermark extends StatelessWidget {
       builder: (context, c) {
         final side = c.maxWidth * widthFactor;
         return Align(
-          alignment: const Alignment(0.35, -0.35),
+          alignment: const Alignment(0.15, -0.25),
           child: Opacity(
             opacity: opacity,
-            child: Image.network(
-              url,
-              width: side,
-              height: side,
-              fit: BoxFit.contain,
-              // Kein Platzhalter waehrend des Ladens: Ein aufblitzender
-              // Kasten waere stoerender als das spaetere Erscheinen.
-              loadingBuilder: (_, child, progress) =>
-                  progress == null ? child : const SizedBox.shrink(),
-              errorBuilder: (_, error, stack) => const SizedBox.shrink(),
+            // WEICH AUSLAUFENDE KANTEN: Ohne die Maske sass das Wappen als
+            // hart begrenztes Rechteck auf der Karte und wirkte aufgeklebt.
+            // Der radiale Verlauf laesst es zum Rand hin verschwinden, so
+            // dass es mit der generativen Grafik darunter verschmilzt.
+            child: ShaderMask(
+              blendMode: BlendMode.dstIn,
+              shaderCallback: (rect) => const RadialGradient(
+                center: Alignment.center,
+                radius: 0.62,
+                colors: [
+                  Colors.white,
+                  Colors.white,
+                  Colors.transparent,
+                ],
+                stops: [0.0, 0.55, 1.0],
+              ).createShader(rect),
+              child: Image.network(
+                url,
+                width: side,
+                height: side,
+                fit: BoxFit.contain,
+                // Kein Platzhalter waehrend des Ladens: Ein aufblitzender
+                // Kasten waere stoerender als das spaetere Erscheinen.
+                loadingBuilder: (_, child, progress) =>
+                    progress == null ? child : const SizedBox.shrink(),
+                errorBuilder: (_, error, stack) => const SizedBox.shrink(),
+              ),
             ),
           ),
         );
