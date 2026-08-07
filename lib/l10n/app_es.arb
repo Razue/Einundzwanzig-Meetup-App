@@ -2,7 +2,7 @@
   "@@locale": "es",
   "appTitle": "Einundzwanzig Meetup",
   "navHome": "Inicio",
-  "navWallet": "Cartera",
+  "navWallet": "Insignias",
   "navEvents": "Eventos",
   "navProfile": "Perfil",
   "actionSave": "Guardar",
@@ -43,7 +43,7 @@
   "amberConnected": "¡Conectado con Amber! Tu nsec permanece en Amber.",
   "amberNotFound": "Amber no encontrado",
   "amberCancelled": "Conexión cancelada en Amber.",
-  "walletTitle": "Cartera de insignias",
+  "walletTitle": "Mis insignias",
   "badgesCount": "{count, plural, =0{Sin insignias} =1{1 insignia} other{{count} insignias}}",
   "eventInDays": "en {days, plural, =0{hoy} =1{1 día} other{{days} días}}",
   "tileTrustScore": "Trust Score",
@@ -119,7 +119,7 @@
   "introJoin": "UNIRSE A LA COMUNIDAD",
   "introLoadBackup": "CARGAR COPIA",
   "introSetIdentity": "Primero configura tu identidad.",
-  "navWalletTab": "Cartera",
+  "navWalletTab": "Insignias",
   "navProfileTab": "Perfil",
   "scanBadge": "Escanear insignia",
   "scanBadgeSub": "Código QR o etiqueta NFC del meetup",
@@ -2297,5 +2297,9 @@
   "tileActLookup": "Consultar",
   "tileActNetwork": "Red",
   "tileActEncounters": "Encuentros",
-  "tileActManage": "Gestionar"
+  "tileActManage": "Gestionar",
+  "emptyFindMeetup": "Buscar meetup",
+  "reputationScoreLabel": "Puntuación de confianza",
+  "reputationUnsigned": "Sin firmar",
+  "portalConnectForOrganizer": "No conectado al portal: no se puede detectar tu estado de organizador."
 }

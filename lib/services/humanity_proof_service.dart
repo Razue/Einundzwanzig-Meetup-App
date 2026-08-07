@@ -149,6 +149,12 @@ class HumanityProofService {
       'wss://relay.nostr.band',
       'wss://nos.lol',
       'wss://relay.snort.social',
+      // Zwei weitere mit breiter Zap-Abdeckung. Zap-Quittungen werden vom
+      // LNURL-Server des Empfaengers veroeffentlicht — auf welchen Relays,
+      // entscheidet also NICHT der Sender. Je breiter gesucht wird, desto
+      // eher findet sich der Beleg.
+      'wss://relay.primal.net',
+      'wss://nostr.wine',
     };
 
     // Auf mehreren Relays suchen
@@ -233,8 +239,10 @@ class HumanityProofService {
       final random = Random.secure();
       final hex1 = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final hex2 = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
-      final subId1 = 'zap-recv-$hex1';
-      final subId2 = 'zap-sent-$hex2';
+      final hex3 = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
+      final subId1 = 'zap-recv-$hex1';   // empfangen  (#p)
+      final subId2 = 'zap-req-$hex2';    // Zap-Request (selten auf Relays)
+      final subId3 = 'zap-sent-$hex3';   // gesendet    (#P) — der neue Weg
       _ZapSearchResult? found;
       int eoseCount = 0;
 
@@ -266,7 +274,21 @@ class HumanityProofService {
                   }
                 }
 
-                // Zusätzlich: Prüfe description-Tag auf Sender
+                // Bin ich der SENDER? Grosses "P" nach NIP-57.
+                for (final tag in tags) {
+                  final t = tag as List<dynamic>;
+                  if (t.length >= 2 && t[0] == 'P' && t[1] == pubkeyHex) {
+                    found = _ZapSearchResult(
+                      receiptEventId: eventId,
+                      zapTimestamp: createdAt,
+                    );
+                    if (!completer.isCompleted) completer.complete(found);
+                    return;
+                  }
+                }
+
+                // Rueckfall: Manche Quittungen tragen kein "P". Dann steckt
+                // der Absender im eingebetteten Zap-Request im description-Tag.
                 for (final tag in tags) {
                   final t = tag as List<dynamic>;
                   if (t.length >= 2 && t[0] == 'description') {
@@ -295,7 +317,7 @@ class HumanityProofService {
             } else if (type == 'EOSE') {
               eoseCount++;
               // Warte auf beide Subscriptions
-              if (eoseCount >= 2 && !completer.isCompleted) {
+              if (eoseCount >= 3 && !completer.isCompleted) {
                 completer.complete(found);
               }
             }
@@ -320,11 +342,37 @@ class HumanityProofService {
       ]));
 
       // Strategie 2: Gesendete Zap Requests (Kind 9734, authors = pubkey)
+      //
+      // WICHTIG ZUR EINORDNUNG: Diese Strategie greift in der Praxis selten.
+      // Nach NIP-57 geht der Zap-Request an den LNURL-Server des Empfaengers
+      // und wird ueblicherweise GAR NICHT auf Relays veroeffentlicht. Auf den
+      // Relays landet nur die Quittung (9735), und die stammt vom Server.
+      // Deshalb bleibt der Filter als Zusatz bestehen, traegt aber allein
+      // nicht.
       ws.add(jsonEncode([
         'REQ', subId2,
         {
           'kinds': [9734],
           'authors': [pubkeyHex],
+          'limit': 3,
+        }
+      ]));
+
+      // Strategie 3: Zap-Quittungen, in denen ich der SENDER bin (#P).
+      //
+      // DAS WAR DIE LUECKE: Bisher wurde nur nach EMPFANGENEN Zaps gesucht
+      // (#p = Empfaenger) und nach Zap-Requests, die kaum je auf Relays
+      // liegen. Wer viel gezappt, aber nie welche bekommen hat, fiel damit
+      // durch — obwohl genau das der bessere Echtheitsbeweis ist: Zahlen
+      // kostet Sats, Empfangen nicht.
+      //
+      // Das grosse "P" ist nach NIP-57 das Tag fuer den Absender der
+      // Quittung. Alle gaengigen Clients (Alby, Damus, Amethyst) setzen es.
+      ws.add(jsonEncode([
+        'REQ', subId3,
+        {
+          'kinds': [9735],
+          '#P': [pubkeyHex],
           'limit': 3,
         }
       ]));

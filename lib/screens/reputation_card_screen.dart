@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/shadows.dart';
 import '../l10n/level_labels.dart';
 import '../models/user.dart';
 import '../models/badge.dart';
@@ -151,57 +152,113 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1A1207), cCard, cDark],
+          colors: [Color(0xFF1A1207), Color(0xFF23140B), cDark],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: cOrange.withValues(alpha: 0.45), width: 1.2),
+        boxShadow: shadowForElevation(4, accent: cOrange),
       ),
-      child: Column(children: [
-        // Header: Branding
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.bolt, color: cOrange, size: 18),
-          const SizedBox(width: 6),
-          Text('EINUNDZWANZIG',
-              style: TextStyle(
-                  color: cOrange,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2,
-                  fontFamily: fontMono)),
-        ]),
-        const SizedBox(height: 4),
-        Text(t.rcMember,
-            style: const TextStyle(color: cTextSecondary, fontSize: 11, letterSpacing: 1)),
-        const SizedBox(height: 20),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -24,
+            top: -24,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: cOrange.withValues(alpha: 0.16),
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              // Header: Branding
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Icon(Icons.bolt, color: cOrange, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  'EINUNDZWANZIG',
+                  style: TextStyle(
+                    color: cOrange,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                    fontFamily: fontMono,
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 4),
+              Text(
+                t.rcMember,
+                style: const TextStyle(color: cTextSecondary, fontSize: 11, letterSpacing: 1),
+              ),
+              const SizedBox(height: 20),
 
-        // Name
-        Text(displayName,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: cText, fontSize: 22, fontWeight: FontWeight.w800)),
-        const SizedBox(height: 16),
+              // Name
+              Text(
+                displayName,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: cText, fontSize: 22, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 16),
 
-        if (!hasData) ...[
-          const SizedBox(height: 12),
-          const Icon(Icons.emoji_events_outlined, color: cTextTertiary, size: 48),
-          const SizedBox(height: 12),
-          Text(t.rcNoData,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
-          const SizedBox(height: 12),
-        ] else ...[
-          // Score-Hero
-          _buildScoreHero(t, score),
-          const SizedBox(height: 20),
-          // Stat-Grid
-          _buildStatGrid(t, score),
+              if (!hasData) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: cSurface.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: cTileBorder, width: 0.5),
+                  ),
+                  child: Column(children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cOrange.withValues(alpha: 0.13),
+                        border: Border.all(color: cOrange.withValues(alpha: 0.24), width: 1),
+                      ),
+                      child: const Icon(Icons.auto_awesome_rounded, color: cOrange, size: 28),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      t.rcNoData,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Scanne deinen ersten Badge bei einem Meetup, um deine Reputation sichtbar zu machen.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: cTextTertiary, fontSize: 11, height: 1.45),
+                    ),
+                  ]),
+                ),
+                const SizedBox(height: 12),
+              ] else ...[
+                // Score-Hero
+                _buildScoreHero(t, score),
+                const SizedBox(height: 20),
+                // Stat-Grid
+                _buildStatGrid(t, score),
+              ],
+
+              const SizedBox(height: 20),
+              Container(height: 0.5, color: cTileBorder),
+              const SizedBox(height: 12),
+              Text(
+                '21Adress · Web of Trust',
+                style: TextStyle(color: cTextTertiary, fontSize: 9, letterSpacing: 1, fontFamily: fontMono),
+              ),
+            ],
+          ),
         ],
-
-        const SizedBox(height: 20),
-        Container(height: 0.5, color: cTileBorder),
-        const SizedBox(height: 12),
-        Text('21Adress · Web of Trust',
-            style: TextStyle(color: cTextTertiary, fontSize: 9, letterSpacing: 1, fontFamily: fontMono)),
-      ]),
+      ),
     );
   }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
+import '../widgets/meetup_crest_watermark.dart';
+import 'badge_wallet.dart'; // BadgeArtPainter als Rueckfallmotiv
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
@@ -223,7 +225,6 @@ Verifizierbar über die Einundzwanzig Meetup App
   Widget _heroCard(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
       decoration: BoxDecoration(
         color: cCard,
         border: Border.all(color: cOrange.withValues(alpha: 0.5), width: 1.5),
@@ -236,15 +237,56 @@ Verifizierbar über die Einundzwanzig Meetup App
         ],
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
+      // Der Inhalt liegt jetzt in einem Stack, damit das Meetup-Wappen
+      // dahinter sichtbar wird. Abgerundet beschnitten, sonst schaut es
+      // ueber die Ecken hinaus.
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 24),
+            child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: cOrange.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.verified, size: 72, color: cOrange),
+          // MEDAILLON: Frueher lag das Wappen frei ueber der Karte und wirkte
+          // aufgeklebt. Jetzt sitzt es IM Kreis, wo vorher nur der Haken war
+          // — der Kreis war ohnehin schon der Blickfang. Der Haken rutscht
+          // als kleine Plakette an den Rand und bleibt damit lesbar.
+          // Ohne Wappen sieht die Karte exakt aus wie bisher.
+          // Das Wappen steht fuer sich — KEIN Kreis dahinter. Der Ring hat
+          // das quadratische Logo nur eingeengt und wie einen Aufkleber
+          // wirken lassen. Jetzt fuellt es den Raum, leicht abgerundet,
+          // mit dem Haken als Plakette unten rechts.
+          SizedBox(
+            width: 168,
+            height: 168,
+            child: Stack(clipBehavior: Clip.none, children: [
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: MeetupCrestFace(
+                    meetupName: b.meetupName,
+                    // OHNE WAPPEN: Statt eines einsamen Symbols in viel
+                    // Leerraum dieselbe generative Grafik wie auf der
+                    // Wallet-Karte — gleicher Startwert, also dasselbe
+                    // Muster. Das fuellt die Flaeche und bleibt wiedererkennbar.
+                    fallback: CustomPaint(
+                      painter: BadgeArtPainter(
+                          seed: "${b.meetupName}:${b.blockHeight}"),
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: -6,
+                bottom: -6,
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: const BoxDecoration(color: cCard, shape: BoxShape.circle),
+                  child: const Icon(Icons.verified_rounded, size: 30, color: cOrange),
+                ),
+              ),
+            ]),
           ),
           const SizedBox(height: 20),
           Text(
@@ -301,6 +343,9 @@ Verifizierbar über die Einundzwanzig Meetup App
             style: const TextStyle(color: cTextSecondary, fontSize: 12),
           ),
         ],
+            ),
+          ),
+        ]),
       ),
     );
   }

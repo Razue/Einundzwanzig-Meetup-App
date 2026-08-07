@@ -15,7 +15,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navHome => 'Home';
 
   @override
-  String get navWallet => 'Wallet';
+  String get navWallet => 'Badges';
 
   @override
   String get navEvents => 'Events';
@@ -141,7 +141,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get amberCancelled => 'Connection cancelled in Amber.';
 
   @override
-  String get walletTitle => 'Badge Wallet';
+  String get walletTitle => 'My badges';
 
   @override
   String badgesCount(int count) {
@@ -349,7 +349,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get introSetIdentity => 'Please set up your identity first.';
 
   @override
-  String get navWalletTab => 'Wallet';
+  String get navWalletTab => 'Badges';
 
   @override
   String get navProfileTab => 'Profile';
@@ -1243,9 +1243,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get writerSuccess => 'SUCCESS!';
 
   @override
-  String writerValidHours(Object hours) {
-    return '⏱️ Valid for ${hours}h\n\n';
-  }
+  String get writerValidity => 'Valid for 4 hours';
 
   @override
   String get writerHoldTag => 'Hold tag to the device...';
@@ -1691,6 +1689,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String writerValidHours(Object hours) {
+    return '⏱️ Valid for ${hours}h\n\n';
+  }
+
+  @override
   String get verifyErrNoNdef => '✗ No NDEF tag';
 
   @override
@@ -1885,7 +1888,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apNewMeetupBody =>
-      'This creates a unique signature (block time) for the next 4 hours. Creating new sessions is locked during this period.';
+      'This creates a unique signature (block time) for the next 6 hours. During this time, creating new sessions is locked.';
 
   @override
   String get apSessionEndBody =>
@@ -1893,7 +1896,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get apGeneratesProof =>
-      'Generates a new cryptographic proof for the next 4 hours.';
+      'Generates a new cryptographic proof for the next 6 hours.';
 
   @override
   String get humTitle => 'PROOF OF HUMANITY';
@@ -4632,13 +4635,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String walletCleanupDone(int count) {
     return 'Removed $count duplicates.';
   }
-
   @override
   String get orgGpsSoftTitle => 'Continue without location?';
 
   @override
-  String get orgGpsSoftBody =>
-      'You can still create the meetup and enter the name yourself. Without a location, attendees cannot be confirmed by radius — their badges will count as unverified presence.';
+  String get orgGpsSoftBody => 'You can still create the meetup and enter the name yourself. Without a location, attendees cannot be confirmed by radius — their badges will count as unverified presence.';
 
   @override
   String get orgGpsSoftContinue => 'Without location';
@@ -4647,8 +4648,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get badgeUnverified => 'Presence unverified';
 
   @override
-  String get badgeUnverifiedInfo =>
-      'No location was available when collecting. The badge is valid, but its presence proof is not additionally confirmed.';
+  String get badgeUnverifiedInfo => 'No location was available when collecting. The badge is valid, but its presence proof is not additionally confirmed.';
 
   @override
   String get verifyClose => 'CLOSE';
@@ -4657,14 +4657,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verifyOpenWallet => 'OPEN WALLET';
 
   @override
-  String get writerValidity => 'Valid for 4 hours';
-
-  @override
   String get apPickPortalTitle => 'Select meetup';
 
   @override
-  String get apPickPortalHint =>
-      'Pick the meetup you are currently at. Its stored location serves as a reference for attendees — a wrong pick distorts their confirmation.';
+  String get apPickPortalHint => 'Pick the meetup you are currently at. Its stored location serves as a reference for attendees — a wrong pick distorts their confirmation.';
 
   @override
   String get apEnterManually => 'Enter name manually';
@@ -4673,8 +4669,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apCustomNeedsGpsTitle => 'Location required';
 
   @override
-  String get apCustomNeedsGpsBody =>
-      'A meetup with a custom name can only be created if your location is available — it is the only reference point for verifying attendance.\n\nThree options: step outside and try again, pick a meetup from the portal instead, or let someone else present with working location create the badge.';
+  String get apCustomNeedsGpsBody => 'A meetup with a custom name can only be created if your location is available — it is the only reference point for verifying attendance.\n\nThree options: step outside and try again, pick a meetup from the portal instead, or let someone else present with working location create the badge.';
 
   @override
   String get apNoRefTitle => 'No reference point';
@@ -4683,16 +4678,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apNoRefContinue => 'Create anyway';
 
   @override
-  String apNoRefBody(String city) {
-    return 'No location is stored for „$city“ in the portal, and your own location is unavailable. Attendance therefore cannot be confirmed — the badges will count less.\n\nBetter: enable location, or let someone else present create the badge.';
-  }
+  String apNoRefBody(String city) => 'No location is stored for „${city}“ in the portal, and your own location is unavailable. Attendance therefore cannot be confirmed — the badges will count less.\n\nBetter: enable location, or let someone else present create the badge.';
 
   @override
   String get apConfirmPickTitle => 'Are you here?';
 
   @override
-  String get apConfirmPickBody =>
-      'This name is permanently stored in every attendee\'s badge and cannot be changed later. If the location does not match the people present, they will see „too far away“ and receive no badge.';
+  String get apConfirmPickBody => 'This name is permanently stored in every attendee\'s badge and cannot be changed later. If the location does not match the people present, they will see „too far away“ and receive no badge.';
 
   @override
   String get apConfirmPickYes => 'Yes, I am here';
@@ -4701,46 +4693,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get badgeOrganizerTitle => 'ORGANIZER RECORD';
 
   @override
-  String get badgeOrganizerDesc =>
-      'You created this meetup yourself. The badge records that, but it is unsigned and does not count towards reputation — nobody can confirm themselves. You get a counting badge when another organizer on site starts their own session and you scan their code.';
+  String get badgeOrganizerDesc => 'You created this meetup yourself. The badge records that, but it is unsigned and does not count towards reputation — nobody can confirm themselves. You get a counting badge when another organizer on site starts their own session and you scan their code.';
 
   @override
   String get walletOrganizerSection => 'Created by you';
 
   @override
-  String reputationOrganizerNote(int count) {
-    return '$count meetup(s) organized by you — not counted in the score, since nobody can confirm themselves.';
-  }
+  String reputationOrganizerNote(int count) => '${count} meetup(s) organized by you — not counted in the score, since nobody can confirm themselves.';
 
   @override
   String get apCrossConfirmTitle => 'Another organizer present?';
 
   @override
-  String get apCrossConfirmBody =>
-      'You don\'t get a counting badge for your own meetup — nobody can confirm themselves. If you both start a session and scan each other, you both get a real record of the evening.';
+  String get apCrossConfirmBody => 'You don\'t get a counting badge for your own meetup — nobody can confirm themselves. If you both start a session and scan each other, you both get a real record of the evening.';
 
   @override
   String get tileEventsToday => 'today in the event calendar';
 
   @override
-  String tileNewsUnread(int count) {
-    return '$count new since your visit';
-  }
+  String tileNewsUnread(int count) => '${count} new since your visit';
 
   @override
   String get tilesAvailable => 'Available';
 
   @override
-  String get tilesEditHint =>
-      'Drag onto another tile to move · Pin to attach or detach';
+  String get tilesEditHint => 'Drag onto another tile to move · Pin to attach or detach';
 
   @override
   String get tilesEditDone => 'Done';
 
   @override
-  String tileReputationBadges(int count) {
-    return '$count counted badges';
-  }
+  String tileReputationBadges(int count) => '${count} counted badges';
 
   @override
   String get tileActListen => 'To listen';
@@ -4768,4 +4751,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tileActManage => 'Manage';
+
+  @override
+  String get emptyFindMeetup => 'Find a meetup';
+
+  @override
+  String get reputationScoreLabel => 'Trust score';
+
+  @override
+  String get reputationUnsigned => 'Unsigned';
+
+  @override
+  String get portalConnectForOrganizer => 'Not connected to the portal — your organizer status cannot be detected.';
+
 }

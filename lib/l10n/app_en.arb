@@ -2,7 +2,7 @@
   "@@locale": "en",
   "appTitle": "Einundzwanzig Meetup",
   "navHome": "Home",
-  "navWallet": "Wallet",
+  "navWallet": "Badges",
   "navEvents": "Events",
   "navProfile": "Profile",
   "actionSave": "Save",
@@ -43,7 +43,7 @@
   "amberConnected": "Connected with Amber! Your nsec stays in Amber.",
   "amberNotFound": "Amber not found",
   "amberCancelled": "Connection cancelled in Amber.",
-  "walletTitle": "Badge Wallet",
+  "walletTitle": "My badges",
   "badgesCount": "{count, plural, =0{No badges} =1{1 badge} other{{count} badges}}",
   "eventInDays": "in {days, plural, =0{today} =1{1 day} other{{days} days}}",
   "tileTrustScore": "Trust Score",
@@ -119,7 +119,7 @@
   "introJoin": "JOIN COMMUNITY",
   "introLoadBackup": "LOAD BACKUP",
   "introSetIdentity": "Please set up your identity first.",
-  "navWalletTab": "Wallet",
+  "navWalletTab": "Badges",
   "navProfileTab": "Profile",
   "scanBadge": "Scan badge",
   "scanBadgeSub": "QR code or NFC tag from the meetup",
@@ -2297,5 +2297,9 @@
   "tileActLookup": "Look up",
   "tileActNetwork": "Network",
   "tileActEncounters": "Encounters",
-  "tileActManage": "Manage"
+  "tileActManage": "Manage",
+  "emptyFindMeetup": "Find a meetup",
+  "reputationScoreLabel": "Trust score",
+  "reputationUnsigned": "Unsigned",
+  "portalConnectForOrganizer": "Not connected to the portal — your organizer status cannot be detected."
 }

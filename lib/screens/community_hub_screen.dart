@@ -23,6 +23,7 @@ import 'community_portal_screen.dart' as legacy;
 import 'news_screen.dart';
 import 'nearby_meetups_screen.dart';
 import 'portal_meetups_screen.dart';
+import '../widgets/shadows.dart';
 
 Future<void> _openUrl(String url) async {
   final uri = Uri.parse(url);
@@ -88,18 +89,18 @@ class CommunityHubScreen extends StatelessWidget {
   }
 
   Widget _bigCard(BuildContext context, {required IconData icon, required Color color, required String title, required String subtitle, required List<String> chips, required VoidCallback onTap}) {
-    // DASHBOARD-OPTIK (v1.3.1): neutraler Rand (cTileBorder statt Farbrand),
-    // Icon 22, Titel 15/w700, Untertitel 12 — exakt wie die Home-Kacheln,
-    // damit Hub und Dashboard aus einem Guss wirken. Die Chips sind
-    // bewusst entfallen: das Dashboard kennt keine, und der Untertitel
-    // nennt die Bereiche bereits.
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: cCard,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withValues(alpha: 0.08), cCard.withValues(alpha: 0.98)],
+          ),
           borderRadius: BorderRadius.circular(kTileRadius),
-          border: Border.all(color: cTileBorder, width: 0.5),
+          border: Border.all(color: color.withValues(alpha: 0.22), width: 0.8),
+          boxShadow: shadowForElevation(2, accent: color),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),
@@ -143,9 +144,14 @@ class CommunityHubScreen extends StatelessWidget {
         // die Karte um 5px ueber. 120 laesst Reserve fuer groessere Schrift.
         height: 120,
         decoration: BoxDecoration(
-          color: cCard,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [gold.withValues(alpha: 0.16), cCard.withValues(alpha: 0.98)],
+          ),
           borderRadius: BorderRadius.circular(kTileRadius),
-          border: Border.all(color: cTileBorder, width: 0.5), // neutral wie das Dashboard
+          border: Border.all(color: gold.withValues(alpha: 0.28), width: 0.8),
+          boxShadow: shadowForElevation(2, accent: gold),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),
@@ -221,13 +227,16 @@ class CommunityHubScreen extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        // 96 war zu knapp: Icon 22 + 8 + Titel + 3 + Untertitel passten mit
-        // dem Padding (2x16) nicht — auf dem Geraet 11px Ueberlauf.
         height: 112,
         decoration: BoxDecoration(
-          color: cCard,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withValues(alpha: 0.08), cCard.withValues(alpha: 0.98)],
+          ),
           borderRadius: BorderRadius.circular(kTileRadius),
-          border: Border.all(color: cTileBorder, width: 0.5),
+          border: Border.all(color: color.withValues(alpha: 0.22), width: 0.8),
+          boxShadow: shadowForElevation(2, accent: color),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),
@@ -259,9 +268,14 @@ class CommunityHubScreen extends StatelessWidget {
       child: Container(
         height: 130,
         decoration: BoxDecoration(
-          color: cCard,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withValues(alpha: 0.08), cCard.withValues(alpha: 0.98)],
+          ),
           borderRadius: BorderRadius.circular(kTileRadius),
-          border: Border.all(color: cTileBorder, width: 0.5),
+          border: Border.all(color: color.withValues(alpha: 0.22), width: 0.8),
+          boxShadow: shadowForElevation(2, accent: color),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),
@@ -326,7 +340,16 @@ class PortalAreaScreen extends StatelessWidget {
     child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [color.withValues(alpha: 0.08), cCard.withValues(alpha: 0.98)],
+        ),
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(color: color.withValues(alpha: 0.22), width: 0.8),
+        boxShadow: shadowForElevation(2, accent: color),
+      ),
       child: Row(children: [
         Container(
           width: 44, height: 44,
@@ -446,7 +469,41 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
                 Text(t.rsvpLoading, style: const TextStyle(color: cTextSecondary, fontSize: 13)),
               ]))
             : _events.isEmpty
-                ? Center(child: Text(t.rsvpNone, style: const TextStyle(color: cTextSecondary, fontSize: 14)))
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [cCard.withValues(alpha: 0.96), cDark.withValues(alpha: 0.96)],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: cOrange.withValues(alpha: 0.24), width: 1),
+                          boxShadow: shadowForElevation(2, accent: cOrange),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: cOrange.withValues(alpha: 0.12),
+                                border: Border.all(color: cOrange.withValues(alpha: 0.24), width: 1),
+                              ),
+                              child: const Icon(Icons.event_available_rounded, color: cOrange, size: 28),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(t.rsvpNone, textAlign: TextAlign.center, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
                 : RefreshIndicator(
                     color: cOrange, backgroundColor: cCard, onRefresh: _load,
                     child: ListView.builder(
@@ -468,7 +525,16 @@ class _PortalEventsScreenState extends State<PortalEventsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [cOrange.withValues(alpha: 0.08), cCard.withValues(alpha: 0.98)],
+        ),
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(color: cOrange.withValues(alpha: 0.22), width: 0.8),
+        boxShadow: shadowForElevation(2, accent: cOrange),
+      ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(meetupName.isNotEmpty ? meetupName : 'Meetup #${e['meetup_id'] ?? ''}',
             style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
@@ -589,7 +655,41 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   Widget _list(List<Map<String, dynamic>> items, AppLocalizations t, {required bool isCourse}) {
     if (items.isEmpty) {
-      return Center(child: Text(t.crsNone, style: const TextStyle(color: cTextSecondary, fontSize: 14)));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [cCard.withValues(alpha: 0.96), cDark.withValues(alpha: 0.96)],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: cNostr.withValues(alpha: 0.24), width: 1),
+              boxShadow: shadowForElevation(2, accent: cNostr),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: cNostr.withValues(alpha: 0.12),
+                    border: Border.all(color: cNostr.withValues(alpha: 0.24), width: 1),
+                  ),
+                  child: const Icon(Icons.school_rounded, color: cNostr, size: 28),
+                ),
+                const SizedBox(height: 14),
+                Text(t.crsNone, textAlign: TextAlign.center, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+        ),
+      );
     }
     return RefreshIndicator(
       color: cOrange, backgroundColor: cCard, onRefresh: _load,
@@ -605,7 +705,16 @@ class _CoursesScreenState extends State<CoursesScreen> {
             child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [cNostr.withValues(alpha: 0.08), cCard.withValues(alpha: 0.98)],
+              ),
+              borderRadius: BorderRadius.circular(kTileRadius),
+              border: Border.all(color: cNostr.withValues(alpha: 0.22), width: 0.8),
+              boxShadow: shadowForElevation(2, accent: cNostr),
+            ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 width: 42, height: 42,
