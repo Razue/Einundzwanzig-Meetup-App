@@ -8,7 +8,7 @@
 //  Standard-Wallet startet.
 // ============================================
 
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -48,8 +48,15 @@ class _V4VScreenState extends State<V4VScreen> {
 
   /// Öffnet die Invoice: auf Android über den System-Chooser (Wallet-
   /// Auswahlliste), sonst per url_launcher. Liefert true bei Erfolg.
+  ///
+  /// Die Plattform wird ueber `defaultTargetPlatform` bestimmt, nicht ueber
+  /// `Platform.isAndroid` aus `dart:io`: letzteres wirft im Browser
+  /// `Unsupported operation: Platform._version`, und zwar VOR dem try — der
+  /// Fehler verliess damit `_openInvoice` und der Aufrufer faengt ihn nicht,
+  /// sodass im Web beim Bezahlen nichts passierte und auch der
+  /// Invoice-Fallback nie erschien.
   Future<bool> _openInvoice(String invoice) async {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       try {
         final ok = await _channel.invokeMethod<bool>(
           'payLightningInvoice', {'invoice': invoice});
