@@ -6,6 +6,7 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import '../widgets/npub_chip.dart';
 import '../services/meetup_calendar_service.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
@@ -354,7 +355,7 @@ class _MeetupAdminCardState extends State<_MeetupAdminCard> {
     final name = (a['name'] ?? '').toString();
     final nostr = (a['nostr'] ?? '').toString();
     final isCreator = a['is_creator'] == true;
-    final shortNpub = nostr.isNotEmpty ? '${nostr.substring(0, nostr.length.clamp(0, 14))}…' : '';
+    final shortNpub = nostr.isNotEmpty ? NpubChip.shorten(nostr) : '';
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -366,7 +367,9 @@ class _MeetupAdminCardState extends State<_MeetupAdminCard> {
           Text(name.isNotEmpty ? name : (shortNpub.isNotEmpty ? shortNpub : '?'),
               style: const TextStyle(color: cText, fontSize: 13.5, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
           if (name.isNotEmpty && shortNpub.isNotEmpty)
-            Text(shortNpub, style: const TextStyle(color: cTextTertiary, fontSize: 10.5)),
+            NpubChip(nostr,
+                style: const TextStyle(color: cTextTertiary, fontSize: 10.5),
+                showIcon: false),
         ])),
         if (isCreator)
           Container(

@@ -71,6 +71,32 @@ class CoAttendanceService {
   /// Veröffentlicht EIN Co-Attendance-Event für ein Badge.
   /// Nur aufrufen, wenn der Nutzer aktiv zugestimmt hat (Opt-in)!
   /// Gibt Anzahl erreichter Relays zurück (0 = Fehlschlag).
+  /// Der Schluessel, unter dem Anwesenheit veroeffentlicht wird.
+  ///
+  /// FRUEHER: nur `meetupEventId`, also "name-JJJJ-MM-TT". Der Name stammt
+  /// vom Tag des Organisators — und generische Namen kollidieren weltweit.
+  /// Im Feldtest verband das vier wildfremde Leute miteinander, weil alle
+  /// am selben Tag eine Session namens "test" angelegt hatten. Auch echte
+  /// Faelle sind betroffen: Berlin hat vier Gruppen im Portal, Osnabrueck
+  /// und Budapest ebenso — treffen sich zwei davon am selben Abend, waren
+  /// bisher alle Beteiligten "direkt bekannt".
+  ///
+  /// JETZT: zusaetzlich der Signierer. Alle Teilnehmer EINER Session haben
+  /// denselben Organisator gescannt, teilen also denselben Wert — die
+  /// Verknuepfung innerhalb der Session bleibt exakt erhalten. Zwei
+  /// verschiedene Sessions koennen sich aber nicht mehr vermischen, selbst
+  /// bei identischem Namen und Datum.
+  ///
+  /// Die Badge-Identitaet (`meetupEventId`) bleibt UNVERAENDERT — sonst
+  /// waere der Duplikatschutz betroffen, und ein Teilnehmer koennte an
+  /// einem Abend mehrere Badges sammeln.
+  static String attendanceKey(String meetupEventId, String signerNpub) {
+    final signer = signerNpub.trim();
+    if (signer.isEmpty) return meetupEventId; // Altformat, besser als nichts
+    final short = signer.length > 12 ? signer.substring(signer.length - 12) : signer;
+    return '$meetupEventId@$short';
+  }
+
   static Future<int> publishAttendance(MeetupBadge badge) async {
     // Sicherheit: nur echte, organisator-signierte Badges qualifizieren
     if (!badge.isNostrSigned || _isDegenerateEventId(badge.meetupEventId)) {
@@ -79,18 +105,20 @@ class CoAttendanceService {
     }
 
     try {
+      final key = attendanceKey(badge.meetupEventId, badge.signerNpub);
+
       // Inhalt bewusst minimal (datenschutzbewusst)
       final content = jsonEncode({
-        'event': badge.meetupEventId,
+        'event': key,
         'meetup': badge.meetupName,
         't': badge.date.millisecondsSinceEpoch ~/ 1000,
       });
 
-      // d-Tag = meetupEventId -> pro Meetup genau EIN ersetzbares Event je npub
+      // d-Tag = Schluessel -> pro Session genau EIN ersetzbares Event je npub
       final signed = await SigningService.signEvent(
         kind: kind,
         tags: <List<String>>[
-          ['d', badge.meetupEventId],
+          ['d', key],
           ['e_ref', badge.sigId], // Referenz auf das Badge-Signatur-Event (Kopplung)
           ['client', _client],
         ],
@@ -162,6 +190,23 @@ class CoAttendanceService {
     }
     // Reine Datumsangabe ohne Ort.
     if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(v)) return true;
+
+    // GENERISCHE NAMEN aus Altdaten (vor der Signierer-Erweiterung).
+    // Im Feldtest verband "test-2026-07-24" vier wildfremde Leute — jeder
+    // Entwickler legt irgendwann eine Session namens "test" an, und ohne
+    // Signierer im Schluessel landen sie alle im selben Topf. Solche
+    // Eintraege liegen auf den Relays und lassen sich nicht zurueckholen.
+    //
+    // Betrifft NUR Schluessel im Altformat (ohne "@"): Neue tragen den
+    // Signierer und koennen selbst bei generischem Namen nicht kollidieren.
+    if (!v.contains('@')) {
+      final namePart = v.replaceAll(RegExp(r'-\d{4}-\d{2}-\d{2}$'), '');
+      const generic = {
+        'test', 'test1', 'test2', 'test3', 'testing', 'demo',
+        'home', 'garten', 'ab-test', 'probe', 'temp', 'tmp', 'xxx',
+      };
+      if (generic.contains(namePart)) return true;
+    }
     return false;
   }
 
@@ -430,9 +475,13 @@ class CoAttendanceService {
 
   static Future<int> _publishOrganizerAttendance(
       String meetupEventId, String meetupName, DateTime date) async {
+    // Der Organisator IST der Signierer seiner eigenen Session — damit
+    // stimmt sein Schluessel mit dem seiner Teilnehmer ueberein.
+    final ownNpub = await SigningService.npub();
+    final key = attendanceKey(meetupEventId, ownNpub ?? '');
     try {
       final content = jsonEncode({
-        'event': meetupEventId,
+        'event': key,
         'meetup': meetupName,
         't': date.millisecondsSinceEpoch ~/ 1000,
         'role': 'organizer',
@@ -440,7 +489,7 @@ class CoAttendanceService {
       final signed = await SigningService.signEvent(
         kind: kind,
         tags: <List<String>>[
-          ['d', meetupEventId],
+          ['d', key],
           ['role', 'organizer'],
           ['client', _client],
         ],

@@ -2298,5 +2298,6 @@
   "emptyFindMeetup": "Buscar meetup",
   "reputationScoreLabel": "Puntuación de confianza",
   "reputationUnsigned": "Sin firmar",
-  "portalConnectForOrganizer": "No conectado al portal: no se puede detectar tu estado de organizador."
+  "portalConnectForOrganizer": "No conectado al portal: no se puede detectar tu estado de organizador.",
+  "npubCopied": "npub copiado"
 }

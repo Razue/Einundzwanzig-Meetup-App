@@ -2320,5 +2320,6 @@
   "emptyFindMeetup": "Meetup finden",
   "reputationScoreLabel": "Vertrauenswert",
   "reputationUnsigned": "Nicht signiert",
-  "portalConnectForOrganizer": "Nicht mit dem Portal verbunden — dein Organisator-Status kann dadurch nicht erkannt werden."
+  "portalConnectForOrganizer": "Nicht mit dem Portal verbunden — dein Organisator-Status kann dadurch nicht erkannt werden.",
+  "npubCopied": "npub kopiert"
 }
