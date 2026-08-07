@@ -7,13 +7,11 @@
 
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
 import '../theme.dart';
@@ -216,12 +214,19 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       if (byteData == null) return;
 
       final pngBytes = byteData.buffer.asUint8List();
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/einundzwanzig_reputation.png');
-      await file.writeAsBytes(pngBytes);
 
+      // Die Bytes direkt teilen, statt selbst eine Datei in
+      // getTemporaryDirectory() zu schreiben: path_provider hat keine
+      // Web-Implementierung, weshalb das im Browser mit einer
+      // MissingPluginException endete und Teilen dort unmoeglich war.
+      // share_plus legt die temporaere Datei auf iOS/Android selbst an, wenn
+      // die XFile keinen Pfad hat. `name` greift im Web,
+      // `fileNameOverrides` auf den nativen Plattformen — cross_file
+      // ignoriert `name` dort.
+      const fileName = 'einundzwanzig_reputation.png';
       await Share.shareXFiles(
-        [XFile(file.path)],
+        [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+        fileNameOverrides: const [fileName],
         subject: 'Einundzwanzig Reputation',
         text: shareText,
       );
