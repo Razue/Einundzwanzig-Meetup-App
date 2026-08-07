@@ -153,9 +153,14 @@ class AppLogger {
     _record('INFO', tag, message);
   }
 
-  static void warn(String tag, String message) {
-    if (kDebugMode) print('[WARN:$tag] $message');
-    _record('WARN', tag, message);
+  /// Warnung. Der optionale [error] wird MIT MELDUNG angehaengt, nicht nur
+  /// mit Typ: `${e.runtimeType}` liefert "UnsupportedError" und damit nichts
+  /// Verwertbares, `$e` liefert "Unsupported operation: Platform._version"
+  /// und zeigt direkt auf die Ursache.
+  static void warn(String tag, String message, [Object? error]) {
+    final detail = error != null ? '$message — ${error.runtimeType}: $error' : message;
+    if (kDebugMode) print('[WARN:$tag] $detail');
+    _record('WARN', tag, detail);
   }
 
   static void error(String tag, String message, [Object? error, StackTrace? stack]) {
@@ -166,13 +171,28 @@ class AppLogger {
     }
     // Fehlertyp IMMER mitschreiben — "hat nicht geklappt" ohne Ursache
     // ist der Grund, warum Logs bisher nichts wert waren.
-    final detail = error != null ? '$message — ${error.runtimeType}: $error' : message;
-    _record('ERROR', tag, detail);
-    // Erste Stack-Zeile hilft beim Einordnen, ohne das Log zu fluten.
-    if (stack != null && _verbose) {
-      final first = stack.toString().split('\n').take(3).join(' | ');
-      _record('DEBUG', tag, 'Stack: $first');
+    final buf = StringBuffer(message);
+    if (error != null) buf.write(' — ${error.runtimeType}: $error');
+    // Stack-Kopf IMMER mitschreiben, nicht mehr nur im Ausfuehrlich-Modus:
+    // ein Crash ohne Herkunft ist wieder nur "irgendwas ist kaputt", und
+    // ausgerechnet Abstuerze kann man nicht nachstellen, um dann das
+    // ausfuehrliche Log einzuschalten.
+    //
+    // Bewusst als Teil DIESES Eintrags statt als eigener DEBUG-Eintrag: der
+    // Log-Screen kann auf "nur Probleme" filtern (ERROR/WARN) — ein
+    // separater DEBUG-Eintrag waere genau dann weg, wenn man ihn braucht.
+    // Mit ' | ' statt Zeilenumbruch, damit exportText() eine Zeile pro
+    // Eintrag behaelt.
+    if (stack != null) {
+      final frames = stack
+          .toString()
+          .split('\n')
+          .map((l) => l.trim())
+          .where((l) => l.isNotEmpty)
+          .take(2);
+      if (frames.isNotEmpty) buf.write(' | bei ${frames.join(' <- ')}');
     }
+    _record('ERROR', tag, buf.toString());
   }
 
   /// Sicherheitsrelevantes Ereignis — landet IMMER im Puffer.

@@ -486,7 +486,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     try {
       all = await MeetupService.fetchMeetups();
     } catch (e) {
-      AppLogger.warn('Organisator', 'Portal-Meetupliste nicht ladbar: ${e.runtimeType}');
+      AppLogger.warn('Organisator', 'Portal-Meetupliste nicht ladbar', e);
     }
     if (all.isEmpty) all = allMeetups;
     if (!mounted || all.isEmpty) return null;
@@ -502,7 +502,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         mineNames.add(pm.name.trim().toLowerCase());
       }
     } catch (e) {
-      AppLogger.warn('Organisator', 'Eigene Meetups nicht ladbar: ${e.runtimeType}');
+      AppLogger.warn('Organisator', 'Eigene Meetups nicht ladbar', e);
     }
     bool isMine(Meetup m) =>
         mineNames.contains(m.name.trim().toLowerCase()) ||
