@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1266,7 +1267,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           ),
           child: ClipOval(
             child: _localProfilePic != null
-              ? Image.file(File(_localProfilePic!), fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, __, ___) => _avatarFallback())
+              // Im Browser liefert image_picker eine blob:-URL statt eines
+              // Dateipfads, und `File` aus dart:io existiert dort nicht — der
+              // Konstruktor wirft schon beim Bauen des Widgets, was
+              // errorBuilder NICHT abfaengt. Deshalb dort NetworkImage: blob:
+              // ist same-origin und laedt ohne CORS. Nach einem Reload ist die
+              // blob:-URL ungueltig; dann greift errorBuilder wie bisher.
+              ? Image(
+                  image: kIsWeb
+                      ? NetworkImage(_localProfilePic!)
+                      : FileImage(File(_localProfilePic!)),
+                  fit: BoxFit.cover, width: 40, height: 40,
+                  errorBuilder: (_, __, ___) => _avatarFallback())
               : _profilePicUrl != null
                 ? Image.network(_profilePicUrl!, fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, __, ___) => _avatarFallback())
                 : _avatarFallback(),
