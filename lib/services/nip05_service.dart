@@ -19,10 +19,10 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:nostr/nostr.dart';
 import 'secure_key_store.dart';
 import 'dart:math';
+import 'package:http/http.dart' as http;
 import 'relay_socket.dart';
 
 class Nip05Service {
@@ -69,18 +69,20 @@ class Nip05Service {
 
     try {
       final url = Uri.parse('https://$domain/.well-known/nostr.json?name=$name');
-      final client = HttpClient();
-      client.connectionTimeout = _timeout;
-
-      final request = await client.getUrl(url);
-      final response = await request.close().timeout(_timeout);
+      // package:http statt dart:io HttpClient — letzteres wirft im Browser
+      // `Unsupported operation: Platform._version`. Weil dieser Block den
+      // Fehler abfaengt und valid:false liefert, erschien im Web bisher JEDE
+      // NIP-05 als unverifiziert, ohne sichtbaren Fehler.
+      final response = await http.get(url).timeout(_timeout);
 
       if (response.statusCode != 200) {
         return Nip05Result(valid: false, nip05: nip05, domain: domain);
       }
 
-      final body = await response.transform(utf8.decoder).join();
-      final json = jsonDecode(body) as Map<String, dynamic>;
+      // bodyBytes + utf8.decode statt response.body: letzteres richtet sich
+      // nach dem charset im Content-Type und faellt ohne Angabe auf latin1
+      // zurueck. Das Original hat UTF-8 erzwungen.
+      final json = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final names = json['names'] as Map<String, dynamic>?;
 
       if (names == null) {
