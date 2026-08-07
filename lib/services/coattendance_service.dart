@@ -230,6 +230,7 @@ class CoAttendanceService {
 
   static Future<List<CoAttendanceRecord>?> _fetchFromRelay(String relayUrl) async {
     WebSocket? ws;
+    final tally = RelayParseTally('CoAttendance', 'Co-Attendance von $relayUrl');
     final out = <CoAttendanceRecord>[];
     try {
       ws = await WebSocket.connect(relayUrl).timeout(_timeout);
@@ -239,6 +240,7 @@ class CoAttendanceService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'EVENT' && msg.length >= 3) {
@@ -259,7 +261,7 @@ class CoAttendanceService {
             if (msg[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(out);
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onDone: () { if (!completer.isCompleted) completer.complete(out); },
         onError: (_) { if (!completer.isCompleted) completer.complete(null); },
@@ -277,6 +279,7 @@ class CoAttendanceService {
       AppLogger.warn(_tag, 'Fetch-Fehler $relayUrl: $e');
       return null;
     } finally {
+      tally.report();
       ws?.close();
     }
   }

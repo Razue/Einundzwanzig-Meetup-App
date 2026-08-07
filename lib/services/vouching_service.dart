@@ -453,6 +453,7 @@ class VouchingService {
     List<String> authorsHex,
   ) async {
     WebSocket? ws;
+    final tally = RelayParseTally('Vouching', 'Buergschaften von $relayUrl');
     final result = <String, List<AdminEntry>>{};
 
     try {
@@ -467,6 +468,7 @@ class VouchingService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
 
@@ -489,7 +491,7 @@ class VouchingService {
             if (msg[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(result);
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onDone: () {
           if (!completer.isCompleted) completer.complete(result);
@@ -520,6 +522,7 @@ class VouchingService {
       AppLogger.debug(_tag, 'Relay fetch error: $e');
       return null;
     } finally {
+      tally.report();
       ws?.close();
     }
   }
@@ -557,6 +560,7 @@ class VouchingService {
     String relayUrl,
   ) async {
     WebSocket? ws;
+    final tally = RelayParseTally('Vouching', 'Misstrauens-Meldungen von $relayUrl');
     final reports = <DistrustReport>[];
 
     try {
@@ -571,6 +575,7 @@ class VouchingService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
 
@@ -595,7 +600,7 @@ class VouchingService {
             if (msg[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(reports);
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onDone: () {
           if (!completer.isCompleted) completer.complete(reports);
@@ -623,6 +628,7 @@ class VouchingService {
     } catch (e) {
       return null;
     } finally {
+      tally.report();
       ws?.close();
     }
   }

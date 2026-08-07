@@ -69,11 +69,29 @@ class MeetupService {
         for (final m in list) {
           byCity.putIfAbsent(m.city.trim().toLowerCase(), () => []).add(m);
         }
-        for (final e in byCity.entries) {
-          if (e.value.length > 1) {
-            AppLogger.diag('Meetups',
-                'Stadt "${e.value.first.city}" kommt ${e.value.length}x vom Portal — '
-                'IDs: ${e.value.map((m) => m.id).join(", ")}');
+        // EINE Zeile statt einer pro Stadt: beim letzten Feldlauf waren das
+        // 18 von rund 50 Zeilen — ein Drittel des Ringpuffers fuer einen
+        // Umstand, der sich in einem Satz sagen laesst. Der Puffer haelt
+        // 800 Eintraege und soll einen ganzen Meetup-Abend abdecken.
+        final dupes = byCity.entries.where((e) => e.value.length > 1).toList();
+        if (dupes.isNotEmpty) {
+          // Nur die ersten acht nennen: mit allen 28 wurde die Zeile 432
+          // Zeichen lang und im Log-Screen unlesbar. Die vollstaendige Liste
+          // steht darunter auf debug-Ebene.
+          const maxNamed = 8;
+          final named = dupes
+              .take(maxNamed)
+              .map((e) => '${e.value.first.city} ${e.value.length}x')
+              .join(', ');
+          final rest = dupes.length - maxNamed;
+          AppLogger.diag('Meetups',
+              '${dupes.length} Stadt/Staedte kommen mehrfach vom Portal: $named'
+              '${rest > 0 ? ' … und $rest weitere' : ''}');
+          // Die Portal-IDs braucht man erst, wenn man einem Fall nachgeht —
+          // deshalb debug (nur im Ausfuehrlich-Modus im Puffer).
+          for (final e in dupes) {
+            AppLogger.debug('Meetups',
+                '"${e.value.first.city}" IDs: ${e.value.map((m) => m.id).join(", ")}');
           }
         }
 

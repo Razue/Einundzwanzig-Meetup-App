@@ -390,6 +390,7 @@ class ReputationPublisher {
     String pubkeyHex,
   ) async {
     WebSocket? ws;
+    final tally = RelayParseTally('ReputationPublisher', 'Reputations-Events von $relayUrl');
 
     try {
       ws = await WebSocket.connect(relayUrl)
@@ -402,6 +403,7 @@ class ReputationPublisher {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -439,15 +441,13 @@ class ReputationPublisher {
                 );
                 if (!completer.isCompleted) completer.complete(repEvent);
               } catch (e) {
-                AppLogger.warn('ReputationPublisher', 'Content-Parse Fehler: $e');
-
+                tally.failed();
               }
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(null);
             }
           } catch (e) {
-            AppLogger.warn('ReputationPublisher', 'Message-Parse Fehler: $e');
-
+            tally.failed();
           }
         },
         onError: (e) {
@@ -481,6 +481,7 @@ class ReputationPublisher {
     } catch (e) {
       rethrow;
     } finally {
+      tally.report();
       try { ws?.close(); } catch (_) {}
     }
   }
