@@ -106,23 +106,30 @@ class ReputationPublisher {
       // User-Profil laden
       final user = await UserProfile.load();
 
-      // Social & Lightning Stats im Hintergrund laden (optional, best-effort)
-      SocialStats? socialStats;
-      ZapStats? zapStats;
-      try {
-        socialStats = await SocialGraphService.getMyStats()
-            .timeout(const Duration(seconds: 10), onTimeout: () => SocialStats.empty());
-      } catch (_) {}
-      try {
-        zapStats = await ZapVerificationService.getMyStats()
-            .timeout(const Duration(seconds: 10), onTimeout: () => ZapStats.empty());
-      } catch (_) {}
+      // Social & Lightning Stats im Hintergrund laden (optional, best-effort).
+      //
+      // measure() statt `catch (_) {}`: schlaegt einer dieser Abrufe fehl,
+      // wird die Reputation OHNE die betroffenen Zahlen veroeffentlicht — das
+      // Ergebnis sieht dann aus wie "der Nutzer hat keine Follower/Zaps",
+      // nicht wie ein Fehler. Genau solche stillen Luecken waren im Log nicht
+      // wiederzufinden. Ein Timeout ist hier schon abgefangen (onTimeout),
+      // der catch traf also echte Fehler.
+      final socialStats = await AppLogger.measure<SocialStats>(
+          'ReputationPublisher',
+          'Social-Stats fuer Reputation laden',
+          () => SocialGraphService.getMyStats()
+              .timeout(const Duration(seconds: 10), onTimeout: () => SocialStats.empty()));
+      final zapStats = await AppLogger.measure<ZapStats>(
+          'ReputationPublisher',
+          'Zap-Stats fuer Reputation laden',
+          () => ZapVerificationService.getMyStats()
+              .timeout(const Duration(seconds: 10), onTimeout: () => ZapStats.empty()));
 
       // Humanity-Proof laden (lokal gespeichert)
-      Map<String, dynamic>? humanityProof;
-      try {
-        humanityProof = await HumanityProofService.getProofForPublishing();
-      } catch (_) {}
+      final humanityProof = await AppLogger.measure<Map<String, dynamic>?>(
+          'ReputationPublisher',
+          'Humanity-Proof laden',
+          () => HumanityProofService.getProofForPublishing());
 
       // Event-Content erstellen (datenschutzkonform!)
       final content = _buildContent(

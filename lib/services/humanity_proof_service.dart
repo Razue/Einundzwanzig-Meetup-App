@@ -206,7 +206,12 @@ class HumanityProofService {
       try {
         final result = await _searchZapActivity(relayUrl, pubkeyHex);
         if (result != null) return true;
-      } catch (_) {}
+      } catch (e) {
+        // debug: einzelne Relay-Ausfaelle sind Alltag. Ohne die Zeile war ein
+        // "kein Zap gefunden" aber nicht von "kein Relay geantwortet" zu
+        // unterscheiden — und davon haengt der Humanity-Proof ab.
+        AppLogger.debug('HumanityProof', 'Zap-Suche auf $relayUrl fehlgeschlagen: $e');
+      }
     }
     return false;
   }
@@ -433,7 +438,12 @@ class HumanityProofService {
       try {
         final exists = await _checkEventExists(relayUrl, receiptEventId);
         if (exists) return true;
-      } catch (_) {}
+      } catch (e) {
+        // Antwortet kein Relay, liefert die Funktion false — also "Beleg
+        // existiert nicht", obwohl niemand nachgesehen hat. Der Unterschied
+        // stand bisher nirgends.
+        AppLogger.debug('HumanityProof', 'Beleg-Pruefung auf $relayUrl fehlgeschlagen: $e');
+      }
     }
     return false;
   }

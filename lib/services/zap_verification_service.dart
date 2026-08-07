@@ -35,6 +35,7 @@ import 'package:nostr/nostr.dart';
 import 'relay_config.dart';
 import 'nostr_service.dart';
 import 'dart:math';
+import 'app_logger.dart';
 
 class ZapVerificationService {
   // Cache
@@ -102,7 +103,10 @@ class ZapVerificationService {
         }
         if (allReceipts.length >= 50) break; // Genug Daten
       } catch (e) {
-        // Nächstes Relay
+        // Naechstes Relay. debug, weil ausgefallene Relays Alltag sind —
+        // aber ohne diese Zeile war nicht zu unterscheiden, ob jemand keine
+        // Zaps hat oder ob alle drei Relays nicht geantwortet haben.
+        AppLogger.debug('ZapVerification', 'Zap-Abruf von $relayUrl fehlgeschlagen: $e');
       }
     }
 
@@ -334,7 +338,10 @@ class ZapVerificationService {
     if (npub == null || npub.isEmpty) return null;
     try {
       return Nip19.decodePubkey(npub);
-    } catch (_) {
+    } catch (e) {
+      // Eigener npub nicht dekodierbar -> alle Zap-Zahlen bleiben 0, ohne
+      // dass irgendwo ein Fehler sichtbar wird.
+      AppLogger.warn('ZapVerification', 'Eigener npub nicht dekodierbar: $e');
       return null;
     }
   }
