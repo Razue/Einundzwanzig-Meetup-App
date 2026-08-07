@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/calendar_event_service.dart';
+import '../widgets/shadows.dart';
 import 'calendar_screen.dart';
 import 'event_calendar_screen.dart';
 
@@ -75,11 +76,13 @@ class EventsHubScreen extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft, end: Alignment.bottomRight,
-            colors: [color.withValues(alpha: 0.16), cCard],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color.withValues(alpha: 0.10), cCard.withValues(alpha: 0.98)],
           ),
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
+          border: Border.all(color: color.withValues(alpha: 0.28), width: 0.8),
+          boxShadow: shadowForElevation(2, accent: color),
         ),
         child: Row(children: [
           Container(
@@ -203,13 +206,35 @@ class _ExternalEventsScreenState extends State<ExternalEventsScreen> {
                     ),
                     if (_events.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: 40),
-                        child: Column(children: [
-                          const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 44),
-                          const SizedBox(height: 12),
-                          Text(t.extNone, textAlign: TextAlign.center,
-                              style: const TextStyle(color: cTextSecondary, fontSize: 14)),
-                        ]),
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [cCard.withValues(alpha: 0.96), cDark.withValues(alpha: 0.96)],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: cGreen.withValues(alpha: 0.24), width: 1),
+                            boxShadow: shadowForElevation(2, accent: cGreen),
+                          ),
+                          child: Column(children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: cGreen.withValues(alpha: 0.12),
+                                border: Border.all(color: cGreen.withValues(alpha: 0.24), width: 1),
+                              ),
+                              child: const Icon(Icons.event_busy_rounded, color: cGreen, size: 28),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(t.extNone, textAlign: TextAlign.center,
+                                style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+                          ]),
+                        ),
                       )
                     else
                       ..._events.map((e) => _eventCard(t, e)),

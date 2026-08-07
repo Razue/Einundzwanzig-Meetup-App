@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'calendar_screen.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/meetup_crest_watermark.dart';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
@@ -705,35 +708,19 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   // EMPTY STATE
   // ============================================================
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.collections_bookmark_outlined,
-              size: 100, color: Colors.grey.withValues(alpha: 0.3)),
-          const SizedBox(height: 20),
-          Text(AppLocalizations.of(context).walletNoBadges,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(color: cTextSecondary)),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              AppLocalizations.of(context).walletNoBadgesSub,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
-            ),
-          ),
-        ],
-      ),
+    // Statt eines stummen grauen Symbols: Erklaerung plus konkreter Weg
+    // nach vorn. Wer noch kein Badge hat, braucht zuerst ein Meetup.
+    return EmptyState(
+      icon: Icons.collections_bookmark_outlined,
+      title: AppLocalizations.of(context).walletNoBadges,
+      subtitle: AppLocalizations.of(context).walletNoBadgesSub,
+      actionLabel: AppLocalizations.of(context).emptyFindMeetup,
+      onAction: () => Navigator.push(
+          context, MaterialPageRoute(builder: (_) => const CalendarScreen())),
+      accentColor: cOrange,
     );
   }
 
-  // ============================================================
-  // NORMAL VIEW (2 Spalten)
-  // ============================================================
   Widget _buildBadgeCard(BuildContext context, MeetupBadge badge, int index) {
     final seed = "${badge.meetupName}:${badge.blockHeight}";
 
@@ -758,6 +745,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           children: [
             // 1. GENERATIVE ART
             CustomPaint(painter: BadgeArtPainter(seed: seed)),
+
+            // 1b. MEETUP-WAPPEN als Wasserzeichen darueber. Macht jedes
+            // Badge auf einen Blick zuordenbar. Faellt still weg, wenn
+            // kein Wappen vorliegt — dann traegt die Grafik allein.
+            MeetupCrestWatermark(meetupName: badge.meetupName),
 
             // 2. DUNKLER VERLAUF UNTEN
             Container(
@@ -924,6 +916,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           fit: StackFit.expand,
           children: [
             CustomPaint(painter: BadgeArtPainter(seed: seed)),
+            // Wappen auch hier, aber zurueckhaltender — die kompakte
+            // Karte hat weniger Platz und mehr Text pro Flaeche.
+            MeetupCrestWatermark(
+                meetupName: badge.meetupName, opacity: 0.17, widthFactor: 0.95),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

@@ -30,6 +30,7 @@ import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';    // Ndef (cross-platf
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:nostr/nostr.dart';
 import '../theme.dart';
+import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
@@ -470,7 +471,35 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       final signerNpub = normalized['admin_npub'] as String? ?? '';
       final delivery = normalized['delivery'] as String? ?? tagData['delivery'] as String? ?? 'nfc';
       final dateStr = DateTime.now().toIso8601String().substring(0, 10);
-      final meetupEventId = '${meetupName.toLowerCase().replaceAll(' ', '-')}-$dateStr';
+
+      // KENNUNG NUR AUS EINEM ECHTEN NAMEN BILDEN.
+      //
+      // Fehlerbild (August 2026): Traegt ein Tag keinen Meetup-Namen, war
+      // `meetupName` ein LEERER String — und weil leer nicht null ist, griff
+      // die Ersatzbezeichnung nicht. Die Kennung wurde dann zu "-2026-02-25":
+      // nicht leer, also durch alle Filter, und fuer JEDEN auf der Welt
+      // gleich, der an dem Tag einen namenlosen Tag scannte. Im
+      // Vertrauensnetz erschienen dadurch wildfremde Leute als "direkt
+      // getroffen" — etwa jemand aus Koblenz bei einem Aschaffenburger.
+      //
+      // Ohne belastbaren Namen gibt es deshalb GAR KEINE Kennung. Das Badge
+      // bleibt gueltig, es wird nur keine Anwesenheit veroeffentlicht —
+      // besser keine Verknuepfung als eine falsche.
+      final nameSlug = meetupName.trim().toLowerCase().replaceAll(' ', '-');
+      final unknownSlug = AppLocalizations.of(context)
+          .verifyUnknownMeetup
+          .trim()
+          .toLowerCase()
+          .replaceAll(' ', '-');
+      final usableName = nameSlug.isNotEmpty &&
+          nameSlug != unknownSlug &&
+          nameSlug.replaceAll('-', '').isNotEmpty;
+      final meetupEventId = usableName ? '$nameSlug-$dateStr' : '';
+      if (!usableName) {
+        AppLogger.warn('Scan',
+            'Tag ohne verwertbaren Meetup-Namen — keine Kennung vergeben, '
+            'Anwesenheit wird nicht veroeffentlicht.');
+      }
 
       // Kryptographischen Beweis extrahieren
       final sig = normalized['sig'] as String? ?? tagData['s'] as String? ?? '';
@@ -1184,6 +1213,9 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
       appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
       body: Stack(children: [
         MobileScanner(onDetect: _onDetect),
+        // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
+        // dass die App tatsaechlich sucht.
+        const ScannerOverlay(),
         Positioned(
           bottom: 60, left: 40, right: 40,
           child: Container(

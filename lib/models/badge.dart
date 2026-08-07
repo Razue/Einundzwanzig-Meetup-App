@@ -29,6 +29,7 @@ class MeetupBadge {
   final String meetupName;
   final DateTime date;
   final String iconPath;
+  final String coverUrl;
   final int blockHeight;
   final String signerNpub;      // Wer hat den Tag erstellt? (npub1...)
   final String meetupEventId;   // Eindeutige Event-ID (meetup-datum)
@@ -70,6 +71,7 @@ class MeetupBadge {
     required this.meetupName,
     required this.date,
     required this.iconPath,
+    this.coverUrl = '',
     this.blockHeight = 0,
     this.signerNpub = '',
     this.meetupEventId = '',
@@ -163,6 +165,7 @@ class MeetupBadge {
       'meetupName': meetupName,
       'date': date.toIso8601String(),
       'iconPath': iconPath,
+      'coverUrl': coverUrl,
       'blockHeight': blockHeight,
       'signerNpub': signerNpub,
       'meetupEventId': meetupEventId,
@@ -192,6 +195,7 @@ class MeetupBadge {
       meetupName: json['meetupName'] as String,
       date: DateTime.parse(json['date'] as String),
       iconPath: json['iconPath'] as String,
+      coverUrl: json['coverUrl'] as String? ?? '',
       blockHeight: json['blockHeight'] as int? ?? 0,
       signerNpub: json['signerNpub'] as String? ?? '',
       meetupEventId: json['meetupEventId'] as String? ?? '',
@@ -232,6 +236,7 @@ class MeetupBadge {
       meetupName: meetupName,
       date: date,
       iconPath: iconPath,
+      coverUrl: coverUrl,
       blockHeight: blockHeight,
       signerNpub: signerNpub,
       meetupEventId: meetupEventId,
@@ -263,6 +268,7 @@ class MeetupBadge {
     String? meetupName,
     DateTime? date,
     String? iconPath,
+    String? coverUrl,
     int? blockHeight,
     String? signerNpub,
     String? meetupEventId,
@@ -287,6 +293,7 @@ class MeetupBadge {
       meetupName: meetupName ?? this.meetupName,
       date: date ?? this.date,
       iconPath: iconPath ?? this.iconPath,
+      coverUrl: coverUrl ?? this.coverUrl,
       blockHeight: blockHeight ?? this.blockHeight,
       signerNpub: signerNpub ?? this.signerNpub,
       meetupEventId: meetupEventId ?? this.meetupEventId,

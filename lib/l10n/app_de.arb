@@ -3,7 +3,7 @@
   "appTitle": "Einundzwanzig Meetup",
   "@appTitle": {},
   "navHome": "Home",
-  "navWallet": "Wallet",
+  "navWallet": "Badges",
   "navEvents": "Events",
   "navProfile": "Profil",
   "actionSave": "Speichern",
@@ -51,7 +51,7 @@
   "amberConnected": "Mit Amber verbunden! Dein nsec bleibt in Amber.",
   "amberNotFound": "Amber nicht gefunden",
   "amberCancelled": "Verbindung in Amber abgebrochen.",
-  "walletTitle": "Badge Wallet",
+  "walletTitle": "Meine Badges",
   "badgesCount": "{count, plural, =0{Keine Badges} =1{1 Badge} other{{count} Badges}}",
   "@badgesCount": {
     "placeholders": {
@@ -141,7 +141,7 @@
   "introJoin": "COMMUNITY BETRETEN",
   "introLoadBackup": "BACKUP LADEN",
   "introSetIdentity": "Bitte lege zuerst deine Identität fest.",
-  "navWalletTab": "Wallet",
+  "navWalletTab": "Badges",
   "navProfileTab": "Profil",
   "scanBadge": "Badge scannen",
   "scanBadgeSub": "QR-Code oder NFC-Tag vom Meetup",
@@ -2316,5 +2316,9 @@
   "tileActLookup": "Nachschlagen",
   "tileActNetwork": "Netzwerk",
   "tileActEncounters": "Begegnungen",
-  "tileActManage": "Verwalten"
+  "tileActManage": "Verwalten",
+  "emptyFindMeetup": "Meetup finden",
+  "reputationScoreLabel": "Vertrauenswert",
+  "reputationUnsigned": "Nicht signiert",
+  "portalConnectForOrganizer": "Nicht mit dem Portal verbunden — dein Organisator-Status kann dadurch nicht erkannt werden."
 }
