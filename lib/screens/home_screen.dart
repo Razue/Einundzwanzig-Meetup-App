@@ -1171,7 +1171,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Titel + Untertitel brauchen mit dem Innenabstand zusammen mehr Platz.
     // Mein Umbau des Blocks hatte den Wert versehentlich zurueckgesetzt,
     // wodurch Kacheln wieder aus ihrem Kasten liefen.
-    const double minRowHeight = 118;
+    //
+    // 120 statt 118: bei 118 lief die Umrechnen-Kachel um 1,4 px ueber. Ihr
+    // Wert ("1 € = 1.779 sats") braucht in einer schmalen Kachel die zweite
+    // Zeile, die _heroContent erlaubt — danach bleibt fuer die Zusatzzeile
+    // ("Kurs & Sats") kein Platz mehr. Zwei Pixel mehr loesen das, ohne
+    // Inhalt zu opfern; ein Flexible auf der Zusatzzeile haette sie im
+    // Engpass ganz verschwinden lassen, weil der Inhalt hier in einem
+    // Positioned.fill mit fester Hoehe sitzt.
+    //
+    // Die Erhoehung wirkt NUR im Engpass: liegt genug Platz vor, bestimmt
+    // ohnehin perRow die Zeilenhoehe.
+    const double minRowHeight = 120;
     final gaps = (rows.length - 1) * kTileGap;
     final perRow = (targetHeight - gaps) / rows.length;
     // Fuellen, solange es reicht — sonst Mindesthoehe und ueberstehen lassen.
