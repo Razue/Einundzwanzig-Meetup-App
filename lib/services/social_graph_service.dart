@@ -90,6 +90,7 @@ class SocialGraphService {
     String pubkeyHex,
   ) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('SocialGraph', 'Kontaktliste von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<Set<String>>();
@@ -101,6 +102,7 @@ class SocialGraphService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -122,7 +124,7 @@ class SocialGraphService {
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(follows);
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete({});
@@ -149,6 +151,7 @@ class SocialGraphService {
 
       return result;
     } finally {
+      tally.report();
       ws?.close();
     }
   }

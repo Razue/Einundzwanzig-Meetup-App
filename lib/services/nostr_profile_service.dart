@@ -78,6 +78,7 @@ class NostrProfileService {
 
   static Future<String?> _fetchFromRelay(String relayUrl, String pubkeyHex) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('NostrProfile', 'Profil von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final completer = Completer<String?>();
@@ -86,6 +87,7 @@ class NostrProfileService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
@@ -96,7 +98,7 @@ class NostrProfileService {
             } else if (message[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(null);
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onError: (_) { if (!completer.isCompleted) completer.complete(null); },
         onDone: () { if (!completer.isCompleted) completer.complete(null); },
@@ -105,6 +107,7 @@ class NostrProfileService {
       ws.add(jsonEncode(['REQ', subId, {'kinds': [0], 'authors': [pubkeyHex], 'limit': 1}]));
       return await completer.future.timeout(_timeout, onTimeout: () => null);
     } finally {
+      tally.report();
       ws?.close();
     }
   }

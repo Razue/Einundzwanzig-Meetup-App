@@ -367,6 +367,10 @@ class AdminRegistry {
     RelaySocket? ws;
     List<AdminEntry> collectedAdmins = [];
     final Set<String> seenAuthors = {}; // Einzigartige Autoren tracken
+    // Zaehlt verworfene Nachrichten und meldet sie EINMAL im finally.
+    // Vorher stand hier eine warn-Zeile pro Nachricht — ein Relay mit
+    // kaputten Events fuellte damit den Ringpuffer.
+    final tally = RelayParseTally('AdminRegistry', 'Admin-Liste von $relayUrl');
 
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
@@ -378,6 +382,7 @@ class AdminRegistry {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -413,16 +418,14 @@ class AdminRegistry {
                 // Sammeln aller Admins aus allen Events
                 collectedAdmins.addAll(adminsInEvent);
               } catch (e) {
-                AppLogger.warn('AdminRegistry', 'Content-Parse Fehler: $e');
-
+                tally.failed();
               }
             } 
             else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(collectedAdmins);
             }
           } catch (e) {
-            AppLogger.warn('AdminRegistry', 'Message-Parse Fehler: $e');
-
+            tally.failed();
           }
         },
         onError: (e) {
@@ -464,6 +467,7 @@ class AdminRegistry {
     } catch (e) {
       rethrow;
     } finally {
+      tally.report();
       try { ws?.close(); } catch (_) {}
     }
   }

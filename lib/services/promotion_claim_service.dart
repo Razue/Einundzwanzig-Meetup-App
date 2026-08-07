@@ -354,6 +354,7 @@ class PromotionClaimService {
 
   static Future<List<_RawClaim>?> _fetchFromSingleRelay(String relayUrl) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('PromotionClaim', 'Promotion-Claims von $relayUrl');
 
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
@@ -367,6 +368,7 @@ class PromotionClaimService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -399,7 +401,7 @@ class PromotionClaimService {
                 completer.complete(claims);
               }
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(<_RawClaim>[]);
@@ -433,6 +435,7 @@ class PromotionClaimService {
     } catch (e) {
       rethrow;
     } finally {
+      tally.report();
       try { ws?.close(); } catch (_) {}
     }
   }

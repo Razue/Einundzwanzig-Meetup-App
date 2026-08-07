@@ -237,6 +237,7 @@ class HumanityProofService {
     String pubkeyHex,
   ) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('HumanityProof', 'Zap-Suche von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<_ZapSearchResult?>();
@@ -253,6 +254,7 @@ class HumanityProofService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -326,7 +328,7 @@ class HumanityProofService {
                 completer.complete(found);
               }
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(null);
@@ -387,6 +389,7 @@ class HumanityProofService {
         onTimeout: () => found,
       );
     } finally {
+      tally.report();
       ws?.close();
     }
   }
@@ -450,6 +453,7 @@ class HumanityProofService {
 
   static Future<bool> _checkEventExists(String relayUrl, String eventId) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('HumanityProof', 'Beleg-Pruefung von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<bool>();
@@ -460,6 +464,7 @@ class HumanityProofService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT') {
@@ -467,7 +472,7 @@ class HumanityProofService {
             } else if (message[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(false);
             }
-          } catch (_) {}
+          } catch (_) { tally.failed(); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(false);
@@ -487,6 +492,7 @@ class HumanityProofService {
         onTimeout: () => false,
       );
     } finally {
+      tally.report();
       ws?.close();
     }
   }

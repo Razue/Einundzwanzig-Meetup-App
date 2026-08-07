@@ -236,3 +236,43 @@ class AppLogger {
     _record('INFO', tag, message);
   }
 }
+
+/// Zaehlt nicht auswertbare Nachrichten EINER Relay-Subscription und meldet
+/// sie einmal am Ende statt pro Nachricht.
+///
+/// Die Relay-Listener der App hatten bisher zwei Varianten, und beide waren
+/// unbrauchbar:
+///
+///   - `catch (_) {}` — fehlerhafte Events verschwanden spurlos. Man sah eine
+///     zu kurze Admin-Liste oder fehlende Buergschaften, ohne Hinweis darauf,
+///     dass Events verworfen wurden.
+///   - eine warn-Zeile pro Nachricht (admin_registry) — ein Relay mit
+///     kaputten Events fuellte damit den 800er-Ringpuffer.
+///
+/// "3 von 47 nicht auswertbar" sagt mehr als beides und kostet eine Zeile.
+/// Ist alles in Ordnung, schweigt der Zaehler vollstaendig.
+class RelayParseTally {
+  final String tag;
+  final String label;
+  int _seen = 0;
+  int _failed = 0;
+
+  RelayParseTally(this.tag, this.label);
+
+  /// Pro eingehender Relay-Nachricht aufrufen.
+  void message() => _seen++;
+
+  /// Im catch der Nachrichtenverarbeitung aufrufen.
+  void failed() => _failed++;
+
+  int get seen => _seen;
+  int get failures => _failed;
+
+  /// Beim Abschluss der Subscription aufrufen — am besten im `finally`, damit
+  /// auch Timeout und onDone erfasst sind, nicht nur EOSE.
+  void report() {
+    if (_failed == 0) return;
+    AppLogger.warn(
+        tag, '$label: $_failed von $_seen Relay-Nachrichten nicht auswertbar');
+  }
+}
