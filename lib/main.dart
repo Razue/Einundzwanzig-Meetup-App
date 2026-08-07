@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +54,7 @@ void _installErrorHandlers() {
   };
 
   // Unbehandelte Fehler ausserhalb des Widget-Baums (Futures, Streams,
-  // Plattform-Callbacks). Ersetzt in aktuellem Flutter runZonedGuarded.
+  // Plattform-Callbacks) auf den nativen Plattformen.
   WidgetsBinding.instance.platformDispatcher.onError = (error, stack) {
     try {
       AppLogger.error('Async', 'Unbehandelter Fehler', error, stack);
@@ -62,7 +63,25 @@ void _installErrorHandlers() {
   };
 }
 
-void main() async {
+void main() {
+  // Die Zone ist im WEB unverzichtbar: dort ruft die Engine
+  // PlatformDispatcher.onError nicht auf. Nachweisbar daran, dass dart2js
+  // den Handler-Rumpf als toten Code aus dem Release-Bundle entfernt —
+  // derselbe Log-Aufruf ueberlebt in main() und im
+  // FlutterError.onError-Closure, im platformDispatcher-Closure nicht.
+  //
+  // Beide Wege bleiben stehen: greift die Zone (Fehler innerhalb von
+  // _start), meldet PlatformDispatcher.onError nichts mehr — es gibt also
+  // keine Doppeleintraege. Fehler aus Callbacks, die AUSSERHALB dieser Zone
+  // registriert wurden, erreichen umgekehrt nur PlatformDispatcher.onError.
+  runZonedGuarded(_start, (error, stack) {
+    try {
+      AppLogger.error('Zone', 'Unbehandelter Fehler', error, stack);
+    } catch (_) {}
+  });
+}
+
+Future<void> _start() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLogger.init(); // persistente Diagnose-Logs laden
   // Erst NACH init(): vorher wuerde ein früher Fehler in einen noch nicht
