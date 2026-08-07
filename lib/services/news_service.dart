@@ -10,9 +10,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../services/app_logger.dart';
+import 'relay_socket.dart';
 
 const String kNewsFeedUrl =
     'https://media.einundzwanzig.space/s/einundzwanzig-news/feed.xml';
@@ -168,7 +168,7 @@ class NewsService {
     if (pubkey.isEmpty || dId.isEmpty) return null;
 
     final completer = Completer<String?>();
-    final sockets = <WebSocket>[];
+    final sockets = <RelaySocket>[];
     var settled = false;
 
     void finish(String? result) {
@@ -186,7 +186,7 @@ class NewsService {
     for (final url in _relays) {
       () async {
         try {
-          final ws = await WebSocket.connect(url).timeout(const Duration(seconds: 6));
+          final ws = await RelaySocket.connect(url).timeout(const Duration(seconds: 6));
           if (settled) { try { ws.close(); } catch (_) {} return; }
           sockets.add(ws);
           const subId = 'article';

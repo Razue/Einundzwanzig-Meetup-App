@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:nostr/nostr.dart';
 import '../models/badge.dart';
@@ -9,6 +8,7 @@ import 'relay_config.dart';
 import 'nostr_service.dart';
 import 'mempool.dart';
 import 'app_logger.dart';
+import 'relay_socket.dart';
 
 /// Eine bestätigte Meetup-Teilnahme einer Person (von Relays geladen).
 class CoAttendanceRecord {
@@ -152,7 +152,7 @@ class CoAttendanceService {
     int ok = 0;
     for (final relayUrl in relays) {
       try {
-        final ws = await WebSocket.connect(relayUrl).timeout(RelayConfig.publishTimeout);
+        final ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.publishTimeout);
         ws.add(eventJson);
         await Future.delayed(const Duration(seconds: 2));
         ws.close();
@@ -229,10 +229,10 @@ class CoAttendanceService {
   }
 
   static Future<List<CoAttendanceRecord>?> _fetchFromRelay(String relayUrl) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     final out = <CoAttendanceRecord>[];
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_timeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final random = Random.secure();
       final subId = 'coatt-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
       final completer = Completer<List<CoAttendanceRecord>?>();

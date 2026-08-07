@@ -29,7 +29,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:nostr/nostr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,6 +38,7 @@ import 'nostr_service.dart';
 import 'relay_config.dart';
 import 'secure_key_store.dart';
 import 'signing_service.dart';
+import 'relay_socket.dart';
 
 // =============================================
 // DATENMODELLE
@@ -452,11 +452,11 @@ class VouchingService {
     String relayUrl,
     List<String> authorsHex,
   ) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     final result = <String, List<AdminEntry>>{};
 
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_relayTimeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
 
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) =>
@@ -556,11 +556,11 @@ class VouchingService {
   static Future<List<DistrustReport>?> _fetchDistrustsFromRelay(
     String relayUrl,
   ) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     final reports = <DistrustReport>[];
 
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_relayTimeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
 
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) =>
@@ -685,14 +685,14 @@ class VouchingService {
 
     for (final relayUrl in relays) {
       try {
-        final ws = await WebSocket.connect(relayUrl).timeout(
+        final ws = await RelaySocket.connect(relayUrl).timeout(
           const Duration(seconds: 5),
         );
         ws.add(eventJson);
 
         bool confirmed = false;
         try {
-          await for (final data in ws.timeout(const Duration(seconds: 5))) {
+          await for (final data in ws.stream.timeout(const Duration(seconds: 5))) {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'OK' && msg.length >= 3) {
               confirmed = msg[2] == true;

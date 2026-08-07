@@ -23,6 +23,7 @@ import 'dart:io';
 import 'package:nostr/nostr.dart';
 import 'secure_key_store.dart';
 import 'dart:math';
+import 'relay_socket.dart';
 
 class Nip05Service {
   static const Duration _timeout = Duration(seconds: 5);
@@ -134,9 +135,9 @@ class Nip05Service {
     String relayUrl,
     String pubkeyHex,
   ) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_timeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final completer = Completer<String?>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();
