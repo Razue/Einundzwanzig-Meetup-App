@@ -2319,5 +2319,6 @@
   "tileActManage": "Verwalten",
   "emptyFindMeetup": "Meetup finden",
   "reputationScoreLabel": "Vertrauenswert",
-  "reputationUnsigned": "Nicht signiert"
+  "reputationUnsigned": "Nicht signiert",
+  "portalConnectForOrganizer": "Nicht mit dem Portal verbunden — dein Organisator-Status kann dadurch nicht erkannt werden."
 }

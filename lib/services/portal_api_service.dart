@@ -513,6 +513,35 @@ class PortalApiService {
   /// müssen — z.B. der sichere Admin-Entzug (kein Entzug bei offline).
   static Future<dynamic> rawGet(String path) => _get(path);
 
+  /// Wie [rawGet], liefert aber den HTTP-Status MIT zurueck.
+  ///
+  /// Notwendig, weil `_get` bei JEDEM Fehler `null` liefert — ein
+  /// abgelaufener Token (401) sah damit genauso aus wie "offline". Fuer die
+  /// Organisator-Pruefung ist der Unterschied entscheidend: Bei 401 muss der
+  /// Token erneuert werden, bei einem Netzfehler darf gar nichts passieren.
+  /// Ohne diese Unterscheidung blieb ein Leader mit abgelaufenem Token
+  /// dauerhaft ohne Organisator-Kachel, ohne dass irgendetwas darauf hinwies.
+  static Future<({int status, dynamic body})> rawGetStatus(String path) async {
+    try {
+      final token = await getToken();
+      final r = await http.get(
+        Uri.parse('$_apiBase$path'),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(_timeout);
+      if (r.statusCode != 200) {
+        AppLogger.warn(_tag, 'GET $path -> HTTP ${r.statusCode}');
+        return (status: r.statusCode, body: null);
+      }
+      return (status: 200, body: jsonDecode(r.body));
+    } catch (e) {
+      AppLogger.warn(_tag, 'GET $path Netzfehler: ${e.runtimeType}');
+      return (status: 0, body: null); // 0 = gar keine Antwort
+    }
+  }
+
   /// Öffentliche GET-Anfrage; sendet Token mit, falls vorhanden (für RSVP-Status).
   static Future<dynamic> _get(String path) async {
     try {

@@ -4750,4 +4750,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reputationUnsigned => 'Unsigned';
 
+  @override
+  String get portalConnectForOrganizer => 'Not connected to the portal — your organizer status cannot be detected.';
+
 }

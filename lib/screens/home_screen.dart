@@ -21,7 +21,6 @@ import 'package:image_picker/image_picker.dart';
 import '../theme.dart';
 import '../services/haptic_service.dart';
 import '../widgets/pressable.dart';
-import '../widgets/shadows.dart';
 import '../models/user.dart';
 import '../models/meetup.dart';
 import '../models/badge.dart';
@@ -669,6 +668,30 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   ///   einer ERFOLGREICHEN Abfrage leer -> Admin ENTZIEHEN (Revocation).
   /// - Netzwerkfehler/offline: KEINE Änderung (kein fälschlicher Entzug).
   /// WoT-Bürgen und Seed-Admins bleiben davon unberührt.
+  /// Einmaliger Hinweis pro Sitzung: Ohne Portal-Verbindung kann der
+  /// Organisator-Status nicht erkannt werden. Betrifft vor allem
+  /// Amber-Nutzer, bei denen die stille Auto-Anmeldung nicht geht.
+  bool _portalHintShown = false;
+
+  void _showPortalHint() {
+    if (_portalHintShown || !mounted) return;
+    // Ist der Nutzer bereits ueber eine andere Quelle Organisator, waere
+    // der Hinweis nur Laerm.
+    if (_user.isAdmin) return;
+    _portalHintShown = true;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(AppLocalizations.of(context).portalConnectForOrganizer),
+      backgroundColor: Colors.orange.shade800,
+      duration: const Duration(seconds: 8),
+      behavior: SnackBarBehavior.floating,
+      action: SnackBarAction(
+        label: AppLocalizations.of(context).portalConnect,
+        textColor: Colors.white,
+        onPressed: _togglePortalConnection,
+      ),
+    ));
+  }
+
   Future<void> _checkPortalOrganizer() async {
     try {
       AppLogger.diag('Portal', 'Organisator-Prüfung gestartet');
@@ -684,7 +707,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Amber-Nutzer verbinden sich weiter über den manuellen Weg.
       if (!await PortalApiService.hasToken()) {
         if (await SigningService.isAmber) {
-          AppLogger.diag('Portal', 'Kein Token, aber Amber aktiv — Auto-Connect übersprungen (kein Überraschungs-Popup).');
+          // Bei Amber loest jede Signatur ein Popup aus — beim App-Start
+          // waere das unerwartet. ABER: Frueher endete es hier stumm, und
+          // Amber-Nutzer mit Leader-Status im Portal bekamen NIE die
+          // Organisator-Kachel, ohne zu ahnen warum. Jetzt gibt es einen
+          // sichtbaren, einmaligen Hinweis mit dem Weg dorthin.
+          AppLogger.warn('Portal',
+              'Kein Token und Amber aktiv — Auto-Verbindung nicht moeglich. '
+              'Organisator-Status kann ohne Portal-Verbindung nicht erkannt werden.');
+          if (mounted) _showPortalHint();
           return;
         }
         AppLogger.diag('Portal', 'Kein Token — versuche automatische Verbindung (lokaler Schlüssel).');
@@ -701,23 +732,63 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       if (!await PortalApiService.tokenMatchesCurrentKey()) {
         final hasStaleToken = await PortalApiService.hasToken();
         if (hasStaleToken) {
-          AppLogger.warn('Portal', 'Token gehört zu anderem Schlüssel — getrennt. Neu verbinden nötig.');
+          AppLogger.warn('Portal', 'Token gehört zu anderem Schlüssel — getrennt.');
           await PortalApiService.deleteToken();
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(AppLocalizations.of(context).portalTokenMismatch),
-              backgroundColor: Colors.orange.shade800,
-              duration: const Duration(seconds: 6),
-            ));
+          // SOFORT neu anmelden statt bis zum naechsten App-Start zu warten.
+          // Vorher blieb ein Organisator nach einem Schluesselwechsel eine
+          // ganze Sitzung lang ohne Kachel, obwohl er im Portal Leader ist.
+          if (!await SigningService.isAmber) {
+            final retry = await PortalApiService.loginWithNostr();
+            if (retry.ok) {
+              AppLogger.diag('Portal', 'Nach Token-Wechsel automatisch neu verbunden.');
+              // Weiter im Ablauf — kein return.
+            } else {
+              AppLogger.warn('Portal', 'Neuanmeldung nach Token-Wechsel fehlgeschlagen.');
+              if (mounted) _showPortalHint();
+              return;
+            }
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(context).portalTokenMismatch),
+                backgroundColor: Colors.orange.shade800,
+                duration: const Duration(seconds: 6),
+              ));
+            }
+            return;
           }
         } else {
           AppLogger.diag('Portal', 'Kein Portal-Token vorhanden — übersprungen.');
+          return;
         }
+      }
+      // Abfrage MIT Statuscode: Ein abgelaufener Token (401) sah frueher
+      // aus wie "offline" — der Nutzer blieb still ohne Kachel.
+      var res = await PortalApiService.rawGetStatus('/my-meetups');
+
+      if (res.status == 401 || res.status == 403) {
+        AppLogger.warn('Portal',
+            'Token abgelehnt (HTTP ${res.status}) — wird erneuert.');
+        await PortalApiService.deleteToken();
+        if (await SigningService.isAmber) {
+          // Kein stilles Popup bei Amber — stattdessen ein sichtbarer Hinweis.
+          if (mounted) _showPortalHint();
+          return;
+        }
+        final again = await PortalApiService.loginWithNostr();
+        if (!again.ok) {
+          AppLogger.warn('Portal', 'Erneuerung fehlgeschlagen — keine Änderung.');
+          return;
+        }
+        res = await PortalApiService.rawGetStatus('/my-meetups');
+      }
+
+      if (res.status != 200 || res.body == null || !mounted) {
+        AppLogger.diag('Portal',
+            '/my-meetups: keine verwertbare Antwort (HTTP ${res.status}) — keine Änderung.');
         return;
       }
-      // Rohabfrage: null = Fehler/offline (nichts tun), Liste = Fakt.
-      final body = await PortalApiService.rawGet('/my-meetups');
-      if (body == null || !mounted) { AppLogger.diag('Portal', '/my-meetups: keine Antwort (offline/Fehler) — keine Änderung.'); return; }
+      final body = res.body;
       final data = (body is Map) ? body['data'] : body;
       final meetups = (data is List) ? data.whereType<Map<String, dynamic>>().toList() : <Map<String, dynamic>>[];
       AppLogger.diag('Portal', '/my-meetups lieferte ${meetups.length} Meetup(s) für aktuellen Schlüssel.');
@@ -1242,12 +1313,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // ein und gibt einen kurzen Haptik-Impuls. KEIN onLongPress hier — der
     // Langdruck gehoert _wrapEditable (Bearbeiten-Modus); ein Erkenner an
     // dieser Stelle wuerde ihn abfangen, bevor die Huelle ihn sieht.
+    // In eine lokale Variable holen: Dart traegt die Null-Pruefung von
+    // `onTap` NICHT in den Rumpf der Closure hinein — `onTap()` dort waere
+    // "kann null sein" und damit ein Compilerfehler. Eine finale lokale
+    // Kopie ist promotbar und loest das sauber.
+    final tap = onTap;
     return Pressable(
-      onTap: onTap == null
+      onTap: tap == null
           ? null
           : () {
               HapticService.light();
-              onTap();
+              tap();
             },
       child: Container(
         // ANGEHEFTET: derselbe goldene Verlauf wie die Home-Meetup-Kachel,
@@ -1266,13 +1342,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                   stops: const [0.0, 0.45, 1.0],
                 ),
                 border: Border.all(color: cOrange.withValues(alpha: 0.30), width: 1.0),
-                boxShadow: shadowForElevation(4, accent: cOrange),
+                boxShadow: [
+                  BoxShadow(
+                      color: cOrange.withValues(alpha: 0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 5)),
+                ],
               )
             : BoxDecoration(
                 color: cCard,
                 borderRadius: BorderRadius.circular(kTileRadius),
                 border: Border.all(color: cTileBorder, width: 0.5),
-                boxShadow: shadowForElevation(2, accent: cOrange),
               ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(kTileRadius),

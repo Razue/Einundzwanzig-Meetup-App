@@ -4778,4 +4778,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get reputationUnsigned => 'Sin firmar';
 
+  @override
+  String get portalConnectForOrganizer => 'No conectado al portal: no se puede detectar tu estado de organizador.';
+
 }

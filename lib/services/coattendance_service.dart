@@ -535,6 +535,19 @@ class CoAttendanceService {
           ));
     }
 
+    // ── DIAGNOSE ────────────────────────────────────────────────────
+    // Erscheint jemand faelschlich im 1. Grad, laesst sich hier ablesen,
+    // WELCHE Kennung die Verbindung erzeugt. Ohne diese Zeilen bleibt nur
+    // Raten — die Kennung steckt weder in der Oberflaeche noch im Badge.
+    AppLogger.diag('Netzwerk',
+        'Eigene Meetup-Kennungen (${myMeetups.length}): '
+        '${myMeetups.join(", ")}');
+    for (final c in (byDegree[1] ?? const <NetworkContact>[])) {
+      AppLogger.diag('Netzwerk',
+          '1. Grad ${c.npub.substring(0, c.npub.length > 16 ? 16 : c.npub.length)}… '
+          'ueber: ${c.sharedMeetupsWithMe.join(", ")}');
+    }
+
     // Sortierung: Grad 1 nach Anzahl gemeinsamer Meetups, sonst nach Brücken-Anzahl
     byDegree[1]?.sort((a, b) =>
         b.sharedMeetupsWithMe.length.compareTo(a.sharedMeetupsWithMe.length));

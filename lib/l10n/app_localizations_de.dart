@@ -4794,4 +4794,7 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get reputationUnsigned => 'Nicht signiert';
 
+  @override
+  String get portalConnectForOrganizer => 'Nicht mit dem Portal verbunden — dein Organisator-Status kann dadurch nicht erkannt werden.';
+
 }
