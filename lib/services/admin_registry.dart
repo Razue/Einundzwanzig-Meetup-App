@@ -636,7 +636,11 @@ class AdminRegistry {
     String myHex;
     try {
       myHex = Nip19.decodePubkey(myNpub);
-    } catch (_) {
+    } catch (e) {
+      // -1 heisst fuer die Aufrufer "unbekannt". Dass der EIGENE npub nicht
+      // dekodierbar ist, ist aber kein Unbekannt sondern ein Defekt — und war
+      // von einem Relay-Ausfall nicht zu unterscheiden.
+      AppLogger.warn('AdminRegistry', 'Eigener npub nicht dekodierbar: $e');
       return -1;
     }
 

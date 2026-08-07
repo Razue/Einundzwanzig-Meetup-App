@@ -25,6 +25,7 @@ import 'relay_config.dart';
 import 'nostr_service.dart';
 import 'admin_registry.dart';
 import 'dart:math';
+import 'app_logger.dart';
 import 'relay_socket.dart';
 
 class SocialGraphService {
@@ -73,7 +74,11 @@ class SocialGraphService {
           break; // Ein Relay reicht für Kind 3
         }
       } catch (e) {
-        // Nächstes Relay versuchen
+        // Nächstes Relay versuchen. debug und nicht warn: dass einzelne
+        // Relays nicht antworten, ist Alltag — im Log waere das Rauschen.
+        // Im Ausfuehrlich-Modus ist die Kette dagegen nachvollziehbar, und
+        // genau die braucht man, wenn am Ende NICHTS gefunden wurde.
+        AppLogger.debug('SocialGraph', 'Kontaktliste von $relayUrl fehlgeschlagen: $e');
       }
     }
 
@@ -235,7 +240,13 @@ class SocialGraphService {
         if (theirFollows.contains(myPubkeyHex)) {
           mutualCount++;
         }
-      } catch (_) {}
+      } catch (e) {
+        // Einzelne Stichprobe fehlgeschlagen. Wichtig zu wissen, weil die
+        // Mutuals daraus HOCHGERECHNET werden: faellt die Haelfte der
+        // Stichprobe aus, sinkt die geschaetzte Zahl entsprechend, ohne dass
+        // es auffaellt. debug, weil bis zu 20 Durchlaeufe.
+        AppLogger.debug('SocialGraph', 'Mutual-Stichprobe fehlgeschlagen: $e');
+      }
     }
 
     // Hochrechnung
@@ -272,7 +283,11 @@ class SocialGraphService {
         if (adminFollows.contains(targetPubkeyHex)) {
           count++;
         }
-      } catch (_) {}
+      } catch (e) {
+        // Faellt ein Admin aus, sinkt der Organisator-Follower-Zaehler und
+        // damit der Social Score — stillschweigend.
+        AppLogger.debug('SocialGraph', 'Organisator-Follow-Pruefung fehlgeschlagen: $e');
+      }
     }
 
     return count;
@@ -287,7 +302,11 @@ class SocialGraphService {
     if (npub == null || npub.isEmpty) return null;
     try {
       return Nip19.decodePubkey(npub);
-    } catch (_) {
+    } catch (e) {
+      // Der EIGENE npub laesst sich nicht dekodieren. Folge: alle
+      // Social-Zahlen bleiben 0 und die Reputation wird ohne sie
+      // veroeffentlicht — nicht von "hat keine Follower" zu unterscheiden.
+      AppLogger.warn('SocialGraph', 'Eigener npub nicht dekodierbar: $e');
       return null;
     }
   }
