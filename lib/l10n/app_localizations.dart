@@ -6820,6 +6820,24 @@ abstract class AppLocalizations {
   /// **'Der npub (beginnt mit „npub1…“) ist deine öffentliche Identität. Du darfst ihn frei teilen – so finden dich andere, sehen deine Beiträge und können dir folgen. Er ist wie dein Benutzername, nur dass er dir wirklich gehört und niemand ihn dir wegnehmen kann.'**
   String get keyEduNpubB;
 
+  /// No description provided for @webKeyWarnH.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Browser weniger geschützt'**
+  String get webKeyWarnH;
+
+  /// No description provided for @webKeyWarnB.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App für iPhone und Android speichert deinen Schlüssel im gesicherten Bereich des Geräts. Im Browser ist das nicht möglich — dort kann er leichter ausgelesen werden.'**
+  String get webKeyWarnB;
+
+  /// No description provided for @webKeyWarnAdvice.
+  ///
+  /// In de, this message translates to:
+  /// **'Nutze im Browser am besten eine eigene Test-Identität und trage hier nicht den Schlüssel ein, an dem deine Nostr-Identität hängt.'**
+  String get webKeyWarnAdvice;
+
   /// No description provided for @keyEduNsecH.
   ///
   /// In de, this message translates to:
