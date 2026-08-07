@@ -186,6 +186,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   _eduSection(Icons.badge_outlined, cGreen, t.keyEduNpubH, t.keyEduNpubB),
                   // nsec = Warnung, rot hervorgehoben
                   _eduSection(Icons.warning_amber_rounded, cRed, t.keyEduNsecH, t.keyEduNsecB, highlight: true),
+                  // Im Browser ist der Schluessel schwaecher geschuetzt als in
+                  // den native Apps — das muss der Nutzer wissen, BEVOR er
+                  // einen Schluessel anlegt. Siehe _webKeyWarning().
+                  if (kIsWeb)
+                    _eduSection(Icons.public_off_rounded, cRed, t.webKeyWarnH,
+                        '${t.webKeyWarnB}\n\n${t.webKeyWarnAdvice}',
+                        highlight: true),
                   _eduSection(Icons.hub_rounded, cCyan, t.keyEduIdentityH, t.keyEduIdentityB),
                   // Schutz-Checkliste
                   const SizedBox(height: 4),
@@ -231,6 +238,42 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Warnung für die Web-Version: dort landet der Schlüssel im localStorage
+  /// des Browsers. flutter_secure_storage_web verschlüsselt ihn zwar, legt
+  /// den dafür nötigen Schlüssel aber im gleichen localStorage ab — wer den
+  /// Speicher lesen kann, kommt an den nsec. Auf iOS/Android greift dagegen
+  /// Keychain bzw. Android Keystore.
+  /// Kompakte Variante für Dialoge ohne _eduSection-Aufbau.
+  Widget _webKeyWarning(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Container(
+      padding: const EdgeInsets.all(11),
+      decoration: BoxDecoration(
+        color: cRed.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: cRed.withValues(alpha: 0.35), width: 0.8),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.public_off_rounded, color: cRed, size: 16),
+          const SizedBox(width: 7),
+          Expanded(
+              child: Text(t.webKeyWarnH,
+                  style: const TextStyle(
+                      color: cRed, fontSize: 13, fontWeight: FontWeight.w700))),
+        ]),
+        const SizedBox(height: 6),
+        Text(t.webKeyWarnB,
+            style: const TextStyle(
+                color: Colors.white70, fontSize: 12, height: 1.45)),
+        const SizedBox(height: 6),
+        Text(t.webKeyWarnAdvice,
+            style: const TextStyle(
+                color: cRed, fontSize: 12, height: 1.45, fontWeight: FontWeight.w600)),
+      ]),
     );
   }
 
@@ -611,6 +654,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               AppLocalizations.of(context).profileEnterNsec,
               style: const TextStyle(color: Colors.white70, fontSize: 13),
             ),
+            // Der Import ist der heiklere Pfad: hier traegt jemand einen
+            // BESTEHENDEN Schluessel ein, oft den seiner echten Identitaet.
+            // Deshalb steht die Warnung direkt ueber dem Eingabefeld.
+            if (kIsWeb) ...[
+              const SizedBox(height: 14),
+              _webKeyWarning(context),
+            ],
             const SizedBox(height: 16),
             TextField(
               controller: nsecController,
