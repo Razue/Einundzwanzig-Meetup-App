@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../widgets/npub_chip.dart';
 import '../services/portal_api_service.dart';
 import '../services/app_logger.dart';
 import 'package:flutter/material.dart';
@@ -815,7 +816,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 style: const TextStyle(color: cTextSecondary, fontSize: 12),
               )),
               if (_adminNpub.isNotEmpty)
-                Text(NostrService.shortenNpub(_adminNpub, chars: 8),
+                NpubChip(_adminNpub,
                   style: const TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: 'monospace')),
             ]),
             const SizedBox(height: 20),

@@ -5,11 +5,11 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_logger.dart';
 import 'relay_config.dart';
+import 'relay_socket.dart';
 
 class NostrProfileService {
   static const Duration _timeout = Duration(seconds: 6);
@@ -77,9 +77,9 @@ class NostrProfileService {
   }
 
   static Future<String?> _fetchFromRelay(String relayUrl, String pubkeyHex) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_timeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final completer = Completer<String?>();
       final random = Random.secure();
       final subId = 'pfp-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';

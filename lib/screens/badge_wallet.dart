@@ -222,7 +222,7 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
 
 Total Badges: ${myBadges.length}
 Meetups besucht: $uniqueMeetups
-${user.nostrNpub.isNotEmpty ? 'Nostr: ${user.nostrNpub.substring(0, 24)}...' : ''}
+${user.nostrNpub.isNotEmpty ? 'Nostr: ${user.nostrNpub}' : ''}
 
 📍 Besuchte Meetups:
 ${myBadges.map((b) => '  • ${b.meetupName} (${b.date.day}.${b.date.month}.${b.date.year})').join('\n')}

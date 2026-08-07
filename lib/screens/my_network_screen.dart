@@ -1,4 +1,5 @@
 import 'dart:math';
+import '../widgets/npub_chip.dart';
 import '../services/haptic_service.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -318,8 +319,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
                 child: Text(degreeLabel, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 4),
-              Text(NostrService.shortenNpub(c.npub),
-                  style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono)),
+              NpubChip(c.npub, style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono)),
             ])),
           ]),
           const SizedBox(height: 18),
@@ -348,8 +348,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
               child: Row(children: [
                 Icon(Icons.hub_rounded, color: color, size: 16),
                 const SizedBox(width: 8),
-                Expanded(child: Text(NostrService.shortenNpub(b),
-                    style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono))),
+                Expanded(child: NpubChip(b, style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono))),
               ]),
             )),
           ],
@@ -433,8 +432,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
           const SizedBox(width: 12),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(NostrService.shortenNpub(c.npub),
-                  style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono)),
+              NpubChip(c.npub, style: TextStyle(color: cText, fontSize: 13, fontFamily: fontMono)),
               const SizedBox(height: 2),
               Text(detail, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
             ]),

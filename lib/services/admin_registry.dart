@@ -21,7 +21,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
@@ -29,6 +28,7 @@ import 'nostr_service.dart';
 import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'app_logger.dart';
+import 'relay_socket.dart';
 
 class AdminEntry {
   final String npub;
@@ -364,12 +364,12 @@ class AdminRegistry {
     String relayUrl, 
     List<String> authorsHex,
   ) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     List<AdminEntry> collectedAdmins = [];
     final Set<String> seenAuthors = {}; // Einzigartige Autoren tracken
 
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_relayTimeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
       final completer = Completer<List<AdminEntry>?>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();
@@ -746,7 +746,7 @@ class AdminRegistry {
 
     for (final relayUrl in _relays) {
       try {
-        final ws = await WebSocket.connect(relayUrl).timeout(
+        final ws = await RelaySocket.connect(relayUrl).timeout(
           const Duration(seconds: 5),
         );
         ws.add(eventJson);
@@ -754,7 +754,7 @@ class AdminRegistry {
         // Security Audit M8: Auf OK-Response warten statt blind delay
         bool confirmed = false;
         try {
-          await for (final data in ws.timeout(const Duration(seconds: 5))) {
+          await for (final data in ws.stream.timeout(const Duration(seconds: 5))) {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'OK' && msg.length >= 3) {
               confirmed = msg[2] == true;

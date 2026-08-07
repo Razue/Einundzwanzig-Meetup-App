@@ -2301,5 +2301,6 @@
   "emptyFindMeetup": "Find a meetup",
   "reputationScoreLabel": "Trust score",
   "reputationUnsigned": "Unsigned",
-  "portalConnectForOrganizer": "Not connected to the portal — your organizer status cannot be detected."
+  "portalConnectForOrganizer": "Not connected to the portal — your organizer status cannot be detected.",
+  "npubCopied": "npub copied"
 }

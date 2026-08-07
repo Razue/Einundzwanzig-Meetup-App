@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/app_logger.dart';
+import '../widgets/npub_chip.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/meetup.dart';
 import '../theme.dart';
@@ -265,10 +267,10 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
                     _buildLinkTile(
                       icon: Icons.key,
                       label: "Nostr",
-                      value: widget.meetup.nostrNpub.length > 28
-                          ? "${widget.meetup.nostrNpub.substring(0, 28)}..."
-                          : widget.meetup.nostrNpub,
-                      onTap: () {},
+                      value: NpubChip.shorten(widget.meetup.nostrNpub),
+                      // Vorher: onTap: () {} — der Eintrag sah antippbar aus,
+                      // tat aber nichts. Jetzt fuehrt er zum Nostr-Profil.
+                      onTap: () => _openNpub(widget.meetup.nostrNpub),
                       mono: true,
                     ),
                   ],
@@ -315,6 +317,19 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
         ),
       ),
     );
+  }
+
+  /// Oeffnet ein Nostr-Profil ueber njump.me — funktioniert mit und ohne
+  /// installierte Nostr-App.
+  Future<void> _openNpub(String npub) async {
+    final v = npub.trim();
+    if (v.isEmpty) return;
+    try {
+      await launchUrl(Uri.parse('https://njump.me/$v'),
+          mode: LaunchMode.externalApplication);
+    } catch (e) {
+      AppLogger.warn('Meetup', 'Nostr-Profil nicht zu oeffnen: ${e.runtimeType}');
+    }
   }
 
   Widget _buildLinkTile({

@@ -12,6 +12,7 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import '../widgets/npub_chip.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:convert';
 import '../theme.dart';
@@ -1054,8 +1055,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
               ),
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text(NostrService.shortenNpub(admin.npub, chars: 10),
-                  style: TextStyle(color: cTextTertiary, fontSize: 10,
+              child: NpubChip(admin.npub, style: TextStyle(color: cTextTertiary, fontSize: 10,
                       fontFamily: 'monospace')),
             ),
           ],

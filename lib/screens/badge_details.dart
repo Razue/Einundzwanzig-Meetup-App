@@ -78,7 +78,7 @@ Block: ${b.blockHeight > 0 ? _formatBlock(b.blockHeight) : AppLocalizations.of(c
 Delivery: ${_deliveryLabelOf(context)}
 Signatur: ${_sigLabelOf(context)}
 Hash: $hash
-${user.nostrNpub.isNotEmpty ? 'Npub: ${user.nostrNpub.substring(0, 20)}...' : ''}
+${user.nostrNpub.isNotEmpty ? 'Npub: ${user.nostrNpub}' : ''}
 
 ✅ Proof of Attendance
 Verifizierbar über die Einundzwanzig Meetup App
