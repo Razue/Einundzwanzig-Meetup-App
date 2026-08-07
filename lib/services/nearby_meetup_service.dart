@@ -76,7 +76,7 @@ class NearbyMeetupService {
         // nicht plausibel von ausserhalb. Aeltere Positionen werden bewusst
         // NICHT akzeptiert, sonst waere der Nachweis wertlos.
         AppLogger.warn('Standort',
-            'Kein frischer GPS-Fix (${e.runtimeType}) — versuche letzte bekannte Position.');
+            'Kein frischer GPS-Fix — versuche letzte bekannte Position.', e);
         final last = await Geolocator.getLastKnownPosition();
         if (last != null) {
           final age = DateTime.now().difference(last.timestamp);

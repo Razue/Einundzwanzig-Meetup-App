@@ -26,9 +26,48 @@ Future<void> widgetBackgroundCallback(Uri? uri) async {
   }
 }
 
+/// Haengt den Logger an die beiden Stellen, an denen Flutter Fehler
+/// abliefert, die NIEMAND gefangen hat.
+///
+/// Ohne das landeten genau die wertvollsten Fehler nirgends: ein Absturz
+/// ging in die Debug-Konsole (im Release also ins Leere) und tauchte im
+/// persistenten Diagnose-Log nie auf — dem einzigen, das ein Tester
+/// ueberhaupt schicken kann. Berichte blieben deshalb bei "die App macht
+/// nichts mehr" stehen.
+///
+/// Beide Handler sind selbst gegen Fehler abgesichert: wirft der Handler,
+/// meldet Flutter das wieder an denselben Handler — eine Endlosschleife
+/// waehrend eines Absturzes ist das Letzte, was man dann braucht.
+void _installErrorHandlers() {
+  FlutterError.onError = (details) {
+    try {
+      AppLogger.error(
+        'Flutter',
+        details.library ?? 'widget',
+        details.exception,
+        details.stack,
+      );
+    } catch (_) {}
+    // Standardverhalten erhalten: Rotbild und Konsolenausgabe im Debug.
+    FlutterError.presentError(details);
+  };
+
+  // Unbehandelte Fehler ausserhalb des Widget-Baums (Futures, Streams,
+  // Plattform-Callbacks). Ersetzt in aktuellem Flutter runZonedGuarded.
+  WidgetsBinding.instance.platformDispatcher.onError = (error, stack) {
+    try {
+      AppLogger.error('Async', 'Unbehandelter Fehler', error, stack);
+    } catch (_) {}
+    return true; // als behandelt melden, damit die App nicht abgeschossen wird
+  };
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLogger.init(); // persistente Diagnose-Logs laden
+  // Erst NACH init(): vorher wuerde ein früher Fehler in einen noch nicht
+  // geladenen Puffer geschrieben und beim Laden ueberschrieben werden.
+  _installErrorHandlers();
   // Umgebungs-Steckbrief ins Log — ohne diese Angaben ist ein Bugreport
   // kaum auswertbar (siehe Feldtest: Geraeteunterschiede blieben lange
   // unerkannt). Laeuft im Hintergrund, blockiert den Start nicht.

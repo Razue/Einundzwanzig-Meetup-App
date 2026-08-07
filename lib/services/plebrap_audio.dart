@@ -115,7 +115,7 @@ class PlebrapAudio {
       loading.value = false;
       await player.play();
     } catch (e) {
-      AppLogger.diag('PlebRap', 'Song laedt nicht (${kPlebSongs[i].title}): ${e.runtimeType}');
+      AppLogger.diag('PlebRap', 'Song laedt nicht (${kPlebSongs[i].title}): $e');
       loading.value = false;
       loadErrors.value++; // UI-seitig beobachtbar
     }

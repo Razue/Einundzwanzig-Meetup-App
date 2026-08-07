@@ -41,7 +41,7 @@ class DiagnosticsService {
       final info = await PackageInfo.fromPlatform();
       AppLogger.info(_tag, 'App ${info.version} (Build ${info.buildNumber})');
     } catch (e) {
-      AppLogger.warn(_tag, 'App-Version nicht lesbar: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'App-Version nicht lesbar', e);
     }
 
     // ---- Plattform ----
@@ -53,7 +53,7 @@ class DiagnosticsService {
           'Sprache ${Platform.localeName} · Zeitzone ${DateTime.now().timeZoneName} '
           '(UTC${off.isNegative ? "-" : "+"}${off.inHours.abs()})');
     } catch (e) {
-      AppLogger.warn(_tag, 'Plattformdaten nicht lesbar: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'Plattformdaten nicht lesbar', e);
     }
 
     // ---- Standort-Faehigkeit ----
@@ -79,7 +79,7 @@ class DiagnosticsService {
             '(Genauigkeit ${last.accuracy.toStringAsFixed(0)} m)');
       }
     } catch (e) {
-      AppLogger.warn(_tag, 'Standort-Status nicht ermittelbar: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'Standort-Status nicht ermittelbar', e);
     }
 
     // ---- NFC ----
@@ -87,7 +87,7 @@ class DiagnosticsService {
       final avail = await NfcManager.instance.checkAvailability();
       AppLogger.info(_tag, 'NFC: ${avail.name}');
     } catch (e) {
-      AppLogger.warn(_tag, 'NFC-Status nicht ermittelbar: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'NFC-Status nicht ermittelbar', e);
     }
 
     // ---- Identitaet (ohne Schluessel!) ----
@@ -95,7 +95,7 @@ class DiagnosticsService {
       final mode = await SigningService.getMode();
       AppLogger.info(_tag, 'Signatur-Modus: ${mode.name}');
     } catch (e) {
-      AppLogger.warn(_tag, 'Signatur-Modus nicht lesbar: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'Signatur-Modus nicht lesbar', e);
     }
 
     // ---- Datenbestand ----
@@ -105,7 +105,7 @@ class DiagnosticsService {
       AppLogger.info(_tag,
           'Bestand: ${badges.length} Badge(s) · ${user.favoriteMeetupIds.length} Favorit(en)');
     } catch (e) {
-      AppLogger.warn(_tag, 'Datenbestand nicht lesbar: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'Datenbestand nicht lesbar', e);
     }
 
     if (AppLogger.isVerbose) {

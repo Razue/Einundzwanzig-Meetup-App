@@ -271,7 +271,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         });
       }
     } catch (e) {
-      AppLogger.warn('Dashboard', 'News-Zaehler fehlgeschlagen: ${e.runtimeType}');
+      AppLogger.warn('Dashboard', 'News-Zaehler fehlgeschlagen', e);
     }
 
     // --- Events heute ---
@@ -302,7 +302,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       if (mounted && count != _eventsToday) setState(() => _eventsToday = count);
       AppLogger.diag('Dashboard', 'Kachel-Zaehler: $_unreadNews News, $count Event(s) heute.');
     } catch (e) {
-      AppLogger.warn('Dashboard', 'Event-Zaehler fehlgeschlagen: ${e.runtimeType}');
+      AppLogger.warn('Dashboard', 'Event-Zaehler fehlgeschlagen', e);
     }
   }
 

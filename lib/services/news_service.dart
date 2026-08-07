@@ -110,7 +110,7 @@ class NewsService {
       }
       return articles.where((a) => a.publishedAt > lastRead).length;
     } catch (e) {
-      AppLogger.warn(_tag, 'Ungelesen-Zaehler fehlgeschlagen: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'Ungelesen-Zaehler fehlgeschlagen', e);
       return 0;
     }
   }
@@ -121,7 +121,7 @@ class NewsService {
       final articles = await cachedArticles();
       if (articles.isNotEmpty) await _storeNewest(articles);
     } catch (e) {
-      AppLogger.warn(_tag, 'markRead fehlgeschlagen: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'markRead fehlgeschlagen', e);
     }
   }
 

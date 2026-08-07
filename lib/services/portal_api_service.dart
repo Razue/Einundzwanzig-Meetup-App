@@ -537,7 +537,7 @@ class PortalApiService {
       }
       return (status: 200, body: jsonDecode(r.body));
     } catch (e) {
-      AppLogger.warn(_tag, 'GET $path Netzfehler: ${e.runtimeType}');
+      AppLogger.warn(_tag, 'GET $path Netzfehler', e);
       return (status: 0, body: null); // 0 = gar keine Antwort
     }
   }
