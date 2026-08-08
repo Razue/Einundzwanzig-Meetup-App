@@ -24,7 +24,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,6 +38,7 @@ import 'social_graph_service.dart';
 import 'zap_verification_service.dart';
 import 'humanity_proof_service.dart';
 import 'app_logger.dart';
+import 'relay_socket.dart';
 
 class ReputationPublisher {
   // Nostr Event Konfiguration
@@ -331,7 +331,7 @@ class ReputationPublisher {
 
     for (final relayUrl in relays) {
       try {
-        final ws = await WebSocket.connect(relayUrl)
+        final ws = await RelaySocket.connect(relayUrl)
             .timeout(RelayConfig.publishTimeout);
         ws.add(eventJson);
         await Future.delayed(const Duration(seconds: 2));
@@ -389,10 +389,10 @@ class ReputationPublisher {
     String relayUrl,
     String pubkeyHex,
   ) async {
-    WebSocket? ws;
+    RelaySocket? ws;
 
     try {
-      ws = await WebSocket.connect(relayUrl)
+      ws = await RelaySocket.connect(relayUrl)
           .timeout(RelayConfig.relayTimeout);
       final completer = Completer<ReputationEvent?>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID

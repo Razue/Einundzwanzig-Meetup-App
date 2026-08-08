@@ -40,13 +40,13 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'relay_config.dart';
 import 'nostr_service.dart';
 import 'app_logger.dart';
 import 'dart:math';
+import 'relay_socket.dart';
 
 class HumanityProofService {
   // Cache-Keys
@@ -231,9 +231,9 @@ class HumanityProofService {
     String relayUrl,
     String pubkeyHex,
   ) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<_ZapSearchResult?>();
       // Security Audit M4: Kryptographisch sichere Subscription-IDs
       final random = Random.secure();
@@ -439,9 +439,9 @@ class HumanityProofService {
   }
 
   static Future<bool> _checkEventExists(String relayUrl, String eventId) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<bool>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();

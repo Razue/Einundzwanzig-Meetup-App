@@ -29,12 +29,12 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'relay_config.dart';
 import 'nostr_service.dart';
 import 'dart:math';
+import 'relay_socket.dart';
 
 class ZapVerificationService {
   // Cache
@@ -115,9 +115,9 @@ class ZapVerificationService {
     int since,
     bool isReceived,
   ) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<List<ZapReceipt>>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();

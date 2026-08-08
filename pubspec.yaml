@@ -24,6 +24,7 @@ dependencies:
   just_audio: ^0.9.36
 
   # Networking & Data
+  web_socket_channel: ^3.0.3
   http: ^1.6.0
   shared_preferences: ^2.5.4
   icalendar_parser: ^2.0.0
