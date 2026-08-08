@@ -120,7 +120,7 @@ class SocialGraphService {
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(follows);
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete({});

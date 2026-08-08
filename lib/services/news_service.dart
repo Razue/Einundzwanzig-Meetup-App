@@ -214,8 +214,8 @@ class NewsService {
                 final content = (event['content'] ?? '').toString();
                 if (content.isNotEmpty) finish(content);
               }
-            } catch (_) {
-              tally.failed();
+            } catch (e) {
+              tally.failed(e);
             }
           }, onError: (_) {}, onDone: () {});
         } catch (_) {

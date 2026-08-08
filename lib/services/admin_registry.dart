@@ -418,14 +418,14 @@ class AdminRegistry {
                 // Sammeln aller Admins aus allen Events
                 collectedAdmins.addAll(adminsInEvent);
               } catch (e) {
-                tally.failed();
+                tally.failed(e);
               }
             } 
             else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(collectedAdmins);
             }
           } catch (e) {
-            tally.failed();
+            tally.failed(e);
           }
         },
         onError: (e) {

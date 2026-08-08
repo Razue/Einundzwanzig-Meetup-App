@@ -171,7 +171,7 @@ class CalendarEventService {
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(results);
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) { if (!completer.isCompleted) completer.complete(results); },
         onDone: () { if (!completer.isCompleted) completer.complete(results); },

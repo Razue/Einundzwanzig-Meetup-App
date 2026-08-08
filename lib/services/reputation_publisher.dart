@@ -441,13 +441,13 @@ class ReputationPublisher {
                 );
                 if (!completer.isCompleted) completer.complete(repEvent);
               } catch (e) {
-                tally.failed();
+                tally.failed(e);
               }
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(null);
             }
           } catch (e) {
-            tally.failed();
+            tally.failed(e);
           }
         },
         onError: (e) {

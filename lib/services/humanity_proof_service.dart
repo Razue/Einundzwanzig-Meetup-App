@@ -323,7 +323,7 @@ class HumanityProofService {
                 completer.complete(found);
               }
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(null);
@@ -462,7 +462,7 @@ class HumanityProofService {
             } else if (message[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(false);
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(false);

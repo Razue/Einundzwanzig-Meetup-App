@@ -236,6 +236,8 @@ class RelayParseTally {
   final String label;
   int _seen = 0;
   int _failed = 0;
+  Object? _firstError;
+  bool _reported = false;
 
   RelayParseTally(this.tag, this.label);
 
@@ -243,16 +245,26 @@ class RelayParseTally {
   void message() => _seen++;
 
   /// Im catch der Nachrichtenverarbeitung aufrufen.
-  void failed() => _failed++;
+  /// [error] wird nur beim ersten Fehlschlag behalten und bei [report] auf
+  /// debug ausgegeben — eine Stichprobe der Ursache ohne Log-Flut.
+  void failed([Object? error]) {
+    _failed++;
+    _firstError ??= error;
+  }
 
   int get seen => _seen;
   int get failures => _failed;
 
   /// Beim Abschluss der Subscription aufrufen — am besten im `finally`, damit
   /// auch Timeout und onDone erfasst sind, nicht nur EOSE.
+  /// Mehrfach aufrufbar: weitere Aufrufe sind no-ops (z. B. finish + finally).
   void report() {
-    if (_failed == 0) return;
+    if (_reported || _failed == 0) return;
+    _reported = true;
     AppLogger.warn(
         tag, '$label: $_failed von $_seen Relay-Nachrichten nicht auswertbar');
+    if (_firstError != null) {
+      AppLogger.debug(tag, '$label — erster Parse-Fehler: $_firstError');
+    }
   }
 }
