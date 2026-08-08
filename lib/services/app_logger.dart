@@ -79,17 +79,26 @@ class AppLogger {
   /// Beim App-Start einmal aufrufen, um gespeicherte Logs zu laden.
   static Future<void> init() async {
     if (_loaded) return;
+    // Zone-Handler in main() kann schon vor init() loggen. Diese Eintraege
+    // duerfen beim Laden des persistenten Puffers nicht verworfen werden.
+    final early = List<LogEntry>.from(_buffer);
     try {
       final prefs = await SharedPreferences.getInstance();
       _verbose = prefs.getBool(_prefsVerboseKey) ?? false;
       final raw = prefs.getString(_prefsKey);
+      _buffer.clear();
       if (raw != null) {
         final list = jsonDecode(raw) as List;
-        _buffer
-          ..clear()
-          ..addAll(list.map((e) => LogEntry.fromJson(e as Map<String, dynamic>)));
+        _buffer.addAll(
+            list.map((e) => LogEntry.fromJson(e as Map<String, dynamic>)));
       }
-    } catch (_) {/* korrupter Puffer -> leer starten */}
+      _buffer.addAll(early);
+    } catch (_) {
+      // Korrupter Puffer -> fruehe Eintraege behalten, sonst leer starten.
+      _buffer
+        ..clear()
+        ..addAll(early);
+    }
     _loaded = true;
   }
 
