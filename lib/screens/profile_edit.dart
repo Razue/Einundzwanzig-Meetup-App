@@ -38,6 +38,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // Nostr Key State
   bool _hasNostrKey = false;
   bool _isAmber = false; // Identität über Amber (kein lokaler nsec)
+  bool _isNip07 = false; // Identität über Browsererweiterung (kein lokaler nsec)
+  /// Ist ueberhaupt eine NIP-07-Erweiterung im Browser? Ausserhalb des
+  /// Browsers immer false — dann wird der Knopf gar nicht angeboten, statt
+  /// ihn anzuzeigen und beim Tippen "nicht gefunden" zu melden.
+  bool _nip07Available = false;
   String _nostrNpub = "";
   bool _isGeneratingKey = false;
 
@@ -59,6 +64,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     final hasKey = await NostrService.hasKey();
     final npub = await NostrService.getNpub();
     final isAmber = await SigningService.isAmber;
+    final isNip07 = await SigningService.isNip07;
+    final nip07Available = await SigningService.nip07Extensionavailable();
 
     // Identity Layer Status
     int proofCount = 0;
@@ -82,9 +89,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             : (user.homeMeetupId.isNotEmpty ? [user.homeMeetupId] : <String>[]);
 
         _isAmber = isAmber;
+        _isNip07 = isNip07;
+        _nip07Available = nip07Available;
         // Im Amber-Modus gibt es keinen lokalen nsec, aber eine gültige
         // Identität → als AppLocalizations.of(context).profileKeyActive anzeigen (npub vorhanden).
-        _hasNostrKey = hasKey || isAmber;
+        _hasNostrKey = hasKey || isAmber || isNip07;
         _nostrNpub = npub ?? user.nostrNpub;
 
         _platformProofCount = proofCount;
@@ -268,6 +277,59 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     }
   }
 
+  // --- MIT BROWSERERWEITERUNG VERBINDEN (NIP-07) ---
+  // Das Gegenstueck zu Amber im Browser. Der Schluessel bleibt in der
+  // Erweiterung — im Web der einzige Weg, bei dem der nsec NICHT in
+  // localStorage liegen muss.
+  void _connectNip07() async {
+    setState(() => _isGeneratingKey = true);
+    try {
+      final result = await SigningService.connectNip07();
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      switch (result) {
+        case Nip07ConnectSuccess(:final npub):
+          setState(() {
+            _hasNostrKey = true;
+            _isNip07 = true;
+            _isAmber = false;
+            _nostrNpub = npub;
+            _isGeneratingKey = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(t.profileExtensionConnected),
+            backgroundColor: Colors.green,
+          ));
+        case Nip07ConnectMissing():
+          setState(() {
+            _isGeneratingKey = false;
+            _nip07Available = false; // Knopf verschwindet
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(t.profileExtensionNotFound)));
+        case Nip07ConnectRejected():
+          // Bewusste Entscheidung des Nutzers — kein roter Balken.
+          setState(() => _isGeneratingKey = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(t.profileExtensionAborted)));
+        case Nip07ConnectError(:final message):
+          setState(() => _isGeneratingKey = false);
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(t.errorGeneric(message)),
+            backgroundColor: Colors.red,
+          ));
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isGeneratingKey = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
+          backgroundColor: Colors.red,
+        ));
+      }
+    }
+  }
+
   // --- NSEC IMPORTIEREN ---
   // --- MIT AMBER VERBINDEN (NIP-55, nsec bleibt in Amber) ---
   void _connectAmber() async {
@@ -392,6 +454,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   setState(() {
                     _hasNostrKey = true;
                     _isAmber = false;
+                    _isNip07 = false;
                     _nostrNpub = keys['npub']!;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -863,7 +926,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                         ),
                       ),
-                      if (!_isAmber) ...[
+                      // Kein lokaler nsec bei Amber UND bei Browsererweiterung.
+                      if (!_isAmber && !_isNip07) ...[
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
@@ -938,6 +1002,29 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                   ),
                   const SizedBox(height: 10),
+
+                  // MIT BROWSERERWEITERUNG VERBINDEN (NIP-07)
+                  //
+                  // Nur wenn tatsaechlich eine Erweiterung antwortet. Einen
+                  // Knopf anzuzeigen, der beim Tippen "nicht gefunden" meldet,
+                  // waere schlechter als keiner — und ausserhalb des Browsers
+                  // gibt es NIP-07 ohnehin nicht.
+                  if (_nip07Available) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _isGeneratingKey ? null : _connectNip07,
+                        icon: const Icon(Icons.extension_outlined, size: 18),
+                        label: Text(AppLocalizations.of(context).profileConnectExtension),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: cGreen,
+                          side: const BorderSide(color: cGreen),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
 
                   // IMPORTIEREN
                   SizedBox(
