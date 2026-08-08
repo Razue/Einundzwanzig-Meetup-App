@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
@@ -185,13 +184,42 @@ class BackupService {
 
   // --- EXPORT (BACKUP ERSTELLEN) ---
   static Future<bool> createBackup(BuildContext context) async {
+    // SCHWARZE SEITE (Issue #18): Der Ladeindikator wurde unten mit
+    // `Navigator.pop(context)` geschlossen und im catch NOCHMAL. Beim zweiten
+    // Mal war der Dialog schon weg, also traf es die Seite DARUNTER —
+    // Passwort bestaetigen, dann schwarz.
+    //
+    // Deshalb ein Merker plus eine Funktion, die nur schliesst, wenn noch
+    // etwas offen ist. Beide stehen VOR dem try, damit der catch sie sieht.
+    // Das allein behebt die schwarze Seite.
+    //
+    // `rootNavigator: true` ist zusaetzlich und nur vorsorglich: es passt zu
+    // showDialog, das standardmaessig auf dem Root-Navigator landet. Aktuell
+    // macht es keinen Unterschied — die App hat keine verschachtelten
+    // Navigatoren, AppShell nutzt einen IndexedStack. Kommt spaeter einer
+    // dazu, bleibt diese Stelle richtig.
+    var loadingOpen = false;
+    void closeLoading() {
+      if (!loadingOpen) return;
+      loadingOpen = false;
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+    }
+
     try {
       // 1. Passwort abfragen
       final password = await _promptForPassword(context, isExport: true);
       if (password == null) return false; // User hat abgebrochen
 
-      // Ladeindikator zeigen
+      // Ankerpunkt fuer das iPad-Teilen-Blatt JETZT bestimmen, solange das
+      // Widget sicher gebaut ist. Ohne sharePositionOrigin wirft UIKit auf
+      // iPad — und dieser Wurf war der Ausloeser der schwarzen Seite.
+      final renderBox = context.findRenderObject() as RenderBox?;
+      final Rect? shareOrigin = renderBox != null && renderBox.hasSize
+          ? renderBox.localToGlobal(Offset.zero) & renderBox.size
+          : null;
+
       if (context.mounted) {
+        loadingOpen = true;
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -299,8 +327,7 @@ class BackupService {
       // IV wird für AES-GCM benötigt
       final finalPayload = "enc_v2:${base64Encode(salt)}:${iv.base64}:${encrypted.base64}";
 
-      // Speichern
-      final directory = await getTemporaryDirectory();
+      // Dateiname
       String dateStr = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
       // Nickname für den Dateinamen bereinigen (nur sichere Zeichen),
       // damit man bei mehreren Profilen die Backups auseinanderhält.
@@ -308,23 +335,41 @@ class BackupService {
           ? 'Anon'
           : user.nickname.trim().replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
       // Format: Backup_<Datum>_21MeetupApp_<Nickname>.21bkp
-      final file = File('${directory.path}/Backup_${dateStr}_21MeetupApp_$safeNick.21bkp');
+      final fileName = 'Backup_${dateStr}_21MeetupApp_$safeNick.21bkp';
 
-      await file.writeAsString(finalPayload);
+      // Die Bytes direkt teilen, statt selbst eine Datei in
+      // getTemporaryDirectory() zu schreiben: path_provider hat KEINE
+      // Web-Implementierung (das Paket deklariert nur android, ios, linux,
+      // macos, windows). Im Browser endete das Sichern deshalb mit einer
+      // MissingPluginException — Backup war dort vollstaendig funktionslos.
+      //
+      // share_plus legt die temporaere Datei auf iOS/Android selbst an, wenn
+      // die XFile keinen Pfad hat. `name` greift im Web, `fileNameOverrides`
+      // nativ — nur so behaelt die Datei ihre .21bkp-Endung, die share_plus
+      // sonst aus dem mimeType ableiten wuerde.
+      final bytes = Uint8List.fromList(utf8.encode(finalPayload));
 
-      if (context.mounted) Navigator.pop(context); // Ladeindikator weg
+      // Texte VOR dem Schliessen des Dialogs holen: danach ist context
+      // moeglicherweise nicht mehr verwendbar.
+      final shareTitle = AppLocalizations.of(context).backupShareTitle;
+      final shareText = AppLocalizations.of(context).backupShareText;
 
-      // Teilen
+      closeLoading();
+
       await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: AppLocalizations.of(context).backupShareTitle,
-        text: AppLocalizations.of(context).backupShareText,
+        [XFile.fromData(bytes, mimeType: 'application/octet-stream', name: fileName)],
+        fileNameOverrides: [fileName],
+        subject: shareTitle,
+        text: shareText,
+        sharePositionOrigin: shareOrigin,
       );
       return true;
     } catch (e) {
       AppLogger.warn('App', "Backup Fehler: $e");
+      // Schliesst NUR, wenn der Ladeindikator noch offen ist — sonst wuerde
+      // hier die Seite darunter verschwinden (Issue #18).
+      closeLoading();
       if (context.mounted) {
-        Navigator.pop(context); // Ladeindikator weg
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).backupError(e.toString())), backgroundColor: Colors.red),
         );
@@ -336,13 +381,27 @@ class BackupService {
   // --- IMPORT (WIEDERHERSTELLEN) ---
   static Future<bool> restoreBackup(BuildContext context) async {
     try {
+      // withData: true, damit die Bytes auf ALLEN Plattformen mitkommen.
+      //
+      // Vorher wurde nur `result.files.single.path` ausgewertet. Im Browser
+      // ist der Pfad immer null — der Dateiwaehler liefert dort ausschliesslich
+      // Bytes. Die Bedingung war damit im Web nie erfuellt und das
+      // Wiederherstellen tat lautlos gar nichts: kein Fehler, keine Meldung.
+      //
+      // Backup-Dateien sind wenige Kilobyte gross, das Laden in den Speicher
+      // ist also auch auf dem Telefon unproblematisch.
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.any,
+        withData: true,
       );
 
-      if (result != null && result.files.single.path != null) {
-        File file = File(result.files.single.path!);
-        String content = await file.readAsString();
+      final picked = result?.files.single;
+      if (picked != null && (picked.bytes != null || picked.path != null)) {
+        // Bytes bevorzugen (einziger Weg im Web); Pfad als Rueckfallebene,
+        // falls eine Plattform trotz withData keine Bytes liefert.
+        final String content = picked.bytes != null
+            ? utf8.decode(picked.bytes!)
+            : await File(picked.path!).readAsString();
 
         String decryptedJson = content;
 
