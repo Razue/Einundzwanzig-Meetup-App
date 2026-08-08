@@ -31,10 +31,24 @@ class RelaySocket {
   /// verbindet dagegen verzögert, weshalb hier auf `ready` gewartet wird —
   /// nur so schlagen Fehler wie bisher an der Aufrufstelle auf, und ein
   /// `.timeout(...)` der Aufrufer greift weiterhin auf den Verbindungsaufbau.
+  ///
+  /// Scheitert `ready`, wird der Channel geschlossen — sonst bliebe bei
+  /// WebSocketChannel eine halb offene Verbindung liegen (besser als die
+  /// reine dart:io-Parität, wo Aufrufer-`.timeout()` den Socket ebenfalls
+  /// nicht freigibt).
   static Future<RelaySocket> connect(String url) async {
     final channel = WebSocketChannel.connect(Uri.parse(url));
-    await channel.ready;
-    return RelaySocket._(channel);
+    try {
+      await channel.ready;
+      return RelaySocket._(channel);
+    } catch (_) {
+      // close() bewusst NICHT awaiten: nach fehlgeschlagenem Handshake kann
+      // sink.close() auf manchen Plattformen haengen und connect() blockieren.
+      try {
+        channel.sink.close();
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   /// Eingehende Nachrichten. Entspricht `ws.listen(...)`.
