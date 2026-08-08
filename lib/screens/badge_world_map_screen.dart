@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
@@ -257,13 +255,19 @@ class _BadgeWorldMapScreenState extends State<BadgeWorldMapScreen> {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) { setState(() => _sharing = false); return; }
 
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/badge_worldmap_${DateTime.now().millisecondsSinceEpoch}.png');
-      await file.writeAsBytes(byteData.buffer.asUint8List());
+      // Bytes direkt teilen statt selbst eine Datei zu schreiben —
+      // path_provider hat keine Web-Implementierung. share_plus legt die
+      // temporaere Datei auf iOS/Android selbst an. `name` greift im Web,
+      // `fileNameOverrides` nativ.
+      final fileName = 'badge_worldmap_${DateTime.now().millisecondsSinceEpoch}.png';
 
       if (!mounted) return;
       final t = AppLocalizations.of(context);
-      await Share.shareXFiles([XFile(file.path)], text: t.mapShareText(_located.length));
+      await Share.shareXFiles(
+        [XFile.fromData(byteData.buffer.asUint8List(), mimeType: 'image/png', name: fileName)],
+        fileNameOverrides: [fileName],
+        text: t.mapShareText(_located.length),
+      );
     } catch (_) {
       // still: kein harter Fehler beim Teilen
     } finally {

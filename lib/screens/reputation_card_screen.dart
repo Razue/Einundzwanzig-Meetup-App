@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/shadows.dart';
@@ -85,12 +83,15 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
         return;
       }
       final pngBytes = byteData.buffer.asUint8List();
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/einundzwanzig_reputation_card.png');
-      await file.writeAsBytes(pngBytes);
 
+      // Bytes direkt teilen statt selbst eine Datei zu schreiben —
+      // path_provider hat keine Web-Implementierung. share_plus legt die
+      // temporaere Datei auf iOS/Android selbst an. `name` greift im Web,
+      // `fileNameOverrides` nativ.
+      const fileName = 'einundzwanzig_reputation_card.png';
       await Share.shareXFiles(
-        [XFile(file.path)],
+        [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+        fileNameOverrides: const [fileName],
         subject: 'Einundzwanzig Reputation',
         text: shareText,
       );
