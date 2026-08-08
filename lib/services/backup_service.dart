@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
@@ -18,10 +18,22 @@ import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'platform_proof_service.dart'; // NEU
 import 'humanity_proof_service.dart'; // NEU
-import 'dart:typed_data';
 import 'app_logger.dart';
 
 class BackupService {
+  /// Laeuft gerade ein Export oder ein Import?
+  ///
+  /// Die Schluesselableitung dauert gemessen ~1,7 s auf dem Geraet und ueber
+  /// 100 s im Browser. Solange sie den Event-Loop blockiert, wirkt die App
+  /// eingefroren — Nutzer tippen dann mehrfach, und JEDER Tipp startete
+  /// bisher einen weiteren vollen Durchlauf. Beim Import bedeutete das
+  /// mehrere gleichzeitige Wiederherstellungen auf denselben Datenbestand.
+  ///
+  /// Statisch und nicht pro Widget, weil Export und Import von
+  /// verschiedenen Stellen aus angestossen werden (Startseite und
+  /// Intro-Screen).
+  static bool _busy = false;
+
   // =============================================
   // PBKDF2-HMAC-SHA256 KEY DERIVATION
   // =============================================
@@ -185,13 +197,56 @@ class BackupService {
 
   // --- EXPORT (BACKUP ERSTELLEN) ---
   static Future<bool> createBackup(BuildContext context) async {
+    if (_busy) return false; // Doppelklick waehrend der Ableitung ignorieren
+    _busy = true;
+    // SCHWARZE SEITE (Issue #18): Der Ladeindikator wurde unten mit
+    // `Navigator.pop(context)` geschlossen und im catch NOCHMAL. Beim zweiten
+    // Mal war der Dialog schon weg, also traf es die Seite DARUNTER —
+    // Passwort bestaetigen, dann schwarz.
+    //
+    // Deshalb ein Merker plus eine Funktion, die nur schliesst, wenn noch
+    // etwas offen ist. Beide stehen VOR dem try, damit der catch sie sieht.
+    // Das allein behebt die schwarze Seite.
+    //
+    // `rootNavigator: true` ist zusaetzlich und nur vorsorglich: es passt zu
+    // showDialog, das standardmaessig auf dem Root-Navigator landet. Aktuell
+    // macht es keinen Unterschied — die App hat keine verschachtelten
+    // Navigatoren, AppShell nutzt einen IndexedStack. Kommt spaeter einer
+    // dazu, bleibt diese Stelle richtig.
+    var loadingOpen = false;
+    void closeLoading() {
+      if (!loadingOpen) return;
+      loadingOpen = false;
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+    }
+
     try {
       // 1. Passwort abfragen
       final password = await _promptForPassword(context, isExport: true);
       if (password == null) return false; // User hat abgebrochen
+      if (!context.mounted) return false;
 
-      // Ladeindikator zeigen
+      // Ankerpunkt fuer das iOS-Teilen-Blatt JETZT bestimmen, solange das
+      // Widget sicher gebaut ist. Ohne gueltiges sharePositionOrigin wirft
+      // UIKit (reproduziert auf iPhone/iOS 26, ebenso iPad) — und dieser Wurf
+      // war der Ausloeser der schwarzen Seite.
+      final renderBox = context.findRenderObject() as RenderBox?;
+      final Rect shareOrigin;
+      if (renderBox != null &&
+          renderBox.hasSize &&
+          renderBox.size.width > 0 &&
+          renderBox.size.height > 0) {
+        shareOrigin = renderBox.localToGlobal(Offset.zero) & renderBox.size;
+      } else {
+        // Fallback: iOS lehnt {{0,0},{0,0}} ab. Besser die aktuelle
+        // Bildschirmflaeche als Anker als gar keinen / Null-Rect.
+        final size = MediaQuery.sizeOf(context);
+        shareOrigin = Offset.zero &
+            (size.width > 0 && size.height > 0 ? size : const Size(1, 1));
+      }
+
       if (context.mounted) {
+        loadingOpen = true;
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -287,6 +342,18 @@ class BackupService {
       // VERSCHLÜSSELUNG: PBKDF2-HMAC-SHA256 + AES-256-GCM
       // =============================================
       final salt = _generateSalt();
+
+      // Einen echten Frame durchlassen, bevor die Ableitung den Event-Loop
+      // fuer ~1,7 s (Geraet) bzw. ueber 100 s (Browser) blockiert.
+      //
+      // Der Ladeindikator wird oben schon per showDialog angefordert, war aber
+      // trotzdem nicht zu sehen: die await-Aufrufe dazwischen loesen sich aus
+      // dem Cache ueber MICROTASKS auf, und Microtasks laufen VOR dem
+      // Zeichnen. Ohne Rueckkehr in den Event-Loop kam Flutter also nie zum
+      // Frame — die App wirkte, als passiere nichts. Ein Timer (auch mit 0)
+      // erzwingt diese Rueckkehr, 50 ms geben zuverlaessig Zeit fuers Malen.
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
       final key = _deriveKey(password, salt);
       final iv = enc.IV.fromSecureRandom(16);
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
@@ -299,8 +366,7 @@ class BackupService {
       // IV wird für AES-GCM benötigt
       final finalPayload = "enc_v2:${base64Encode(salt)}:${iv.base64}:${encrypted.base64}";
 
-      // Speichern
-      final directory = await getTemporaryDirectory();
+      // Dateiname
       String dateStr = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
       // Nickname für den Dateinamen bereinigen (nur sichere Zeichen),
       // damit man bei mehreren Profilen die Backups auseinanderhält.
@@ -308,41 +374,115 @@ class BackupService {
           ? 'Anon'
           : user.nickname.trim().replaceAll(RegExp(r'[^A-Za-z0-9_-]'), '_');
       // Format: Backup_<Datum>_21MeetupApp_<Nickname>.21bkp
-      final file = File('${directory.path}/Backup_${dateStr}_21MeetupApp_$safeNick.21bkp');
+      final fileName = 'Backup_${dateStr}_21MeetupApp_$safeNick.21bkp';
 
-      await file.writeAsString(finalPayload);
+      // Die Bytes direkt teilen, statt selbst eine Datei in
+      // getTemporaryDirectory() zu schreiben: path_provider hat KEINE
+      // Web-Implementierung (das Paket deklariert nur android, ios, linux,
+      // macos, windows). Im Browser endete das Sichern deshalb mit einer
+      // MissingPluginException — Backup war dort vollstaendig funktionslos.
+      //
+      // share_plus legt die temporaere Datei auf iOS/Android selbst an, wenn
+      // die XFile keinen Pfad hat. `name` greift im Web, `fileNameOverrides`
+      // nativ — nur so behaelt die Datei ihre .21bkp-Endung, die share_plus
+      // sonst aus dem mimeType ableiten wuerde.
+      final bytes = Uint8List.fromList(utf8.encode(finalPayload));
 
-      if (context.mounted) Navigator.pop(context); // Ladeindikator weg
+      if (!context.mounted) {
+        closeLoading();
+        return false;
+      }
+      // Texte VOR dem Schliessen des Dialogs holen: danach ist context
+      // moeglicherweise nicht mehr verwendbar.
+      final shareTitle = AppLocalizations.of(context).backupShareTitle;
+      final shareText = AppLocalizations.of(context).backupShareText;
 
-      // Teilen
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: AppLocalizations.of(context).backupShareTitle,
-        text: AppLocalizations.of(context).backupShareText,
+      closeLoading();
+
+      final shareResult = await Share.shareXFiles(
+        [XFile.fromData(bytes, mimeType: 'application/octet-stream', name: fileName)],
+        fileNameOverrides: [fileName],
+        subject: shareTitle,
+        text: shareText,
+        sharePositionOrigin: shareOrigin,
       );
-      return true;
+
+      // Abbruch des Teilen-Blatts ist kein FEHLER, aber auch kein Erfolg —
+      // und der Unterschied ist hier gefaehrlich:
+      //
+      // _resetApp() in home_screen ruft createBackup() und loescht bei
+      // Rueckgabe true die App-Daten, inklusive SecureKeyStore.deleteKeys().
+      // Wer das Teilen abbricht, hat NIRGENDS eine Datei — share_plus legt
+      // nativ nur eine Datei im temporaeren Verzeichnis an, an die der Nutzer
+      // nicht herankommt. Mit true haette die App "Backup erstellt" gemeldet
+      // und angeboten, die Schluessel zu loeschen.
+      //
+      // Deshalb: nur explizites Verwerfen gilt als "nicht erledigt".
+      // `unavailable` bleibt true, weil manche Plattformen den Status gar
+      // nicht melden und ein Fehlalarm dort schlimmer waere.
+      return shareResult.status != ShareResultStatus.dismissed;
     } catch (e) {
       AppLogger.warn('App', "Backup Fehler: $e");
+      // Schliesst NUR, wenn der Ladeindikator noch offen ist — sonst wuerde
+      // hier die Seite darunter verschwinden (Issue #18).
+      closeLoading();
+      // Auf manchen iOS-Staenden wirft shareXFiles beim Abbrechen statt
+      // ShareResultStatus.dismissed. Dann KEINE rote Fehlermeldung zeigen —
+      // aber auch NICHT true melden: der Reset-Flow loescht bei true die
+      // Schluessel, und gespeichert ist in diesem Fall nichts (s.o.).
+      if (_isShareDismissed(e)) {
+        return false;
+      }
       if (context.mounted) {
-        Navigator.pop(context); // Ladeindikator weg
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context).backupError(e.toString())), backgroundColor: Colors.red),
         );
       }
       return false;
+    } finally {
+      // MUSS auf jedem Ausgang zurueckgesetzt werden — sonst blockiert ein
+      // einziger Lauf die Funktion bis zum App-Neustart.
+      _busy = false;
     }
+  }
+
+  /// True, wenn der Nutzer das Teilen-Blatt abgebrochen hat (kein echter Fehler).
+  static bool _isShareDismissed(Object e) {
+    if (e is! PlatformException) return false;
+    final hay = '${e.code} ${e.message} ${e.details}'.toLowerCase();
+    return hay.contains('dismiss') ||
+        hay.contains('cancel') ||
+        hay.contains('aborted') ||
+        hay.contains('user cancelled') ||
+        hay.contains('user canceled');
   }
 
   // --- IMPORT (WIEDERHERSTELLEN) ---
   static Future<bool> restoreBackup(BuildContext context) async {
+    if (_busy) return false;
+    _busy = true;
     try {
+      // withData: true, damit die Bytes auf ALLEN Plattformen mitkommen.
+      //
+      // Vorher wurde nur `result.files.single.path` ausgewertet. Im Browser
+      // ist der Pfad immer null — der Dateiwaehler liefert dort ausschliesslich
+      // Bytes. Die Bedingung war damit im Web nie erfuellt und das
+      // Wiederherstellen tat lautlos gar nichts: kein Fehler, keine Meldung.
+      //
+      // Backup-Dateien sind wenige Kilobyte gross, das Laden in den Speicher
+      // ist also auch auf dem Telefon unproblematisch.
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.any,
+        withData: true,
       );
 
-      if (result != null && result.files.single.path != null) {
-        File file = File(result.files.single.path!);
-        String content = await file.readAsString();
+      final picked = result?.files.single;
+      if (picked != null && (picked.bytes != null || picked.path != null)) {
+        // Bytes bevorzugen (einziger Weg im Web); Pfad als Rueckfallebene,
+        // falls eine Plattform trotz withData keine Bytes liefert.
+        final String content = picked.bytes != null
+            ? utf8.decode(picked.bytes!)
+            : await File(picked.path!).readAsString();
 
         String decryptedJson = content;
 
@@ -361,7 +501,28 @@ class BackupService {
             final iv = enc.IV.fromBase64(parts[2]);
             final cipherText = parts[3];
 
-            final key = _deriveKey(password, salt);
+            // Ladeindikator: die Ableitung dauert gemessen ~1,7 s auf dem
+            // Geraet und ueber 100 s im Browser (600.000 Iterationen, in
+            // dart2js reines Dart). Vorher gab es hier GAR KEINE Rueckmeldung
+            // — die Oberflaeche stand einfach, und Nutzer haben mehrfach
+            // getippt, was jedes Mal einen weiteren Durchlauf startete.
+            if (context.mounted) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.orange)),
+              );
+            }
+            // Einen Frame durchlassen, damit der Indikator gezeichnet ist,
+            // bevor die synchrone Ableitung den Event-Loop blockiert.
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+
+            final enc.Key key;
+            try {
+              key = _deriveKey(password, salt);
+            } finally {
+              if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+            }
             final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
 
             decryptedJson = encrypter.decrypt64(cipherText, iv: iv);
@@ -663,6 +824,8 @@ class BackupService {
         );
       }
       return false;
+    } finally {
+      _busy = false;
     }
   }
 }
