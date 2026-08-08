@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/user.dart';
@@ -46,6 +47,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   String _nostrNpub = "";
   bool _isGeneratingKey = false;
 
+  // Amber ist aktuell nur über den nativen Android-MethodChannel angebunden.
+  // Im Web bleibt der Button bis zur Implementierung von NIP-46 verborgen,
+  // damit keine Verbindung angeboten wird, die dort noch nicht funktioniert.
+  bool get _showAmberOption =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
   // Identity State
   int _platformProofCount = 0;
   bool _humanityVerified = false;
@@ -64,6 +71,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     final hasKey = await NostrService.hasKey();
     final npub = await NostrService.getNpub();
     final isAmber = await SigningService.isAmber;
+    final amberSupported = SigningService.isAmberSupported;
     final isNip07 = await SigningService.isNip07;
     final nip07Available = await SigningService.nip07ExtensionAvailable();
 
@@ -88,12 +96,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             ? List<String>.from(user.favoriteMeetupIds)
             : (user.homeMeetupId.isNotEmpty ? [user.homeMeetupId] : <String>[]);
 
-        _isAmber = isAmber;
+        _isAmber = isAmber && amberSupported;
         _isNip07 = isNip07;
         _nip07Available = nip07Available;
         // Im Amber-Modus gibt es keinen lokalen nsec, aber eine gültige
         // Identität → als AppLocalizations.of(context).profileKeyActive anzeigen (npub vorhanden).
-        _hasNostrKey = hasKey || isAmber || isNip07;
+        _hasNostrKey = hasKey || (isAmber && amberSupported) || isNip07;
         _nostrNpub = npub ?? user.nostrNpub;
 
         _platformProofCount = proofCount;
@@ -987,21 +995,23 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // MIT AMBER VERBINDEN (empfohlen)
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _isGeneratingKey ? null : _connectAmber,
-                      icon: const Icon(Icons.shield_outlined, size: 18),
-                      label: Text(AppLocalizations.of(context).profileConnectAmber),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: cCyan,
-                        side: const BorderSide(color: cCyan),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                  // MIT AMBER VERBINDEN (nur native Android-App)
+                  if (_showAmberOption) ...[
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _isGeneratingKey ? null : _connectAmber,
+                        icon: const Icon(Icons.shield_outlined, size: 18),
+                        label: Text(AppLocalizations.of(context).profileConnectAmber),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: cCyan,
+                          side: const BorderSide(color: cCyan),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 10),
+                  ],
 
                   // MIT BROWSERERWEITERUNG VERBINDEN (NIP-07)
                   //

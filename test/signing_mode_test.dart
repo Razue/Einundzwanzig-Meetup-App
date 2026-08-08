@@ -1,11 +1,8 @@
 // Sichert die Modus-Speicherung ab, nachdem sie von zwei auf drei Werte
 // erweitert wurde.
 //
-// Das Risiko liegt nicht bei NIP-07, sondern bei den BESTEHENDEN
-// Installationen: wuerde ein gespeichertes 'amber' nach dem Umbau als
-// 'local' gelesen, waere der Nutzer ohne Vorwarnung im falschen Modus — die
-// App wuerde einen lokalen nsec erwarten, den es nie gab, und beim Backup
-// einen leeren Schluessel exportieren.
+// Amber bleibt als gespeicherter Wert erhalten, wird aber auf Plattformen
+// ohne Amber-Transport effektiv als local behandelt.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
@@ -15,11 +12,14 @@ const _modeKey = 'signing_mode';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('getMode liest bestehende Werte unveraendert', () {
-    test("'amber' bleibt amber", () async {
+  group('getMode liest bestehende Werte plattformgerecht', () {
+    test("'amber' bleibt auf unterstützten Plattformen aktiv", () async {
       SharedPreferences.setMockInitialValues({_modeKey: 'amber'});
-      expect(await SigningService.getMode(), SigningMode.amber);
-      expect(await SigningService.isAmber, isTrue);
+      final expectedMode = SigningService.isAmberSupported
+          ? SigningMode.amber
+          : SigningMode.local;
+      expect(await SigningService.getMode(), expectedMode);
+      expect(await SigningService.isAmber, SigningService.isAmberSupported);
       expect(await SigningService.isNip07, isFalse);
     });
 
@@ -96,7 +96,8 @@ void main() {
   group('isExternalSigner', () {
     test('true bei amber und nip07, false bei local', () async {
       SharedPreferences.setMockInitialValues({_modeKey: 'amber'});
-      expect(await SigningService.isExternalSigner, isTrue);
+      expect(await SigningService.isExternalSigner,
+          SigningService.isAmberSupported);
 
       SharedPreferences.setMockInitialValues({_modeKey: 'nip07'});
       expect(await SigningService.isExternalSigner, isTrue);

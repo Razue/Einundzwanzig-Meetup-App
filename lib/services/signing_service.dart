@@ -32,6 +32,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:nostr/nostr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -551,10 +552,18 @@ class SigningService {
 
   static Future<SigningMode> getMode() async {
     final prefs = await SharedPreferences.getInstance();
+    final storedMode = prefs.getString(_modeKey);
+    // Amber-Daten bleiben für eine spätere Nutzung auf Android erhalten,
+    // werden auf Plattformen ohne Amber-Transport aber nicht als aktiver
+    // Modus verwendet. So kann iOS/Web weder Amber-Signierung vortäuschen
+    // noch versehentlich den Android-MethodChannel ansprechen.
+    if (storedMode == 'amber' && !isAmberSupported) {
+      return SigningMode.local;
+    }
     // default deckt null UND unbekannte Altwerte ab — bestehende
     // Installationen haben 'amber' oder 'local' gespeichert und bleiben
     // dadurch unveraendert.
-    return switch (prefs.getString(_modeKey)) {
+    return switch (storedMode) {
       'amber' => SigningMode.amber,
       'nip07' => SigningMode.nip07,
       _ => SigningMode.local,
@@ -572,6 +581,11 @@ class SigningService {
 
   static Future<bool> get isAmber async =>
       (await getMode()) == SigningMode.amber;
+
+  /// Amber ist derzeit nur über den nativen Android-MethodChannel verfügbar.
+  /// Web/NIP-46 bleibt eine separate, noch nicht implementierte Anbindung.
+  static bool get isAmberSupported =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   static Future<bool> get isNip07 async =>
       (await getMode()) == SigningMode.nip07;
@@ -594,6 +608,10 @@ class SigningService {
   static Future<NostrSigner> _resolveSigner() async {
     switch (await getMode()) {
       case SigningMode.amber:
+        if (!isAmberSupported) {
+          throw const SigningException(
+              'Amber ist nur in der nativen Android-App verfügbar.');
+        }
         final prefs = await SharedPreferences.getInstance();
         final hex = prefs.getString(_amberPubkeyHexKey);
         if (hex == null || hex.isEmpty) {
@@ -653,6 +671,7 @@ class SigningService {
     final prefs = await SharedPreferences.getInstance();
     switch (await getMode()) {
       case SigningMode.amber:
+        if (!isAmberSupported) return false;
         final hex = prefs.getString(_amberPubkeyHexKey);
         return hex != null && hex.isNotEmpty;
       case SigningMode.nip07:
