@@ -87,6 +87,10 @@ void main() {
       final result = await Nip07NostrSigner.connect();
       expect(result, isA<Nip07ConnectMissing>());
     });
+
+    test('nip07ExtensionAvailable ist im Test false', () async {
+      expect(await SigningService.nip07ExtensionAvailable(), isFalse);
+    });
   });
 
   group('isExternalSigner', () {

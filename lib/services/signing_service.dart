@@ -469,6 +469,9 @@ class Nip07NostrSigner implements NostrSigner {
           'Die Erweiterung hat kein signiertes Event geliefert.');
     }
 
+    // tags/content der Erweiterung gewinnen — id und sig sind darüber
+    // berechnet. Manche Erweiterungen normalisieren Tags (z. B. Sortierung
+    // oder zusätzliche Felder); Caller-Kopien würden das Event ungültig machen.
     return SignedEvent(
       id: (signed['id'] ?? '').toString(),
       pubkey: signedPubkey,
@@ -477,11 +480,31 @@ class Nip07NostrSigner implements NostrSigner {
       createdAt: signed['created_at'] is int
           ? signed['created_at'] as int
           : createdAt,
-      kind: kind,
-      tags: tags,
-      content: content,
+      kind: signed['kind'] is int ? signed['kind'] as int : kind,
+      tags: _tagsFromSigned(signed['tags'], tags),
+      content: signed.containsKey('content')
+          ? (signed['content'] ?? '').toString()
+          : content,
       sig: sig,
     );
+  }
+
+  /// Parst tags aus der Erweiterungs-Antwort; bei kaputtem Format Fallback.
+  static List<List<String>> _tagsFromSigned(
+    dynamic raw,
+    List<List<String>> fallback,
+  ) {
+    if (raw is! List) return fallback;
+    try {
+      final out = <List<String>>[];
+      for (final tag in raw) {
+        if (tag is! List) return fallback;
+        out.add([for (final e in tag) e.toString()]);
+      }
+      return out;
+    } catch (_) {
+      return fallback;
+    }
   }
 }
 
@@ -692,14 +715,21 @@ class SigningService {
   // =============================================
 
   /// Ist eine NIP-07-Erweiterung vorhanden? Ausserhalb des Browsers false.
-  static Future<bool> nip07Extensionavailable() =>
+  static Future<bool> nip07ExtensionAvailable() =>
       Nip07NostrSigner.isAvailable();
 
   /// Startet den Verbindungs-Flow mit der Browsererweiterung und
   /// persistiert pubkey + Modus bei Erfolg.
+  ///
+  /// Ein zuvor lokal gespeicherter nsec wird gelöscht: im Erweiterungs-Modus
+  /// darf kein zweiter Schlüssel in der App liegen (Backup/hasKey würden sonst
+  /// eine lokale Identität vortäuschen).
   static Future<Nip07ConnectResult> connectNip07() async {
     final result = await Nip07NostrSigner.connect();
     if (result is Nip07ConnectSuccess) {
+      if (await SecureKeyStore.hasKey()) {
+        await SecureKeyStore.deleteKeys();
+      }
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_nip07PubkeyHexKey, result.pubkeyHex);
       await prefs.setString(_nip07NpubKey, result.npub);

@@ -65,7 +65,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     final npub = await NostrService.getNpub();
     final isAmber = await SigningService.isAmber;
     final isNip07 = await SigningService.isNip07;
-    final nip07Available = await SigningService.nip07Extensionavailable();
+    final nip07Available = await SigningService.nip07ExtensionAvailable();
 
     // Identity Layer Status
     int proofCount = 0;
