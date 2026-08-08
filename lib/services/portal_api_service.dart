@@ -116,7 +116,18 @@ class PortalApiService {
   static Future<String?> getToken() async {
     try {
       return await _storage.read(key: _tokenKey);
-    } catch (_) {
+    } catch (e) {
+      // Nur der FEHLSCHLAG wird protokolliert, kein Erfolg: getToken() laeuft
+      // bei jedem API-Aufruf und ueber hasToken() zusaetzlich. Mit
+      // AppLogger.measure() stand hier reihenweise "Portal-Token lesen ok
+      // (1 ms)" — im Ausfuehrlich-Modus haette das den Ringpuffer gefuellt,
+      // also genau dann, wenn jemand einen echten Fehler einfangen will.
+      //
+      // Der Fehlschlag selbst ist wichtig: dann sieht die App den Nutzer als
+      // NICHT angemeldet, mit allen Folgen (keine Organisator-Rechte,
+      // /my-meetups leer) — von "kein Token vorhanden" nicht zu unterscheiden.
+      AppLogger.warn(_tag,
+          'Portal-Token nicht lesbar, App gilt als abgemeldet: $e');
       return null;
     }
   }
@@ -202,7 +213,12 @@ class PortalApiService {
   }
 
   static Future<void> deleteToken() async {
-    try { await _storage.delete(key: _tokenKey); await _storage.delete(key: _tokenNpubKey); } catch (_) {}
+    // Bleibt das Loeschen unbemerkt liegen, ist der Nutzer nach dem Abmelden
+    // weiterhin angemeldet — sicherheitsrelevant, also nie still verschlucken.
+    await AppLogger.measure<void>(_tag, 'Portal-Token loeschen', () async {
+      await _storage.delete(key: _tokenKey);
+      await _storage.delete(key: _tokenNpubKey);
+    });
   }
 
   /// Logout: Token serverseitig widerrufen (best effort) und lokal löschen.
@@ -414,7 +430,17 @@ class PortalApiService {
       }
       if (r.statusCode == 200 || r.statusCode == 201 || r.statusCode == 204) {
         dynamic data;
-        try { data = jsonDecode(r.body); } catch (_) {}
+        // Erfolgs-Status, aber unlesbarer Rumpf: der Aufrufer bekommt
+        // ok:true mit data:null und haelt das fuer "nichts vorhanden".
+        // Bei 204 (No Content) ist ein leerer Rumpf normal, sonst nicht.
+        try {
+          data = jsonDecode(r.body);
+        } catch (e) {
+          if (r.statusCode != 204) {
+            AppLogger.warn(_tag,
+                '$method $url: HTTP ${r.statusCode}, Rumpf nicht lesbar: $e');
+          }
+        }
         return PortalResult(ok: true, statusCode: r.statusCode, data: data);
       }
       if (r.statusCode == 401) await deleteToken();
