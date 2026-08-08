@@ -100,6 +100,10 @@ class AppLogger {
         ..addAll(early);
     }
     _loaded = true;
+    // Erst ab hier darf geschrieben werden (siehe _schedulePersist). Gab es
+    // fruehe Eintraege, jetzt nachholen — sonst waeren sie nur im Speicher
+    // und ein Absturz beim Start haette nichts hinterlassen.
+    if (early.isNotEmpty) _schedulePersist();
   }
 
   static Timer? _persistTimer;
@@ -107,7 +111,19 @@ class AppLogger {
   /// Schreiben wird gebuendelt: Bei jedem Eintrag den ganzen Puffer zu
   /// serialisieren waere im Ausfuehrlich-Modus eine Bremse. Stattdessen
   /// wird 2 Sekunden nach der letzten Meldung EINMAL gespeichert.
+  ///
+  /// VOR init() wird NICHT geschrieben. Sonst gibt es ein schmales Fenster,
+  /// in dem die gesamte gespeicherte Historie verloren geht: der
+  /// Zone-Handler ist ab der ersten Zeile von main() aktiv und kann loggen,
+  /// bevor init() den Puffer geladen hat. Braucht init() dann laenger als
+  /// zwei Sekunden — kalter Start, traege SharedPreferences —, feuert dieser
+  /// Timer und schreibt einen Puffer, der NUR den frueh gemeldeten Fehler
+  /// enthaelt. init() laedt anschliessend genau diesen einen Eintrag.
+  ///
+  /// init() holt das Speichern am Ende selbst nach, damit fruehe Eintraege
+  /// trotzdem erhalten bleiben.
   static void _schedulePersist() {
+    if (!_loaded) return;
     _persistTimer?.cancel();
     _persistTimer = Timer(const Duration(seconds: 2), _persist);
   }
