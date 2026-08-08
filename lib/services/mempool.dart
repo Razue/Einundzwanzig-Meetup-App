@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -108,6 +109,60 @@ class MempoolService {
   /// Eigener User-Agent. Der Default von Dart ist `Dart/3.x (dart:io)` —
   /// ein deutliches Bot-Signal, das WAFs (Cloudflare) gern blocken.
   static const String _userAgent = '21Meetup/1.3 (Einundzwanzig Meetup App)';
+
+  // =============================================
+  // CORS: WARUM IM BROWSER ANDERE HEADER GELTEN
+  // =============================================
+  //
+  // Im Web schlug JEDE mempool-Anfrage fehl:
+  //
+  //   Access to fetch at 'https://mempool.space/api/blocks/tip/height'
+  //   has been blocked by CORS policy: Response to preflight request
+  //   doesn't pass access control check: It does not have HTTP ok status.
+  //
+  // Ursache ist `Cache-Control`. Der Header steht NICHT auf der
+  // CORS-Safelist, erzwingt damit einen Preflight — und mempool.space
+  // antwortet auf OPTIONS mit 404. Auf einfache GETs antwortet es dagegen
+  // mit `access-control-allow-origin: *`.
+  //
+  // Im Browser gemessen (flutter test --platform chrome):
+  //
+  //   ohne Header        HTTP 200
+  //   nur Accept         HTTP 200
+  //   nur User-Agent     HTTP 200   (Browser verwirft ihn stillschweigend)
+  //   nur Cache-Control  ClientException   <- Ursache
+  //
+  // `User-Agent` ist im Browser ein verbotener Header: er wird ohnehin
+  // verworfen, das WAF-Argument oben greift dort also nicht. Weglassen
+  // vermeidet nur die Konsolenwarnung.
+  //
+  // Das Ziel des Headers — kein veralteter Wert aus einem CDN — wird im Web
+  // stattdessen mit einem Cache-Buster im Query-String erreicht. Der loest
+  // keinen Preflight aus; verifiziert mit HTTP 200.
+  // =============================================
+
+  /// Header, die nur ausserhalb des Browsers gesetzt werden dürfen.
+  @visibleForTesting
+  static Map<String, String> get platformHeaders =>
+      kIsWeb ? const {} : const {'User-Agent': _userAgent};
+
+  /// `Cache-Control` nur nativ — im Web bricht er CORS.
+  @visibleForTesting
+  static Map<String, String> get noCacheHeaders =>
+      kIsWeb ? const {} : const {'Cache-Control': 'no-cache'};
+
+  /// Im Web einen Cache-Buster anhängen, nativ die URL unverändert lassen.
+  ///
+  /// Bewusst ein unauffälliger Parametername und ein Zeitstempel in Sekunden:
+  /// feiner aufgelöst würde jeder Aufruf am CDN vorbeigehen, gröber käme ein
+  /// veralteter Wert durch. Die Blockhöhe ändert sich alle ~10 Minuten.
+  @visibleForTesting
+  static Uri cacheBusted(Uri uri) => kIsWeb
+      ? uri.replace(queryParameters: {
+          ...uri.queryParameters,
+          '_': '${DateTime.now().millisecondsSinceEpoch ~/ 1000}',
+        })
+      : uri;
 
   /// EIN geteilter Client statt sechs Einzel-Clients.
   /// Die Top-Level-Funktion `http.get()` legt pro Aufruf einen neuen Client an
@@ -226,16 +281,17 @@ class MempoolService {
     // Verbindungspool nicht weiterverwendet werden.
     if (_clientHost != MempoolConfig.host) resetClient();
 
-    final uri = Uri.parse('${MempoolConfig.apiBase}$path');
+    // Im Browser wird der Cache anders umgangen als per Header — siehe
+    // noCacheHeaders und cacheBusted. Sonst blockt CORS die Anfrage ganz.
+    final uri = cacheBusted(Uri.parse('${MempoolConfig.apiBase}$path'));
 
     var timeout = MempoolConfig.timeout;
     if (maxTimeout != null && maxTimeout < timeout) timeout = maxTimeout;
 
     final r = await _client.get(uri, headers: {
-      'User-Agent': _userAgent,
+      ...platformHeaders,
       'Accept': 'application/json, text/plain, */*',
-      // Verhindert, dass uns ein CDN eine veraltete Blockhöhe unterschiebt.
-      'Cache-Control': 'no-cache',
+      ...noCacheHeaders,
     }).timeout(timeout);
 
     if (r.statusCode != 200) {
@@ -335,8 +391,8 @@ class MempoolService {
     // könnte das Ergebnis verfälschen.
     final client = http.Client();
     try {
-      final r = await client.get(uri, headers: {
-        'User-Agent': _userAgent,
+      final r = await client.get(cacheBusted(uri), headers: {
+        ...platformHeaders,
         'Accept': 'text/plain, */*',
       }).timeout(Duration(seconds: isOnion ? 45 : 20));
 
