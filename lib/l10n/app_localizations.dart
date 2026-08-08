@@ -1546,6 +1546,30 @@ abstract class AppLocalizations {
   /// **'MIT AMBER VERBINDEN'**
   String get profileConnectAmber;
 
+  /// No description provided for @profileConnectExtension.
+  ///
+  /// In de, this message translates to:
+  /// **'MIT BROWSERERWEITERUNG VERBINDEN'**
+  String get profileConnectExtension;
+
+  /// No description provided for @profileExtensionConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Erweiterung verbunden! Dein Schlüssel bleibt dort.'**
+  String get profileExtensionConnected;
+
+  /// No description provided for @profileExtensionAborted.
+  ///
+  /// In de, this message translates to:
+  /// **'In der Erweiterung abgelehnt.'**
+  String get profileExtensionAborted;
+
+  /// No description provided for @profileExtensionNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Nostr-Erweiterung im Browser gefunden.'**
+  String get profileExtensionNotFound;
+
   /// No description provided for @profileAmberDesc.
   ///
   /// In de, this message translates to:

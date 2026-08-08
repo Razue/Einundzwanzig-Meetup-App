@@ -105,12 +105,12 @@ class UserProfile {
       }
     }
 
-    // Amber-Modus: kein lokaler nsec, aber eine gültige Identität.
-    // npub kommt dann vom SigningService (verbundener Amber-Schlüssel).
-    final bool amberMode = await SigningService.isAmber;
-    if (amberMode) {
-      final amberNpub = await SigningService.npub();
-      if (amberNpub != null && amberNpub.isNotEmpty) npub = amberNpub;
+    // Externer Signer (Amber ODER Browsererweiterung): kein lokaler nsec,
+    // aber eine gueltige Identitaet. Der npub kommt dann vom SigningService.
+    final bool externalSigner = await SigningService.isExternalSigner;
+    if (externalSigner) {
+      final externalNpub = await SigningService.npub();
+      if (externalNpub != null && externalNpub.isNotEmpty) npub = externalNpub;
     }
 
     final profile = UserProfile(
@@ -119,7 +119,7 @@ class UserProfile {
       telegramHandle: prefs.getString('telegram') ?? "",
       nostrNpub: npub,
       twitterHandle: prefs.getString('twitter') ?? "",
-      isNostrVerified: hasKey || amberMode || (prefs.getBool('nostr_verified') ?? false),
+      isNostrVerified: hasKey || externalSigner || (prefs.getBool('nostr_verified') ?? false),
       isAdminVerified: prefs.getBool('admin_verified') ?? false,
       // Cache-Wert laden — wird durch reVerifyAdmin()/_checkPortalOrganizer überschrieben
       isAdmin: prefs.getBool('is_admin') ?? false,

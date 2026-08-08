@@ -209,7 +209,12 @@ class BackupService {
       // Signing-Modus + (im Amber-Fall) der verbundene npub.
       // WICHTIG: Im Amber-Modus wird KEIN nsec exportiert — der
       // private Schlüssel bleibt ausschließlich in Amber.
-      final bool isAmber = await SigningService.isAmber;
+      // isExternalSigner statt isAmber: bei einer Browsererweiterung (NIP-07)
+      // besitzt die App den Schluessel genauso wenig wie bei Amber. Ohne das
+      // haette das Backup versucht, einen nicht existierenden nsec zu
+      // exportieren, und beim Import waere die Identitaet verloren gegangen.
+      final bool isExternal = await SigningService.isExternalSigner;
+      final signingMode = await SigningService.getMode();
       final String? activeNpub = await SigningService.npub();
       final adminList = await AdminRegistry.getAdminList();
       final myVouches = await AdminRegistry.getMyVouches();
@@ -242,11 +247,13 @@ class BackupService {
         // So gehen beim Wiederherstellen keine Felder mehr verloren.
         'badges': badges.map((b) => b.toJson()).toList(),
         'nostr': {
-          'nsec': isAmber ? '' : (nsec ?? ''),
+          'nsec': isExternal ? '' : (nsec ?? ''),
           'npub': activeNpub ?? npub ?? '',
-          'priv_hex': isAmber ? '' : (privHex ?? ''),
-          'has_key': !isAmber && nsec != null,
-          'signing_mode': isAmber ? 'amber' : 'local',
+          'priv_hex': isExternal ? '' : (privHex ?? ''),
+          'has_key': !isExternal && nsec != null,
+          // mode.name liefert 'local' / 'amber' / 'nip07' — fuer die beiden
+          // alten Werte identisch zu vorher, also aufwaertskompatibel.
+          'signing_mode': signingMode.name,
         },
         'admin_registry': adminList.map((a) => a.toJson()).toList(),
         'my_vouches': myVouches.map((a) => a.toJson()).toList(),
@@ -484,14 +491,26 @@ class BackupService {
               user.hasNostrKey = true;
               await user.save();
             }
-          } else if ((nostrData['signing_mode'] ?? 'local') == 'amber') {
-            // Amber-Modus: kein nsec im Backup — nur den npub
-            // wiederherstellen. Der User signiert weiter über Amber.
-            final amberNpub = nostrData['npub'] ?? '';
-            if (amberNpub.isNotEmpty) {
+          } else if ((nostrData['signing_mode'] ?? 'local') == 'amber' ||
+              (nostrData['signing_mode'] ?? 'local') == 'nip07') {
+            // Externer Signer: kein nsec im Backup — nur den npub
+            // wiederherstellen. Der User signiert weiter über Amber bzw. die
+            // Browsererweiterung.
+            //
+            // Hinweis zur Plattform: ein Amber-Backup auf iOS oder ein
+            // NIP-07-Backup auf dem Telefon stellt die IDENTITAET wieder her,
+            // signieren kann die App dort aber nicht — Amber gibt es nur auf
+            // Android, NIP-07 nur im Browser. canSign() meldet das korrekt
+            // mit false, statt einen Schluessel vorzutaeuschen.
+            final externalNpub = nostrData['npub'] ?? '';
+            if (externalNpub.isNotEmpty) {
               try {
-                await SigningService.restoreAmber(amberNpub);
-                user.nostrNpub = amberNpub;
+                if ((nostrData['signing_mode'] ?? '') == 'nip07') {
+                  await SigningService.restoreNip07(externalNpub);
+                } else {
+                  await SigningService.restoreAmber(externalNpub);
+                }
+                user.nostrNpub = externalNpub;
                 user.isNostrVerified = true;
                 user.hasNostrKey = false; // kein lokaler Key
                 await user.save();
