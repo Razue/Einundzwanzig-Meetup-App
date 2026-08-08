@@ -170,10 +170,15 @@ class NewsService {
     final completer = Completer<String?>();
     final sockets = <WebSocket>[];
     var settled = false;
+    // EIN Zaehler fuer alle Relays dieses Abrufs: hier laufen mehrere
+    // Verbindungen parallel, ein Zaehler je Socket waere unuebersichtlich.
+    // Gemeldet wird beim Abschluss, also auch bei Timeout.
+    final tally = RelayParseTally(_tag, 'Artikel-Volltext');
 
     void finish(String? result) {
       if (settled) return;
       settled = true;
+      tally.report();
       for (final ws in sockets) {
         try { ws.close(); } catch (_) {}
       }
@@ -201,6 +206,7 @@ class NewsService {
             }
           ]));
           ws.listen((data) {
+            tally.message();
             try {
               final msg = jsonDecode(data as String) as List<dynamic>;
               if (msg.isNotEmpty && msg[0] == 'EVENT' && msg.length >= 3) {
@@ -208,7 +214,9 @@ class NewsService {
                 final content = (event['content'] ?? '').toString();
                 if (content.isNotEmpty) finish(content);
               }
-            } catch (_) {}
+            } catch (e) {
+              tally.failed(e);
+            }
           }, onError: (_) {}, onDone: () {});
         } catch (_) {
           // dieser Relay nicht erreichbar — die anderen laufen weiter

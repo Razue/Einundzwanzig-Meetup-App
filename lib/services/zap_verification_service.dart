@@ -120,6 +120,7 @@ class ZapVerificationService {
     bool isReceived,
   ) async {
     WebSocket? ws;
+    final tally = RelayParseTally('ZapVerification', 'Zap-Belege von $relayUrl');
     try {
       ws = await WebSocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<List<ZapReceipt>>();
@@ -131,6 +132,7 @@ class ZapVerificationService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -144,7 +146,7 @@ class ZapVerificationService {
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(receipts);
             }
-          } catch (_) {}
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete([]);
@@ -179,6 +181,7 @@ class ZapVerificationService {
         onTimeout: () => receipts,
       );
     } finally {
+      tally.report();
       ws?.close();
     }
   }
