@@ -23,6 +23,7 @@ import 'package:http/http.dart' as http;
 import 'package:nostr/nostr.dart';
 import 'secure_key_store.dart';
 import 'dart:math';
+import 'app_logger.dart';
 import 'relay_socket.dart';
 
 class Nip05Service {
@@ -138,6 +139,7 @@ class Nip05Service {
     String pubkeyHex,
   ) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('NIP05', 'Profil-NIP-05 von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final completer = Completer<String?>();
@@ -148,6 +150,7 @@ class Nip05Service {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -163,7 +166,7 @@ class Nip05Service {
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(null);
             }
-          } catch (_) {}
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(null);
@@ -187,6 +190,7 @@ class Nip05Service {
         onTimeout: () => null,
       );
     } finally {
+      tally.report();
       ws?.close();
     }
   }

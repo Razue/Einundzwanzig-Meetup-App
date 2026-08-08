@@ -206,7 +206,12 @@ class HumanityProofService {
       try {
         final result = await _searchZapActivity(relayUrl, pubkeyHex);
         if (result != null) return true;
-      } catch (_) {}
+      } catch (e) {
+        // debug: einzelne Relay-Ausfaelle sind Alltag. Ohne die Zeile war ein
+        // "kein Zap gefunden" aber nicht von "kein Relay geantwortet" zu
+        // unterscheiden — und davon haengt der Humanity-Proof ab.
+        AppLogger.debug('HumanityProof', 'Zap-Suche auf $relayUrl fehlgeschlagen: $e');
+      }
     }
     return false;
   }
@@ -232,6 +237,7 @@ class HumanityProofService {
     String pubkeyHex,
   ) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('HumanityProof', 'Zap-Suche von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<_ZapSearchResult?>();
@@ -248,6 +254,7 @@ class HumanityProofService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -321,7 +328,7 @@ class HumanityProofService {
                 completer.complete(found);
               }
             }
-          } catch (_) {}
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(null);
@@ -382,6 +389,7 @@ class HumanityProofService {
         onTimeout: () => found,
       );
     } finally {
+      tally.report();
       ws?.close();
     }
   }
@@ -433,13 +441,19 @@ class HumanityProofService {
       try {
         final exists = await _checkEventExists(relayUrl, receiptEventId);
         if (exists) return true;
-      } catch (_) {}
+      } catch (e) {
+        // Antwortet kein Relay, liefert die Funktion false — also "Beleg
+        // existiert nicht", obwohl niemand nachgesehen hat. Der Unterschied
+        // stand bisher nirgends.
+        AppLogger.debug('HumanityProof', 'Beleg-Pruefung auf $relayUrl fehlgeschlagen: $e');
+      }
     }
     return false;
   }
 
   static Future<bool> _checkEventExists(String relayUrl, String eventId) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('HumanityProof', 'Beleg-Pruefung von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
       final completer = Completer<bool>();
@@ -450,6 +464,7 @@ class HumanityProofService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT') {
@@ -457,7 +472,7 @@ class HumanityProofService {
             } else if (message[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(false);
             }
-          } catch (_) {}
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(false);
@@ -477,6 +492,7 @@ class HumanityProofService {
         onTimeout: () => false,
       );
     } finally {
+      tally.report();
       ws?.close();
     }
   }

@@ -328,7 +328,7 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
       await launchUrl(Uri.parse('https://njump.me/$v'),
           mode: LaunchMode.externalApplication);
     } catch (e) {
-      AppLogger.warn('Meetup', 'Nostr-Profil nicht zu oeffnen: ${e.runtimeType}');
+      AppLogger.warn('Meetup', 'Nostr-Profil nicht zu oeffnen', e);
     }
   }
 

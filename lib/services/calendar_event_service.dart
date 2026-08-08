@@ -149,6 +149,7 @@ class CalendarEventService {
 
   static Future<List<NostrCalendarEvent>?> _fetchFromRelay(String relayUrl, int limit) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('Calendar', 'Nostr-Kalender von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final completer = Completer<List<NostrCalendarEvent>?>();
@@ -160,6 +161,7 @@ class CalendarEventService {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -169,7 +171,7 @@ class CalendarEventService {
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(results);
             }
-          } catch (_) {}
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) { if (!completer.isCompleted) completer.complete(results); },
         onDone: () { if (!completer.isCompleted) completer.complete(results); },
@@ -182,6 +184,7 @@ class CalendarEventService {
       AppLogger.debug(_tag, '$relayUrl Lesefehler: $e');
       return null;
     } finally {
+      tally.report();
       try { ws?.close(); } catch (_) {}
     }
   }

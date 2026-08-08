@@ -106,23 +106,40 @@ class ReputationPublisher {
       // User-Profil laden
       final user = await UserProfile.load();
 
-      // Social & Lightning Stats im Hintergrund laden (optional, best-effort)
+      // Social & Lightning Stats im Hintergrund laden (optional, best-effort).
+      //
+      // warn statt measure()/ERROR: schlaegt einer dieser Abrufe fehl, wird die
+      // Reputation OHNE die betroffenen Zahlen veroeffentlicht — erwartbar bei
+      // Relay-Ausfaellen, kein harter Defekt. measure() wuerde ERROR schreiben
+      // und den "nur Probleme"-Filter mit best-effort-Rauschen fuellen.
+      // Timeout ist schon abgefangen (onTimeout); der catch trifft echte Fehler.
+      // Bewusst 2-Argument-warn (kein 3-Argument), damit dieser PR nicht von #25
+      // abhaengt.
       SocialStats? socialStats;
       ZapStats? zapStats;
       try {
         socialStats = await SocialGraphService.getMyStats()
             .timeout(const Duration(seconds: 10), onTimeout: () => SocialStats.empty());
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warn('ReputationPublisher',
+            'Social-Stats fuer Reputation nicht ladbar — veroeffentliche ohne: $e');
+      }
       try {
         zapStats = await ZapVerificationService.getMyStats()
             .timeout(const Duration(seconds: 10), onTimeout: () => ZapStats.empty());
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warn('ReputationPublisher',
+            'Zap-Stats fuer Reputation nicht ladbar — veroeffentliche ohne: $e');
+      }
 
       // Humanity-Proof laden (lokal gespeichert)
       Map<String, dynamic>? humanityProof;
       try {
         humanityProof = await HumanityProofService.getProofForPublishing();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warn('ReputationPublisher',
+            'Humanity-Proof nicht ladbar — veroeffentliche ohne: $e');
+      }
 
       // Event-Content erstellen (datenschutzkonform!)
       final content = _buildContent(
@@ -390,6 +407,7 @@ class ReputationPublisher {
     String pubkeyHex,
   ) async {
     RelaySocket? ws;
+    final tally = RelayParseTally('ReputationPublisher', 'Reputations-Events von $relayUrl');
 
     try {
       ws = await RelaySocket.connect(relayUrl)
@@ -402,6 +420,7 @@ class ReputationPublisher {
 
       ws.listen(
         (data) {
+          tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
@@ -439,15 +458,13 @@ class ReputationPublisher {
                 );
                 if (!completer.isCompleted) completer.complete(repEvent);
               } catch (e) {
-                AppLogger.warn('ReputationPublisher', 'Content-Parse Fehler: $e');
-
+                tally.failed(e);
               }
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) completer.complete(null);
             }
           } catch (e) {
-            AppLogger.warn('ReputationPublisher', 'Message-Parse Fehler: $e');
-
+            tally.failed(e);
           }
         },
         onError: (e) {
@@ -481,6 +498,7 @@ class ReputationPublisher {
     } catch (e) {
       rethrow;
     } finally {
+      tally.report();
       try { ws?.close(); } catch (_) {}
     }
   }

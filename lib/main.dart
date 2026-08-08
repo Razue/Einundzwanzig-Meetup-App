@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -26,9 +27,71 @@ Future<void> widgetBackgroundCallback(Uri? uri) async {
   }
 }
 
-void main() async {
+/// Haengt den Logger an die beiden Stellen, an denen Flutter Fehler
+/// abliefert, die NIEMAND gefangen hat.
+///
+/// Ohne das landeten genau die wertvollsten Fehler nirgends: ein Absturz
+/// ging in die Debug-Konsole (im Release also ins Leere) und tauchte im
+/// persistenten Diagnose-Log nie auf — dem einzigen, das ein Tester
+/// ueberhaupt schicken kann. Berichte blieben deshalb bei "die App macht
+/// nichts mehr" stehen.
+///
+/// Beide Handler sind selbst gegen Fehler abgesichert: wirft der Handler,
+/// meldet Flutter das wieder an denselben Handler — eine Endlosschleife
+/// waehrend eines Absturzes ist das Letzte, was man dann braucht.
+void _installErrorHandlers() {
+  FlutterError.onError = (details) {
+    try {
+      AppLogger.error(
+        'Flutter',
+        details.library ?? 'widget',
+        details.exception,
+        details.stack,
+      );
+    } catch (_) {}
+    // Standardverhalten erhalten: Rotbild und Konsolenausgabe im Debug.
+    FlutterError.presentError(details);
+  };
+
+  // Unbehandelte Fehler ausserhalb des Widget-Baums (Futures, Streams,
+  // Plattform-Callbacks) auf den nativen Plattformen.
+  WidgetsBinding.instance.platformDispatcher.onError = (error, stack) {
+    try {
+      AppLogger.error('Async', 'Unbehandelter Fehler', error, stack);
+    } catch (_) {}
+    // Release: als behandelt melden, damit die App weiterlaeuft und der
+    // Tester das Diagnose-Log noch exportieren kann. Debug/Profile: false,
+    // damit der Fehler laut bleibt und kein korrupter Zustand still
+    // weiterlaeuft.
+    return kReleaseMode;
+  };
+}
+
+void main() {
+  // Die Zone ist im WEB unverzichtbar: dort ruft die Engine
+  // PlatformDispatcher.onError nicht auf. Nachweisbar daran, dass dart2js
+  // den Handler-Rumpf als toten Code aus dem Release-Bundle entfernt —
+  // derselbe Log-Aufruf ueberlebt in main() und im
+  // FlutterError.onError-Closure, im platformDispatcher-Closure nicht.
+  //
+  // Beide Wege bleiben stehen: greift die Zone (Fehler innerhalb von
+  // _start), meldet PlatformDispatcher.onError nichts mehr — es gibt also
+  // keine Doppeleintraege. Fehler aus Callbacks, die AUSSERHALB dieser Zone
+  // registriert wurden, erreichen umgekehrt nur PlatformDispatcher.onError.
+  runZonedGuarded(_start, (error, stack) {
+    try {
+      AppLogger.error('Zone', 'Unbehandelter Fehler', error, stack);
+    } catch (_) {}
+  });
+}
+
+Future<void> _start() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLogger.init(); // persistente Diagnose-Logs laden
+  // Flutter-/Platform-Handler erst danach: sie brauchen WidgetsBinding, und
+  // init() behaelt inzwischen auch Eintraege, die die Zone schon vorher
+  // geschrieben hat (siehe AppLogger.init).
+  _installErrorHandlers();
   // Umgebungs-Steckbrief ins Log — ohne diese Angaben ist ein Bugreport
   // kaum auswertbar (siehe Feldtest: Geraeteunterschiede blieben lange
   // unerkannt). Laeuft im Hintergrund, blockiert den Start nicht.

@@ -169,7 +169,7 @@ class SatoshiDuellService {
       _cachedAt = DateTime.now();
       return status;
     } catch (e) {
-      AppLogger.diag(_tag, 'fetchStatus fehlgeschlagen: ${e.runtimeType}');
+      AppLogger.diag(_tag, 'fetchStatus fehlgeschlagen: $e');
       return _cachedStatus ?? DuellStatus.empty;
     }
   }

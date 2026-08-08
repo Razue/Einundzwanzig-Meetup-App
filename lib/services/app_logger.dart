@@ -79,18 +79,31 @@ class AppLogger {
   /// Beim App-Start einmal aufrufen, um gespeicherte Logs zu laden.
   static Future<void> init() async {
     if (_loaded) return;
+    // Zone-Handler in main() kann schon vor init() loggen. Diese Eintraege
+    // duerfen beim Laden des persistenten Puffers nicht verworfen werden.
+    final early = List<LogEntry>.from(_buffer);
     try {
       final prefs = await SharedPreferences.getInstance();
       _verbose = prefs.getBool(_prefsVerboseKey) ?? false;
       final raw = prefs.getString(_prefsKey);
+      _buffer.clear();
       if (raw != null) {
         final list = jsonDecode(raw) as List;
-        _buffer
-          ..clear()
-          ..addAll(list.map((e) => LogEntry.fromJson(e as Map<String, dynamic>)));
+        _buffer.addAll(
+            list.map((e) => LogEntry.fromJson(e as Map<String, dynamic>)));
       }
-    } catch (_) {/* korrupter Puffer -> leer starten */}
+      _buffer.addAll(early);
+    } catch (_) {
+      // Korrupter Puffer -> fruehe Eintraege behalten, sonst leer starten.
+      _buffer
+        ..clear()
+        ..addAll(early);
+    }
     _loaded = true;
+    // Erst ab hier darf geschrieben werden (siehe _schedulePersist). Gab es
+    // fruehe Eintraege, jetzt nachholen — sonst waeren sie nur im Speicher
+    // und ein Absturz beim Start haette nichts hinterlassen.
+    if (early.isNotEmpty) _schedulePersist();
   }
 
   static Timer? _persistTimer;
@@ -98,7 +111,19 @@ class AppLogger {
   /// Schreiben wird gebuendelt: Bei jedem Eintrag den ganzen Puffer zu
   /// serialisieren waere im Ausfuehrlich-Modus eine Bremse. Stattdessen
   /// wird 2 Sekunden nach der letzten Meldung EINMAL gespeichert.
+  ///
+  /// VOR init() wird NICHT geschrieben. Sonst gibt es ein schmales Fenster,
+  /// in dem die gesamte gespeicherte Historie verloren geht: der
+  /// Zone-Handler ist ab der ersten Zeile von main() aktiv und kann loggen,
+  /// bevor init() den Puffer geladen hat. Braucht init() dann laenger als
+  /// zwei Sekunden — kalter Start, traege SharedPreferences —, feuert dieser
+  /// Timer und schreibt einen Puffer, der NUR den frueh gemeldeten Fehler
+  /// enthaelt. init() laedt anschliessend genau diesen einen Eintrag.
+  ///
+  /// init() holt das Speichern am Ende selbst nach, damit fruehe Eintraege
+  /// trotzdem erhalten bleiben.
   static void _schedulePersist() {
+    if (!_loaded) return;
     _persistTimer?.cancel();
     _persistTimer = Timer(const Duration(seconds: 2), _persist);
   }
@@ -153,9 +178,14 @@ class AppLogger {
     _record('INFO', tag, message);
   }
 
-  static void warn(String tag, String message) {
-    if (kDebugMode) print('[WARN:$tag] $message');
-    _record('WARN', tag, message);
+  /// Warnung. Der optionale [error] wird MIT MELDUNG angehaengt, nicht nur
+  /// mit Typ: `${e.runtimeType}` liefert "UnsupportedError" und damit nichts
+  /// Verwertbares, `$e` liefert "Unsupported operation: Platform._version"
+  /// und zeigt direkt auf die Ursache.
+  static void warn(String tag, String message, [Object? error]) {
+    final detail = error != null ? '$message — ${error.runtimeType}: $error' : message;
+    if (kDebugMode) print('[WARN:$tag] $detail');
+    _record('WARN', tag, detail);
   }
 
   static void error(String tag, String message, [Object? error, StackTrace? stack]) {
@@ -166,13 +196,28 @@ class AppLogger {
     }
     // Fehlertyp IMMER mitschreiben — "hat nicht geklappt" ohne Ursache
     // ist der Grund, warum Logs bisher nichts wert waren.
-    final detail = error != null ? '$message — ${error.runtimeType}: $error' : message;
-    _record('ERROR', tag, detail);
-    // Erste Stack-Zeile hilft beim Einordnen, ohne das Log zu fluten.
-    if (stack != null && _verbose) {
-      final first = stack.toString().split('\n').take(3).join(' | ');
-      _record('DEBUG', tag, 'Stack: $first');
+    final buf = StringBuffer(message);
+    if (error != null) buf.write(' — ${error.runtimeType}: $error');
+    // Stack-Kopf IMMER mitschreiben, nicht mehr nur im Ausfuehrlich-Modus:
+    // ein Crash ohne Herkunft ist wieder nur "irgendwas ist kaputt", und
+    // ausgerechnet Abstuerze kann man nicht nachstellen, um dann das
+    // ausfuehrliche Log einzuschalten.
+    //
+    // Bewusst als Teil DIESES Eintrags statt als eigener DEBUG-Eintrag: der
+    // Log-Screen kann auf "nur Probleme" filtern (ERROR/WARN) — ein
+    // separater DEBUG-Eintrag waere genau dann weg, wenn man ihn braucht.
+    // Mit ' | ' statt Zeilenumbruch, damit exportText() eine Zeile pro
+    // Eintrag behaelt.
+    if (stack != null) {
+      final frames = stack
+          .toString()
+          .split('\n')
+          .map((l) => l.trim())
+          .where((l) => l.isNotEmpty)
+          .take(2);
+      if (frames.isNotEmpty) buf.write(' | bei ${frames.join(' <- ')}');
     }
+    _record('ERROR', tag, buf.toString());
   }
 
   /// Sicherheitsrelevantes Ereignis — landet IMMER im Puffer.
@@ -214,5 +259,57 @@ class AppLogger {
   static void diag(String tag, String message) {
     if (kDebugMode) print('[DIAG:$tag] $message');
     _record('INFO', tag, message);
+  }
+}
+
+/// Zaehlt nicht auswertbare Nachrichten EINER Relay-Subscription und meldet
+/// sie einmal am Ende statt pro Nachricht.
+///
+/// Die Relay-Listener der App hatten bisher zwei Varianten, und beide waren
+/// unbrauchbar:
+///
+///   - `catch (_) {}` — fehlerhafte Events verschwanden spurlos. Man sah eine
+///     zu kurze Admin-Liste oder fehlende Buergschaften, ohne Hinweis darauf,
+///     dass Events verworfen wurden.
+///   - eine warn-Zeile pro Nachricht (admin_registry) — ein Relay mit
+///     kaputten Events fuellte damit den 800er-Ringpuffer.
+///
+/// "3 von 47 nicht auswertbar" sagt mehr als beides und kostet eine Zeile.
+/// Ist alles in Ordnung, schweigt der Zaehler vollstaendig.
+class RelayParseTally {
+  final String tag;
+  final String label;
+  int _seen = 0;
+  int _failed = 0;
+  Object? _firstError;
+  bool _reported = false;
+
+  RelayParseTally(this.tag, this.label);
+
+  /// Pro eingehender Relay-Nachricht aufrufen.
+  void message() => _seen++;
+
+  /// Im catch der Nachrichtenverarbeitung aufrufen.
+  /// [error] wird nur beim ersten Fehlschlag behalten und bei [report] auf
+  /// debug ausgegeben — eine Stichprobe der Ursache ohne Log-Flut.
+  void failed([Object? error]) {
+    _failed++;
+    _firstError ??= error;
+  }
+
+  int get seen => _seen;
+  int get failures => _failed;
+
+  /// Beim Abschluss der Subscription aufrufen — am besten im `finally`, damit
+  /// auch Timeout und onDone erfasst sind, nicht nur EOSE.
+  /// Mehrfach aufrufbar: weitere Aufrufe sind no-ops (z. B. finish + finally).
+  void report() {
+    if (_reported || _failed == 0) return;
+    _reported = true;
+    AppLogger.warn(
+        tag, '$label: $_failed von $_seen Relay-Nachrichten nicht auswertbar');
+    if (_firstError != null) {
+      AppLogger.debug(tag, '$label — erster Parse-Fehler: $_firstError');
+    }
   }
 }

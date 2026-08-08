@@ -56,7 +56,7 @@ class NpubChip extends StatelessWidget {
       final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
       if (!ok) throw Exception('launchUrl lieferte false');
     } catch (e) {
-      AppLogger.warn('Npub', 'Profil konnte nicht geöffnet werden: ${e.runtimeType}');
+      AppLogger.warn('Npub', 'Profil konnte nicht geöffnet werden', e);
       if (context.mounted) _copy(context);
     }
   }
