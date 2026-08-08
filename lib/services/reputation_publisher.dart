@@ -108,28 +108,38 @@ class ReputationPublisher {
 
       // Social & Lightning Stats im Hintergrund laden (optional, best-effort).
       //
-      // measure() statt `catch (_) {}`: schlaegt einer dieser Abrufe fehl,
-      // wird die Reputation OHNE die betroffenen Zahlen veroeffentlicht — das
-      // Ergebnis sieht dann aus wie "der Nutzer hat keine Follower/Zaps",
-      // nicht wie ein Fehler. Genau solche stillen Luecken waren im Log nicht
-      // wiederzufinden. Ein Timeout ist hier schon abgefangen (onTimeout),
-      // der catch traf also echte Fehler.
-      final socialStats = await AppLogger.measure<SocialStats>(
-          'ReputationPublisher',
-          'Social-Stats fuer Reputation laden',
-          () => SocialGraphService.getMyStats()
-              .timeout(const Duration(seconds: 10), onTimeout: () => SocialStats.empty()));
-      final zapStats = await AppLogger.measure<ZapStats>(
-          'ReputationPublisher',
-          'Zap-Stats fuer Reputation laden',
-          () => ZapVerificationService.getMyStats()
-              .timeout(const Duration(seconds: 10), onTimeout: () => ZapStats.empty()));
+      // warn statt measure()/ERROR: schlaegt einer dieser Abrufe fehl, wird die
+      // Reputation OHNE die betroffenen Zahlen veroeffentlicht — erwartbar bei
+      // Relay-Ausfaellen, kein harter Defekt. measure() wuerde ERROR schreiben
+      // und den "nur Probleme"-Filter mit best-effort-Rauschen fuellen.
+      // Timeout ist schon abgefangen (onTimeout); der catch trifft echte Fehler.
+      // Bewusst 2-Argument-warn (kein 3-Argument), damit dieser PR nicht von #25
+      // abhaengt.
+      SocialStats? socialStats;
+      ZapStats? zapStats;
+      try {
+        socialStats = await SocialGraphService.getMyStats()
+            .timeout(const Duration(seconds: 10), onTimeout: () => SocialStats.empty());
+      } catch (e) {
+        AppLogger.warn('ReputationPublisher',
+            'Social-Stats fuer Reputation nicht ladbar — veroeffentliche ohne: $e');
+      }
+      try {
+        zapStats = await ZapVerificationService.getMyStats()
+            .timeout(const Duration(seconds: 10), onTimeout: () => ZapStats.empty());
+      } catch (e) {
+        AppLogger.warn('ReputationPublisher',
+            'Zap-Stats fuer Reputation nicht ladbar — veroeffentliche ohne: $e');
+      }
 
       // Humanity-Proof laden (lokal gespeichert)
-      final humanityProof = await AppLogger.measure<Map<String, dynamic>?>(
-          'ReputationPublisher',
-          'Humanity-Proof laden',
-          () => HumanityProofService.getProofForPublishing());
+      Map<String, dynamic>? humanityProof;
+      try {
+        humanityProof = await HumanityProofService.getProofForPublishing();
+      } catch (e) {
+        AppLogger.warn('ReputationPublisher',
+            'Humanity-Proof nicht ladbar — veroeffentliche ohne: $e');
+      }
 
       // Event-Content erstellen (datenschutzkonform!)
       final content = _buildContent(
