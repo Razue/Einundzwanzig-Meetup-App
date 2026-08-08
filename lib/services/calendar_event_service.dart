@@ -12,11 +12,11 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'relay_config.dart';
 import 'signing_service.dart';
 import 'app_logger.dart';
+import 'relay_socket.dart';
 
 const String _tag = 'Calendar';
 const int kTimeEventKind = 31923; // zeitbasiert
@@ -148,10 +148,10 @@ class CalendarEventService {
   }
 
   static Future<List<NostrCalendarEvent>?> _fetchFromRelay(String relayUrl, int limit) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     final tally = RelayParseTally('Calendar', 'Nostr-Kalender von $relayUrl');
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_timeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final completer = Completer<List<NostrCalendarEvent>?>();
       final results = <NostrCalendarEvent>[];
 
@@ -260,7 +260,7 @@ class CalendarEventService {
     int ok = 0;
     for (final relayUrl in relays) {
       try {
-        final ws = await WebSocket.connect(relayUrl).timeout(RelayConfig.publishTimeout);
+        final ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.publishTimeout);
         ws.add(eventJson);
         await Future.delayed(const Duration(seconds: 2));
         ws.close();

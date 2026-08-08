@@ -32,7 +32,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:nostr/nostr.dart';
 import '../models/badge.dart';
@@ -43,6 +42,7 @@ import 'badge_security.dart';
 import 'admin_registry.dart';
 import 'trust_score_service.dart';
 import 'app_logger.dart';
+import 'relay_socket.dart';
 
 class PromotionClaimService {
   // Nostr Event Kind für Admin Claims
@@ -140,7 +140,7 @@ class PromotionClaimService {
 
     for (final relayUrl in _relays) {
       try {
-        final ws = await WebSocket.connect(relayUrl)
+        final ws = await RelaySocket.connect(relayUrl)
             .timeout(const Duration(seconds: 5));
         ws.add(eventJson);
         await Future.delayed(const Duration(seconds: 2));
@@ -353,11 +353,11 @@ class PromotionClaimService {
   }
 
   static Future<List<_RawClaim>?> _fetchFromSingleRelay(String relayUrl) async {
-    WebSocket? ws;
+    RelaySocket? ws;
     final tally = RelayParseTally('PromotionClaim', 'Promotion-Claims von $relayUrl');
 
     try {
-      ws = await WebSocket.connect(relayUrl).timeout(_relayTimeout);
+      ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
 
       final completer = Completer<List<_RawClaim>>();
       final claims = <_RawClaim>[];
