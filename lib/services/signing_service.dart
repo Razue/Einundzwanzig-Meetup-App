@@ -32,6 +32,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:nostr/nostr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -405,7 +406,19 @@ class Nip07NostrSigner implements NostrSigner {
   /// Der beim Verbinden gemerkte pubkey — gegen den wird geprüft.
   final String expectedPubkeyHex;
 
-  const Nip07NostrSigner({required this.expectedPubkeyHex});
+  /// NUR für Tests: ersetzt den Weg zur Erweiterung.
+  ///
+  /// Ohne diese Naht wären die drei Sicherheitsprüfungen in signEvent
+  /// (Kontowechsel, veränderter Event-Typ, veränderter Inhalt) nicht
+  /// automatisiert prüfbar: nip07SignEvent ist eine Top-Level-Funktion hinter
+  /// einem bedingten Export und lässt sich nicht ersetzen. Genau diese drei
+  /// Prüfungen sind der sicherheitsrelevante Teil des Signers — die sollten
+  /// nicht ungetestet bleiben.
+  @visibleForTesting
+  final Future<Map<String, dynamic>> Function(Map<String, dynamic>)?
+      debugSignFn;
+
+  const Nip07NostrSigner({required this.expectedPubkeyHex, this.debugSignFn});
 
   /// Ist eine NIP-07-Erweiterung vorhanden? Ausserhalb des Browsers false.
   static Future<bool> isAvailable() => nip07Available();
@@ -449,7 +462,7 @@ class Nip07NostrSigner implements NostrSigner {
 
     final Map<String, dynamic> signed;
     try {
-      signed = await nip07SignEvent(unsigned);
+      signed = await (debugSignFn ?? nip07SignEvent)(unsigned);
     } on Nip07RejectedException {
       throw const SigningCancelledException();
     } on Nip07Exception catch (e) {
@@ -469,9 +482,30 @@ class Nip07NostrSigner implements NostrSigner {
           'Die Erweiterung hat kein signiertes Event geliefert.');
     }
 
-    // tags/content der Erweiterung gewinnen — id und sig sind darüber
-    // berechnet. Manche Erweiterungen normalisieren Tags (z. B. Sortierung
-    // oder zusätzliche Felder); Caller-Kopien würden das Event ungültig machen.
+    // kind und content dürfen sich NICHT ändern.
+    //
+    // Bei tags ist die Übernahme richtig: id und sig sind nach NIP-01 darüber
+    // berechnet, und Normalisierung durch die Erweiterung (Sortierung,
+    // Zusatzfelder) ist legitim — eine Caller-Kopie würde das Event ungültig
+    // machen und Relays würden es verwerfen.
+    //
+    // Für kind und content gilt das nicht. Würden sie ungeprüft übernommen,
+    // veröffentlichte die App Inhalte, die sie nicht verfasst hat, unter dem
+    // Namen des Nutzers — und ihre eigene Logik (Reputations-Payload,
+    // Badge-Proofs) rechnete danach mit verändertem Inhalt weiter. Eine
+    // Erweiterung, die hier abweicht, ist defekt; das will man sehen, nicht
+    // stillschweigend übernehmen.
+    if (signed['kind'] is int && signed['kind'] as int != kind) {
+      throw SigningException(
+          'Die Erweiterung hat einen anderen Event-Typ signiert '
+          '(${signed['kind']} statt $kind).');
+    }
+    if (signed.containsKey('content') &&
+        (signed['content'] ?? '').toString() != content) {
+      throw const SigningException(
+          'Die Erweiterung hat den Inhalt des Events verändert.');
+    }
+
     return SignedEvent(
       id: (signed['id'] ?? '').toString(),
       pubkey: signedPubkey,
@@ -480,11 +514,12 @@ class Nip07NostrSigner implements NostrSigner {
       createdAt: signed['created_at'] is int
           ? signed['created_at'] as int
           : createdAt,
-      kind: signed['kind'] is int ? signed['kind'] as int : kind,
+      // kind und content stammen aus dem Aufruf, nicht aus der Antwort — die
+      // Prüfung oben stellt sicher, dass beides übereinstimmt. So steht die
+      // Invariante im Code, statt sie aus zwei Stellen erschliessen zu müssen.
+      kind: kind,
       tags: _tagsFromSigned(signed['tags'], tags),
-      content: signed.containsKey('content')
-          ? (signed['content'] ?? '').toString()
-          : content,
+      content: content,
       sig: sig,
     );
   }
@@ -721,15 +756,24 @@ class SigningService {
   /// Startet den Verbindungs-Flow mit der Browsererweiterung und
   /// persistiert pubkey + Modus bei Erfolg.
   ///
-  /// Ein zuvor lokal gespeicherter nsec wird gelöscht: im Erweiterungs-Modus
-  /// darf kein zweiter Schlüssel in der App liegen (Backup/hasKey würden sonst
-  /// eine lokale Identität vortäuschen).
+  /// Ein vorhandener lokaler nsec wird BEWUSST NICHT gelöscht.
+  ///
+  /// Hier stand kurzzeitig ein `SecureKeyStore.deleteKeys()`, um den
+  /// gemischten Zustand "lokaler Schlüssel plus Erweiterungs-Modus" zu
+  /// vermeiden. Das war ein Datenverlust-Pfad: ein Tipp auf "Mit
+  /// Browsererweiterung verbinden" plus Freigabe in der Erweiterung hätte den
+  /// nsec unwiderruflich gelöscht — ohne Warnung, ohne Rückfrage, und wer
+  /// kein Backup hatte, wäre seine Identität für immer los gewesen.
+  /// connectAmber() löscht ebenfalls nicht, die beiden Knöpfe nebeneinander
+  /// hätten sich also grundlegend verschieden verhalten.
+  ///
+  /// Der gemischte Zustand ist stattdessen dort entschärft, wo er wehtat: das
+  /// Backup sichert Schlüssel nach ihrer tatsächlichen EXISTENZ statt nach dem
+  /// Modus (siehe backup_service). Damit geht nichts verloren, egal in welcher
+  /// Reihenfolge jemand Schlüssel anlegt und Signer verbindet.
   static Future<Nip07ConnectResult> connectNip07() async {
     final result = await Nip07NostrSigner.connect();
     if (result is Nip07ConnectSuccess) {
-      if (await SecureKeyStore.hasKey()) {
-        await SecureKeyStore.deleteKeys();
-      }
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_nip07PubkeyHexKey, result.pubkeyHex);
       await prefs.setString(_nip07NpubKey, result.npub);
