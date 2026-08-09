@@ -275,6 +275,24 @@ void main() {
           reason: 'der Sitzungsschluessel darf nicht liegenbleiben');
     });
 
+    test('useLocalMode raeumt die Bunker-Sitzung mit ab', () async {
+      // Wechsel-Pfad: vorher blieb der Sitzungsschluessel liegen, wenn man
+      // nur den Modus auf local stellte (Schluessel erzeugen / Import).
+      SharedPreferences.setMockInitialValues({});
+      final store = mockSecureStorage();
+      await SigningService.restoreNip46(
+        npub: _myNpub,
+        bunkerUri: _bunkerUri,
+        clientSecretKeyHex: _clientKey,
+      );
+      await SigningService.useLocalMode();
+
+      expect(await SigningService.getMode(), SigningMode.local);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('nip46_bunker_uri'), isNull);
+      expect(store['nip46_client_sk'], isNull);
+    });
+
   });
 
   // Der Signer UEBERNIMMT diese Liste und merkt sie sich fuer die Sitzung.

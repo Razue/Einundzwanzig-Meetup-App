@@ -438,9 +438,9 @@ class Nip46Client {
       }
       _links[url] = link;
       _subs.add(link.stream.listen(
-        _onMessage,
+        (data) => _onMessage(url, data),
         onError: (Object e) => _dropLink(url),
-        onDone: () => _dropLink(url),
+        onDone: () => _dropLink(url, closeSocket: false),
         cancelOnError: false,
       ));
       // `since` hält alte Antworten aus dem Relay-Speicher fern; die Toleranz
@@ -459,11 +459,21 @@ class Nip46Client {
     }
   }
 
-  void _dropLink(String url) {
-    _links.remove(url);
+  void _dropLink(String url, {bool closeSocket = true}) {
+    final link = _links.remove(url);
+    if (link == null) return;
+    // Socket-Close nicht synchron aus dem Stream-Listener (CLOSED): sonst
+    // Reentrancy beim Schliessen des Controllers. onDone braucht kein close
+    // mehr — der Stream ist schon tot.
+    if (!closeSocket) return;
+    scheduleMicrotask(() {
+      try {
+        link.close();
+      } catch (_) {}
+    });
   }
 
-  void _onMessage(dynamic data) {
+  void _onMessage(String url, dynamic data) {
     if (data is! String) return;
     try {
       final decoded = jsonDecode(data);
@@ -478,13 +488,15 @@ class Nip46Client {
       }
 
       // Das Relay hat unser Abo beendet (z. B. Auth-Pflicht). Ohne Abo kann
-      // keine Antwort mehr eintreffen — das darf nicht stumm bleiben, sonst
-      // sieht es aus wie ein schweigender Signer.
+      // keine Antwort mehr eintreffen — Link droppen, sonst bleiben spaetere
+      // EVENT-Publishes an einer toten Subscription haengen und laufen in den
+      // vollen Timeout (sah aus wie ein schweigender Signer).
       if (decoded[0] == 'CLOSED') {
         AppLogger.warn(
             'Nip46',
             'Ein Relay hat das Abo beendet: '
                 '${decoded.length > 2 ? decoded[2] : "ohne Angabe"}');
+        _dropLink(url);
         return;
       }
 
