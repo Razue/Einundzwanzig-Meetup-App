@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
@@ -18,6 +19,8 @@ import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'platform_proof_service.dart'; // NEU
 import 'humanity_proof_service.dart'; // NEU
+import 'pbkdf2/pbkdf2_dart.dart';
+import 'pbkdf2/pbkdf2_fast.dart';
 import 'app_logger.dart';
 
 class BackupService {
@@ -55,42 +58,49 @@ class BackupService {
 
   /// PBKDF2-HMAC-SHA256 Key Derivation
   /// Erzeugt einen 256-Bit AES-Key aus Passwort + Salt
-  static enc.Key _deriveKey(String password, Uint8List salt) {
-    // PBKDF2 Implementation mit HMAC-SHA256
+  ///
+  /// ASYNCHRON, weil die Rechnung teuer ist — 600.000 HMAC-Runden. Zwei Wege,
+  /// beide mit demselben Ergebnis:
+  ///
+  ///   Web:   WebCrypto (`crypto.subtle`). In Dart brauchte dasselbe unter
+  ///          dart2js rund 100 Sekunden, und die Oberfläche stand dabei.
+  ///          Nutzer hielten die App für hängend und tippten mehrfach.
+  ///   Nativ: dieselbe Dart-Rechnung, aber in einem Isolate. Die Dauer bleibt
+  ///          (Sekunden, nicht Minuten), die Oberfläche bleibt bedienbar.
+  ///
+  /// Bitgleichheit ist Pflicht, nicht Kür: ein abweichender Schlüssel machte
+  /// jedes bestehende Backup unlesbar. PBKDF2-HMAC-SHA256 ist vollständig
+  /// spezifiziert, und beide Wege sind gegeneinander geprüft
+  /// (test/pbkdf2_equality_test.dart und test/pbkdf2_web_equality_test.dart).
+  static Future<enc.Key> _deriveKey(String password, Uint8List salt) async {
     final passwordBytes = utf8.encode(password);
-    final hmac = Hmac(sha256, passwordBytes);
 
-    // PBKDF2: Key = T1 || T2 || ... || T_ceil(keyLen/hashLen)
-    // Für 32 Byte Key und SHA-256 (32 Byte Output) brauchen wir nur T1
-    final derivedKey = _pbkdf2F(hmac, salt, _pbkdf2Iterations, 1);
+    final fast = await pbkdf2Fast(
+      password: passwordBytes,
+      salt: salt,
+      iterations: _pbkdf2Iterations,
+      keyBytes: _keyLengthBytes,
+    );
+    if (fast != null) return enc.Key(fast);
 
-    return enc.Key(Uint8List.fromList(derivedKey));
+    // Kein WebCrypto: selbst rechnen, aber nicht auf dem UI-Thread.
+    // Im Browser läuft compute() ohne Isolate direkt durch — dort ist das
+    // aber auch nur der Notfallweg (unsicherer Kontext ohne crypto.subtle).
+    final bytes = await compute(
+      pbkdf2Dart,
+      Pbkdf2Request(
+        password: passwordBytes,
+        salt: salt,
+        iterations: _pbkdf2Iterations,
+        keyBytes: _keyLengthBytes,
+      ),
+    );
+    return enc.Key(bytes);
   }
 
-  /// PBKDF2 F-Funktion: F(Password, Salt, c, i)
-  /// = U1 XOR U2 XOR ... XOR Uc
-  static List<int> _pbkdf2F(Hmac hmac, Uint8List salt, int iterations, int blockIndex) {
-    // U1 = HMAC(Password, Salt || INT_32_BE(i))
-    final saltWithIndex = Uint8List(salt.length + 4);
-    saltWithIndex.setRange(0, salt.length, salt);
-    saltWithIndex[salt.length + 0] = (blockIndex >> 24) & 0xFF;
-    saltWithIndex[salt.length + 1] = (blockIndex >> 16) & 0xFF;
-    saltWithIndex[salt.length + 2] = (blockIndex >> 8) & 0xFF;
-    saltWithIndex[salt.length + 3] = (blockIndex) & 0xFF;
-
-    var u = hmac.convert(saltWithIndex).bytes;
-    final result = List<int>.from(u);
-
-    // U2 ... Uc
-    for (int i = 1; i < iterations; i++) {
-      u = hmac.convert(u).bytes;
-      for (int j = 0; j < result.length; j++) {
-        result[j] ^= u[j];
-      }
-    }
-
-    return result;
-  }
+  // Der Rechenkern liegt jetzt in pbkdf2/pbkdf2_dart.dart — compute() braucht
+  // eine Top-Level-Funktion, und dort ist er gegen eine unabhaengige
+  // Implementierung testbar.
 
   /// Erzeugt kryptographisch sicheren Zufalls-Salt
   static Uint8List _generateSalt() {
@@ -407,7 +417,7 @@ class BackupService {
       // erzwingt diese Rueckkehr, 50 ms geben zuverlaessig Zeit fuers Malen.
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      final key = _deriveKey(password, salt);
+      final key = await _deriveKey(password, salt);
       final iv = enc.IV.fromSecureRandom(16);
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
       final encrypted = encrypter.encrypt(jsonString, iv: iv);
@@ -572,7 +582,7 @@ class BackupService {
 
             final enc.Key key;
             try {
-              key = _deriveKey(password, salt);
+              key = await _deriveKey(password, salt);
             } finally {
               if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
             }
