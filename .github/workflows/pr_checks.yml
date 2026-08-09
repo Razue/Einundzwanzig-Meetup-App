@@ -48,6 +48,16 @@ jobs:
     - name: Tests
       run: flutter test
 
+    # Führt Dart WIRKLICH im Browser aus — der einzige Schritt, der das tut.
+    #
+    # Nötig, weil die Schlüsselableitung des Backups im Web über WebCrypto
+    # läuft und in Dart nur als Rückfall. Beide MÜSSEN bitgleich rechnen:
+    # ein abweichender Schlüssel macht jedes bestehende Backup unlesbar, und
+    # zwar ohne Fehlermeldung, die auf die Ursache zeigt. `flutter test` läuft
+    # in der VM und sieht WebCrypto nie, `flutter build web` übersetzt nur.
+    - name: Schlüsselableitung im echten Browser prüfen
+      run: flutter test --platform chrome test/pbkdf2_web_equality_test.dart
+
     # Der Web-Build ist hier drin, weil er die am wenigsten von Hand getestete
     # Plattform ist und gleichzeitig die, die Tester per Link bekommen.
     # dart:io-Aufrufe kompilieren für Web durch und scheitern erst zur
