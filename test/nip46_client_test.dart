@@ -260,6 +260,27 @@ void main() {
       expect(await client.ping(), isFalse);
       await client.close();
     });
+
+    test('CLOSED droppt den Link — naechste Anfrage baut neu auf', () async {
+      signer.respond = (r) => {'id': r['id'], 'result': 'pong'};
+      final client = build();
+      expect(await client.ping(), isTrue);
+      expect(signer.links, hasLength(1));
+      final first = signer.links.single;
+
+      first.pushRaw(jsonEncode(['CLOSED', 'sub', 'auth-required: login']));
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(first.closed, isTrue,
+          reason: 'nach CLOSED muss der Socket freigegeben werden');
+
+      expect(await client.ping(), isTrue);
+      expect(signer.links.length, greaterThan(1),
+          reason: 'ohne Drop bliebe die tote Subscription in _links und '
+              'es gaebe keinen Neuaufbau');
+      await client.close();
+    });
   });
 
   group('Fehlerwege', () {

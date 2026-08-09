@@ -773,6 +773,13 @@ class SigningService {
   }
 
   static Future<void> _setMode(SigningMode mode) async {
+    // Verlassen von nip46: Sitzung sofort raeumen. Sonst blieben nach
+    // connectAmber / connectNip07 / useLocalMode der Sitzungsschluessel und
+    // offene Relay-Subscriptions liegen — disconnectNip46() raeumt korrekt,
+    // der Wechsel-Pfad tat es vorher nicht.
+    if (mode != SigningMode.nip46) {
+      await _clearNip46Artifacts();
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_modeKey, switch (mode) {
       SigningMode.amber => 'amber',
@@ -1079,6 +1086,21 @@ class SigningService {
     }
   }
 
+  /// Schliesst laufende Sitzung + loescht Sitzungsschluessel und
+  /// Bunker-Prefs. Ohne Mode-Wechsel — den setzt der Aufrufer.
+  ///
+  /// Idempotent: auch aufrufbar, wenn gar keine nip46-Sitzung existiert.
+  static Future<void> _clearNip46Artifacts() async {
+    await _swapNip46Session(null);
+    try {
+      await SecureKeyStore.deleteNip46ClientKey();
+    } catch (_) {}
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_nip46PubkeyHexKey);
+    await prefs.remove(_nip46NpubKey);
+    await prefs.remove(_nip46BunkerUriKey);
+  }
+
   /// Verbindet über eine eingefügte `bunker://`-Adresse.
   ///
   /// Auf iOS ist das der Hauptweg: dort gibt es weder Amber noch eine
@@ -1314,12 +1336,9 @@ class SigningService {
 
   /// Trennt den Remote-Signer und räumt die Sitzung ab.
   static Future<void> disconnectNip46() async {
-    await _swapNip46Session(null);
-    await SecureKeyStore.deleteNip46ClientKey();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_nip46PubkeyHexKey);
-    await prefs.remove(_nip46NpubKey);
-    await prefs.remove(_nip46BunkerUriKey);
+    // _setMode(local) raeumt die Artefakte; hier vorab, damit auch ein
+    // Fehlschlag beim Prefs-Schreiben den In-Memory-Client nicht uebrig laesst.
+    await _clearNip46Artifacts();
     await _setMode(SigningMode.local);
   }
 

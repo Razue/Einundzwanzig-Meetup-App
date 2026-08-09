@@ -919,15 +919,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// Führt die vollständige Löschung durch. Nur nach Bestätigung +
   /// (optionalem) Backup aufrufen.
   Future<void> _performReset() async {
+    // Zuerst die laufende NIP-46-Sitzung schliessen (In-Memory-Client +
+    // Sitzungsschluessel). Nur deleteNip46ClientKey() liess offene Relays und
+    // den geheimen Schluessel in _nip46 bis zum Prozessende liegen.
+    try { await SigningService.disconnectNip46(); } catch (_) {}
     final p = await SharedPreferences.getInstance();
     await p.clear();
     myBadges.clear();
     await MeetupBadge.saveBadges([]);
     try { await SecureKeyStore.deleteKeys(); } catch (_) {}
-    // Der Sitzungsschluessel des Remote-Signers haengt bewusst nicht an
-    // deleteKeys() (das raeumt die Identitaet, nicht die Signer-Sitzung) und
-    // liegt im sicheren Speicher, nicht in den Preferences. Ohne diese Zeile
-    // blieb er nach dem Zuruecksetzen als verwaistes Geheimnis liegen.
+    // Idempotent: disconnectNip46 hat den Key schon geloescht; falls der
+    // Aufruf scheiterte, raeumen wir hier nach.
     try { await SecureKeyStore.deleteNip46ClientKey(); } catch (_) {}
     try { await PortalApiService.logout(); } catch (_) {}
     await NostrProfileService.clearCache();
