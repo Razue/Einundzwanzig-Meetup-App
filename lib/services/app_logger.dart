@@ -79,18 +79,31 @@ class AppLogger {
   /// Beim App-Start einmal aufrufen, um gespeicherte Logs zu laden.
   static Future<void> init() async {
     if (_loaded) return;
+    // Zone-Handler in main() kann schon vor init() loggen. Diese Eintraege
+    // duerfen beim Laden des persistenten Puffers nicht verworfen werden.
+    final early = List<LogEntry>.from(_buffer);
     try {
       final prefs = await SharedPreferences.getInstance();
       _verbose = prefs.getBool(_prefsVerboseKey) ?? false;
       final raw = prefs.getString(_prefsKey);
+      _buffer.clear();
       if (raw != null) {
         final list = jsonDecode(raw) as List;
-        _buffer
-          ..clear()
-          ..addAll(list.map((e) => LogEntry.fromJson(e as Map<String, dynamic>)));
+        _buffer.addAll(
+            list.map((e) => LogEntry.fromJson(e as Map<String, dynamic>)));
       }
-    } catch (_) {/* korrupter Puffer -> leer starten */}
+      _buffer.addAll(early);
+    } catch (_) {
+      // Korrupter Puffer -> fruehe Eintraege behalten, sonst leer starten.
+      _buffer
+        ..clear()
+        ..addAll(early);
+    }
     _loaded = true;
+    // Erst ab hier darf geschrieben werden (siehe _schedulePersist). Gab es
+    // fruehe Eintraege, jetzt nachholen — sonst waeren sie nur im Speicher
+    // und ein Absturz beim Start haette nichts hinterlassen.
+    if (early.isNotEmpty) _schedulePersist();
   }
 
   static Timer? _persistTimer;
@@ -98,7 +111,19 @@ class AppLogger {
   /// Schreiben wird gebuendelt: Bei jedem Eintrag den ganzen Puffer zu
   /// serialisieren waere im Ausfuehrlich-Modus eine Bremse. Stattdessen
   /// wird 2 Sekunden nach der letzten Meldung EINMAL gespeichert.
+  ///
+  /// VOR init() wird NICHT geschrieben. Sonst gibt es ein schmales Fenster,
+  /// in dem die gesamte gespeicherte Historie verloren geht: der
+  /// Zone-Handler ist ab der ersten Zeile von main() aktiv und kann loggen,
+  /// bevor init() den Puffer geladen hat. Braucht init() dann laenger als
+  /// zwei Sekunden — kalter Start, traege SharedPreferences —, feuert dieser
+  /// Timer und schreibt einen Puffer, der NUR den frueh gemeldeten Fehler
+  /// enthaelt. init() laedt anschliessend genau diesen einen Eintrag.
+  ///
+  /// init() holt das Speichern am Ende selbst nach, damit fruehe Eintraege
+  /// trotzdem erhalten bleiben.
   static void _schedulePersist() {
+    if (!_loaded) return;
     _persistTimer?.cancel();
     _persistTimer = Timer(const Duration(seconds: 2), _persist);
   }
@@ -256,6 +281,8 @@ class RelayParseTally {
   final String label;
   int _seen = 0;
   int _failed = 0;
+  Object? _firstError;
+  bool _reported = false;
 
   RelayParseTally(this.tag, this.label);
 
@@ -263,16 +290,26 @@ class RelayParseTally {
   void message() => _seen++;
 
   /// Im catch der Nachrichtenverarbeitung aufrufen.
-  void failed() => _failed++;
+  /// [error] wird nur beim ersten Fehlschlag behalten und bei [report] auf
+  /// debug ausgegeben — eine Stichprobe der Ursache ohne Log-Flut.
+  void failed([Object? error]) {
+    _failed++;
+    _firstError ??= error;
+  }
 
   int get seen => _seen;
   int get failures => _failed;
 
   /// Beim Abschluss der Subscription aufrufen — am besten im `finally`, damit
   /// auch Timeout und onDone erfasst sind, nicht nur EOSE.
+  /// Mehrfach aufrufbar: weitere Aufrufe sind no-ops (z. B. finish + finally).
   void report() {
-    if (_failed == 0) return;
+    if (_reported || _failed == 0) return;
+    _reported = true;
     AppLogger.warn(
         tag, '$label: $_failed von $_seen Relay-Nachrichten nicht auswertbar');
+    if (_firstError != null) {
+      AppLogger.debug(tag, '$label — erster Parse-Fehler: $_firstError');
+    }
   }
 }

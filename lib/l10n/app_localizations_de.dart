@@ -767,6 +767,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileConnectAmber => 'MIT AMBER VERBINDEN';
 
   @override
+  String get profileConnectExtension => 'MIT BROWSERERWEITERUNG VERBINDEN';
+
+  @override
+  String get profileExtensionConnected =>
+      'Erweiterung verbunden! Dein Schlüssel bleibt dort.';
+
+  @override
+  String get profileExtensionAborted => 'In der Erweiterung abgelehnt.';
+
+  @override
+  String get profileExtensionNotFound =>
+      'Keine Nostr-Erweiterung im Browser gefunden.';
+
+  @override
   String get profileAmberDesc =>
       'Amber ist ein separater Signer für Android, der deinen privaten ';
 

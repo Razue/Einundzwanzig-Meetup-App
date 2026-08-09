@@ -764,6 +764,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileConnectAmber => 'CONNECT WITH AMBER';
 
   @override
+  String get profileConnectExtension => 'CONNECT WITH BROWSER EXTENSION';
+
+  @override
+  String get profileExtensionConnected =>
+      'Extension connected! Your key stays there.';
+
+  @override
+  String get profileExtensionAborted => 'Rejected in the extension.';
+
+  @override
+  String get profileExtensionNotFound =>
+      'No Nostr extension found in this browser.';
+
+  @override
   String get profileAmberDesc =>
       'Amber is a separate signer for Android that keeps your private ';
 

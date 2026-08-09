@@ -1,0 +1,56 @@
+name: PR-Prüfung (analyze, tests, web-build)
+
+# Warum es das braucht: bisher lief als einziger Workflow build_apk.yml, und der
+# nur bei Push auf main. Pull Requests wurden also ohne jede automatische
+# Kontrolle gemergt — weder Analyzer noch Tests. Jeder Fehler fiel erst nach
+# dem Merge auf, oder gar nicht.
+#
+# Bewusst schnell gehalten (kein Android-SDK, kein Keystore, keine Signierung),
+# damit die Prüfung ein paar Minuten dauert und nicht als Bremse empfunden wird.
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: true
+
+    - name: Flutter-Version protokollieren
+      run: flutter --version
+
+    - name: Abhängigkeiten laden
+      run: flutter pub get
+
+    # WICHTIG: --no-fatal-infos --no-fatal-warnings.
+    # Das Projekt hat rund 235 bestehende Hinweise und Warnungen (ungenutzte
+    # Importe, deprecated APIs, Stil). Ohne die Flags wäre dieser Schritt ab
+    # dem ersten Tag rot und die Prüfung damit wertlos. So schlägt sie nur bei
+    # echten FEHLERN an — der Zustand, der einen Build wirklich bricht.
+    #
+    # Wer die Warnungen später aufräumt, kann die Flags stufenweise entfernen:
+    # zuerst --no-fatal-infos weglassen, dann --no-fatal-warnings.
+    - name: Analyzer (nur Fehler sind fatal)
+      run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+    - name: Tests
+      run: flutter test
+
+    # Der Web-Build ist hier drin, weil er die am wenigsten von Hand getestete
+    # Plattform ist und gleichzeitig die, die Tester per Link bekommen.
+    # dart:io-Aufrufe kompilieren für Web durch und scheitern erst zur
+    # Laufzeit — dieser Schritt fängt zumindest alles, was nicht übersetzt.
+    - name: Web-Build (Release)
+      run: flutter build web --release

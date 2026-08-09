@@ -646,7 +646,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     } catch (_) {}
   }
 
-  void _checkActiveSession() async { final s = await RollingQRService.loadSession(); if (s != null && !s.isExpired) { if (mounted) setState(() => _activeSession = s); _startSessionTimer(); } else { _sessionTimer?.cancel(); if (mounted) setState(() => _activeSession = null); } }
+  void _checkActiveSession() async { final s = await RollingQRService.loadSession(); if (s != null && !s.isExpired) { if (!mounted) return; setState(() => _activeSession = s); _startSessionTimer(); } else { _sessionTimer?.cancel(); if (mounted) setState(() => _activeSession = null); } }
   void _startSessionTimer() { _sessionTimer?.cancel(); _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) { if (_activeSession == null || _activeSession!.isExpired) { _sessionTimer?.cancel(); if (mounted) setState(() => _activeSession = null); return; } if (mounted) setState(() { final r = _activeSession!.remainingTime; _sessionTimeLeft = '${r.inHours}h ${(r.inMinutes % 60).toString().padLeft(2, '0')}m'; }); }); }
   void _syncOrganicAdminsInBackground() async { try { await PromotionClaimService.syncOrganicAdmins(); } catch (_) {} }
   void _checkDeviceIntegrity() async { try { final r = await DeviceIntegrityService.check(); if (r.isCompromised && mounted) setState(() => _deviceCompromised = true); } catch (_) {} }
@@ -707,7 +707,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Signatur ein Popup auslösen — das wäre beim App-Start unerwartet.
       // Amber-Nutzer verbinden sich weiter über den manuellen Weg.
       if (!await PortalApiService.hasToken()) {
-        if (await SigningService.isAmber) {
+        if (await SigningService.isExternalSigner) {
           // Bei Amber loest jede Signatur ein Popup aus — beim App-Start
           // waere das unerwartet. ABER: Frueher endete es hier stumm, und
           // Amber-Nutzer mit Leader-Status im Portal bekamen NIE die
@@ -738,7 +738,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           // SOFORT neu anmelden statt bis zum naechsten App-Start zu warten.
           // Vorher blieb ein Organisator nach einem Schluesselwechsel eine
           // ganze Sitzung lang ohne Kachel, obwohl er im Portal Leader ist.
-          if (!await SigningService.isAmber) {
+          if (!await SigningService.isExternalSigner) {
             final retry = await PortalApiService.loginWithNostr();
             if (retry.ok) {
               AppLogger.diag('Portal', 'Nach Token-Wechsel automatisch neu verbunden.');
@@ -771,7 +771,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         AppLogger.warn('Portal',
             'Token abgelehnt (HTTP ${res.status}) — wird erneuert.');
         await PortalApiService.deleteToken();
-        if (await SigningService.isAmber) {
+        if (await SigningService.isExternalSigner) {
           // Kein stilles Popup bei Amber — stattdessen ein sichtbarer Hinweis.
           if (mounted) _showPortalHint();
           return;

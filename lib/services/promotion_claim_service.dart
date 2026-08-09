@@ -401,7 +401,7 @@ class PromotionClaimService {
                 completer.complete(claims);
               }
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onError: (_) {
           if (!completer.isCompleted) completer.complete(<_RawClaim>[]);

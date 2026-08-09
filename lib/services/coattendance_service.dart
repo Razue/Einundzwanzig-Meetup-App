@@ -261,7 +261,7 @@ class CoAttendanceService {
             if (msg[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(out);
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onDone: () { if (!completer.isCompleted) completer.complete(out); },
         onError: (_) { if (!completer.isCompleted) completer.complete(null); },

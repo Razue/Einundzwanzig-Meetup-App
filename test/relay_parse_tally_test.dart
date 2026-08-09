@@ -35,17 +35,29 @@ void main() {
     expect(t.failures, 3);
   });
 
-  test('report() ist mehrfach aufrufbar, ohne zu verdoppeln — aber meldet erneut', () {
-    // Dokumentiert das tatsaechliche Verhalten: report() ist im finally
-    // platziert und wird pro Subscription genau einmal erreicht. Wer es
-    // zweimal aufruft, bekommt zwei Zeilen — deshalb gehoert es NICHT
-    // zusaetzlich an die EOSE-Stelle.
+  test('report() ist idempotent — zweiter Aufruf verdoppelt nicht', () {
     final t = RelayParseTally('T', 'X');
     t.message();
-    t.failed();
+    t.failed(FormatException('kaputt'));
     final before = AppLogger.entries.length;
     t.report();
     t.report();
-    expect(AppLogger.entries.length, before + 2);
+    expect(AppLogger.entries.length, before + 1,
+        reason: 'finish()+finally oder doppeltes report() darf nicht fluten');
+  });
+
+  test('erster Parse-Fehler landet im Ausfuehrlich-Modus als debug', () async {
+    await AppLogger.setVerbose(true);
+    final before = AppLogger.entries.length;
+    final t = RelayParseTally('T', 'Admin-Liste');
+    t.message();
+    t.failed(FormatException('ungueltiges EVENT'));
+    t.report();
+    expect(AppLogger.entries.length, before + 2,
+        reason: 'warn-Zusammenfassung + debug-Stichprobe');
+    expect(AppLogger.entries[before].level, 'WARN');
+    expect(AppLogger.entries[before + 1].level, 'DEBUG');
+    expect(AppLogger.entries[before + 1].message, contains('ungueltiges EVENT'));
+    await AppLogger.setVerbose(false);
   });
 }

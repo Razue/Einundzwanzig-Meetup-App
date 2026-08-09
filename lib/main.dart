@@ -59,7 +59,11 @@ void _installErrorHandlers() {
     try {
       AppLogger.error('Async', 'Unbehandelter Fehler', error, stack);
     } catch (_) {}
-    return true; // als behandelt melden, damit die App nicht abgeschossen wird
+    // Release: als behandelt melden, damit die App weiterlaeuft und der
+    // Tester das Diagnose-Log noch exportieren kann. Debug/Profile: false,
+    // damit der Fehler laut bleibt und kein korrupter Zustand still
+    // weiterlaeuft.
+    return kReleaseMode;
   };
 }
 
@@ -84,8 +88,9 @@ void main() {
 Future<void> _start() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLogger.init(); // persistente Diagnose-Logs laden
-  // Erst NACH init(): vorher wuerde ein früher Fehler in einen noch nicht
-  // geladenen Puffer geschrieben und beim Laden ueberschrieben werden.
+  // Flutter-/Platform-Handler erst danach: sie brauchen WidgetsBinding, und
+  // init() behaelt inzwischen auch Eintraege, die die Zone schon vorher
+  // geschrieben hat (siehe AppLogger.init).
   _installErrorHandlers();
   // Umgebungs-Steckbrief ins Log — ohne diese Angaben ist ein Bugreport
   // kaum auswertbar (siehe Feldtest: Geraeteunterschiede blieben lange

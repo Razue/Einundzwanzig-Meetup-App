@@ -491,7 +491,7 @@ class VouchingService {
             if (msg[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(result);
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onDone: () {
           if (!completer.isCompleted) completer.complete(result);
@@ -600,7 +600,7 @@ class VouchingService {
             if (msg[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(reports);
             }
-          } catch (_) { tally.failed(); }
+          } catch (e) { tally.failed(e); }
         },
         onDone: () {
           if (!completer.isCompleted) completer.complete(reports);
