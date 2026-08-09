@@ -273,8 +273,10 @@ class BackupService {
       // Identitaet abweichen.
       final signingMode = await SigningService.getMode();
       final String? activeNpub = await SigningService.npub();
-      final bool isExternal = signingMode == SigningMode.amber ||
-          signingMode == SigningMode.nip07;
+      // Eine Definition, nicht zwei: sonst wuerde ein neuer externer Modus
+      // hier vergessen und der Mischzustand still falsch gesichert.
+      final bool isExternal = await SigningService.isExternalSigner;
+      final nip46Session = await SigningService.nip46SessionForBackup();
       // nsec und npub MUESSEN zusammengehoeren. activeNpub ist im
       // Amber/NIP-07-Modus die externe Identitaet — die darf nie als
       // Keystore-npub neben einem lokalen nsec landen.
@@ -339,6 +341,20 @@ class BackupService {
           // Leer ausser im Mischzustand. Alte Backups ohne dieses Feld
           // bleiben lesbar (Import faellt auf npub zurueck).
           'active_npub': backupActiveNpub,
+          // Bunker-ADRESSE (NIP-46) — bewusst OHNE Sitzungsschluessel.
+          //
+          // Der Sitzungsschluessel ist die Berechtigung, mit der der Signer
+          // Anfragen dieser App annimmt. Laege er im Backup, waere die Datei
+          // fuer Bunker-Nutzer eine Signier-Berechtigung: wer sie hat und das
+          // Passwort bricht, koennte bis zum Widerruf Signaturen anfragen.
+          // Genau fuer diese Nutzer soll aber gelten, dass im Backup KEIN
+          // Schluessel liegt — das ist der Sinn eines externen Signers.
+          //
+          // Folge: nach dem Wiederherstellen bleibt die Identitaet erhalten
+          // (npub + Modus), signieren geht erst nach erneutem Verbinden.
+          // canSign() meldet das korrekt mit false — dieselbe Lage wie bei
+          // einem Amber-Backup auf iOS.
+          'nip46_bunker_uri': nip46Session?['bunker_uri'] ?? '',
         },
         'admin_registry': adminList.map((a) => a.toJson()).toList(),
         'my_vouches': myVouches.map((a) => a.toJson()).toList(),
@@ -690,9 +706,10 @@ class BackupService {
           // signieren kann die App dort aber nicht — Amber gibt es nur auf
           // Android, NIP-07 nur im Browser. canSign() meldet das korrekt
           // mit false, statt einen Schluessel vorzutaeuschen.
-          if (mode == 'amber' || mode == 'nip07') {
+          var externalRestored = false;
+          if (mode == 'amber' || mode == 'nip07' || mode == 'nip46') {
             // active_npub: externe Identitaet im Mischzustand.
-            // Fallback npub: reine Amber/NIP-07-Backups und aeltere
+            // Fallback npub: reine Amber/NIP-07/Bunker-Backups und aeltere
             // Misch-Backups ohne das neue Feld.
             final activeRaw = '${nostrData['active_npub'] ?? ''}';
             final externalNpub = activeRaw.isNotEmpty
@@ -702,6 +719,15 @@ class BackupService {
               try {
                 if (mode == 'nip07') {
                   await SigningService.restoreNip07(externalNpub);
+                } else if (mode == 'nip46') {
+                  // OHNE Sitzungsschluessel — der reist nicht mit. Ein
+                  // 'nip46_client_sk' aus einem aelteren Test-Backup wird
+                  // absichtlich IGNORIERT: sonst haette die Entscheidung
+                  // "die Sitzung reist nicht mit" ein Hintertuerchen.
+                  await SigningService.restoreNip46(
+                    npub: externalNpub,
+                    bunkerUri: '${nostrData['nip46_bunker_uri'] ?? ''}',
+                  );
                 } else {
                   await SigningService.restoreAmber(externalNpub);
                 }
@@ -711,9 +737,26 @@ class BackupService {
                 // nur den Keystore, nicht den aktiven Signer.
                 user.hasNostrKey = restoredLocalKey;
                 await user.save();
-              } catch (_) {/* ungültiger npub im Backup → ignorieren */}
+                externalRestored = true;
+              } catch (e) {
+                // Vorher wurde das stillschweigend verworfen. Bei einem
+                // Bunker-Backup ist das der wahrscheinlichste Fehlerfall
+                // (Sitzungsfelder fehlen oder sind kaputt), und ohne Meldung
+                // stand die App danach ohne aktiven Signer da.
+                AppLogger.warn(
+                    'BackupService',
+                    'Externer Signer ($mode) aus dem Backup nicht '
+                        'wiederherstellbar',
+                    e);
+              }
             }
-          } else if (restoredLocalKey) {
+          }
+
+          // Fallback: der externe Signer liess sich nicht wiederherstellen,
+          // ein lokaler Schluessel kam aber mit. Ohne diesen Zweig bliebe die
+          // App ohne nutzbaren Signier-Modus zurueck, obwohl der Schluessel
+          // im Keystore liegt.
+          if (!externalRestored && restoredLocalKey) {
             await SigningService.useLocalMode();
             final npub = '${nostrData['npub'] ?? ''}';
             user.nostrNpub = npub;

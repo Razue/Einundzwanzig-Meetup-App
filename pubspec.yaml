@@ -37,6 +37,10 @@ dependencies:
   crypto: ^3.0.6
   dbcrypt: ^2.0.0
   nostr: ^1.5.0
+  # NIP-44 (Grundlage für den Remote-Signer NIP-46): selbst umgesetzt, weil
+  # jedes NIP-44-Paket auf pub.dev über bip340 0.3 mit nostr 1.5.0 kollidiert.
+  pointycastle: ^3.9.1
+  convert: ^3.1.1
 
   # NEU: Verschlüsselung für das Backup
   encrypt: ^5.0.3

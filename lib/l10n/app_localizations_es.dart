@@ -800,6 +800,136 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileAmberAborted => 'Conexión cancelada en Amber.';
 
   @override
+  String get profileSwitchSignerHeading => 'Conectar otro firmante';
+
+  @override
+  String get profileDisconnectSigner => 'DESCONECTAR FIRMANTE';
+
+  @override
+  String get profileDisconnectTitle => '¿Desconectar el firmante?';
+
+  @override
+  String get profileDisconnectBody =>
+      'Se libera la conexión con el firmante. Si existe una clave local, la app la usará de nuevo — si no, no podrá firmar hasta que crees o importes una.\n\nLa autorización dentro del firmante permanece; puedes revocarla allí también.';
+
+  @override
+  String get profileDisconnectDone => 'Firmante desconectado.';
+
+  @override
+  String get profileSignerUnusable =>
+      'Ahora no se puede firmar — vuelve a conectar el firmante.';
+
+  @override
+  String get profileSwitchSignerHint =>
+      'Tu clave actual permanece guardada y en la copia de seguridad.';
+
+  @override
+  String get profileSwitchSignerTitle => '¿Cambiar de firmante?';
+
+  @override
+  String get profileSwitchSignerBody =>
+      'El firmante trae su propia clave. Si NO contiene la misma que antes, tu identidad cambia — tus insignias seguirán perteneciendo a la clave anterior.\n\nTu clave actual no se elimina: permanece en el almacenamiento y en la copia de seguridad, así que puedes volver.';
+
+  @override
+  String get profileSwitchSignerContinue => 'CONTINUAR';
+
+  @override
+  String get profileIdentityChanged =>
+      'Atención: el firmante usa una identidad distinta a la anterior. Tus insignias pertenecen a la clave previa.';
+
+  @override
+  String get profileConnectBunker => 'CONECTAR FIRMANTE REMOTO';
+
+  @override
+  String get bunkerTitle => 'Conectar un firmante remoto';
+
+  @override
+  String get bunkerIntro =>
+      'Tu clave permanece en el firmante. La app solo solicita firmas — en cualquier dispositivo.';
+
+  @override
+  String get bunkerModeSigner => 'Conectar app de firmante';
+
+  @override
+  String get bunkerModeSignerDesc =>
+      'La app muestra un código QR para que lo escanees en el firmante.';
+
+  @override
+  String get bunkerModePaste => 'Pegar una dirección bunker://';
+
+  @override
+  String get bunkerModePasteDesc =>
+      'Cópiala de nsec.app, Amber o Alby. La vía más fiable en iPhone.';
+
+  @override
+  String get bunkerPasteLabel => 'Dirección bunker://';
+
+  @override
+  String get bunkerPasteHint => 'bunker://…?relay=wss://…';
+
+  @override
+  String get bunkerConnect => 'CONECTAR';
+
+  @override
+  String get bunkerBack => 'ATRÁS';
+
+  @override
+  String get bunkerWaiting => 'Esperando la aprobación en el firmante …';
+
+  @override
+  String get bunkerWaitingHint =>
+      'Puede tardar hasta dos minutos. Mantén la app abierta.';
+
+  @override
+  String get bunkerScanHint =>
+      'Escanéalo en el firmante — o pega allí la dirección.';
+
+  @override
+  String get bunkerCopy => 'Copiar dirección';
+
+  @override
+  String get bunkerCopied => 'Dirección copiada.';
+
+  @override
+  String get bunkerOpenSigner => 'Abrir firmante';
+
+  @override
+  String get bunkerNoSignerApp =>
+      'No se encontró ninguna app de firmante. Usa «Pegar una dirección bunker://».';
+
+  @override
+  String get bunkerAuthOpen => 'Abrir aprobación en el navegador';
+
+  @override
+  String get bunkerAuthNeeded =>
+      'El firmante requiere aprobación en el navegador.';
+
+  @override
+  String get bunkerAuthAction => 'ABRIR';
+
+  @override
+  String get bunkerTimeout =>
+      'El firmante no respondió. ¿Está abierto y en línea?';
+
+  @override
+  String get bunkerConnected =>
+      '¡Firmante remoto conectado! Tu clave permanece allí.';
+
+  @override
+  String get bunkerDisconnected => 'Firmante remoto desconectado.';
+
+  @override
+  String get bunkerCheck => 'COMPROBAR CONEXIÓN';
+
+  @override
+  String get bunkerAlive =>
+      'El firmante responde — la sesión está activa. Si los permisos siguen vigentes solo se verá en la próxima firma.';
+
+  @override
+  String get bunkerDead =>
+      'El firmante no responde. ¿Está abierto y en línea? Si no, vuelve a conectarlo.';
+
+  @override
   String get profileImportNsec => 'IMPORTAR NSEC EXISTENTE';
 
   @override

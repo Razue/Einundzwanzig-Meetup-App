@@ -1606,6 +1606,234 @@ abstract class AppLocalizations {
   /// **'Verbindung in Amber abgebrochen.'**
   String get profileAmberAborted;
 
+  /// No description provided for @profileSwitchSignerHeading.
+  ///
+  /// In de, this message translates to:
+  /// **'Anderen Signer verbinden'**
+  String get profileSwitchSignerHeading;
+
+  /// No description provided for @profileDisconnectSigner.
+  ///
+  /// In de, this message translates to:
+  /// **'SIGNER TRENNEN'**
+  String get profileDisconnectSigner;
+
+  /// No description provided for @profileDisconnectTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer trennen?'**
+  String get profileDisconnectTitle;
+
+  /// No description provided for @profileDisconnectBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Verbindung zum Signer wird gelöst. Ist ein lokaler Schlüssel vorhanden, nutzt die App wieder ihn — sonst kann sie nicht signieren, bis du einen erstellst oder importierst.\n\nIm Signer selbst bleibt die Freigabe bestehen; die kannst du dort zusätzlich widerrufen.'**
+  String get profileDisconnectBody;
+
+  /// No description provided for @profileDisconnectDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer getrennt.'**
+  String get profileDisconnectDone;
+
+  /// No description provided for @profileSignerUnusable.
+  ///
+  /// In de, this message translates to:
+  /// **'Signieren ist derzeit nicht möglich — verbinde den Signer neu.'**
+  String get profileSignerUnusable;
+
+  /// No description provided for @profileSwitchSignerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein bisheriger Schlüssel bleibt gespeichert und im Backup.'**
+  String get profileSwitchSignerHint;
+
+  /// No description provided for @profileSwitchSignerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer wechseln?'**
+  String get profileSwitchSignerTitle;
+
+  /// No description provided for @profileSwitchSignerBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Signer bringt seinen eigenen Schlüssel mit. Enthält er NICHT denselben wie bisher, wechselt deine Identität — deine Badges gehören dann weiter zum alten Schlüssel.\n\nDein bisheriger Schlüssel wird nicht gelöscht: er bleibt im Speicher und im Backup, du kannst also zurück.'**
+  String get profileSwitchSignerBody;
+
+  /// No description provided for @profileSwitchSignerContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'WEITER'**
+  String get profileSwitchSignerContinue;
+
+  /// No description provided for @profileIdentityChanged.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung: Der Signer nutzt eine andere Identität als bisher. Deine Badges gehören zum vorherigen Schlüssel.'**
+  String get profileIdentityChanged;
+
+  /// No description provided for @profileConnectBunker.
+  ///
+  /// In de, this message translates to:
+  /// **'MIT REMOTE-SIGNER VERBINDEN'**
+  String get profileConnectBunker;
+
+  /// No description provided for @bunkerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Remote-Signer verbinden'**
+  String get bunkerTitle;
+
+  /// No description provided for @bunkerIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Schlüssel bleibt im Signer. Die App fragt dort nur Signaturen an — auf jedem Gerät.'**
+  String get bunkerIntro;
+
+  /// No description provided for @bunkerModeSigner.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer-App verbinden'**
+  String get bunkerModeSigner;
+
+  /// No description provided for @bunkerModeSignerDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App zeigt einen QR-Code, den du im Signer scannst.'**
+  String get bunkerModeSignerDesc;
+
+  /// No description provided for @bunkerModePaste.
+  ///
+  /// In de, this message translates to:
+  /// **'bunker://-Adresse einfügen'**
+  String get bunkerModePaste;
+
+  /// No description provided for @bunkerModePasteDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopiere sie aus nsec.app, Amber oder Alby. Auf dem iPhone der zuverlässigste Weg.'**
+  String get bunkerModePasteDesc;
+
+  /// No description provided for @bunkerPasteLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'bunker://-Adresse'**
+  String get bunkerPasteLabel;
+
+  /// No description provided for @bunkerPasteHint.
+  ///
+  /// In de, this message translates to:
+  /// **'bunker://…?relay=wss://…'**
+  String get bunkerPasteHint;
+
+  /// No description provided for @bunkerConnect.
+  ///
+  /// In de, this message translates to:
+  /// **'VERBINDEN'**
+  String get bunkerConnect;
+
+  /// No description provided for @bunkerBack.
+  ///
+  /// In de, this message translates to:
+  /// **'ZURÜCK'**
+  String get bunkerBack;
+
+  /// No description provided for @bunkerWaiting.
+  ///
+  /// In de, this message translates to:
+  /// **'Warte auf die Freigabe im Signer …'**
+  String get bunkerWaiting;
+
+  /// No description provided for @bunkerWaitingHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Das kann bis zu zwei Minuten dauern. Lass die App offen.'**
+  String get bunkerWaitingHint;
+
+  /// No description provided for @bunkerScanHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Im Signer scannen — oder die Adresse dort einfügen.'**
+  String get bunkerScanHint;
+
+  /// No description provided for @bunkerCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse kopieren'**
+  String get bunkerCopy;
+
+  /// No description provided for @bunkerCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse kopiert.'**
+  String get bunkerCopied;
+
+  /// No description provided for @bunkerOpenSigner.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer öffnen'**
+  String get bunkerOpenSigner;
+
+  /// No description provided for @bunkerNoSignerApp.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Signer-App gefunden. Nimm den Weg über „bunker://-Adresse einfügen“.'**
+  String get bunkerNoSignerApp;
+
+  /// No description provided for @bunkerAuthOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Freigabe im Browser öffnen'**
+  String get bunkerAuthOpen;
+
+  /// No description provided for @bunkerAuthNeeded.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Signer verlangt eine Freigabe im Browser.'**
+  String get bunkerAuthNeeded;
+
+  /// No description provided for @bunkerAuthAction.
+  ///
+  /// In de, this message translates to:
+  /// **'ÖFFNEN'**
+  String get bunkerAuthAction;
+
+  /// No description provided for @bunkerTimeout.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Signer hat nicht geantwortet. Ist er geöffnet und online?'**
+  String get bunkerTimeout;
+
+  /// No description provided for @bunkerConnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Remote-Signer verbunden! Dein Schlüssel bleibt dort.'**
+  String get bunkerConnected;
+
+  /// No description provided for @bunkerDisconnected.
+  ///
+  /// In de, this message translates to:
+  /// **'Remote-Signer getrennt.'**
+  String get bunkerDisconnected;
+
+  /// No description provided for @bunkerCheck.
+  ///
+  /// In de, this message translates to:
+  /// **'VERBINDUNG PRÜFEN'**
+  String get bunkerCheck;
+
+  /// No description provided for @bunkerAlive.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer antwortet — die Sitzung ist aktiv. Ob die Freigaben noch gelten, zeigt erst die nächste Signatur.'**
+  String get bunkerAlive;
+
+  /// No description provided for @bunkerDead.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer antwortet nicht. Ist er geöffnet und online? Sonst neu verbinden.'**
+  String get bunkerDead;
+
   /// No description provided for @profileImportNsec.
   ///
   /// In de, this message translates to:

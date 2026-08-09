@@ -703,19 +703,25 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Portal -> Meine Meetups gehen. Ist der Nutzer im Portal bekannt,
       // klappt es automatisch; ist er es nicht, passiert nichts Störendes.
       //
-      // WICHTIG: Nur bei LOKALEM Schlüssel lautlos. Bei Amber würde die
-      // Signatur ein Popup auslösen — das wäre beim App-Start unerwartet.
-      // Amber-Nutzer verbinden sich weiter über den manuellen Weg.
+      // WICHTIG: Nur bei LOKALEM Schlüssel lautlos. Bei einem EXTERNEN Signer
+      // löst die Signatur eine Rückfrage aus — beim App-Start unerwartet.
+      // Diese Nutzer verbinden sich weiter über den manuellen Weg.
       if (!await PortalApiService.hasToken()) {
         if (await SigningService.isExternalSigner) {
-          // Bei Amber loest jede Signatur ein Popup aus — beim App-Start
-          // waere das unerwartet. ABER: Frueher endete es hier stumm, und
-          // Amber-Nutzer mit Leader-Status im Portal bekamen NIE die
+          // Bei einem externen Signer loest jede Signatur eine Rueckfrage aus
+          // — beim App-Start waere das unerwartet. ABER: Frueher endete es
+          // hier stumm, und Nutzer mit Leader-Status im Portal bekamen NIE die
           // Organisator-Kachel, ohne zu ahnen warum. Jetzt gibt es einen
           // sichtbaren, einmaligen Hinweis mit dem Weg dorthin.
+          //
+          // Die Meldung nannte hier "Amber", weil das lange der einzige
+          // externe Signer war. Mit Browsererweiterung und Bunker war sie fuer
+          // zwei von drei Faellen falsch — und schickte im Diagnose-Log auf
+          // eine falsche Spur.
           AppLogger.warn('Portal',
-              'Kein Token und Amber aktiv — Auto-Verbindung nicht moeglich. '
-              'Organisator-Status kann ohne Portal-Verbindung nicht erkannt werden.');
+              'Kein Token und ein externer Signer ist aktiv — Auto-Verbindung '
+              'nicht moeglich. Organisator-Status kann ohne '
+              'Portal-Verbindung nicht erkannt werden.');
           if (mounted) _showPortalHint();
           return;
         }
@@ -918,6 +924,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     myBadges.clear();
     await MeetupBadge.saveBadges([]);
     try { await SecureKeyStore.deleteKeys(); } catch (_) {}
+    // Der Sitzungsschluessel des Remote-Signers haengt bewusst nicht an
+    // deleteKeys() (das raeumt die Identitaet, nicht die Signer-Sitzung) und
+    // liegt im sicheren Speicher, nicht in den Preferences. Ohne diese Zeile
+    // blieb er nach dem Zuruecksetzen als verwaistes Geheimnis liegen.
+    try { await SecureKeyStore.deleteNip46ClientKey(); } catch (_) {}
     try { await PortalApiService.logout(); } catch (_) {}
     await NostrProfileService.clearCache();
     if (mounted) {
