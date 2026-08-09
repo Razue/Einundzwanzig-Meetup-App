@@ -10,6 +10,7 @@ import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/nostr_avatar.dart';
 import 'app_shell.dart';
+import 'bunker_connect_sheet.dart';
 import 'platform_proof_screen.dart';
 import 'humanity_proof_screen.dart';
 import '../services/platform_proof_service.dart';
@@ -40,6 +41,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   bool _hasNostrKey = false;
   bool _isAmber = false; // Identität über Amber (kein lokaler nsec)
   bool _isNip07 = false; // Identität über Browsererweiterung (kein lokaler nsec)
+  bool _isNip46 = false; // Identität über Remote-Signer/Bunker (kein lokaler nsec)
+
+  /// Kann die App im aktuellen Modus ueberhaupt signieren?
+  ///
+  /// Entscheidet mit, ob der aktive Signer erneut angeboten wird. Ohne das
+  /// entstand eine Sackgasse: nach einem Backup-Restore ist der Modus nip46,
+  /// der Sitzungsschluessel fehlt aber (der reist nicht mit) — und weil der
+  /// aktive Modus aus der Auswahl ausgeschlossen war, gab es auf iOS keinen
+  /// einzigen Knopf mehr, um den Signer neu zu verbinden.
+  bool _canSign = false;
   /// Ist ueberhaupt eine NIP-07-Erweiterung im Browser? Ausserhalb des
   /// Browsers immer false — dann wird der Knopf gar nicht angeboten, statt
   /// ihn anzuzeigen und beim Tippen "nicht gefunden" zu melden.
@@ -74,6 +85,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     final amberSupported = SigningService.isAmberSupported;
     final isNip07 = await SigningService.isNip07;
     final nip07Available = await SigningService.nip07ExtensionAvailable();
+    final isNip46 = await SigningService.isNip46;
+    final canSign = await SigningService.canSign();
 
     // Identity Layer Status
     int proofCount = 0;
@@ -99,9 +112,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         _isAmber = isAmber && amberSupported;
         _isNip07 = isNip07;
         _nip07Available = nip07Available;
+        _isNip46 = isNip46;
+        _canSign = canSign;
         // Im Amber-Modus gibt es keinen lokalen nsec, aber eine gültige
         // Identität → als AppLocalizations.of(context).profileKeyActive anzeigen (npub vorhanden).
-        _hasNostrKey = hasKey || (isAmber && amberSupported) || isNip07;
+        _hasNostrKey =
+            hasKey || (isAmber && amberSupported) || isNip07 || isNip46;
         _nostrNpub = npub ?? user.nostrNpub;
 
         _platformProofCount = proofCount;
@@ -267,7 +283,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
       setState(() {
         _hasNostrKey = true;
+        // Alle externen Modi zurueckstellen: useLocalMode() hat den Modus
+        // schon umgestellt, die Anzeige muss folgen. `_isNip07` fehlte hier
+        // bisher — wer im Erweiterungs-Modus einen neuen Schluessel erzeugte,
+        // sah danach weiterhin die Erweiterungs-Ansicht.
         _isAmber = false;
+        _isNip07 = false;
+        _isNip46 = false;
         _nostrNpub = keys['npub']!;
         _isGeneratingKey = false;
       });
@@ -278,9 +300,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     } catch (e) {
       setState(() => _isGeneratingKey = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).errorGeneric(e.toString())), backgroundColor: Colors.red),
-        );
+        _showError(AppLocalizations.of(context).errorGeneric(e.toString()));
       }
     }
   }
@@ -290,6 +310,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // Erweiterung — im Web der einzige Weg, bei dem der nsec NICHT in
   // localStorage liegen muss.
   void _connectNip07() async {
+    if (!await _confirmSignerSwitch()) return;
+    if (!mounted) return;
+    final previousNpub = _nostrNpub;
     setState(() => _isGeneratingKey = true);
     try {
       final result = await SigningService.connectNip07();
@@ -301,6 +324,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             _hasNostrKey = true;
             _isNip07 = true;
             _isAmber = false;
+            _isNip46 = false;
+            _canSign = true;
             _nostrNpub = npub;
             _isGeneratingKey = false;
           });
@@ -308,6 +333,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             content: Text(t.profileExtensionConnected),
             backgroundColor: Colors.green,
           ));
+          _warnIfIdentityChanged(previousNpub, npub);
         case Nip07ConnectMissing():
           setState(() {
             _isGeneratingKey = false;
@@ -322,25 +348,193 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               SnackBar(content: Text(t.profileExtensionAborted)));
         case Nip07ConnectError(:final message):
           setState(() => _isGeneratingKey = false);
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(t.errorGeneric(message)),
-            backgroundColor: Colors.red,
-          ));
+          _showError(t.errorGeneric(message));
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isGeneratingKey = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(AppLocalizations.of(context).errorGeneric(e.toString())),
-          backgroundColor: Colors.red,
-        ));
+        _showError(AppLocalizations.of(context).errorGeneric(e.toString()));
       }
     }
+  }
+
+  /// Fehlermeldung anzeigen — EINE Regel statt sechsmal derselben Zeile.
+  ///
+  /// Zehn Sekunden statt der vier der Vorgabe, plus Schliessen-Symbol. Grund:
+  /// diese Meldungen tragen den Grund einer Gegenstelle („Der Signer hat
+  /// abgelehnt: Permission denied for sign_event kind:21003"), sind also lang
+  /// und verlangen danach eine Handlung. In vier Sekunden sind sie weg, bevor
+  /// sie gelesen sind — genau das ist beim Testen aufgefallen.
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+      duration: const Duration(seconds: 10),
+      showCloseIcon: true,
+    ));
+  }
+
+  bool _checkingBunker = false;
+
+  /// Rueckfrage, bevor ein externer Signer eine BESTEHENDE Identitaet ersetzt.
+  ///
+  /// Der Signer bringt seinen eigenen Schluessel mit. Enthaelt er nicht denselben
+  /// wie bisher, wechselt der sichtbare npub — und alle Badges gehoeren weiter
+  /// zum alten Schluessel. Ohne Rueckfrage passierte das mit einem Tipp.
+  ///
+  /// Der bisherige Schluessel wird dabei NICHT geloescht: er bleibt im Keystore
+  /// und im Backup, der Wechsel ist also umkehrbar.
+  Future<bool> _confirmSignerSwitch() async {
+    if (!_hasNostrKey) return true;
+    final t = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        title: Text(t.profileSwitchSignerTitle,
+            style: const TextStyle(color: Colors.white, fontSize: 16)),
+        content: Text(t.profileSwitchSignerBody,
+            style: const TextStyle(color: Colors.grey, fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.dialogCancel,
+                style: const TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: cCyan),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.profileSwitchSignerContinue,
+                style: const TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
+  /// Trennt den aktiven externen Signer.
+  ///
+  /// Gab es bisher fuer KEINEN der drei Signer eine Oberflaeche —
+  /// disconnectAmber() und disconnectNip07() existierten, waren aber von
+  /// nirgends erreichbar. Wer einen Signer losbekommen wollte, musste die App
+  /// zuruecksetzen und damit alles verlieren.
+  Future<void> _disconnectSigner() async {
+    final t = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        title: Text(t.profileDisconnectTitle,
+            style: const TextStyle(color: Colors.white, fontSize: 16)),
+        content: Text(t.profileDisconnectBody,
+            style: const TextStyle(color: Colors.grey, fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.dialogCancel,
+                style: const TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.profileDisconnectSigner,
+                style: const TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    try {
+      if (_isNip46) {
+        await SigningService.disconnectNip46();
+      } else if (_isNip07) {
+        await SigningService.disconnectNip07();
+      } else if (_isAmber) {
+        await SigningService.disconnectAmber();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError(AppLocalizations.of(context).errorGeneric(e.toString()));
+      }
+      return;
+    }
+
+    // Vollstaendig neu laden: der Modus ist jetzt local, und davon haengt ab,
+    // ob ueberhaupt noch ein Schluessel da ist (dann bleibt die Identitaet)
+    // oder nicht (dann erscheint der Zweig "kein Schluessel").
+    await _loadData();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(AppLocalizations.of(context).profileDisconnectDone),
+      backgroundColor: Colors.green,
+    ));
+  }
+
+  /// Warnt, wenn der neue Signer eine ANDERE Identitaet mitbringt.
+  void _warnIfIdentityChanged(String previousNpub, String newNpub) {
+    if (previousNpub.isEmpty || previousNpub == newNpub) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(AppLocalizations.of(context).profileIdentityChanged),
+      backgroundColor: Colors.orange,
+      duration: const Duration(seconds: 6),
+    ));
+  }
+
+  /// Fragt den Signer mit einem ping, ob die Sitzung noch gilt.
+  Future<void> _checkBunkerSession() async {
+    setState(() => _checkingBunker = true);
+    final alive = await SigningService.nip46SessionAlive();
+    if (!mounted) return;
+    setState(() => _checkingBunker = false);
+    final t = AppLocalizations.of(context);
+    // Der Fehlerfall bleibt laenger stehen: er verlangt eine Handlung
+    // (Signer oeffnen oder neu verbinden), die Bestaetigung nicht.
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(alive ? t.bunkerAlive : t.bunkerDead),
+      backgroundColor: alive ? Colors.green : Colors.red,
+      duration: Duration(seconds: alive ? 3 : 10),
+      showCloseIcon: !alive,
+    ));
+  }
+
+  // --- MIT REMOTE-SIGNER VERBINDEN (NIP-46 / Bunker) ---
+  // Der einzige externe Signer, der auf JEDER Plattform funktioniert — und auf
+  // iOS der einzige ueberhaupt. Der Ablauf steckt in BunkerConnectSheet, weil
+  // er drei Zustaende und eine lange Wartezeit hat; hier bleibt nur die
+  // Auswertung.
+  void _connectBunker() async {
+    if (!await _confirmSignerSwitch()) return;
+    if (!mounted) return;
+    final previousNpub = _nostrNpub;
+
+    final result = await BunkerConnectSheet.show(context);
+    if (result == null || !mounted) return;
+    setState(() {
+      _hasNostrKey = true;
+      _isNip46 = true;
+      _isAmber = false;
+      _isNip07 = false;
+      _canSign = true;
+      _nostrNpub = result.npub;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(AppLocalizations.of(context).bunkerConnected),
+      backgroundColor: Colors.green,
+    ));
+    _warnIfIdentityChanged(previousNpub, result.npub);
   }
 
   // --- NSEC IMPORTIEREN ---
   // --- MIT AMBER VERBINDEN (NIP-55, nsec bleibt in Amber) ---
   void _connectAmber() async {
+    if (!await _confirmSignerSwitch()) return;
+    if (!mounted) return;
+    final previousNpub = _nostrNpub;
     setState(() => _isGeneratingKey = true);
     try {
       final result = await SigningService.connectAmber();
@@ -350,6 +544,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           setState(() {
             _hasNostrKey = true;
             _isAmber = true;
+            _isNip07 = false;
+            _isNip46 = false;
+            _canSign = true;
             _nostrNpub = npub;
             _isGeneratingKey = false;
           });
@@ -359,6 +556,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               backgroundColor: Colors.green,
             ),
           );
+          _warnIfIdentityChanged(previousNpub, npub);
         case AmberConnectMissing():
           setState(() => _isGeneratingKey = false);
           showDialog(
@@ -388,17 +586,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           );
         case AmberConnectError(:final message):
           setState(() => _isGeneratingKey = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).errorAmber(message)),
-                backgroundColor: Colors.red),
-          );
+          _showError(AppLocalizations.of(context).errorAmber(message));
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isGeneratingKey = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).errorGeneric(e.toString())), backgroundColor: Colors.red),
-        );
+        _showError(AppLocalizations.of(context).errorGeneric(e.toString()));
       }
     }
   }
@@ -463,6 +656,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     _hasNostrKey = true;
                     _isAmber = false;
                     _isNip07 = false;
+                    _isNip46 = false;
                     _nostrNpub = keys['npub']!;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -474,9 +668,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 }
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("$e"), backgroundColor: Colors.red),
-                  );
+                  _showError("$e");
                 }
               }
             },
@@ -737,6 +929,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         _buildInfoTile(AppLocalizations.of(context).profileHomeMeetup, _user!.homeMeetupId.isEmpty ? "-" : _user!.homeMeetupId, Icons.home),
         if (_hasNostrKey)
           _buildInfoTile("Nostr", NostrService.shortenNpub(_nostrNpub), Icons.key),
+
+        // Signer-Verwaltung auch hier: sie aendert keine Profildaten und darf
+        // deshalb nicht hinter „BEARBEITEN (Status verlieren)" liegen.
+        if (_hasNostrKey) ..._signerManagementSection(),
         const SizedBox(height: 24),
 
         // Identity Layer — auch in read-only verfügbar
@@ -934,8 +1130,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           ),
                         ),
                       ),
-                      // Kein lokaler nsec bei Amber UND bei Browsererweiterung.
-                      if (!_isAmber && !_isNip07) ...[
+                      // Kein lokaler nsec bei Amber, Browsererweiterung
+                      // UND Remote-Signer — dort gibt es keinen zu zeigen.
+                      if (!_isAmber && !_isNip07 && !_isNip46) ...[
                       const SizedBox(width: 8),
                       Expanded(
                         child: OutlinedButton.icon(
@@ -952,6 +1149,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ],
                     ],
                   ),
+                  ..._signerManagementSection(),
                 ],
               ),
             ),
@@ -1012,6 +1210,29 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     ),
                     const SizedBox(height: 10),
                   ],
+
+                  // MIT REMOTE-SIGNER VERBINDEN (NIP-46 / Bunker)
+                  //
+                  // OHNE Plattform-Bedingung: das ist der einzige externe
+                  // Signer, der ueberall geht — und auf iOS der einzige, den es
+                  // gibt. Ob eine Signer-App auf `nostrconnect://` antwortet,
+                  // klaert das Blatt selbst; deshalb kann der Knopf hier
+                  // bedingungslos stehen.
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _isGeneratingKey ? null : _connectBunker,
+                      icon: const Icon(Icons.lock_outline, size: 18),
+                      label: Text(
+                          AppLocalizations.of(context).profileConnectBunker),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cCyan,
+                        side: const BorderSide(color: cCyan),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
 
                   // MIT BROWSERERWEITERUNG VERBINDEN (NIP-07)
                   //
@@ -1150,6 +1371,151 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       ),
     );
   }
+
+  // --- ANDEREN SIGNER VERBINDEN (bei vorhandenem Schluessel) ---
+  //
+  // Hier lag der eigentliche Mangel: die Verbinden-Knoepfe standen NUR im
+  // Zweig "kein Schluessel". Wer schon einen hatte, kam an Amber, die
+  // Browsererweiterung und den Bunker nicht heran — also genau die Nutzer, die
+  // von ihrem lokalen Schluessel WEG wollen. Auf iOS betraf das jeden, der
+  // seinen nsec nicht mehr in der App liegen haben will.
+  //
+  // Angeboten wird nur, was auf dieser Plattform ueberhaupt geht und was nicht
+  // schon aktiv ist.
+  /// Signer-Verwaltung: Verbindung pruefen, anderen Signer verbinden, trennen.
+  ///
+  /// Steht in BEIDEN Ansichten. Vorher lag das nur im Bearbeiten-Formular — und
+  /// in das kommt ein verifiziertes Profil ausschliesslich ueber „BEARBEITEN
+  /// (Status verlieren)". Ein verifizierter Organisator haette seinen Signer
+  /// also weder pruefen noch wechseln noch trennen koennen, ohne seinen Status
+  /// zu opfern. Keine dieser Handlungen aendert Profildaten; es gab keinen
+  /// Grund, sie hinter dem Bearbeiten-Modus zu verstecken.
+  List<Widget> _signerManagementSection() => [
+        // Nur im Bunker-Modus. Eine im Signer widerrufene Sitzung sieht von
+        // aussen genauso aus wie eine Zeitueberschreitung — erst eine
+        // ausdrueckliche Pruefung unterscheidet beides. Absichtlich NICHT
+        // automatisch beim Oeffnen: der Test kostet eine Relay-Runde.
+        if (_isNip46) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _checkingBunker ? null : _checkBunkerSession,
+              icon: _checkingBunker
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: cCyan))
+                  : const Icon(Icons.wifi_tethering, size: 16),
+              label: Text(AppLocalizations.of(context).bunkerCheck,
+                  style: const TextStyle(fontSize: 11)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: cCyan,
+                side: const BorderSide(color: cCyan),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+              ),
+            ),
+          ),
+        ],
+        ..._signerSwitchSection(),
+      ];
+
+  List<Widget> _signerSwitchSection() {
+    final t = AppLocalizations.of(context);
+
+    // Der aktive Modus wird nur ausgeschlossen, solange er auch BENUTZBAR ist.
+    // Kann die App nicht signieren, ist "erneut verbinden" die einzig
+    // sinnvolle Handlung — und muss angeboten werden, sonst sitzt der Nutzer
+    // fest. Genau das passierte nach einem Backup-Restore im Bunker-Modus.
+    final offerAgain = !_canSign;
+    final options = <Widget>[
+      if (!_isNip46 || offerAgain)
+        _signerSwitchButton(
+          icon: Icons.lock_outline,
+          color: cCyan,
+          label: t.profileConnectBunker,
+          onPressed: _connectBunker,
+        ),
+      if (_showAmberOption && (!_isAmber || offerAgain))
+        _signerSwitchButton(
+          icon: Icons.shield_outlined,
+          color: cCyan,
+          label: t.profileConnectAmber,
+          onPressed: _connectAmber,
+        ),
+      if (_nip07Available && (!_isNip07 || offerAgain))
+        _signerSwitchButton(
+          icon: Icons.extension_outlined,
+          color: cGreen,
+          label: t.profileConnectExtension,
+          onPressed: _connectNip07,
+        ),
+    ];
+
+    // Trennen nur, wenn ueberhaupt ein externer Signer aktiv ist.
+    final canDisconnect = _isAmber || _isNip07 || _isNip46;
+    if (options.isEmpty && !canDisconnect) return const [];
+
+    return [
+      const SizedBox(height: 16),
+      const Divider(color: cBorder, height: 1),
+      const SizedBox(height: 12),
+      // Ueberschrift und Hinweis gehoeren zum VERBINDEN. Bleibt nur das
+      // Trennen uebrig, wuerde „Anderen Signer verbinden" ueber einem
+      // Trennen-Knopf stehen — dann lieber nur der Knopf.
+      if (options.isNotEmpty) ...[
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(t.profileSwitchSignerHeading,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(height: 4),
+        Align(
+          alignment: Alignment.centerLeft,
+          // Bei fehlender Signier-Faehigkeit steht hier der GRUND, sonst der
+          // beruhigende Hinweis, dass der bisherige Schluessel bleibt.
+          child: Text(
+              offerAgain ? t.profileSignerUnusable : t.profileSwitchSignerHint,
+              style: TextStyle(
+                  color: offerAgain ? Colors.orange : Colors.grey,
+                  fontSize: 11)),
+        ),
+        const SizedBox(height: 10),
+      ],
+      for (final option in options) ...[option, const SizedBox(height: 8)],
+      if (canDisconnect)
+        _signerSwitchButton(
+          icon: Icons.link_off,
+          color: Colors.orange,
+          label: t.profileDisconnectSigner,
+          onPressed: _disconnectSigner,
+        ),
+    ];
+  }
+
+  Widget _signerSwitchButton({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required VoidCallback onPressed,
+  }) =>
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: _isGeneratingKey ? null : onPressed,
+          icon: Icon(icon, size: 16),
+          label: Text(label, style: const TextStyle(fontSize: 11)),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: color,
+            side: BorderSide(color: color),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+          ),
+        ),
+      );
 
   Widget _buildTextField(TextEditingController controller, String label, IconData icon, {bool required = false}) {
     return TextFormField(

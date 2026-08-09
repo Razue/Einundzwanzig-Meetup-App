@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'l10n/app_localizations.dart';
 import 'theme.dart';
 import 'screens/intro.dart';
@@ -15,6 +16,56 @@ import 'services/locale_controller.dart';
 import 'services/widget_service.dart';
 import 'services/app_logger.dart';
 import 'services/diagnostics_service.dart';
+import 'services/signing_service.dart';
+
+/// Messenger der App-Wurzel. Gebraucht, um Meldungen aus Code OHNE
+/// BuildContext zu zeigen — etwa die Freigabe-Aufforderung eines
+/// Remote-Signers, die mitten in einer beliebigen Signatur eintreffen kann.
+final GlobalKey<ScaffoldMessengerState> rootMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
+/// Nimmt `auth_url` des Remote-Signers ueberall in der App an.
+///
+/// Vorher war der Empfaenger nur gesetzt, solange das Verbindungs-Blatt offen
+/// stand. Verlangt der Signer die Freigabe SPAETER — bei einer Signatur mitten
+/// im Betrieb —, ging die Aufforderung verloren und der Nutzer sah nur eine
+/// Zeitueberschreitung, ohne Chance zu erfahren, was fehlt.
+///
+/// Gezeigt wird ein Balken mit KNOPF statt eines automatisch geoeffneten
+/// Fensters: im Web blockiert der Browser das Oeffnen ohne Nutzer-Gestik. Ein
+/// Tipp auf den Knopf ist eine.
+void _installNip46AuthUrlHandler() {
+  SigningService.onNip46AuthUrl = (url) {
+    final messenger = rootMessengerKey.currentState;
+    final context = rootMessengerKey.currentContext;
+    if (messenger == null || context == null) {
+      AppLogger.warn('Nip46',
+          'Freigabe-Aufforderung des Signers kam an, aber die App war noch '
+          'nicht bereit sie zu zeigen: $url');
+      return;
+    }
+    final t = AppLocalizations.of(context);
+    messenger.showSnackBar(SnackBar(
+      content: Text(t.bunkerAuthNeeded),
+      backgroundColor: Colors.orange,
+      // Lange sichtbar: der Nutzer muss in einer anderen App bestaetigen, und
+      // die Signatur wartet ohnehin bis zu 60 Sekunden auf ihn.
+      duration: const Duration(seconds: 60),
+      showCloseIcon: true,
+      action: SnackBarAction(
+        label: t.bunkerAuthAction,
+        textColor: Colors.black,
+        onPressed: () {
+          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)
+              .catchError((Object e) {
+            AppLogger.warn('Nip46', 'Freigabe-Seite liess sich nicht oeffnen', e);
+            return false;
+          });
+        },
+      ),
+    ));
+  };
+}
 
 /// Wird vom Aktualisieren-Rädchen des Homescreen-Widgets ausgelöst:
 /// läuft im HINTERGRUND (ohne die App zu öffnen), holt frische Daten
@@ -124,6 +175,8 @@ Future<void> _start() async {
     systemNavigationBarIconBrightness: Brightness.light,
   ));
 
+  _installNip46AuthUrlHandler();
+
   runApp(const MyApp());
 }
 
@@ -138,6 +191,9 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Einundzwanzig Meetup',
           debugShowCheckedModeBanner: false,
+          // Erlaubt Meldungen aus Code ohne BuildContext — siehe
+          // _installNip46AuthUrlHandler.
+          scaffoldMessengerKey: rootMessengerKey,
           theme: appTheme,
           locale: locale, // null = Systemsprache
           localizationsDelegates: AppLocalizations.localizationsDelegates,
