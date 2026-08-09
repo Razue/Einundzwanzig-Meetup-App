@@ -141,15 +141,21 @@ class MempoolService {
   // keinen Preflight aus; verifiziert mit HTTP 200.
   // =============================================
 
+  // Die drei Helfer nehmen `isWeb` als Parameter, statt kIsWeb direkt zu
+  // lesen. Grund: kIsWeb ist zur Übersetzungszeit fest, ein VM-Test könnte
+  // den Web-Zweig also nie erreichen — er wäre nur mit
+  // `flutter test --platform chrome` prüfbar, und das läuft in der CI nicht.
+  // Der Standardwert hält jede Aufrufstelle unverändert.
+
   /// Header, die nur ausserhalb des Browsers gesetzt werden dürfen.
   @visibleForTesting
-  static Map<String, String> get platformHeaders =>
-      kIsWeb ? const {} : const {'User-Agent': _userAgent};
+  static Map<String, String> platformHeaders({bool isWeb = kIsWeb}) =>
+      isWeb ? const {} : const {'User-Agent': _userAgent};
 
   /// `Cache-Control` nur nativ — im Web bricht er CORS.
   @visibleForTesting
-  static Map<String, String> get noCacheHeaders =>
-      kIsWeb ? const {} : const {'Cache-Control': 'no-cache'};
+  static Map<String, String> noCacheHeaders({bool isWeb = kIsWeb}) =>
+      isWeb ? const {} : const {'Cache-Control': 'no-cache'};
 
   /// Im Web einen Cache-Buster anhängen, nativ die URL unverändert lassen.
   ///
@@ -157,7 +163,7 @@ class MempoolService {
   /// feiner aufgelöst würde jeder Aufruf am CDN vorbeigehen, gröber käme ein
   /// veralteter Wert durch. Die Blockhöhe ändert sich alle ~10 Minuten.
   @visibleForTesting
-  static Uri cacheBusted(Uri uri) => kIsWeb
+  static Uri cacheBusted(Uri uri, {bool isWeb = kIsWeb}) => isWeb
       ? uri.replace(queryParameters: {
           ...uri.queryParameters,
           '_': '${DateTime.now().millisecondsSinceEpoch ~/ 1000}',
@@ -289,9 +295,9 @@ class MempoolService {
     if (maxTimeout != null && maxTimeout < timeout) timeout = maxTimeout;
 
     final r = await _client.get(uri, headers: {
-      ...platformHeaders,
+      ...platformHeaders(),
       'Accept': 'application/json, text/plain, */*',
-      ...noCacheHeaders,
+      ...noCacheHeaders(),
     }).timeout(timeout);
 
     if (r.statusCode != 200) {
@@ -392,7 +398,7 @@ class MempoolService {
     final client = http.Client();
     try {
       final r = await client.get(cacheBusted(uri), headers: {
-        ...platformHeaders,
+        ...platformHeaders(),
         'Accept': 'text/plain, */*',
       }).timeout(Duration(seconds: isOnion ? 45 : 20));
 
