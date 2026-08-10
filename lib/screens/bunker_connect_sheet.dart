@@ -19,6 +19,8 @@
 // zu bewegen scheint (dieselbe Lektion wie beim Backup, PR #32).
 // ============================================
 
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -274,6 +276,22 @@ class _BunkerConnectSheetState extends State<BunkerConnectSheet> {
     );
   }
 
+  /// Nennt Signer beim Namen, passend zur Plattform.
+  ///
+  /// Die Lage unterscheidet sich dort deutlich: auf Android ist Amber der
+  /// eingeführte Weg (NIP-55 plus Bunker), auf iOS gibt es Clave, das sich per
+  /// Push weckt, um im Hintergrund zu signieren. Alby gehört ausdrücklich NICHT
+  /// dazu — dessen Erweiterung ist ein NIP-07-Signer und kein Bunker, und der
+  /// Hub hält Geld, keine Nostr-Identität.
+  String _signerRecommendation(AppLocalizations t) {
+    if (kIsWeb) return t.bunkerRecommendWeb;
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android => t.bunkerRecommendAndroid,
+      TargetPlatform.iOS => t.bunkerRecommendIos,
+      _ => t.bunkerRecommendWeb,
+    };
+  }
+
   List<Widget> _chooseStep(AppLocalizations t) => [
         _optionTile(
           icon: Icons.qr_code_2,
@@ -292,6 +310,30 @@ class _BunkerConnectSheetState extends State<BunkerConnectSheet> {
             _step = _Step.paste;
             _error = null;
           }),
+        ),
+        const SizedBox(height: 14),
+        // Konkrete Namen statt „irgendeine Signer-App". Ohne sie bleibt die
+        // Frage „und woher nehme ich einen?" offen — und dann ist der ganze
+        // Verbinden-Weg wertlos, weil der Nutzer keinen Gegenpart hat.
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: cCyan.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.lightbulb_outline, color: cCyan, size: 16),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(_signerRecommendation(t),
+                    style:
+                        const TextStyle(color: Colors.grey, fontSize: 11)),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         Align(

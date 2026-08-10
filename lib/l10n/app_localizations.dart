@@ -1780,6 +1780,24 @@ abstract class AppLocalizations {
   /// **'Keine Signer-App gefunden. Nimm den Weg über „bunker://-Adresse einfügen“.'**
   String get bunkerNoSignerApp;
 
+  /// No description provided for @bunkerRecommendAndroid.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfohlen auf Android: Amber — Signer-App mit Bunker, im Zapstore und bei F-Droid. Alternativ ein selbst betriebener Bunker (Bunker46, Signet).'**
+  String get bunkerRecommendAndroid;
+
+  /// No description provided for @bunkerRecommendIos.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfohlen auf iOS: Clave — weckt sich per Push, um im Hintergrund zu signieren. Alternativ ein selbst betriebener Bunker (Bunker46, Signet) oder Amber auf einem Android-Gerät.'**
+  String get bunkerRecommendIos;
+
+  /// No description provided for @bunkerRecommendWeb.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Gegenpart eignen sich Amber (Android), Clave (iOS) oder ein selbst betriebener Bunker wie Bunker46 oder Signet.'**
+  String get bunkerRecommendWeb;
+
   /// No description provided for @bunkerAuthOpen.
   ///
   /// In de, this message translates to:

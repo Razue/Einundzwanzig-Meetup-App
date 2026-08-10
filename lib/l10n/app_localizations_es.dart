@@ -898,6 +898,18 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se encontró ninguna app de firmante. Usa «Pegar una dirección bunker://».';
 
   @override
+  String get bunkerRecommendAndroid =>
+      'Recomendado en Android: Amber — app de firma con búnker, en Zapstore y F-Droid. Como alternativa, un búnker propio (Bunker46, Signet).';
+
+  @override
+  String get bunkerRecommendIos =>
+      'Recomendado en iOS: Clave — se despierta por push para firmar en segundo plano. Como alternativa, un búnker propio (Bunker46, Signet) o Amber en un dispositivo Android.';
+
+  @override
+  String get bunkerRecommendWeb =>
+      'Como contraparte sirven Amber (Android), Clave (iOS) o un búnker propio como Bunker46 o Signet.';
+
+  @override
   String get bunkerAuthOpen => 'Abrir aprobación en el navegador';
 
   @override

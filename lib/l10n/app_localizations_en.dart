@@ -897,6 +897,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'No signer app found. Use \"Paste a bunker:// address\" instead.';
 
   @override
+  String get bunkerRecommendAndroid =>
+      'Recommended on Android: Amber — signer app with bunker support, on Zapstore and F-Droid. Alternatively a self-hosted bunker (Bunker46, Signet).';
+
+  @override
+  String get bunkerRecommendIos =>
+      'Recommended on iOS: Clave — wakes itself via push to sign in the background. Alternatively a self-hosted bunker (Bunker46, Signet) or Amber on an Android device.';
+
+  @override
+  String get bunkerRecommendWeb =>
+      'Suitable counterparts are Amber (Android), Clave (iOS) or a self-hosted bunker such as Bunker46 or Signet.';
+
+  @override
   String get bunkerAuthOpen => 'Open approval in browser';
 
   @override
