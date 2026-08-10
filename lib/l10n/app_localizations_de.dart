@@ -802,6 +802,136 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileAmberAborted => 'Verbindung in Amber abgebrochen.';
 
   @override
+  String get profileSwitchSignerHeading => 'Anderen Signer verbinden';
+
+  @override
+  String get profileDisconnectSigner => 'SIGNER TRENNEN';
+
+  @override
+  String get profileDisconnectTitle => 'Signer trennen?';
+
+  @override
+  String get profileDisconnectBody =>
+      'Die Verbindung zum Signer wird gelöst. Ist ein lokaler Schlüssel vorhanden, nutzt die App wieder ihn — sonst kann sie nicht signieren, bis du einen erstellst oder importierst.\n\nIm Signer selbst bleibt die Freigabe bestehen; die kannst du dort zusätzlich widerrufen.';
+
+  @override
+  String get profileDisconnectDone => 'Signer getrennt.';
+
+  @override
+  String get profileSignerUnusable =>
+      'Signieren ist derzeit nicht möglich — verbinde den Signer neu.';
+
+  @override
+  String get profileSwitchSignerHint =>
+      'Dein bisheriger Schlüssel bleibt gespeichert und im Backup.';
+
+  @override
+  String get profileSwitchSignerTitle => 'Signer wechseln?';
+
+  @override
+  String get profileSwitchSignerBody =>
+      'Der Signer bringt seinen eigenen Schlüssel mit. Enthält er NICHT denselben wie bisher, wechselt deine Identität — deine Badges gehören dann weiter zum alten Schlüssel.\n\nDein bisheriger Schlüssel wird nicht gelöscht: er bleibt im Speicher und im Backup, du kannst also zurück.';
+
+  @override
+  String get profileSwitchSignerContinue => 'WEITER';
+
+  @override
+  String get profileIdentityChanged =>
+      'Achtung: Der Signer nutzt eine andere Identität als bisher. Deine Badges gehören zum vorherigen Schlüssel.';
+
+  @override
+  String get profileConnectBunker => 'MIT REMOTE-SIGNER VERBINDEN';
+
+  @override
+  String get bunkerTitle => 'Mit Remote-Signer verbinden';
+
+  @override
+  String get bunkerIntro =>
+      'Dein Schlüssel bleibt im Signer. Die App fragt dort nur Signaturen an — auf jedem Gerät.';
+
+  @override
+  String get bunkerModeSigner => 'Signer-App verbinden';
+
+  @override
+  String get bunkerModeSignerDesc =>
+      'Die App zeigt einen QR-Code, den du im Signer scannst.';
+
+  @override
+  String get bunkerModePaste => 'bunker://-Adresse einfügen';
+
+  @override
+  String get bunkerModePasteDesc =>
+      'Kopiere sie aus nsec.app, Amber oder Alby. Auf dem iPhone der zuverlässigste Weg.';
+
+  @override
+  String get bunkerPasteLabel => 'bunker://-Adresse';
+
+  @override
+  String get bunkerPasteHint => 'bunker://…?relay=wss://…';
+
+  @override
+  String get bunkerConnect => 'VERBINDEN';
+
+  @override
+  String get bunkerBack => 'ZURÜCK';
+
+  @override
+  String get bunkerWaiting => 'Warte auf die Freigabe im Signer …';
+
+  @override
+  String get bunkerWaitingHint =>
+      'Das kann bis zu zwei Minuten dauern. Lass die App offen.';
+
+  @override
+  String get bunkerScanHint =>
+      'Im Signer scannen — oder die Adresse dort einfügen.';
+
+  @override
+  String get bunkerCopy => 'Adresse kopieren';
+
+  @override
+  String get bunkerCopied => 'Adresse kopiert.';
+
+  @override
+  String get bunkerOpenSigner => 'Signer öffnen';
+
+  @override
+  String get bunkerNoSignerApp =>
+      'Keine Signer-App gefunden. Nimm den Weg über „bunker://-Adresse einfügen“.';
+
+  @override
+  String get bunkerAuthOpen => 'Freigabe im Browser öffnen';
+
+  @override
+  String get bunkerAuthNeeded =>
+      'Der Signer verlangt eine Freigabe im Browser.';
+
+  @override
+  String get bunkerAuthAction => 'ÖFFNEN';
+
+  @override
+  String get bunkerTimeout =>
+      'Der Signer hat nicht geantwortet. Ist er geöffnet und online?';
+
+  @override
+  String get bunkerConnected =>
+      'Remote-Signer verbunden! Dein Schlüssel bleibt dort.';
+
+  @override
+  String get bunkerDisconnected => 'Remote-Signer getrennt.';
+
+  @override
+  String get bunkerCheck => 'VERBINDUNG PRÜFEN';
+
+  @override
+  String get bunkerAlive =>
+      'Signer antwortet — die Sitzung ist aktiv. Ob die Freigaben noch gelten, zeigt erst die nächste Signatur.';
+
+  @override
+  String get bunkerDead =>
+      'Signer antwortet nicht. Ist er geöffnet und online? Sonst neu verbinden.';
+
+  @override
   String get profileImportNsec => 'BESTEHENDEN NSEC IMPORTIEREN';
 
   @override
