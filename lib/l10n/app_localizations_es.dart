@@ -3964,6 +3964,17 @@ class AppLocalizationsEs extends AppLocalizations {
       'El npub (empieza con «npub1…») es tu identidad pública. Puedes compartirlo libremente: así te encuentran, ven tus publicaciones y te siguen. Es como tu nombre de usuario, salvo que realmente te pertenece y nadie puede quitártelo.';
 
   @override
+  String get webKeyWarnH => 'Menos protegida en el navegador';
+
+  @override
+  String get webKeyWarnB =>
+      'La app para iPhone y Android guarda tu clave en el almacenamiento seguro del dispositivo. En el navegador eso no es posible: allí se puede leer más fácilmente.';
+
+  @override
+  String get webKeyWarnAdvice =>
+      'En el navegador, usa mejor una identidad de prueba propia. No introduzcas aquí la clave de la que depende tu identidad real en Nostr.';
+
+  @override
   String get keyEduNsecH => 'nsec – tu clave privada';
 
   @override
