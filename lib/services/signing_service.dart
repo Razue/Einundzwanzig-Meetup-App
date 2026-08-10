@@ -57,6 +57,13 @@ enum SigningMode {
   // und auf iOS der einzige Weg zu einem externen Signer
 }
 
+/// Primärweg für „Schon bei Nostr“ — genau einer pro Plattform/Lage.
+enum RecommendedExistingPath {
+  nip07,
+  amber,
+  bunker,
+}
+
 // =============================================
 // SIGNED EVENT — Ergebnis jeder Signatur
 // =============================================
@@ -796,6 +803,20 @@ class SigningService {
   /// Der plattformübergreifende Weg zu einem externen Signer ist NIP-46.
   static bool get isAmberSupported =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  /// Welcher bestehende-Identität-Weg als Primär-CTA gezeigt werden soll.
+  ///
+  /// Web mit Extension → NIP-07; Android mit Amber installiert → Amber;
+  /// sonst Bunker (iOS, Web ohne Ext, Android ohne Amber).
+  static Future<RecommendedExistingPath> recommendedExistingPath() async {
+    if (kIsWeb && await nip07ExtensionAvailable()) {
+      return RecommendedExistingPath.nip07;
+    }
+    if (isAmberSupported && await AmberNostrSigner.isAvailable()) {
+      return RecommendedExistingPath.amber;
+    }
+    return RecommendedExistingPath.bunker;
+  }
 
   static Future<bool> get isNip07 async =>
       (await getMode()) == SigningMode.nip07;

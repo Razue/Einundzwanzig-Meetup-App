@@ -3,7 +3,7 @@ import '../models/user.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/locale_controller.dart';
-import 'profile_edit.dart';
+import 'identity_setup_screen.dart';
 import 'app_shell.dart';  // NEU: Statt dashboard.dart
 import '../services/backup_service.dart';
 
@@ -81,7 +81,7 @@ class _IntroScreenState extends State<IntroScreen>
       );
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
+        MaterialPageRoute(builder: (context) => const IdentitySetupScreen()),
       );
       user = await UserProfile.load();
       if (!mounted) return;

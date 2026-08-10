@@ -982,6 +982,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keyExportCopied => 'Encrypted key copied.';
 
   @override
+  String get keyExportFromVault =>
+      'This is your key encrypted with the password you set when you created it — no new password needed.';
+
+  @override
+  String get keyExportOtherPassword => 'Create with a different password';
+
+  @override
   String get profileImport => 'IMPORT';
 
   @override
@@ -4975,4 +4982,172 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get npubCopied => 'npub copied';
+
+  @override
+  String get idSetupTitle => 'Identity';
+
+  @override
+  String get idSetupSubtitle => 'How do you want to start?';
+
+  @override
+  String get idSetupNewCard => 'New here';
+
+  @override
+  String get idSetupNewCardSub => 'Create an identity in the app';
+
+  @override
+  String get idSetupExistingCard => 'Already on Nostr';
+
+  @override
+  String get idSetupExistingCardSub => 'Connect an existing identity';
+
+  @override
+  String get idSetupResumeCard => 'Already on this device';
+
+  @override
+  String get idSetupResumeCardSub => 'Keep using the existing identity';
+
+  @override
+  String get idSetupResumeTitle => 'Continue';
+
+  @override
+  String get idSetupResumeContinue => 'Continue';
+
+  @override
+  String get idSetupResumeHasKey =>
+      'Your key is still on this device. You will continue with it — nothing new is created.';
+
+  @override
+  String get idSetupResumePasskey => 'Unlock with passkey';
+
+  @override
+  String get idSetupResumePasskeyHint =>
+      'Your key is stored encrypted on this device. Unlock it with your passkey.';
+
+  @override
+  String get idSetupResumePassword => 'Use password instead';
+
+  @override
+  String get idSetupResumePasswordHint =>
+      'Your key is stored encrypted on this device. Enter the password you created it with.';
+
+  @override
+  String get idSetupResumeNeedPassword => 'Please enter the password.';
+
+  @override
+  String get idSetupResumeWrongPassword =>
+      'That password does not match this key.';
+
+  @override
+  String get idSetupNewTitle => 'Create new';
+
+  @override
+  String get idSetupNewHint =>
+      'Name and password are enough. Your key stays on this device.';
+
+  @override
+  String get idSetupNameLabel => 'Name';
+
+  @override
+  String get idSetupNameRequired => 'Please choose a name.';
+
+  @override
+  String get idSetupPasswordLabel => 'Password for your key';
+
+  @override
+  String get idSetupPasswordConfirmLabel => 'Confirm password';
+
+  @override
+  String get idSetupPasswordShort => 'Password must be at least 8 characters.';
+
+  @override
+  String get idSetupPasswordWarn =>
+      'This password encrypts your key — it is the only thing that can open your backup. There is no reset: without the password the backup is worthless.';
+
+  @override
+  String get idSetupCreate => 'Get started';
+
+  @override
+  String get idSetupPasskeyTitle => 'Passkey';
+
+  @override
+  String get idSetupPasskeyBody =>
+      'Optional: also protect with a passkey (Face ID / fingerprint).';
+
+  @override
+  String get idSetupPasskeyAction => 'Secure with passkey';
+
+  @override
+  String get idSetupPasskeyLater => 'Later';
+
+  @override
+  String get idSetupPasskeyUnavailable =>
+      'Passkeys are not available on this device. You can continue with your password.';
+
+  @override
+  String get idSetupExistingTitle => 'Connect';
+
+  @override
+  String get idSetupPrimaryNip07 => 'Browser extension';
+
+  @override
+  String get idSetupPrimaryNip07Sub => 'Confirm in the extension';
+
+  @override
+  String get idSetupPrimaryAmber => 'Amber';
+
+  @override
+  String get idSetupPrimaryAmberSub => 'Confirm in Amber';
+
+  @override
+  String get idSetupPrimaryBunker => 'Connect signer';
+
+  @override
+  String get idSetupPrimaryBunkerSub => 'Bunker / Clave / Amber';
+
+  @override
+  String get idSetupOtherWay => 'Another way';
+
+  @override
+  String get idSetupImportHint => 'Paste an nsec or encrypted key (ncryptsec).';
+
+  @override
+  String get idSetupImportLabel => 'Key';
+
+  @override
+  String get idSetupImportPasswordLabel => 'Password (ncryptsec only)';
+
+  @override
+  String get idSetupImportAction => 'Import';
+
+  @override
+  String get idSetupImportEmpty => 'Please paste a key.';
+
+  @override
+  String get idSetupImportNeedPassword => 'ncryptsec needs the password.';
+
+  @override
+  String get idSetupNameTitle => 'Choose a name';
+
+  @override
+  String get idSetupNameOnlyHint => 'Which name should others see?';
+
+  @override
+  String get idSetupContinue => 'Continue';
+
+  @override
+  String get idSetupConnectFailed => 'Connection failed.';
+
+  @override
+  String get idSetupBackupTitle => 'Back up your key?';
+
+  @override
+  String get idSetupBackupBody =>
+      'Copy the encrypted key into your password manager. Without the password it is useless.';
+
+  @override
+  String get idSetupBackupCopy => 'Copy';
+
+  @override
+  String get idSetupBackupLater => 'Later';
 }
