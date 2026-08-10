@@ -1618,6 +1618,72 @@ abstract class AppLocalizations {
   /// **'NSEC IMPORTIEREN'**
   String get profileImportNsecShort;
 
+  /// No description provided for @keyExportEncrypted.
+  ///
+  /// In de, this message translates to:
+  /// **'VERSCHLÜSSELT EXPORTIEREN (ncryptsec)'**
+  String get keyExportEncrypted;
+
+  /// No description provided for @keyExportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel verschlüsselt exportieren'**
+  String get keyExportTitle;
+
+  /// No description provided for @keyExportDesc.
+  ///
+  /// In de, this message translates to:
+  /// **'Erzeugt ein ncryptsec — deinen Schlüssel, mit einem Passwort verschlüsselt. Den kannst du gefahrlos in einem Passwortmanager ablegen und in Amber, Clave, nsec.app oder einem eigenen Bunker importieren.'**
+  String get keyExportDesc;
+
+  /// No description provided for @keyExportDuration.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Verschlüsselung ist absichtlich langsam: rund eine halbe Sekunde auf dem Gerät, im Browser bis zu einer halben Minute.'**
+  String get keyExportDuration;
+
+  /// No description provided for @keyExportAction.
+  ///
+  /// In de, this message translates to:
+  /// **'EXPORTIEREN'**
+  String get keyExportAction;
+
+  /// No description provided for @keyExportMismatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Passwörter stimmen nicht überein.'**
+  String get keyExportMismatch;
+
+  /// No description provided for @keyExportNoKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein lokaler Schlüssel vorhanden.'**
+  String get keyExportNoKey;
+
+  /// No description provided for @keyExportReadyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschlüsselter Schlüssel'**
+  String get keyExportReadyTitle;
+
+  /// No description provided for @keyExportReadyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ohne dein Passwort ist das hier wertlos — und mit deinem Passwort ist es dein voller Schlüssel. Behandle beides entsprechend.'**
+  String get keyExportReadyBody;
+
+  /// No description provided for @keyExportCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'KOPIEREN'**
+  String get keyExportCopy;
+
+  /// No description provided for @keyExportCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschlüsselter Schlüssel kopiert.'**
+  String get keyExportCopied;
+
   /// No description provided for @profileImport.
   ///
   /// In de, this message translates to:

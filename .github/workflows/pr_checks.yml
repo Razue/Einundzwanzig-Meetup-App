@@ -48,6 +48,16 @@ jobs:
     - name: Tests
       run: flutter test
 
+    # Führt Dart WIRKLICH im Browser aus — der einzige Schritt, der das tut.
+    #
+    # Für NIP-49 nicht optional: die erste Fassung nutzte pointycastles
+    # ChaCha20-Poly1305 und lief in der VM einwandfrei, brach im Browser aber
+    # ab ("full width integer not supported" — dessen Poly1305 braucht
+    # 64-Bit-Ganzzahlen, die dart2js nicht hat). Weder `flutter test` (VM) noch
+    # `flutter build web` (übersetzt nur) hätten das gezeigt.
+    - name: Schlüssel-Export im echten Browser prüfen
+      run: flutter test --platform chrome test/nip49_test.dart
+
     # Der Web-Build ist hier drin, weil er die am wenigsten von Hand getestete
     # Plattform ist und gleichzeitig die, die Tester per Link bekommen.
     # dart:io-Aufrufe kompilieren für Web durch und scheitern erst zur

@@ -6,6 +6,8 @@ import '../models/meetup.dart';
 import '../services/meetup_service.dart';
 import '../services/nostr_service.dart';
 import '../services/signing_service.dart';
+import '../services/nip49.dart';
+import '../services/secure_key_store.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/nostr_avatar.dart';
@@ -556,6 +558,223 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
   }
 
+  bool _exportingKey = false;
+
+  // --- VERSCHLÜSSELTER SCHLÜSSEL-EXPORT (NIP-49 `ncryptsec`) ---
+  //
+  // Der fehlende Baustein für den Umzug in einen Signer: bisher konnte man den
+  // Schlüssel nur als nackten nsec herausholen oder im app-eigenen Backup, das
+  // keine andere App liest. `ncryptsec1…` ist passwortverschlüsselt und wird
+  // von Amber, Clave, Signet, nsec.app und den üblichen Clients importiert.
+  //
+  // Die Ableitung (scrypt, 2^16 Runden) dauert: gemessen 0,4 s auf dem Gerät
+  // und rund 38 s im Browser. Deshalb ein Riegel gegen Mehrfachauslösung, ein
+  // sichtbarer Wartezustand am Knopf und ein Hinweis auf die Dauer im Dialog.
+  Future<void> _exportNcryptsec() async {
+    if (_exportingKey) return;
+    final t = AppLocalizations.of(context);
+
+    final privHex = await SecureKeyStore.getPrivHex();
+    if (!mounted) return;
+    if (privHex == null || privHex.isEmpty) {
+      _showError(t.keyExportNoKey);
+      return;
+    }
+
+    final password = await _promptExportPassword(t);
+    if (password == null || !mounted) return;
+
+    setState(() => _exportingKey = true);
+    String? ncryptsec;
+    String? error;
+    try {
+      // Kurz atmen lassen, damit der Wartezustand am Knopf wirklich gezeichnet
+      // wird, bevor die Rechnung den Faden belegt.
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      ncryptsec = await Nip49.encrypt(
+        privHex,
+        password,
+        // Der Schlüssel lag in dieser App im Klartext vor und wird gerade
+        // exportiert — „war nie unsicher unterwegs" wäre eine Lüge.
+        keySecurity: KeySecurity.insecure,
+      );
+    } on Nip49Exception catch (e) {
+      error = e.message;
+    } catch (e) {
+      error = e.toString();
+    }
+    if (!mounted) return;
+    setState(() => _exportingKey = false);
+
+    if (ncryptsec == null) {
+      _showError(t.errorGeneric(error ?? '?'));
+      return;
+    }
+    _showNcryptsecSheet(t, ncryptsec);
+  }
+
+  /// Passwort mit Bestätigung — ein Tippfehler hier macht den Export
+  /// unbrauchbar, und das fällt erst beim Wiederherstellen auf.
+  Future<String?> _promptExportPassword(AppLocalizations t) {
+    var password = '';
+    var confirm = '';
+    String? errorText;
+
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: cCard,
+          title: Text(t.keyExportTitle,
+              style: const TextStyle(color: Colors.white, fontSize: 16)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t.keyExportDesc,
+                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              const SizedBox(height: 12),
+              TextField(
+                obscureText: true,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: t.backupPassword,
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  errorText: errorText,
+                  enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24)),
+                ),
+                onChanged: (v) {
+                  password = v;
+                  setDialogState(() => errorText = null);
+                },
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                obscureText: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: t.backupPasswordConfirm,
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24)),
+                ),
+                onChanged: (v) => confirm = v,
+              ),
+              const SizedBox(height: 10),
+              Text(t.keyExportDuration,
+                  style: const TextStyle(color: cOrange, fontSize: 11)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, null),
+              child: Text(t.dialogCancel,
+                  style: const TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: cGreen),
+              onPressed: () {
+                if (password.isEmpty) {
+                  setDialogState(() => errorText = t.backupPasswordEmpty);
+                  return;
+                }
+                if (password != confirm) {
+                  setDialogState(() => errorText = t.keyExportMismatch);
+                  return;
+                }
+                Navigator.pop(ctx, password);
+              },
+              child: Text(t.keyExportAction,
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNcryptsecSheet(AppLocalizations t, String ncryptsec) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              const Icon(Icons.lock_outline, color: cGreen, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(t.keyExportReadyTitle,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ]),
+            const SizedBox(height: 10),
+            Text(t.keyExportReadyBody,
+                style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: cDark,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                ncryptsec,
+                style: const TextStyle(
+                    color: Colors.white, fontFamily: 'monospace', fontSize: 11),
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: cGreen),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: ncryptsec));
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(t.keyExportCopied),
+                    backgroundColor: Colors.green,
+                  ));
+                },
+                icon: const Icon(Icons.copy, size: 18, color: Colors.black),
+                label: Text(t.keyExportCopy,
+                    style: const TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Fehlermeldung mit ausreichender Standzeit — sie traegt einen Grund.
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Colors.red,
+      duration: const Duration(seconds: 10),
+      showCloseIcon: true,
+    ));
+  }
+
   // --- NSEC ANZEIGEN (für bestehende Keys) ---
   void _showExistingNsec() async {
     final keys = await NostrService.loadKeys();
@@ -952,6 +1171,34 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ],
                     ],
                   ),
+                  // Verschluesselter Export — nur wenn ueberhaupt ein lokaler
+                  // Schluessel da ist. Das ist der Weg, den nsec in einen
+                  // Signer wie Amber oder Clave zu bekommen, ohne ihn im
+                  // Klartext durch die Gegend zu kopieren.
+                  if (!_isAmber && !_isNip07) ...[
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _exportingKey ? null : _exportNcryptsec,
+                        icon: _exportingKey
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: cGreen))
+                            : const Icon(Icons.lock_outline, size: 16),
+                        label: Text(
+                            AppLocalizations.of(context).keyExportEncrypted,
+                            style: const TextStyle(fontSize: 11)),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: cGreen,
+                          side: const BorderSide(color: cGreen),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
