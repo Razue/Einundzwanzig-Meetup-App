@@ -218,13 +218,16 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
 
   String tPasskeyError(Object e) {
     final s = e.toString();
-    // Drei technisch verschiedene Gruende, fuer den Nutzer aber dieselbe Lage:
-    // Passkey geht hier nicht, Passwort geht weiter. RP_ID_NOT_ALLOWED kommt aus
-    // der eigenen Host-Erlaubnisliste — normalerweise blendet `isSupported()`
-    // den Schritt dort schon aus, aber verlassen sollte man sich darauf nicht.
+    // Technisch verschiedene Gruende, fuer den Nutzer dieselbe Lage:
+    // Passkey geht hier nicht, Passwort/„Spaeter" geht weiter.
     if (s.contains('PRF_UNSUPPORTED') ||
         s.contains('DomainNotAssociated') ||
-        s.contains('RP_ID_NOT_ALLOWED')) {
+        s.contains('RP_ID_NOT_ALLOWED') ||
+        s.contains('TYPE_NOT_SUPPORTED_ERROR') ||
+        s.contains('algorithms are supported') ||
+        s.contains('NoCreateOption') ||
+        s.contains('android-no-create-option') ||
+        s.contains('android-unhandled')) {
       return AppLocalizations.of(context).idSetupPasskeyUnavailable;
     }
     return s;
