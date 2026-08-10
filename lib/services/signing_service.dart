@@ -40,6 +40,10 @@ import 'secure_key_store.dart';
 import 'app_logger.dart';
 import 'nip07/nip07_bridge.dart';
 import 'nip07/nip07_exception.dart';
+import 'nip46/bunker_uri.dart';
+import 'nip46/nip46_client.dart';
+import 'nip46/nip46_exception.dart';
+import 'relay_config.dart';
 
 // =============================================
 // SIGNING MODE
@@ -49,6 +53,8 @@ enum SigningMode {
   local, // App besitzt den privaten Schlüssel (generiert oder importiert)
   amber, // Externer Signer via NIP-55 — nsec verlässt Amber nie
   nip07, // Externer Signer via NIP-07 (Browsererweiterung) — nur im Web
+  nip46, // Externer Signer via NIP-46 (Bunker) — auf JEDER Plattform,
+  // und auf iOS der einzige Weg zu einem externen Signer
 }
 
 // =============================================
@@ -469,77 +475,108 @@ class Nip07NostrSigner implements NostrSigner {
       throw SigningException(e.message);
     }
 
-    final signedPubkey = (signed['pubkey'] ?? '').toString();
-    // Schutz wie bei Amber: Kontowechsel in der Erweiterung darf keine
-    // fremde Signatur durchlassen.
-    if (signedPubkey.toLowerCase() != expectedPubkeyHex.toLowerCase()) {
-      throw const WrongAccountException();
-    }
-
-    final sig = (signed['sig'] ?? '').toString();
-    if (sig.isEmpty) {
-      throw const SigningException(
-          'Die Erweiterung hat kein signiertes Event geliefert.');
-    }
-
-    // kind und content dürfen sich NICHT ändern.
-    //
-    // Bei tags ist die Übernahme richtig: id und sig sind nach NIP-01 darüber
-    // berechnet, und Normalisierung durch die Erweiterung (Sortierung,
-    // Zusatzfelder) ist legitim — eine Caller-Kopie würde das Event ungültig
-    // machen und Relays würden es verwerfen.
-    //
-    // Für kind und content gilt das nicht. Würden sie ungeprüft übernommen,
-    // veröffentlichte die App Inhalte, die sie nicht verfasst hat, unter dem
-    // Namen des Nutzers — und ihre eigene Logik (Reputations-Payload,
-    // Badge-Proofs) rechnete danach mit verändertem Inhalt weiter. Eine
-    // Erweiterung, die hier abweicht, ist defekt; das will man sehen, nicht
-    // stillschweigend übernehmen.
-    if (signed['kind'] is int && signed['kind'] as int != kind) {
-      throw SigningException(
-          'Die Erweiterung hat einen anderen Event-Typ signiert '
-          '(${signed['kind']} statt $kind).');
-    }
-    if (signed.containsKey('content') &&
-        (signed['content'] ?? '').toString() != content) {
-      throw const SigningException(
-          'Die Erweiterung hat den Inhalt des Events verändert.');
-    }
-
-    return SignedEvent(
-      id: (signed['id'] ?? '').toString(),
-      pubkey: signedPubkey,
-      // created_at der Erweiterung gewinnt: id und sig sind darüber
-      // berechnet, ein abweichender Wert würde das Event ungültig machen.
-      createdAt: signed['created_at'] is int
-          ? signed['created_at'] as int
-          : createdAt,
-      // kind und content stammen aus dem Aufruf, nicht aus der Antwort — die
-      // Prüfung oben stellt sicher, dass beides übereinstimmt. So steht die
-      // Invariante im Code, statt sie aus zwei Stellen erschliessen zu müssen.
+    return verifySignerResponse(
+      signed: signed,
+      expectedPubkeyHex: expectedPubkeyHex,
       kind: kind,
-      tags: _tagsFromSigned(signed['tags'], tags),
+      tags: tags,
       content: content,
-      sig: sig,
+      fallbackCreatedAt: createdAt,
+      actor: 'Die Erweiterung',
     );
   }
+}
 
-  /// Parst tags aus der Erweiterungs-Antwort; bei kaputtem Format Fallback.
-  static List<List<String>> _tagsFromSigned(
-    dynamic raw,
-    List<List<String>> fallback,
-  ) {
-    if (raw is! List) return fallback;
-    try {
-      final out = <List<String>>[];
-      for (final tag in raw) {
-        if (tag is! List) return fallback;
-        out.add([for (final e in tag) e.toString()]);
-      }
-      return out;
-    } catch (_) {
-      return fallback;
+// =============================================
+// PRÜFUNG DER SIGNER-ANTWORT — gemeinsam für NIP-07 und NIP-46
+// =============================================
+// Beide reden mit FREMDEM Code: eine Browsererweiterung oder eine
+// Signer-App/Website. Die Prüfungen müssen bei beiden deckungsgleich sein —
+// zweimal geschrieben würden sie unweigerlich auseinanderlaufen, und das
+// wäre eine Sicherheitslücke, die man am Diff nicht sieht.
+// =============================================
+
+/// Prüft die Antwort eines externen Signers und baut daraus das Ergebnis.
+///
+/// [actor] geht in die Fehlertexte ein („Die Erweiterung …" / „Der Signer …"),
+/// damit der Nutzer weiß, welche Gegenstelle sich falsch verhält.
+@visibleForTesting
+SignedEvent verifySignerResponse({
+  required Map<String, dynamic> signed,
+  required String expectedPubkeyHex,
+  required int kind,
+  required List<List<String>> tags,
+  required String content,
+  required int fallbackCreatedAt,
+  required String actor,
+}) {
+  final signedPubkey = (signed['pubkey'] ?? '').toString();
+  // Schutz wie bei Amber: Kontowechsel in der Gegenstelle darf keine
+  // fremde Signatur durchlassen.
+  if (signedPubkey.toLowerCase() != expectedPubkeyHex.toLowerCase()) {
+    throw const WrongAccountException();
+  }
+
+  final sig = (signed['sig'] ?? '').toString();
+  if (sig.isEmpty) {
+    throw SigningException('$actor hat kein signiertes Event geliefert.');
+  }
+
+  // kind und content dürfen sich NICHT ändern.
+  //
+  // Bei tags ist die Übernahme richtig: id und sig sind nach NIP-01 darüber
+  // berechnet, und Normalisierung durch die Gegenstelle (Sortierung,
+  // Zusatzfelder) ist legitim — eine Caller-Kopie würde das Event ungültig
+  // machen und Relays würden es verwerfen.
+  //
+  // Für kind und content gilt das nicht. Würden sie ungeprüft übernommen,
+  // veröffentlichte die App Inhalte, die sie nicht verfasst hat, unter dem
+  // Namen des Nutzers — und ihre eigene Logik (Reputations-Payload,
+  // Badge-Proofs) rechnete danach mit verändertem Inhalt weiter. Eine
+  // Gegenstelle, die hier abweicht, ist defekt; das will man sehen, nicht
+  // stillschweigend übernehmen.
+  if (signed['kind'] is int && signed['kind'] as int != kind) {
+    throw SigningException('$actor hat einen anderen Event-Typ signiert '
+        '(${signed['kind']} statt $kind).');
+  }
+  if (signed.containsKey('content') &&
+      (signed['content'] ?? '').toString() != content) {
+    throw SigningException('$actor hat den Inhalt des Events verändert.');
+  }
+
+  return SignedEvent(
+    id: (signed['id'] ?? '').toString(),
+    pubkey: signedPubkey,
+    // created_at der Gegenstelle gewinnt: id und sig sind darüber
+    // berechnet, ein abweichender Wert würde das Event ungültig machen.
+    createdAt: signed['created_at'] is int
+        ? signed['created_at'] as int
+        : fallbackCreatedAt,
+    // kind und content stammen aus dem Aufruf, nicht aus der Antwort — die
+    // Prüfung oben stellt sicher, dass beides übereinstimmt. So steht die
+    // Invariante im Code, statt sie aus zwei Stellen erschliessen zu müssen.
+    kind: kind,
+    tags: _tagsFromSigned(signed['tags'], tags),
+    content: content,
+    sig: sig,
+  );
+}
+
+/// Parst tags aus der Signer-Antwort; bei kaputtem Format Fallback.
+List<List<String>> _tagsFromSigned(
+  dynamic raw,
+  List<List<String>> fallback,
+) {
+  if (raw is! List) return fallback;
+  try {
+    final out = <List<String>>[];
+    for (final tag in raw) {
+      if (tag is! List) return fallback;
+      out.add([for (final e in tag) e.toString()]);
     }
+    return out;
+  } catch (_) {
+    return fallback;
   }
 }
 
@@ -570,6 +607,130 @@ class Nip07ConnectError extends Nip07ConnectResult {
 }
 
 // =============================================
+// NIP-46 SIGNER — Remote-Signer (Bunker)
+// =============================================
+// Signiert über eine fremde App oder Website. Aufbau bewusst parallel zum
+// NIP-07-Signer, inklusive derselben Prüfungen (gemeinsame Funktion oben).
+//
+// Den Client liefert der SigningService, weil er über App-Aufrufe hinweg
+// GEHALTEN werden muss: pro Signatur neue WebSockets zu öffnen wäre langsam
+// und würde bei jeder Anfrage erneut abonnieren.
+// =============================================
+
+class Nip46NostrSigner implements NostrSigner {
+  /// pubkey des NUTZERS, der beim Verbinden gemerkt wurde.
+  final String expectedPubkeyHex;
+
+  /// Liefert die laufende Sitzung (stellt sie bei Bedarf wieder her).
+  final Future<Nip46Client> Function() clientProvider;
+
+  /// NUR für Tests — gleiche Naht wie beim NIP-07-Signer, damit die
+  /// Sicherheitsprüfungen ohne echten Signer geprüft werden können.
+  @visibleForTesting
+  final Future<Map<String, dynamic>> Function(Map<String, dynamic>)?
+      debugSignFn;
+
+  const Nip46NostrSigner({
+    required this.expectedPubkeyHex,
+    required this.clientProvider,
+    this.debugSignFn,
+  });
+
+  @override
+  Future<String?> pubkeyHex() async => expectedPubkeyHex;
+
+  @override
+  Future<SignedEvent> signEvent({
+    required int kind,
+    required List<List<String>> tags,
+    required String content,
+  }) async {
+    final createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    // Anders als bei NIP-07 wird 'pubkey' mitgeschickt: NIP-46 überträgt das
+    // Event als JSON-String, und viele Signer prüfen damit, ob die Anfrage
+    // zum freigegebenen Konto gehört.
+    final unsigned = <String, dynamic>{
+      'pubkey': expectedPubkeyHex,
+      'created_at': createdAt,
+      'kind': kind,
+      'tags': tags,
+      'content': content,
+    };
+
+    final Map<String, dynamic> signed;
+    try {
+      final sign = debugSignFn;
+      signed = sign != null
+          ? await sign(unsigned)
+          : await (await clientProvider()).signEvent(unsigned);
+    } on Nip46TimeoutException {
+      throw const SigningException(
+          'Der Signer hat nicht geantwortet. Ist die Signer-App geöffnet '
+          'und die Freigabe bestätigt?');
+    } on Nip46RemoteException catch (e) {
+      throw SigningException('Der Signer hat abgelehnt: ${e.message}');
+    } on Nip46Exception catch (e) {
+      throw SigningException(e.message);
+    }
+
+    return verifySignerResponse(
+      signed: signed,
+      expectedPubkeyHex: expectedPubkeyHex,
+      kind: kind,
+      tags: tags,
+      content: content,
+      fallbackCreatedAt: createdAt,
+      actor: 'Der Signer',
+    );
+  }
+}
+
+/// Ergebnis eines NIP-46-Verbindungsversuchs.
+sealed class Nip46ConnectResult {
+  const Nip46ConnectResult();
+}
+
+class Nip46ConnectSuccess extends Nip46ConnectResult {
+  final String pubkeyHex;
+  final String npub;
+  const Nip46ConnectSuccess({required this.pubkeyHex, required this.npub});
+}
+
+/// Der Signer hat innerhalb der Frist nicht geantwortet — der häufigste Fall.
+class Nip46ConnectTimeout extends Nip46ConnectResult {
+  const Nip46ConnectTimeout();
+}
+
+class Nip46ConnectError extends Nip46ConnectResult {
+  final String message;
+  const Nip46ConnectError(this.message);
+}
+
+/// Eine laufende Kopplung über `nostrconnect://`.
+///
+/// Die UI zeigt [uri] als QR-Code und Text an und wartet dann auf
+/// [SigningService.completeNip46Pairing]. Bei Abbruch muss [cancel] gerufen
+/// werden, sonst bleiben Relay-Verbindungen offen.
+class Nip46Pairing {
+  final String uri;
+  final String secret;
+  final String clientSecretKeyHex;
+  final List<String> relays;
+  final Nip46Client client;
+
+  const Nip46Pairing({
+    required this.uri,
+    required this.secret,
+    required this.clientSecretKeyHex,
+    required this.relays,
+    required this.client,
+  });
+
+  Future<void> cancel() => client.close();
+}
+
+// =============================================
 // SIGNING SERVICE — die Fassade für die ganze App
 // =============================================
 
@@ -579,6 +740,12 @@ class SigningService {
   static const String _amberNpubKey = 'amber_npub';
   static const String _nip07PubkeyHexKey = 'nip07_pubkey_hex';
   static const String _nip07NpubKey = 'nip07_npub';
+  // Drei Felder tragen eine Bunker-Sitzung: der pubkey des Nutzers, seine
+  // npub-Form für die Anzeige und die Adresse des Signers. Der vierte Teil —
+  // der Sitzungsschlüssel der App — liegt im sicheren Speicher.
+  static const String _nip46PubkeyHexKey = 'nip46_pubkey_hex';
+  static const String _nip46NpubKey = 'nip46_npub';
+  static const String _nip46BunkerUriKey = 'nip46_bunker_uri';
 
   // =============================================
   // MODUS
@@ -600,15 +767,24 @@ class SigningService {
     return switch (storedMode) {
       'amber' => SigningMode.amber,
       'nip07' => SigningMode.nip07,
+      'nip46' => SigningMode.nip46,
       _ => SigningMode.local,
     };
   }
 
   static Future<void> _setMode(SigningMode mode) async {
+    // Verlassen von nip46: Sitzung sofort raeumen. Sonst blieben nach
+    // connectAmber / connectNip07 / useLocalMode der Sitzungsschluessel und
+    // offene Relay-Subscriptions liegen — disconnectNip46() raeumt korrekt,
+    // der Wechsel-Pfad tat es vorher nicht.
+    if (mode != SigningMode.nip46) {
+      await _clearNip46Artifacts();
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_modeKey, switch (mode) {
       SigningMode.amber => 'amber',
       SigningMode.nip07 => 'nip07',
+      SigningMode.nip46 => 'nip46',
       SigningMode.local => 'local',
     });
   }
@@ -616,23 +792,28 @@ class SigningService {
   static Future<bool> get isAmber async =>
       (await getMode()) == SigningMode.amber;
 
-  /// Amber ist derzeit nur über den nativen Android-MethodChannel verfügbar.
-  /// Web/NIP-46 bleibt eine separate, noch nicht implementierte Anbindung.
+  /// Amber ist nur über den nativen Android-MethodChannel verfügbar.
+  /// Der plattformübergreifende Weg zu einem externen Signer ist NIP-46.
   static bool get isAmberSupported =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
   static Future<bool> get isNip07 async =>
       (await getMode()) == SigningMode.nip07;
 
-  /// Signiert ein EXTERNER Signer (Amber oder Browsererweiterung)?
+  static Future<bool> get isNip46 async =>
+      (await getMode()) == SigningMode.nip46;
+
+  /// Signiert ein EXTERNER Signer (Amber, Browsererweiterung oder Bunker)?
   ///
   /// Fuer alles, wo es nur darauf ankommt, dass die App den privaten
   /// Schluessel NICHT besitzt: kein nsec im Backup, npub vom Service statt
   /// aus dem Keystore, und kein stilles Signieren beim App-Start — jede
-  /// Signatur loest bei beiden ein Popup aus.
+  /// Signatur loest bei allen dreien eine Rueckfrage aus.
   static Future<bool> get isExternalSigner async {
     final mode = await getMode();
-    return mode == SigningMode.amber || mode == SigningMode.nip07;
+    return mode == SigningMode.amber ||
+        mode == SigningMode.nip07 ||
+        mode == SigningMode.nip46;
   }
 
   // =============================================
@@ -663,6 +844,16 @@ class SigningService {
               'Bitte die Browsererweiterung erneut verbinden.');
         }
         return Nip07NostrSigner(expectedPubkeyHex: hex);
+      case SigningMode.nip46:
+        final prefs = await SharedPreferences.getInstance();
+        final hex = prefs.getString(_nip46PubkeyHexKey);
+        if (hex == null || hex.isEmpty) {
+          throw const SigningException(
+              'Bunker-Modus aktiv, aber kein verbundener Schlüssel. '
+              'Bitte den Signer erneut verbinden.');
+        }
+        return Nip46NostrSigner(
+            expectedPubkeyHex: hex, clientProvider: _nip46Session);
       case SigningMode.local:
         return LocalNostrSigner();
     }
@@ -696,6 +887,7 @@ class SigningService {
     return switch (await getMode()) {
       SigningMode.amber => prefs.getString(_amberNpubKey),
       SigningMode.nip07 => prefs.getString(_nip07NpubKey),
+      SigningMode.nip46 => prefs.getString(_nip46NpubKey),
       SigningMode.local => SecureKeyStore.getNpub(),
     };
   }
@@ -715,6 +907,15 @@ class SigningService {
         // sein, und ein gemerkter pubkey allein hilft dann nicht.
         if (hex == null || hex.isEmpty) return false;
         return nip07Available();
+      case SigningMode.nip46:
+        // Bewusst OHNE ping: canSign() liegt in heissen Pfaden (unter anderem
+        // beim App-Start), eine Relay-Runde pro Aufruf waere dort falsch.
+        // Ob die Sitzung noch lebt, prueft nip46SessionAlive() auf Anfrage.
+        final hex = prefs.getString(_nip46PubkeyHexKey);
+        if (hex == null || hex.isEmpty) return false;
+        if ((prefs.getString(_nip46BunkerUriKey) ?? '').isEmpty) return false;
+        final clientKey = await SecureKeyStore.getNip46ClientKey();
+        return clientKey != null && clientKey.isNotEmpty;
       case SigningMode.local:
         final priv = await SecureKeyStore.getPrivHex();
         return priv != null && priv.isNotEmpty;
@@ -818,6 +1019,326 @@ class SigningService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_nip07PubkeyHexKey);
     await prefs.remove(_nip07NpubKey);
+    await _setMode(SigningMode.local);
+  }
+
+  // =============================================
+  // REMOTE-SIGNER (NIP-46) VERBINDEN / TRENNEN
+  // =============================================
+
+  /// Die laufende Sitzung. Wird GEHALTEN: pro Signatur neue WebSockets zu
+  /// öffnen wäre langsam und würde bei jeder Anfrage erneut abonnieren.
+  static Nip46Client? _nip46;
+
+  /// Verhindert, dass zwei gleichzeitige Signier-Anfragen nach einem
+  /// App-Neustart zwei Sitzungen aufbauen.
+  static Completer<Nip46Client>? _nip46Rehydrating;
+
+  /// Wird gerufen, wenn der Signer erst eine Freigabe im Browser verlangt
+  /// (`auth_url`). Die UI setzt das und zeigt einen KNOPF — ein automatisch
+  /// geöffnetes Fenster blockiert der Browser, weil keine Nutzer-Gestik
+  /// vorliegt.
+  static void Function(String url)? onNip46AuthUrl;
+
+  /// Liefert die Sitzung, stellt sie bei Bedarf aus dem Gespeicherten her.
+  static Future<Nip46Client> _nip46Session() async {
+    final existing = _nip46;
+    if (existing != null) return existing;
+
+    final running = _nip46Rehydrating;
+    if (running != null) return running.future;
+
+    final completer = Completer<Nip46Client>();
+    _nip46Rehydrating = completer;
+    try {
+      final clientKey = await SecureKeyStore.getNip46ClientKey();
+      final prefs = await SharedPreferences.getInstance();
+      final uri = prefs.getString(_nip46BunkerUriKey) ?? '';
+      if (clientKey == null || clientKey.isEmpty || uri.isEmpty) {
+        throw const SigningException(
+            'Es ist keine Signer-Sitzung gespeichert. '
+            'Bitte den Signer erneut verbinden.');
+      }
+      final client = Nip46Client.fromPointer(
+        clientSecretKeyHex: clientKey,
+        pointer: BunkerPointer.parse(uri),
+        onAuthUrl: (url) => onNip46AuthUrl?.call(url),
+      );
+      _nip46 = client;
+      completer.complete(client);
+    } catch (e) {
+      completer.completeError(e);
+    } finally {
+      _nip46Rehydrating = null;
+    }
+    return completer.future;
+  }
+
+  /// Tauscht die Sitzung und schliesst die alte — sonst blieben deren
+  /// Subscriptions als Zombies offen und lieferten weiter Ereignisse.
+  static Future<void> _swapNip46Session(Nip46Client? next) async {
+    final old = _nip46;
+    _nip46 = next;
+    if (old != null && !identical(old, next)) {
+      try {
+        await old.close();
+      } catch (_) {}
+    }
+  }
+
+  /// Schliesst laufende Sitzung + loescht Sitzungsschluessel und
+  /// Bunker-Prefs. Ohne Mode-Wechsel — den setzt der Aufrufer.
+  ///
+  /// Idempotent: auch aufrufbar, wenn gar keine nip46-Sitzung existiert.
+  static Future<void> _clearNip46Artifacts() async {
+    await _swapNip46Session(null);
+    try {
+      await SecureKeyStore.deleteNip46ClientKey();
+    } catch (_) {}
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_nip46PubkeyHexKey);
+    await prefs.remove(_nip46NpubKey);
+    await prefs.remove(_nip46BunkerUriKey);
+  }
+
+  /// Verbindet über eine eingefügte `bunker://`-Adresse.
+  ///
+  /// Auf iOS ist das der Hauptweg: dort gibt es weder Amber noch eine
+  /// Browsererweiterung, und ob eine App `nostrconnect://` beantwortet, ist
+  /// nicht verlässlich.
+  ///
+  /// Ein vorhandener lokaler nsec wird BEWUSST NICHT gelöscht — gleiche
+  /// Begründung wie bei connectNip07().
+  static Future<Nip46ConnectResult> connectNip46Bunker(String bunkerUri) async {
+    Nip46Client? client;
+    try {
+      final pointer = BunkerPointer.parse(bunkerUri);
+      final clientKey = Nip46Client.generateClientKey();
+      client = Nip46Client.fromPointer(
+        clientSecretKeyHex: clientKey,
+        pointer: pointer,
+        onAuthUrl: (url) => onNip46AuthUrl?.call(url),
+      );
+
+      await client.connect(secret: pointer.secret);
+      final userPubkeyHex = await client.getPublicKey();
+
+      await _persistNip46Session(
+        clientSecretKeyHex: clientKey,
+        userPubkeyHex: userPubkeyHex,
+        // Ohne secret speichern: es ist einmalig verwendbar.
+        bunkerUri: pointer.toBunkerUri(),
+      );
+      await _swapNip46Session(client);
+      final npub = Nip19.encodePubkey(userPubkeyHex);
+      AppLogger.security(
+          'SigningService',
+          'Remote-Signer verbunden: ${_short(npub)} — '
+              'der Schlüssel bleibt im Signer.');
+      return Nip46ConnectSuccess(pubkeyHex: userPubkeyHex, npub: npub);
+    } on Nip46TimeoutException {
+      await client?.close();
+      return const Nip46ConnectTimeout();
+    } on Nip46Exception catch (e) {
+      await client?.close();
+      return Nip46ConnectError(e.message);
+    } catch (e) {
+      await client?.close();
+      return Nip46ConnectError(e.toString());
+    }
+  }
+
+  /// Startet den client-initiierten Weg: die App gibt eine Adresse aus, der
+  /// Signer meldet sich darauf. Danach [completeNip46Pairing] rufen.
+  static Future<Nip46Pairing> startNip46Pairing() async {
+    final relays = await nip46PairingRelays();
+    final clientKey = Nip46Client.generateClientKey();
+    final secret = Nip46Client.generateSecret();
+    final client = Nip46Client(
+      clientSecretKeyHex: clientKey,
+      relays: relays,
+      onAuthUrl: (url) => onNip46AuthUrl?.call(url),
+    );
+    return Nip46Pairing(
+      uri: BunkerPointer.buildNostrConnectUri(
+        clientPubkeyHex: client.clientPubkeyHex,
+        relays: relays,
+        secret: secret,
+        perms: Nip46Client.requestedPerms,
+        appName: 'Einundzwanzig Meetup',
+      ),
+      secret: secret,
+      clientSecretKeyHex: clientKey,
+      relays: relays,
+      client: client,
+    );
+  }
+
+  /// Wartet, bis der Signer sich gemeldet hat, und übernimmt die Sitzung.
+  static Future<Nip46ConnectResult> completeNip46Pairing(
+      Nip46Pairing pairing) async {
+    try {
+      final signerPubkey =
+          await pairing.client.awaitPairing(secret: pairing.secret);
+      final userPubkeyHex = await pairing.client.getPublicKey();
+
+      // Immer als bunker:// ablegen, auch wenn die Kopplung mit
+      // nostrconnect:// begann — so gibt es beim Neustart nur EINEN
+      // Wiederherstellungs-Pfad statt zwei.
+      final pointer = BunkerPointer(
+        remoteSignerPubkey: signerPubkey,
+        relays: pairing.relays,
+      );
+      await _persistNip46Session(
+        clientSecretKeyHex: pairing.clientSecretKeyHex,
+        userPubkeyHex: userPubkeyHex,
+        bunkerUri: pointer.toBunkerUri(),
+      );
+      await _swapNip46Session(pairing.client);
+      final npub = Nip19.encodePubkey(userPubkeyHex);
+      AppLogger.security(
+          'SigningService',
+          'Remote-Signer gekoppelt: ${_short(npub)} — '
+              'der Schlüssel bleibt im Signer.');
+      return Nip46ConnectSuccess(pubkeyHex: userPubkeyHex, npub: npub);
+    } on Nip46TimeoutException {
+      await pairing.cancel();
+      return const Nip46ConnectTimeout();
+    } on Nip46Exception catch (e) {
+      await pairing.cancel();
+      return Nip46ConnectError(e.message);
+    } catch (e) {
+      await pairing.cancel();
+      return Nip46ConnectError(e.toString());
+    }
+  }
+
+  static Future<void> _persistNip46Session({
+    required String clientSecretKeyHex,
+    required String userPubkeyHex,
+    required String bunkerUri,
+  }) async {
+    await SecureKeyStore.saveNip46ClientKey(clientSecretKeyHex);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_nip46PubkeyHexKey, userPubkeyHex);
+    await prefs.setString(
+        _nip46NpubKey, Nip19.encodePubkey(userPubkeyHex));
+    await prefs.setString(_nip46BunkerUriKey, bunkerUri);
+    await _setMode(SigningMode.nip46);
+  }
+
+  /// Relays für die Kopplung. Beim client-initiierten Weg gibt die APP die
+  /// Relays vor, deshalb bewusst wenige: jedes weitere verlängert den Aufbau,
+  /// ohne die Erfolgsaussicht zu verbessern.
+  ///
+  /// Hier stand zuerst ein fest verdrahtetes `wss://relay.damus.io` als immer
+  /// erstes Relay. Das war falsch, aus zwei Gründen, die sich in der Praxis
+  /// gezeigt haben:
+  ///
+  /// 1. Es hat die Relay-Einstellungen des Nutzers übergangen — wer damus
+  ///    bewusst abgewählt hatte, bekam es hier trotzdem.
+  /// 2. Der Signer ÜBERNIMMT diese Liste und merkt sie sich für die Sitzung.
+  ///    Ein einzelnes ausgefallenes Relay in der Kopplungsadresse pflanzt sich
+  ///    damit in die Gegenstelle fort und ist dort nicht mehr wegzukriegen,
+  ///    ohne die Verbindung neu aufzubauen.
+  ///
+  /// Jetzt gelten die aktiven Relays der App. Der Rückfall greift nur, wenn
+  /// der Nutzer alle abgeschaltet hat — ohne Relay gibt es keine Kopplung.
+  @visibleForTesting
+  static Future<List<String>> nip46PairingRelays() async {
+    final active = await RelayConfig.getActiveRelays();
+    final chosen = active.take(3).toList();
+    return chosen.isNotEmpty
+        ? chosen
+        : RelayConfig.defaultRelays.take(2).toList();
+  }
+
+  /// Lebt die Sitzung noch? Kostet eine Relay-Runde, daher nur auf Anfrage —
+  /// etwa im Profil oder nach einem fehlgeschlagenen Signieren. Damit fällt
+  /// ein im Signer widerrufener ZUGANG auf, statt sich als Zeitüberschreitung
+  /// zu tarnen.
+  ///
+  /// WAS DAS NICHT PRÜFT: ob noch Signier-RECHTE bestehen. `ping` ist in
+  /// NIP-46 nicht rechtebehaftet — ein Signer antwortet auch dann mit `pong`,
+  /// wenn er jede Signatur ablehnen würde. Beim Test aufgefallen: nach dem
+  /// Widerruf der Rechte (Verbindung weiter aktiv) meldete die Prüfung grün,
+  /// und der Text behauptete „Signieren ist möglich" — das war zu viel
+  /// versprochen. Zwei verschiedene Zustände:
+  ///
+  ///   Verbindung widerrufen  → jede Methode scheitert → hier false
+  ///   Rechte widerrufen      → ping klappt, sign_event nicht → hier true
+  ///
+  /// Ein „kann ich signieren?" gibt es im NIP nicht; das zeigt erst die
+  /// nächste echte Signatur. Der Text sagt das jetzt so.
+  static Future<bool> nip46SessionAlive() async {
+    if (!await isNip46) return false;
+    try {
+      return await (await _nip46Session()).ping();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Die Bunker-Adresse für das Backup — oder null.
+  ///
+  /// Der SITZUNGSSCHLÜSSEL bleibt bewusst zurück. Er ist die Berechtigung, mit
+  /// der der Signer Anfragen dieser App annimmt; läge er im Backup, wäre die
+  /// Datei für Bunker-Nutzer eine Signier-Berechtigung. Genau für die gilt
+  /// sonst der Satz „mit externem Signer liegt kein Schlüssel im Backup" — und
+  /// der soll stimmen.
+  ///
+  /// Preis: nach dem Wiederherstellen muss der Signer neu verbunden werden.
+  /// Das ist zumutbar, denn wer einen Remote-Signer nutzt, HAT ihn — und eine
+  /// Sitzung neu zu koppeln kostet einen Handgriff. Die Identität bleibt
+  /// dennoch erhalten (npub + Modus), wie bei einem Amber-Backup auf iOS.
+  static Future<Map<String, String>?> nip46SessionForBackup() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uri = prefs.getString(_nip46BunkerUriKey) ?? '';
+    if (uri.isEmpty) return null;
+    return {'bunker_uri': uri};
+  }
+
+  /// Stellt Identität und Bunker-Adresse aus einem Backup wieder her.
+  ///
+  /// [clientSecretKeyHex] ist absichtlich optional: Backups enthalten den
+  /// Sitzungsschlüssel NICHT (siehe [nip46SessionForBackup]). Ohne ihn wird der
+  /// Modus samt npub wiederhergestellt, `canSign()` meldet aber korrekt false —
+  /// die App täuscht keine Signier-Fähigkeit vor, und der Nutzer verbindet den
+  /// Signer über „Anderen Signer verbinden" neu.
+  ///
+  /// Ein zuvor gespeicherter Sitzungsschlüssel wird dabei GELÖSCHT. Sonst
+  /// bliebe nach dem Wiederherstellen ein alter Schlüssel liegen, der nicht zur
+  /// wiederhergestellten Adresse gehört — die App hielte sich für
+  /// signierfähig und scheiterte erst bei der ersten Anfrage.
+  static Future<void> restoreNip46({
+    required String npub,
+    required String bunkerUri,
+    String? clientSecretKeyHex,
+  }) async {
+    final hex = Nip19.decodePubkey(npub.trim());
+    // Wirft bei Müll, bevor irgendwas gespeichert wird.
+    BunkerPointer.parse(bunkerUri);
+    await _swapNip46Session(null);
+
+    final clientKey = clientSecretKeyHex?.trim() ?? '';
+    if (clientKey.isEmpty) {
+      await SecureKeyStore.deleteNip46ClientKey();
+    } else {
+      await SecureKeyStore.saveNip46ClientKey(clientKey);
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_nip46PubkeyHexKey, hex);
+    await prefs.setString(_nip46NpubKey, Nip19.encodePubkey(hex));
+    await prefs.setString(_nip46BunkerUriKey, bunkerUri.trim());
+    await _setMode(SigningMode.nip46);
+  }
+
+  /// Trennt den Remote-Signer und räumt die Sitzung ab.
+  static Future<void> disconnectNip46() async {
+    // _setMode(local) raeumt die Artefakte; hier vorab, damit auch ein
+    // Fehlschlag beim Prefs-Schreiben den In-Memory-Client nicht uebrig laesst.
+    await _clearNip46Artifacts();
     await _setMode(SigningMode.local);
   }
 

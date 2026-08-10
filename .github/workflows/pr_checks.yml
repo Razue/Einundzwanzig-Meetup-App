@@ -48,6 +48,7 @@ jobs:
     - name: Tests
       run: flutter test
 
+fix/pbkdf2-web
     # Führt Dart WIRKLICH im Browser aus — der einzige Schritt, der das tut.
     #
     # Nötig, weil die Schlüsselableitung des Backups im Web über WebCrypto
@@ -57,6 +58,21 @@ jobs:
     # in der VM und sieht WebCrypto nie, `flutter build web` übersetzt nur.
     - name: Schlüsselableitung im echten Browser prüfen
       run: flutter test --platform chrome test/pbkdf2_web_equality_test.dart
+
+    # Der einzige Schritt, der Dart-Code WIRKLICH IM BROWSER ausführt.
+    #
+    # Nötig, weil dart2js anders rechnet als die VM: BigInt liegt dort auf
+    # JavaScript-BigInt. Die NIP-44-Verschlüsselung des Remote-Signers hängt
+    # daran (ECDH auf secp256k1) — ein Fehler dort wäre im Browser lautlos, und
+    # weder `flutter test` noch `flutter build web` würden ihn sehen: das eine
+    # läuft in der VM, das andere übersetzt nur.
+    #
+    # Bewusst nur diese eine Datei: die grosse Vektor-Datei liest ihre 128
+    # Fälle über dart:io und kann im Browser nicht starten. Ein vollständiger
+    # Chrome-Lauf der Suite würde ausserdem Minuten kosten.
+    - name: NIP-44 im echten Browser prüfen
+      run: flutter test --platform chrome test/nip44_web_smoke_test.dart
+ main
 
     # Der Web-Build ist hier drin, weil er die am wenigsten von Hand getestete
     # Plattform ist und gleichzeitig die, die Tester per Link bekommen.

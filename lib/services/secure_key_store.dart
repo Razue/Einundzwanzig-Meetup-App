@@ -179,4 +179,33 @@ class SecureKeyStore {
     await _storage.delete(key: _npubKey);
     await _storage.delete(key: _privHexKey);
   }
+
+  // =============================================
+  // SITZUNGSSCHLÜSSEL DES REMOTE-SIGNERS (NIP-46)
+  // =============================================
+  // Das ist NICHT der Schlüssel des Nutzers — der verlässt den Signer nie.
+  // Es ist der Schlüssel, mit dem die App gegenüber dem Signer auftritt.
+  // Wer ihn hat, kann bis zum Widerruf Signaturen anfragen; deshalb liegt er
+  // im sicheren Speicher und nicht in den Einstellungen.
+  //
+  // Absichtlich NICHT Teil von deleteKeys(): das räumt die Identität des
+  // Nutzers auf, nicht die Signer-Sitzung. Beide getrennt zu halten heißt,
+  // dass ein Schlüsseltausch die Bunker-Verbindung nicht mitreißt.
+  // =============================================
+  static const String _nip46ClientKeyKey = 'nip46_client_sk';
+
+  static Future<void> saveNip46ClientKey(String privHex) async {
+    await ensureMigrated();
+    await _storage.write(key: _nip46ClientKeyKey, value: privHex);
+  }
+
+  static Future<String?> getNip46ClientKey() async {
+    await ensureMigrated();
+    return await _storage.read(key: _nip46ClientKeyKey);
+  }
+
+  static Future<void> deleteNip46ClientKey() async {
+    await ensureMigrated();
+    await _storage.delete(key: _nip46ClientKeyKey);
+  }
 }

@@ -240,8 +240,18 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
         Navigator.pop(context); // Dialog schließen
       }
     } else {
+      // Laenger als die 4 Sekunden der Vorgabe und mit Schliessen-Symbol:
+      // hier steht der Grund der Gegenstelle drin, etwa "Der Signer hat
+      // abgelehnt: Permission denied for sign_event kind:21003". Solche
+      // Meldungen sind lang und der Nutzer muss danach etwas TUN — in 4
+      // Sekunden ist sie weg, bevor sie gelesen ist.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(result.message),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 10),
+          showCloseIcon: true,
+        ),
       );
     }
   }

@@ -799,6 +799,135 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileAmberAborted => 'Connection aborted in Amber.';
 
   @override
+  String get profileSwitchSignerHeading => 'Connect a different signer';
+
+  @override
+  String get profileDisconnectSigner => 'DISCONNECT SIGNER';
+
+  @override
+  String get profileDisconnectTitle => 'Disconnect signer?';
+
+  @override
+  String get profileDisconnectBody =>
+      'The connection to the signer is released. If a local key exists, the app uses it again — otherwise it cannot sign until you create or import one.\n\nThe authorisation inside the signer stays; you can revoke it there as well.';
+
+  @override
+  String get profileDisconnectDone => 'Signer disconnected.';
+
+  @override
+  String get profileSignerUnusable =>
+      'Signing is currently not possible — reconnect the signer.';
+
+  @override
+  String get profileSwitchSignerHint =>
+      'Your current key stays stored and in the backup.';
+
+  @override
+  String get profileSwitchSignerTitle => 'Switch signer?';
+
+  @override
+  String get profileSwitchSignerBody =>
+      'The signer brings its own key. If it does NOT hold the same one as before, your identity changes — your badges will still belong to the old key.\n\nYour current key is not deleted: it stays in storage and in the backup, so you can switch back.';
+
+  @override
+  String get profileSwitchSignerContinue => 'CONTINUE';
+
+  @override
+  String get profileIdentityChanged =>
+      'Careful: the signer uses a different identity than before. Your badges belong to the previous key.';
+
+  @override
+  String get profileConnectBunker => 'CONNECT REMOTE SIGNER';
+
+  @override
+  String get bunkerTitle => 'Connect a remote signer';
+
+  @override
+  String get bunkerIntro =>
+      'Your key stays inside the signer. The app only requests signatures — on any device.';
+
+  @override
+  String get bunkerModeSigner => 'Connect signer app';
+
+  @override
+  String get bunkerModeSignerDesc =>
+      'The app shows a QR code for you to scan in the signer.';
+
+  @override
+  String get bunkerModePaste => 'Paste a bunker:// address';
+
+  @override
+  String get bunkerModePasteDesc =>
+      'Copy it from nsec.app, Amber or Alby. The most reliable route on iPhone.';
+
+  @override
+  String get bunkerPasteLabel => 'bunker:// address';
+
+  @override
+  String get bunkerPasteHint => 'bunker://…?relay=wss://…';
+
+  @override
+  String get bunkerConnect => 'CONNECT';
+
+  @override
+  String get bunkerBack => 'BACK';
+
+  @override
+  String get bunkerWaiting => 'Waiting for approval in the signer …';
+
+  @override
+  String get bunkerWaitingHint =>
+      'This can take up to two minutes. Keep the app open.';
+
+  @override
+  String get bunkerScanHint =>
+      'Scan it in the signer — or paste the address there.';
+
+  @override
+  String get bunkerCopy => 'Copy address';
+
+  @override
+  String get bunkerCopied => 'Address copied.';
+
+  @override
+  String get bunkerOpenSigner => 'Open signer';
+
+  @override
+  String get bunkerNoSignerApp =>
+      'No signer app found. Use \"Paste a bunker:// address\" instead.';
+
+  @override
+  String get bunkerAuthOpen => 'Open approval in browser';
+
+  @override
+  String get bunkerAuthNeeded => 'The signer requires approval in the browser.';
+
+  @override
+  String get bunkerAuthAction => 'OPEN';
+
+  @override
+  String get bunkerTimeout =>
+      'The signer did not respond. Is it open and online?';
+
+  @override
+  String get bunkerConnected =>
+      'Remote signer connected! Your key stays there.';
+
+  @override
+  String get bunkerDisconnected => 'Remote signer disconnected.';
+
+  @override
+  String get bunkerCheck => 'CHECK CONNECTION';
+
+  @override
+  String get bunkerAlive =>
+      'Signer responds — the session is active. Whether the permissions still hold only shows on the next signature.';
+
+  @override
+  String get bunkerDead =>
+      'Signer does not respond. Is it open and online? Otherwise reconnect.';
+
+  @override
   String get profileImportNsec => 'IMPORT EXISTING NSEC';
 
   @override
