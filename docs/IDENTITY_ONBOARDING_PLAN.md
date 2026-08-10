@@ -48,6 +48,8 @@ flowchart TD
 
 Intro → [`lib/screens/identity_setup_screen.dart`](../lib/screens/identity_setup_screen.dart): **Neu hier** / **Schon Nostr**. Backup-Restore als Sekundärlink auf Intro.
 
+Nach Identität (Name + Key bzw. Signer): wenn noch kein Home-Meetup → Schritt **Dein Meetup** (gleiche Suche wie im Profil, „Später“ erlaubt).
+
 ### Schritt 2a — Neu (Passwort + Passkey)
 
 1. Feld **Name** (Pflicht) → Nickname / kind-0

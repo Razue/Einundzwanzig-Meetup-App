@@ -9453,6 +9453,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Später'**
   String get idSetupBackupLater;
+
+  /// No description provided for @idSetupMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Meetup'**
+  String get idSetupMeetupTitle;
+
+  /// No description provided for @idSetupMeetupHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Welches Meetup ist deins? Du kannst später weitere hinzufügen.'**
+  String get idSetupMeetupHint;
+
+  /// No description provided for @idSetupMeetupPick.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup wählen'**
+  String get idSetupMeetupPick;
+
+  /// No description provided for @idSetupMeetupContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get idSetupMeetupContinue;
+
+  /// No description provided for @idSetupMeetupLater.
+  ///
+  /// In de, this message translates to:
+  /// **'Später'**
+  String get idSetupMeetupLater;
+
+  /// No description provided for @idSetupMeetupLoading.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups werden geladen…'**
+  String get idSetupMeetupLoading;
+
+  /// No description provided for @idSetupMeetupLoadError.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups konnten nicht geladen werden. Später im Profil nachholen.'**
+  String get idSetupMeetupLoadError;
 }
 
 class _AppLocalizationsDelegate

@@ -7,19 +7,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/meetup.dart';
 import '../models/user.dart';
 import '../services/backup_service.dart';
 import '../services/local_easy_auth.dart';
 import '../services/local_key_vault.dart';
+import '../services/meetup_service.dart';
 import '../services/nostr_service.dart';
 import '../services/passkey_prf_service.dart';
 import '../services/secure_key_store.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
+import '../widgets/meetup_search_sheet.dart';
 import 'app_shell.dart';
 import 'bunker_connect_sheet.dart';
 
-enum _SetupStep { choose, neu, resume, passkey, existing, existingMore, nameOnly }
+enum _SetupStep {
+  choose,
+  neu,
+  resume,
+  passkey,
+  existing,
+  existingMore,
+  nameOnly,
+  meetup,
+}
 
 class IdentitySetupScreen extends StatefulWidget {
   const IdentitySetupScreen({super.key});
@@ -48,6 +60,10 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
   bool _hasPasswordWrap = false;
   bool _hasPasskeyWrap = false;
   bool _resumeUsePassword = false;
+
+  List<Meetup> _meetups = [];
+  List<String> _selectedMeetupCities = [];
+  bool _meetupsLoading = false;
 
   bool get _canResume => _hasLocalKey || _hasPasswordWrap || _hasPasskeyWrap;
 
@@ -104,13 +120,85 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
   /// Home nur mit echtem Anzeigenamen — `isOnboarded` reicht nicht, weil
   /// `isNostrVerified` allein true sein kann (Key da, Nickname noch Anon).
   /// Home schickt Anon wieder hierher → Loop ohne Namensfeld.
+  ///
+  /// Danach: Meetup wählen, falls noch keines gesetzt — sonst direkt Home.
   Future<void> _finishIfOnboarded() async {
     final user = await UserProfile.load();
-    if (user.hasCustomNickname) {
-      await _goHome();
-    } else if (mounted) {
-      setState(() => _step = _SetupStep.nameOnly);
+    if (!user.hasCustomNickname) {
+      if (mounted) setState(() => _step = _SetupStep.nameOnly);
+      return;
     }
+    await _continueAfterIdentity(user);
+  }
+
+  Future<void> _continueAfterIdentity([UserProfile? loaded]) async {
+    final user = loaded ?? await UserProfile.load();
+    final hasMeetup =
+        user.homeMeetupId.trim().isNotEmpty || user.favoriteMeetupIds.isNotEmpty;
+    if (hasMeetup) {
+      await _goHome();
+      return;
+    }
+    await _enterMeetupStep();
+  }
+
+  Future<void> _enterMeetupStep() async {
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _error = null;
+      _step = _SetupStep.meetup;
+      _meetupsLoading = true;
+      _selectedMeetupCities = [];
+    });
+    try {
+      final list = await MeetupService.fetchMeetups();
+      if (!mounted) return;
+      setState(() {
+        _meetups = list;
+        _meetupsLoading = false;
+        if (list.isEmpty) {
+          _error = AppLocalizations.of(context).idSetupMeetupLoadError;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _meetupsLoading = false;
+        _error = AppLocalizations.of(context).idSetupMeetupLoadError;
+      });
+    }
+  }
+
+  Future<void> _openMeetupPicker() async {
+    if (_meetups.isEmpty) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: cCard,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return MeetupSearchSheet(
+          meetups: _meetups,
+          initialSelected: _selectedMeetupCities,
+          onDone: (favs) {
+            setState(() => _selectedMeetupCities = favs);
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _saveMeetupAndHome() async {
+    if (_selectedMeetupCities.isEmpty) return;
+    setState(() => _busy = true);
+    final user = await UserProfile.load();
+    user.favoriteMeetupIds = List<String>.from(_selectedMeetupCities);
+    user.homeMeetupId = _selectedMeetupCities.first;
+    await user.save();
+    await _goHome();
   }
 
   Future<void> _register() async {
@@ -287,7 +375,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         },
       );
     }
-    await _goHome();
+    await _continueAfterIdentity();
   }
 
   Future<void> _connectPrimary() async {
@@ -340,7 +428,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     final user = await UserProfile.load();
     user.nickname = name;
     await user.save();
-    await _goHome();
+    await _continueAfterIdentity(user);
   }
 
   Future<void> _importKey() async {
@@ -404,7 +492,13 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _busy
                     ? null
-                    : () => setState(() {
+                    : () {
+                        if (_step == _SetupStep.meetup) {
+                          // Identitaet steht schon — zurueck = Home, nicht neu waehlen.
+                          _goHome();
+                          return;
+                        }
+                        setState(() {
                           _error = null;
                           _resumeUsePassword = false;
                           _resumePassCtrl.clear();
@@ -415,7 +509,8 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                               _SetupStep.existing,
                             _ => _SetupStep.choose,
                           };
-                        }),
+                        });
+                      },
               ),
       ),
       body: SafeArea(
@@ -460,6 +555,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                   _SetupStep.existing => _buildExisting(t),
                   _SetupStep.existingMore => _buildExistingMore(t),
                   _SetupStep.nameOnly => _buildNameOnly(t),
+                  _SetupStep.meetup => _buildMeetup(t),
                 },
             ],
           ),
@@ -477,6 +573,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         _SetupStep.existingMore =>
           t.idSetupExistingTitle,
         _SetupStep.nameOnly => t.idSetupNameTitle,
+        _SetupStep.meetup => t.idSetupMeetupTitle,
       };
 
   List<Widget> _buildChoose(AppLocalizations t) => [
@@ -705,6 +802,40 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         _field(_nameCtrl, t.idSetupNameLabel, Icons.badge_outlined),
         const SizedBox(height: 24),
         _primaryButton(t.idSetupContinue, _saveNameOnly),
+      ];
+
+  List<Widget> _buildMeetup(AppLocalizations t) => [
+        Text(t.idSetupMeetupHint,
+            style: const TextStyle(color: cTextSecondary, height: 1.4)),
+        const SizedBox(height: 20),
+        if (_meetupsLoading)
+          Text(t.idSetupMeetupLoading,
+              style: const TextStyle(color: cTextSecondary))
+        else if (_meetups.isEmpty) ...[
+          TextButton(
+            onPressed: _goHome,
+            child: Text(t.idSetupMeetupLater,
+                style: const TextStyle(color: cTextSecondary)),
+          ),
+        ] else ...[
+          _card(
+            icon: Icons.place_outlined,
+            title: t.idSetupMeetupPick,
+            subtitle: _selectedMeetupCities.isEmpty
+                ? t.homeMeetupChooseSub
+                : _selectedMeetupCities.join(', '),
+            primary: true,
+            onTap: _openMeetupPicker,
+          ),
+          const SizedBox(height: 24),
+          if (_selectedMeetupCities.isNotEmpty)
+            _primaryButton(t.idSetupMeetupContinue, _saveMeetupAndHome),
+          TextButton(
+            onPressed: _goHome,
+            child: Text(t.idSetupMeetupLater,
+                style: const TextStyle(color: cTextSecondary)),
+          ),
+        ],
       ];
 
   Widget _card({

@@ -5150,4 +5150,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get idSetupBackupLater => 'Later';
+
+  @override
+  String get idSetupMeetupTitle => 'Your meetup';
+
+  @override
+  String get idSetupMeetupHint =>
+      'Which meetup is yours? You can add more later.';
+
+  @override
+  String get idSetupMeetupPick => 'Choose meetup';
+
+  @override
+  String get idSetupMeetupContinue => 'Continue';
+
+  @override
+  String get idSetupMeetupLater => 'Later';
+
+  @override
+  String get idSetupMeetupLoading => 'Loading meetups…';
+
+  @override
+  String get idSetupMeetupLoadError =>
+      'Could not load meetups. You can set this later in your profile.';
 }
