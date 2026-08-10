@@ -947,7 +947,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get keyExportDuration =>
-      'El cifrado es lento a propósito: unos medio segundo en el dispositivo, hasta medio minuto en el navegador.';
+      'El cifrado es lento a propósito: medio segundo en el dispositivo, hasta medio minuto en el navegador.';
 
   @override
   String get keyExportAction => 'EXPORTAR';

@@ -43,6 +43,26 @@ void main() {
       await expectLater(Nip49.decrypt(_vectorNcryptsec, 'falsch'),
           throwsA(isA<Nip49Exception>()));
     });
+
+    // Offizieller NFKC-Vektor aus NIP-49 / nostr-tools: Passwort U+212B U+2126
+    // U+1E9B U+0323 ("ÅΩẛ̣") muss vor scrypt zu U+00C5 U+03A9 U+1E69 ("ÅΩṩ")
+    // normalisiert werden. Ohne das waere Interop mit Amber/Clave kaputt —
+    // und ein reiner Hin-und-Rueckweg mit derselben Eingabe faellt das nicht auf.
+    test('NFKC: zusammengesetzte Zeichen entschluesseln wie normalisierte',
+        () async {
+      const composed = '\u212B\u2126\u1E9B\u0323'; // ÅΩẛ̣
+      const normalized = '\u00C5\u03A9\u1E69'; // ÅΩṩ
+      const priv =
+          '11b25a101667dd9208db93c0827c6bdad66729a5b521156a7e9d3b22b3ae8944';
+      const ncryptsec =
+          'ncryptsec1qgy5kwr5v8p206vwaflp4g6r083kwts6q5sh8m4d0q56edpxwhrly'
+          '78ema2z7jpdeldsz7u5wpxpyhs6m0405skdsep9n37uncw7xlc8q8meyw6d6ky47vcl0'
+          'guhqpt5dx8ejxc8hvzf6y2gwsl5s0nw';
+
+      expect(await Nip49.decrypt(ncryptsec, composed), priv);
+      expect(await Nip49.decrypt(ncryptsec, normalized), priv,
+          reason: 'beide Passwort-Formen muessen denselben Schluessel liefern');
+    });
   });
 
   group('eigener Export laesst sich wieder lesen', () {
@@ -117,6 +137,15 @@ void main() {
     test('abgeschnittener ncryptsec', () async {
       await expectLater(
           Nip49.decrypt(_vectorNcryptsec.substring(0, 60), _vectorPassword),
+          throwsA(isA<Nip49Exception>()));
+    });
+
+    test('manipuliertes log_n wird abgewiesen, bevor scrypt startet', () async {
+      final enc = await Nip49.encrypt(_privkey, 'geheim', logN: _logN);
+      final payload = Nip49.debugDecodePayload(enc);
+      payload[1] = 255; // wuerde sonst 128 * 2^255 * 8 Bytes verlangen
+      final tampered = Nip49.debugEncodePayload(payload);
+      await expectLater(Nip49.decrypt(tampered, 'geheim'),
           throwsA(isA<Nip49Exception>()));
     });
   });

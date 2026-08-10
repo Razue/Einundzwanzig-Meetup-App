@@ -762,47 +762,58 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // Die Ableitung (scrypt, 2^16 Runden) dauert: gemessen 0,4 s auf dem Gerät
   // und rund 38 s im Browser. Deshalb ein Riegel gegen Mehrfachauslösung, ein
   // sichtbarer Wartezustand am Knopf und ein Hinweis auf die Dauer im Dialog.
+  //
+  // Der Riegel greift SOFORT — nicht erst nach dem Passwort-Dialog. Sonst
+  // oeffnen Mehrfach-Tipps mehrere Dialoge und starten parallele scrypt-Laeufe
+  // (je ~64 MB bei log_n=16).
   Future<void> _exportNcryptsec() async {
     if (_exportingKey) return;
-    final t = AppLocalizations.of(context);
-
-    final privHex = await SecureKeyStore.getPrivHex();
-    if (!mounted) return;
-    if (privHex == null || privHex.isEmpty) {
-      _showError(t.keyExportNoKey);
-      return;
-    }
-
-    final password = await _promptExportPassword(t);
-    if (password == null || !mounted) return;
-
     setState(() => _exportingKey = true);
-    String? ncryptsec;
-    String? error;
     try {
-      // Kurz atmen lassen, damit der Wartezustand am Knopf wirklich gezeichnet
-      // wird, bevor die Rechnung den Faden belegt.
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-      ncryptsec = await Nip49.encrypt(
-        privHex,
-        password,
-        // Der Schlüssel lag in dieser App im Klartext vor und wird gerade
-        // exportiert — „war nie unsicher unterwegs" wäre eine Lüge.
-        keySecurity: KeySecurity.insecure,
-      );
-    } on Nip49Exception catch (e) {
-      error = e.message;
-    } catch (e) {
-      error = e.toString();
-    }
-    if (!mounted) return;
-    setState(() => _exportingKey = false);
+      final t = AppLocalizations.of(context);
 
-    if (ncryptsec == null) {
-      _showError(t.errorGeneric(error ?? '?'));
-      return;
+      final privHex = await SecureKeyStore.getPrivHex();
+      if (!mounted) return;
+      if (privHex == null || privHex.isEmpty) {
+        _showError(t.keyExportNoKey);
+        return;
+      }
+
+      final password = await _promptExportPassword(t);
+      if (password == null || !mounted) return;
+
+      String? ncryptsec;
+      String? error;
+      try {
+        // Kurz atmen lassen, damit der Wartezustand am Knopf wirklich gezeichnet
+        // wird, bevor die Rechnung den Faden belegt.
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        ncryptsec = await Nip49.encrypt(
+          privHex,
+          password,
+          // Der Schlüssel lag in dieser App im Klartext vor und wird gerade
+          // exportiert — „war nie unsicher unterwegs" wäre eine Lüge.
+          keySecurity: KeySecurity.insecure,
+        );
+      } on Nip49Exception catch (e) {
+        error = e.message;
+      } catch (e) {
+        error = e.toString();
+      }
+      if (!mounted) return;
+
+      if (ncryptsec == null) {
+        _showError(t.errorGeneric(error ?? '?'));
+        return;
+      }
+      _showNcryptsecSheet(t, ncryptsec);
+    } finally {
+      if (mounted) {
+        setState(() => _exportingKey = false);
+      } else {
+        _exportingKey = false;
+      }
     }
-    _showNcryptsecSheet(t, ncryptsec);
   }
 
   /// Passwort mit Bestätigung — ein Tippfehler hier macht den Export

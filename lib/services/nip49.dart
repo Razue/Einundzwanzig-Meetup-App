@@ -143,6 +143,11 @@ class Nip49 {
     }
 
     final logN = payload[1];
+    // Dieselbe Schranke wie bei encrypt: ein manipuliertes ncryptsec mit
+    // log_n=255 wuerde sonst scrypt mit unsinnigem Speicherbedarf starten.
+    if (logN < 1 || logN > 22) {
+      throw Nip49Exception('log_n ausserhalb des sinnvollen Bereichs: $logN');
+    }
     final salt = Uint8List.sublistView(payload, 2, 18);
     final nonce = Uint8List.sublistView(payload, 18, 42);
     final keySecurity = payload[42];
