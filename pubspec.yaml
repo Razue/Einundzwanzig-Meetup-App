@@ -41,6 +41,14 @@ dependencies:
   # jedes NIP-44-Paket auf pub.dev über bip340 0.3 mit nostr 1.5.0 kollidiert.
   pointycastle: ^3.9.1
   convert: ^3.1.1
+  # NIP-49: passwortverschluesselter Schluessel-Export (ncryptsec).
+  # scrypt kommt aus pointycastle (oben), XChaCha20-Poly1305 aus cryptography —
+  # pointycastles Fassung scheitert im Browser an 64-Bit-Ganzzahlen. bech32 für
+  # die Kodierung, unorm_dart für die vom NIP verlangte NFKC-Normalisierung des
+  # Passworts.
+  cryptography: ^2.7.0
+  bech32: ^0.2.2
+  unorm_dart: ^0.3.0
 
   # NEU: Verschlüsselung für das Backup
   encrypt: ^5.0.3

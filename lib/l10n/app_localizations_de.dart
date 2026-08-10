@@ -950,6 +950,42 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileImportNsecShort => 'NSEC IMPORTIEREN';
 
   @override
+  String get keyExportEncrypted => 'VERSCHLÜSSELT EXPORTIEREN (ncryptsec)';
+
+  @override
+  String get keyExportTitle => 'Schlüssel verschlüsselt exportieren';
+
+  @override
+  String get keyExportDesc =>
+      'Erzeugt ein ncryptsec — deinen Schlüssel, mit einem Passwort verschlüsselt. Den kannst du gefahrlos in einem Passwortmanager ablegen und in Amber, Clave, nsec.app oder einem eigenen Bunker importieren.';
+
+  @override
+  String get keyExportDuration =>
+      'Die Verschlüsselung ist absichtlich langsam: rund eine halbe Sekunde auf dem Gerät, im Browser bis zu einer halben Minute.';
+
+  @override
+  String get keyExportAction => 'EXPORTIEREN';
+
+  @override
+  String get keyExportMismatch => 'Die Passwörter stimmen nicht überein.';
+
+  @override
+  String get keyExportNoKey => 'Kein lokaler Schlüssel vorhanden.';
+
+  @override
+  String get keyExportReadyTitle => 'Verschlüsselter Schlüssel';
+
+  @override
+  String get keyExportReadyBody =>
+      'Ohne dein Passwort ist das hier wertlos — und mit deinem Passwort ist es dein voller Schlüssel. Behandle beides entsprechend.';
+
+  @override
+  String get keyExportCopy => 'KOPIEREN';
+
+  @override
+  String get keyExportCopied => 'Verschlüsselter Schlüssel kopiert.';
+
+  @override
   String get profileImport => 'IMPORTIEREN';
 
   @override
