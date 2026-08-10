@@ -24,6 +24,7 @@
 import 'package:nostr/nostr.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'nip49.dart';
 import 'secure_key_store.dart';
 import 'signing_service.dart';
 
@@ -71,26 +72,43 @@ class NostrService {
     try {
       // 1. nsec → privater Schlüssel (Hex)
       final privateKeyHex = Nip19.decodePrivkey(nsec);
-
-      // 2. Öffentlichen Schlüssel ableiten
-      final keychain = Keychain(privateKeyHex);
-      final npub = Nip19.encodePubkey(keychain.public);
-
-      // 3. Sicher speichern
-      await SecureKeyStore.saveKeys(
-        nsec: nsec,
-        npub: npub,
-        privHex: privateKeyHex,
-      );
-
-      return {
-        'nsec': nsec,
-        'npub': npub,
-        'pubHex': keychain.public,
-      };
+      return importPrivHex(privateKeyHex);
     } catch (e) {
       throw FormatException('Ungültiger nsec Key: $e');
     }
+  }
+
+  /// Privkey (64 hex) → SecureKeyStore. Wird von nsec-Import und EasyAuth-
+  /// Unlock (NIP-49 Decrypt) genutzt.
+  static Future<Map<String, String>> importPrivHex(String privateKeyHex) async {
+    final normalized = privateKeyHex.trim().toLowerCase();
+    if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(normalized)) {
+      throw const FormatException('Ungültiger privater Schlüssel (hex).');
+    }
+    final keychain = Keychain(normalized);
+    final npub = Nip19.encodePubkey(keychain.public);
+    final nsec = Nip19.encodePrivkey(keychain.private);
+    await SecureKeyStore.saveKeys(
+      nsec: nsec,
+      npub: npub,
+      privHex: normalized,
+    );
+    return {
+      'nsec': nsec,
+      'npub': npub,
+      'pubHex': keychain.public,
+    };
+  }
+
+  /// NIP-49 `ncryptsec1…` mit Passwort entschlüsseln und als lokalen Key laden.
+  static Future<Map<String, String>> importNcryptsec(
+    String ncryptsec,
+    String password,
+  ) async {
+    // Lazy-Import vermeidet Zyklen in Tests, die nur NostrService laden.
+    // ignore: depend_on_referenced_packages
+    final priv = await Nip49.decrypt(ncryptsec.trim(), password);
+    return importPrivHex(priv);
   }
 
   // =============================================

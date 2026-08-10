@@ -7,6 +7,7 @@ import '../services/meetup_service.dart';
 import '../services/nostr_service.dart';
 import '../services/signing_service.dart';
 import '../services/nip49.dart';
+import '../services/local_key_vault.dart';
 import '../services/secure_key_store.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
@@ -325,6 +326,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     try {
       final keys = await NostrService.generateKeyPair();
       await SigningService.useLocalMode(); // lokaler Modus aktiv
+      // Neuer Key → alte EasyAuth-Wraps gehoeren zur vorherigen Identitaet.
+      await LocalKeyVault.clearAll();
 
       setState(() {
         _hasNostrKey = true;
@@ -702,6 +705,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               try {
                 final keys = await NostrService.importNsec(nsec);
                 await SigningService.useLocalMode(); // lokaler Modus aktiv
+                await LocalKeyVault.clearAll();
                 if (mounted) {
                   Navigator.pop(context);
                   setState(() {
@@ -816,7 +820,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // Der Riegel greift SOFORT — nicht erst nach dem Passwort-Dialog. Sonst
   // oeffnen Mehrfach-Tipps mehrere Dialoge und starten parallele scrypt-Laeufe
   // (je ~64 MB bei log_n=16).
-  Future<void> _exportNcryptsec() async {
+  Future<void> _exportNcryptsec({bool forceNewPassword = false}) async {
     if (_exportingKey) return;
     setState(() => _exportingKey = true);
     try {
@@ -826,6 +830,22 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       if (!mounted) return;
       if (privHex == null || privHex.isEmpty) {
         _showError(t.keyExportNoKey);
+        return;
+      }
+
+      // Kurzschluss nur wenn der Vault-Wrap ZU DIESEM Key gehoert.
+      // Nach nsec-Import kann ein alter Wrap noch liegen — den herauszugeben
+      // waere die falsche Identitaet.
+      final existing =
+          forceNewPassword ? null : await LocalKeyVault.getPasswordWrap();
+      final npub = await SecureKeyStore.getNpub();
+      if (!mounted) return;
+      if (existing != null &&
+          existing.isNotEmpty &&
+          npub != null &&
+          await LocalKeyVault.passwordWrapMatchesNpub(npub)) {
+        setState(() => _exportingKey = false);
+        _showNcryptsecSheet(t, existing, fromVault: true);
         return;
       }
 
@@ -950,7 +970,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
   }
 
-  void _showNcryptsecSheet(AppLocalizations t, String ncryptsec) {
+  void _showNcryptsecSheet(
+    AppLocalizations t,
+    String ncryptsec, {
+    bool fromVault = false,
+  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor: cCard,
@@ -978,6 +1002,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             const SizedBox(height: 10),
             Text(t.keyExportReadyBody,
                 style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            if (fromVault) ...[
+              const SizedBox(height: 8),
+              Text(t.keyExportFromVault,
+                  style: const TextStyle(color: cGreen, fontSize: 12)),
+            ],
             const SizedBox(height: 14),
             Container(
               width: double.infinity,
@@ -1011,6 +1040,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         color: Colors.black, fontWeight: FontWeight.bold)),
               ),
             ),
+            if (fromVault)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _exportNcryptsec(forceNewPassword: true);
+                  },
+                  child: Text(t.keyExportOtherPassword,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                ),
+              ),
           ],
         ),
       ),

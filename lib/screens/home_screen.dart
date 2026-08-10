@@ -41,6 +41,7 @@ import 'meetup_verification.dart';
 import 'meetup_selection.dart';
 import 'badge_details.dart';
 import 'profile_edit.dart';
+import 'identity_setup_screen.dart';
 import 'intro.dart';
 import 'admin_panel.dart';
 import 'converter_screen.dart';
@@ -73,6 +74,7 @@ import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
 import '../services/promotion_claim_service.dart';
 import '../services/secure_key_store.dart';
+import '../services/local_key_vault.dart';
 import '../services/admin_status_verifier.dart';
 import '../services/platform_proof_service.dart';
 import '../services/humanity_proof_service.dart';
@@ -450,7 +452,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // ============================================================
   void _loadAll() async {
     await _loadUser();
-    if (_user.nickname == 'Anon' || _user.nickname.isEmpty) { if (mounted) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); await _loadUser(); } }
+    if (_user.nickname == 'Anon' || _user.nickname.isEmpty) { if (mounted) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const IdentitySetupScreen())); await _loadUser(); } }
     await _loadBadges(); await _calculateTrustScore(); await _reVerifyAdminStatus();
     _loadIdentityData(); _checkActiveSession(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
     _loadNextHomeMeetup(); _loadProfilePicture(); _checkNostrNew();
@@ -931,6 +933,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Idempotent: disconnectNip46 hat den Key schon geloescht; falls der
     // Aufruf scheiterte, raeumen wir hier nach.
     try { await SecureKeyStore.deleteNip46ClientKey(); } catch (_) {}
+    // Die EasyAuth-Blobs auch: `easyauth_password_ncryptsec` ist eine
+    // VOLLSTAENDIGE Kopie des privaten Schluessels, nur passwortverschluesselt.
+    // Ohne diese Zeile ueberlebt sie das Zuruecksetzen — dieselbe Luecke wie
+    // vorher beim Sitzungsschluessel des Remote-Signers.
+    try { await LocalKeyVault.clearAll(); } catch (_) {}
     try { await PortalApiService.logout(); } catch (_) {}
     await NostrProfileService.clearCache();
     if (mounted) {
