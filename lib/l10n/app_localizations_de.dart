@@ -5198,4 +5198,27 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get idSetupBackupLater => 'Später';
+
+  @override
+  String get idSetupMeetupTitle => 'Dein Meetup';
+
+  @override
+  String get idSetupMeetupHint =>
+      'Welches Meetup ist deins? Du kannst später weitere hinzufügen.';
+
+  @override
+  String get idSetupMeetupPick => 'Meetup wählen';
+
+  @override
+  String get idSetupMeetupContinue => 'Weiter';
+
+  @override
+  String get idSetupMeetupLater => 'Später';
+
+  @override
+  String get idSetupMeetupLoading => 'Meetups werden geladen…';
+
+  @override
+  String get idSetupMeetupLoadError =>
+      'Meetups konnten nicht geladen werden. Später im Profil nachholen.';
 }

@@ -2436,5 +2436,13 @@
   "idSetupBackupTitle": "Schlüssel sichern?",
   "idSetupBackupBody": "Kopiere den verschlüsselten Schlüssel in deinen Passwortmanager. Ohne Passwort ist er wertlos.",
   "idSetupBackupCopy": "Kopieren",
-  "idSetupBackupLater": "Später"
+  "idSetupBackupLater": "Später",
+
+  "idSetupMeetupTitle": "Dein Meetup",
+  "idSetupMeetupHint": "Welches Meetup ist deins? Du kannst später weitere hinzufügen.",
+  "idSetupMeetupPick": "Meetup wählen",
+  "idSetupMeetupContinue": "Weiter",
+  "idSetupMeetupLater": "Später",
+  "idSetupMeetupLoading": "Meetups werden geladen…",
+  "idSetupMeetupLoadError": "Meetups konnten nicht geladen werden. Später im Profil nachholen."
 }

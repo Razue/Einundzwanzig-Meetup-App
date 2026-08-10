@@ -2414,5 +2414,13 @@
   "idSetupBackupTitle": "¿Respaldar la clave?",
   "idSetupBackupBody": "Copia la clave cifrada en tu gestor de contraseñas. Sin la contraseña no sirve de nada.",
   "idSetupBackupCopy": "Copiar",
-  "idSetupBackupLater": "Más tarde"
+  "idSetupBackupLater": "Más tarde",
+
+  "idSetupMeetupTitle": "Tu meetup",
+  "idSetupMeetupHint": "¿Cuál es tu meetup? Puedes añadir más después.",
+  "idSetupMeetupPick": "Elegir meetup",
+  "idSetupMeetupContinue": "Continuar",
+  "idSetupMeetupLater": "Más tarde",
+  "idSetupMeetupLoading": "Cargando meetups…",
+  "idSetupMeetupLoadError": "No se pudieron cargar los meetups. Puedes hacerlo después en el perfil."
 }
