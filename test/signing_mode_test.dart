@@ -94,13 +94,19 @@ void main() {
   });
 
   group('isExternalSigner', () {
-    test('true bei amber und nip07, false bei local', () async {
+    test('true bei amber, nip07 und nip46, false bei local', () async {
       SharedPreferences.setMockInitialValues({_modeKey: 'amber'});
       expect(await SigningService.isExternalSigner,
           SigningService.isAmberSupported);
 
       SharedPreferences.setMockInitialValues({_modeKey: 'nip07'});
       expect(await SigningService.isExternalSigner, isTrue);
+
+      // Bunker: gilt auf JEDER Plattform als extern — anders als amber gibt es
+      // hier keine Plattform-Einschraenkung.
+      SharedPreferences.setMockInitialValues({_modeKey: 'nip46'});
+      expect(await SigningService.isExternalSigner, isTrue);
+      expect(await SigningService.getMode(), SigningMode.nip46);
 
       SharedPreferences.setMockInitialValues({_modeKey: 'local'});
       expect(await SigningService.isExternalSigner, isFalse);

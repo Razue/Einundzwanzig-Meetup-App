@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
@@ -18,6 +19,8 @@ import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'platform_proof_service.dart'; // NEU
 import 'humanity_proof_service.dart'; // NEU
+import 'pbkdf2/pbkdf2_dart.dart';
+import 'pbkdf2/pbkdf2_fast.dart';
 import 'app_logger.dart';
 
 class BackupService {
@@ -55,42 +58,49 @@ class BackupService {
 
   /// PBKDF2-HMAC-SHA256 Key Derivation
   /// Erzeugt einen 256-Bit AES-Key aus Passwort + Salt
-  static enc.Key _deriveKey(String password, Uint8List salt) {
-    // PBKDF2 Implementation mit HMAC-SHA256
+  ///
+  /// ASYNCHRON, weil die Rechnung teuer ist — 600.000 HMAC-Runden. Zwei Wege,
+  /// beide mit demselben Ergebnis:
+  ///
+  ///   Web:   WebCrypto (`crypto.subtle`). In Dart brauchte dasselbe unter
+  ///          dart2js rund 100 Sekunden, und die Oberfläche stand dabei.
+  ///          Nutzer hielten die App für hängend und tippten mehrfach.
+  ///   Nativ: dieselbe Dart-Rechnung, aber in einem Isolate. Die Dauer bleibt
+  ///          (Sekunden, nicht Minuten), die Oberfläche bleibt bedienbar.
+  ///
+  /// Bitgleichheit ist Pflicht, nicht Kür: ein abweichender Schlüssel machte
+  /// jedes bestehende Backup unlesbar. PBKDF2-HMAC-SHA256 ist vollständig
+  /// spezifiziert, und beide Wege sind gegeneinander geprüft
+  /// (test/pbkdf2_equality_test.dart und test/pbkdf2_web_equality_test.dart).
+  static Future<enc.Key> _deriveKey(String password, Uint8List salt) async {
     final passwordBytes = utf8.encode(password);
-    final hmac = Hmac(sha256, passwordBytes);
 
-    // PBKDF2: Key = T1 || T2 || ... || T_ceil(keyLen/hashLen)
-    // Für 32 Byte Key und SHA-256 (32 Byte Output) brauchen wir nur T1
-    final derivedKey = _pbkdf2F(hmac, salt, _pbkdf2Iterations, 1);
+    final fast = await pbkdf2Fast(
+      password: passwordBytes,
+      salt: salt,
+      iterations: _pbkdf2Iterations,
+      keyBytes: _keyLengthBytes,
+    );
+    if (fast != null) return enc.Key(fast);
 
-    return enc.Key(Uint8List.fromList(derivedKey));
+    // Kein WebCrypto: selbst rechnen, aber nicht auf dem UI-Thread.
+    // Im Browser läuft compute() ohne Isolate direkt durch — dort ist das
+    // aber auch nur der Notfallweg (unsicherer Kontext ohne crypto.subtle).
+    final bytes = await compute(
+      pbkdf2Dart,
+      Pbkdf2Request(
+        password: passwordBytes,
+        salt: salt,
+        iterations: _pbkdf2Iterations,
+        keyBytes: _keyLengthBytes,
+      ),
+    );
+    return enc.Key(bytes);
   }
 
-  /// PBKDF2 F-Funktion: F(Password, Salt, c, i)
-  /// = U1 XOR U2 XOR ... XOR Uc
-  static List<int> _pbkdf2F(Hmac hmac, Uint8List salt, int iterations, int blockIndex) {
-    // U1 = HMAC(Password, Salt || INT_32_BE(i))
-    final saltWithIndex = Uint8List(salt.length + 4);
-    saltWithIndex.setRange(0, salt.length, salt);
-    saltWithIndex[salt.length + 0] = (blockIndex >> 24) & 0xFF;
-    saltWithIndex[salt.length + 1] = (blockIndex >> 16) & 0xFF;
-    saltWithIndex[salt.length + 2] = (blockIndex >> 8) & 0xFF;
-    saltWithIndex[salt.length + 3] = (blockIndex) & 0xFF;
-
-    var u = hmac.convert(saltWithIndex).bytes;
-    final result = List<int>.from(u);
-
-    // U2 ... Uc
-    for (int i = 1; i < iterations; i++) {
-      u = hmac.convert(u).bytes;
-      for (int j = 0; j < result.length; j++) {
-        result[j] ^= u[j];
-      }
-    }
-
-    return result;
-  }
+  // Der Rechenkern liegt jetzt in pbkdf2/pbkdf2_dart.dart — compute() braucht
+  // eine Top-Level-Funktion, und dort ist er gegen eine unabhaengige
+  // Implementierung testbar.
 
   /// Erzeugt kryptographisch sicheren Zufalls-Salt
   static Uint8List _generateSalt() {
@@ -273,8 +283,10 @@ class BackupService {
       // Identitaet abweichen.
       final signingMode = await SigningService.getMode();
       final String? activeNpub = await SigningService.npub();
-      final bool isExternal = signingMode == SigningMode.amber ||
-          signingMode == SigningMode.nip07;
+      // Eine Definition, nicht zwei: sonst wuerde ein neuer externer Modus
+      // hier vergessen und der Mischzustand still falsch gesichert.
+      final bool isExternal = await SigningService.isExternalSigner;
+      final nip46Session = await SigningService.nip46SessionForBackup();
       // nsec und npub MUESSEN zusammengehoeren. activeNpub ist im
       // Amber/NIP-07-Modus die externe Identitaet — die darf nie als
       // Keystore-npub neben einem lokalen nsec landen.
@@ -339,6 +351,20 @@ class BackupService {
           // Leer ausser im Mischzustand. Alte Backups ohne dieses Feld
           // bleiben lesbar (Import faellt auf npub zurueck).
           'active_npub': backupActiveNpub,
+          // Bunker-ADRESSE (NIP-46) — bewusst OHNE Sitzungsschluessel.
+          //
+          // Der Sitzungsschluessel ist die Berechtigung, mit der der Signer
+          // Anfragen dieser App annimmt. Laege er im Backup, waere die Datei
+          // fuer Bunker-Nutzer eine Signier-Berechtigung: wer sie hat und das
+          // Passwort bricht, koennte bis zum Widerruf Signaturen anfragen.
+          // Genau fuer diese Nutzer soll aber gelten, dass im Backup KEIN
+          // Schluessel liegt — das ist der Sinn eines externen Signers.
+          //
+          // Folge: nach dem Wiederherstellen bleibt die Identitaet erhalten
+          // (npub + Modus), signieren geht erst nach erneutem Verbinden.
+          // canSign() meldet das korrekt mit false — dieselbe Lage wie bei
+          // einem Amber-Backup auf iOS.
+          'nip46_bunker_uri': nip46Session?['bunker_uri'] ?? '',
         },
         'admin_registry': adminList.map((a) => a.toJson()).toList(),
         'my_vouches': myVouches.map((a) => a.toJson()).toList(),
@@ -391,7 +417,7 @@ class BackupService {
       // erzwingt diese Rueckkehr, 50 ms geben zuverlaessig Zeit fuers Malen.
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      final key = _deriveKey(password, salt);
+      final key = await _deriveKey(password, salt);
       final iv = enc.IV.fromSecureRandom(16);
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
       final encrypted = encrypter.encrypt(jsonString, iv: iv);
@@ -556,7 +582,7 @@ class BackupService {
 
             final enc.Key key;
             try {
-              key = _deriveKey(password, salt);
+              key = await _deriveKey(password, salt);
             } finally {
               if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
             }
@@ -690,9 +716,10 @@ class BackupService {
           // signieren kann die App dort aber nicht — Amber gibt es nur auf
           // Android, NIP-07 nur im Browser. canSign() meldet das korrekt
           // mit false, statt einen Schluessel vorzutaeuschen.
-          if (mode == 'amber' || mode == 'nip07') {
+          var externalRestored = false;
+          if (mode == 'amber' || mode == 'nip07' || mode == 'nip46') {
             // active_npub: externe Identitaet im Mischzustand.
-            // Fallback npub: reine Amber/NIP-07-Backups und aeltere
+            // Fallback npub: reine Amber/NIP-07/Bunker-Backups und aeltere
             // Misch-Backups ohne das neue Feld.
             final activeRaw = '${nostrData['active_npub'] ?? ''}';
             final externalNpub = activeRaw.isNotEmpty
@@ -702,6 +729,15 @@ class BackupService {
               try {
                 if (mode == 'nip07') {
                   await SigningService.restoreNip07(externalNpub);
+                } else if (mode == 'nip46') {
+                  // OHNE Sitzungsschluessel — der reist nicht mit. Ein
+                  // 'nip46_client_sk' aus einem aelteren Test-Backup wird
+                  // absichtlich IGNORIERT: sonst haette die Entscheidung
+                  // "die Sitzung reist nicht mit" ein Hintertuerchen.
+                  await SigningService.restoreNip46(
+                    npub: externalNpub,
+                    bunkerUri: '${nostrData['nip46_bunker_uri'] ?? ''}',
+                  );
                 } else {
                   await SigningService.restoreAmber(externalNpub);
                 }
@@ -711,9 +747,26 @@ class BackupService {
                 // nur den Keystore, nicht den aktiven Signer.
                 user.hasNostrKey = restoredLocalKey;
                 await user.save();
-              } catch (_) {/* ungültiger npub im Backup → ignorieren */}
+                externalRestored = true;
+              } catch (e) {
+                // Vorher wurde das stillschweigend verworfen. Bei einem
+                // Bunker-Backup ist das der wahrscheinlichste Fehlerfall
+                // (Sitzungsfelder fehlen oder sind kaputt), und ohne Meldung
+                // stand die App danach ohne aktiven Signer da.
+                AppLogger.warn(
+                    'BackupService',
+                    'Externer Signer ($mode) aus dem Backup nicht '
+                        'wiederherstellbar',
+                    e);
+              }
             }
-          } else if (restoredLocalKey) {
+          }
+
+          // Fallback: der externe Signer liess sich nicht wiederherstellen,
+          // ein lokaler Schluessel kam aber mit. Ohne diesen Zweig bliebe die
+          // App ohne nutzbaren Signier-Modus zurueck, obwohl der Schluessel
+          // im Keystore liegt.
+          if (!externalRestored && restoredLocalKey) {
             await SigningService.useLocalMode();
             final npub = '${nostrData['npub'] ?? ''}';
             user.nostrNpub = npub;
