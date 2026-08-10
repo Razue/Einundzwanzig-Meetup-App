@@ -986,6 +986,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get keyExportCopied => 'Verschlüsselter Schlüssel kopiert.';
 
   @override
+  String get keyExportFromVault =>
+      'Das ist dein Schlüssel mit dem Passwort, das du beim Anlegen gesetzt hast — kein neues Passwort nötig.';
+
+  @override
+  String get keyExportOtherPassword => 'Mit einem anderen Passwort erzeugen';
+
+  @override
   String get profileImport => 'IMPORTIEREN';
 
   @override
@@ -5020,4 +5027,175 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get npubCopied => 'npub kopiert';
+
+  @override
+  String get idSetupTitle => 'Identität';
+
+  @override
+  String get idSetupSubtitle => 'Wie möchtest du starten?';
+
+  @override
+  String get idSetupNewCard => 'Neu hier';
+
+  @override
+  String get idSetupNewCardSub => 'Identität in der App anlegen';
+
+  @override
+  String get idSetupExistingCard => 'Schon Nostr';
+
+  @override
+  String get idSetupExistingCardSub => 'Bestehende Identität verbinden';
+
+  @override
+  String get idSetupResumeCard => 'Schon auf diesem Gerät';
+
+  @override
+  String get idSetupResumeCardSub => 'Vorhandene Identität weiter nutzen';
+
+  @override
+  String get idSetupResumeTitle => 'Weitermachen';
+
+  @override
+  String get idSetupResumeContinue => 'Weitermachen';
+
+  @override
+  String get idSetupResumeHasKey =>
+      'Auf diesem Gerät liegt noch dein Schlüssel. Damit machst du weiter — nichts wird neu angelegt.';
+
+  @override
+  String get idSetupResumePasskey => 'Mit Passkey entsperren';
+
+  @override
+  String get idSetupResumePasskeyHint =>
+      'Dein Schlüssel liegt verschlüsselt auf diesem Gerät. Entsperre ihn mit deinem Passkey.';
+
+  @override
+  String get idSetupResumePassword => 'Stattdessen Passwort benutzen';
+
+  @override
+  String get idSetupResumePasswordHint =>
+      'Dein Schlüssel liegt verschlüsselt auf diesem Gerät. Gib das Passwort ein, mit dem du ihn angelegt hast.';
+
+  @override
+  String get idSetupResumeNeedPassword => 'Bitte das Passwort eingeben.';
+
+  @override
+  String get idSetupResumeWrongPassword =>
+      'Das Passwort passt nicht zu diesem Schlüssel.';
+
+  @override
+  String get idSetupNewTitle => 'Neu anlegen';
+
+  @override
+  String get idSetupNewHint =>
+      'Name und Passwort reichen. Dein Schlüssel bleibt auf dem Gerät.';
+
+  @override
+  String get idSetupNameLabel => 'Name';
+
+  @override
+  String get idSetupNameRequired => 'Bitte einen Namen wählen.';
+
+  @override
+  String get idSetupPasswordLabel => 'Passwort für deinen Schlüssel';
+
+  @override
+  String get idSetupPasswordConfirmLabel => 'Passwort bestätigen';
+
+  @override
+  String get idSetupPasswordShort =>
+      'Passwort muss mindestens 8 Zeichen haben.';
+
+  @override
+  String get idSetupPasswordWarn =>
+      'Dieses Passwort verschlüsselt deinen Schlüssel — nur damit lässt sich deine Sicherung wieder öffnen. Es gibt kein Zurücksetzen: ohne das Passwort ist die Sicherung wertlos.';
+
+  @override
+  String get idSetupCreate => 'Loslegen';
+
+  @override
+  String get idSetupPasskeyTitle => 'Passkey';
+
+  @override
+  String get idSetupPasskeyBody =>
+      'Optional: mit Passkey (Face ID / Fingerabdruck) zusätzlich sichern.';
+
+  @override
+  String get idSetupPasskeyAction => 'Mit Passkey sichern';
+
+  @override
+  String get idSetupPasskeyLater => 'Später';
+
+  @override
+  String get idSetupPasskeyUnavailable =>
+      'Passkey ist auf diesem Gerät nicht verfügbar. Du kannst mit dem Passwort weitermachen.';
+
+  @override
+  String get idSetupExistingTitle => 'Verbinden';
+
+  @override
+  String get idSetupPrimaryNip07 => 'Browsererweiterung';
+
+  @override
+  String get idSetupPrimaryNip07Sub => 'In der Erweiterung bestätigen';
+
+  @override
+  String get idSetupPrimaryAmber => 'Amber';
+
+  @override
+  String get idSetupPrimaryAmberSub => 'In Amber bestätigen';
+
+  @override
+  String get idSetupPrimaryBunker => 'Signer verbinden';
+
+  @override
+  String get idSetupPrimaryBunkerSub => 'Bunker / Clave / Amber';
+
+  @override
+  String get idSetupOtherWay => 'Anderer Weg';
+
+  @override
+  String get idSetupImportHint =>
+      'nsec oder verschlüsselten Schlüssel (ncryptsec) einfügen.';
+
+  @override
+  String get idSetupImportLabel => 'Schlüssel';
+
+  @override
+  String get idSetupImportPasswordLabel => 'Passwort (nur bei ncryptsec)';
+
+  @override
+  String get idSetupImportAction => 'Importieren';
+
+  @override
+  String get idSetupImportEmpty => 'Bitte einen Schlüssel einfügen.';
+
+  @override
+  String get idSetupImportNeedPassword =>
+      'Für ncryptsec brauchst du das Passwort.';
+
+  @override
+  String get idSetupNameTitle => 'Name wählen';
+
+  @override
+  String get idSetupNameOnlyHint => 'Unter welchem Namen erscheinst du?';
+
+  @override
+  String get idSetupContinue => 'Weiter';
+
+  @override
+  String get idSetupConnectFailed => 'Verbindung fehlgeschlagen.';
+
+  @override
+  String get idSetupBackupTitle => 'Schlüssel sichern?';
+
+  @override
+  String get idSetupBackupBody =>
+      'Kopiere den verschlüsselten Schlüssel in deinen Passwortmanager. Ohne Passwort ist er wertlos.';
+
+  @override
+  String get idSetupBackupCopy => 'Kopieren';
+
+  @override
+  String get idSetupBackupLater => 'Später';
 }

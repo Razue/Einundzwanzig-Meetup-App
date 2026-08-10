@@ -1930,6 +1930,18 @@ abstract class AppLocalizations {
   /// **'Verschlüsselter Schlüssel kopiert.'**
   String get keyExportCopied;
 
+  /// No description provided for @keyExportFromVault.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist dein Schlüssel mit dem Passwort, das du beim Anlegen gesetzt hast — kein neues Passwort nötig.'**
+  String get keyExportFromVault;
+
+  /// No description provided for @keyExportOtherPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit einem anderen Passwort erzeugen'**
+  String get keyExportOtherPassword;
+
   /// No description provided for @profileImport.
   ///
   /// In de, this message translates to:
@@ -9123,6 +9135,324 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'npub kopiert'**
   String get npubCopied;
+
+  /// No description provided for @idSetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität'**
+  String get idSetupTitle;
+
+  /// No description provided for @idSetupSubtitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie möchtest du starten?'**
+  String get idSetupSubtitle;
+
+  /// No description provided for @idSetupNewCard.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu hier'**
+  String get idSetupNewCard;
+
+  /// No description provided for @idSetupNewCardSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität in der App anlegen'**
+  String get idSetupNewCardSub;
+
+  /// No description provided for @idSetupExistingCard.
+  ///
+  /// In de, this message translates to:
+  /// **'Schon Nostr'**
+  String get idSetupExistingCard;
+
+  /// No description provided for @idSetupExistingCardSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestehende Identität verbinden'**
+  String get idSetupExistingCardSub;
+
+  /// No description provided for @idSetupResumeCard.
+  ///
+  /// In de, this message translates to:
+  /// **'Schon auf diesem Gerät'**
+  String get idSetupResumeCard;
+
+  /// No description provided for @idSetupResumeCardSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorhandene Identität weiter nutzen'**
+  String get idSetupResumeCardSub;
+
+  /// No description provided for @idSetupResumeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Weitermachen'**
+  String get idSetupResumeTitle;
+
+  /// No description provided for @idSetupResumeContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Weitermachen'**
+  String get idSetupResumeContinue;
+
+  /// No description provided for @idSetupResumeHasKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät liegt noch dein Schlüssel. Damit machst du weiter — nichts wird neu angelegt.'**
+  String get idSetupResumeHasKey;
+
+  /// No description provided for @idSetupResumePasskey.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Passkey entsperren'**
+  String get idSetupResumePasskey;
+
+  /// No description provided for @idSetupResumePasskeyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Schlüssel liegt verschlüsselt auf diesem Gerät. Entsperre ihn mit deinem Passkey.'**
+  String get idSetupResumePasskeyHint;
+
+  /// No description provided for @idSetupResumePassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Stattdessen Passwort benutzen'**
+  String get idSetupResumePassword;
+
+  /// No description provided for @idSetupResumePasswordHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Schlüssel liegt verschlüsselt auf diesem Gerät. Gib das Passwort ein, mit dem du ihn angelegt hast.'**
+  String get idSetupResumePasswordHint;
+
+  /// No description provided for @idSetupResumeNeedPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte das Passwort eingeben.'**
+  String get idSetupResumeNeedPassword;
+
+  /// No description provided for @idSetupResumeWrongPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Passwort passt nicht zu diesem Schlüssel.'**
+  String get idSetupResumeWrongPassword;
+
+  /// No description provided for @idSetupNewTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu anlegen'**
+  String get idSetupNewTitle;
+
+  /// No description provided for @idSetupNewHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Name und Passwort reichen. Dein Schlüssel bleibt auf dem Gerät.'**
+  String get idSetupNewHint;
+
+  /// No description provided for @idSetupNameLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Name'**
+  String get idSetupNameLabel;
+
+  /// No description provided for @idSetupNameRequired.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte einen Namen wählen.'**
+  String get idSetupNameRequired;
+
+  /// No description provided for @idSetupPasswordLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort für deinen Schlüssel'**
+  String get idSetupPasswordLabel;
+
+  /// No description provided for @idSetupPasswordConfirmLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort bestätigen'**
+  String get idSetupPasswordConfirmLabel;
+
+  /// No description provided for @idSetupPasswordShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort muss mindestens 8 Zeichen haben.'**
+  String get idSetupPasswordShort;
+
+  /// No description provided for @idSetupPasswordWarn.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Passwort verschlüsselt deinen Schlüssel — nur damit lässt sich deine Sicherung wieder öffnen. Es gibt kein Zurücksetzen: ohne das Passwort ist die Sicherung wertlos.'**
+  String get idSetupPasswordWarn;
+
+  /// No description provided for @idSetupCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Loslegen'**
+  String get idSetupCreate;
+
+  /// No description provided for @idSetupPasskeyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Passkey'**
+  String get idSetupPasskeyTitle;
+
+  /// No description provided for @idSetupPasskeyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Optional: mit Passkey (Face ID / Fingerabdruck) zusätzlich sichern.'**
+  String get idSetupPasskeyBody;
+
+  /// No description provided for @idSetupPasskeyAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit Passkey sichern'**
+  String get idSetupPasskeyAction;
+
+  /// No description provided for @idSetupPasskeyLater.
+  ///
+  /// In de, this message translates to:
+  /// **'Später'**
+  String get idSetupPasskeyLater;
+
+  /// No description provided for @idSetupPasskeyUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Passkey ist auf diesem Gerät nicht verfügbar. Du kannst mit dem Passwort weitermachen.'**
+  String get idSetupPasskeyUnavailable;
+
+  /// No description provided for @idSetupExistingTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbinden'**
+  String get idSetupExistingTitle;
+
+  /// No description provided for @idSetupPrimaryNip07.
+  ///
+  /// In de, this message translates to:
+  /// **'Browsererweiterung'**
+  String get idSetupPrimaryNip07;
+
+  /// No description provided for @idSetupPrimaryNip07Sub.
+  ///
+  /// In de, this message translates to:
+  /// **'In der Erweiterung bestätigen'**
+  String get idSetupPrimaryNip07Sub;
+
+  /// No description provided for @idSetupPrimaryAmber.
+  ///
+  /// In de, this message translates to:
+  /// **'Amber'**
+  String get idSetupPrimaryAmber;
+
+  /// No description provided for @idSetupPrimaryAmberSub.
+  ///
+  /// In de, this message translates to:
+  /// **'In Amber bestätigen'**
+  String get idSetupPrimaryAmberSub;
+
+  /// No description provided for @idSetupPrimaryBunker.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer verbinden'**
+  String get idSetupPrimaryBunker;
+
+  /// No description provided for @idSetupPrimaryBunkerSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Bunker / Clave / Amber'**
+  String get idSetupPrimaryBunkerSub;
+
+  /// No description provided for @idSetupOtherWay.
+  ///
+  /// In de, this message translates to:
+  /// **'Anderer Weg'**
+  String get idSetupOtherWay;
+
+  /// No description provided for @idSetupImportHint.
+  ///
+  /// In de, this message translates to:
+  /// **'nsec oder verschlüsselten Schlüssel (ncryptsec) einfügen.'**
+  String get idSetupImportHint;
+
+  /// No description provided for @idSetupImportLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel'**
+  String get idSetupImportLabel;
+
+  /// No description provided for @idSetupImportPasswordLabel.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort (nur bei ncryptsec)'**
+  String get idSetupImportPasswordLabel;
+
+  /// No description provided for @idSetupImportAction.
+  ///
+  /// In de, this message translates to:
+  /// **'Importieren'**
+  String get idSetupImportAction;
+
+  /// No description provided for @idSetupImportEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte einen Schlüssel einfügen.'**
+  String get idSetupImportEmpty;
+
+  /// No description provided for @idSetupImportNeedPassword.
+  ///
+  /// In de, this message translates to:
+  /// **'Für ncryptsec brauchst du das Passwort.'**
+  String get idSetupImportNeedPassword;
+
+  /// No description provided for @idSetupNameTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Name wählen'**
+  String get idSetupNameTitle;
+
+  /// No description provided for @idSetupNameOnlyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Unter welchem Namen erscheinst du?'**
+  String get idSetupNameOnlyHint;
+
+  /// No description provided for @idSetupContinue.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get idSetupContinue;
+
+  /// No description provided for @idSetupConnectFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung fehlgeschlagen.'**
+  String get idSetupConnectFailed;
+
+  /// No description provided for @idSetupBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel sichern?'**
+  String get idSetupBackupTitle;
+
+  /// No description provided for @idSetupBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopiere den verschlüsselten Schlüssel in deinen Passwortmanager. Ohne Passwort ist er wertlos.'**
+  String get idSetupBackupBody;
+
+  /// No description provided for @idSetupBackupCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Kopieren'**
+  String get idSetupBackupCopy;
+
+  /// No description provided for @idSetupBackupLater.
+  ///
+  /// In de, this message translates to:
+  /// **'Später'**
+  String get idSetupBackupLater;
 }
 
 class _AppLocalizationsDelegate
