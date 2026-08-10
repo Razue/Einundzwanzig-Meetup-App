@@ -48,6 +48,17 @@ jobs:
     - name: Tests
       run: flutter test
 
+fix/pbkdf2-web
+    # Führt Dart WIRKLICH im Browser aus — der einzige Schritt, der das tut.
+    #
+    # Nötig, weil die Schlüsselableitung des Backups im Web über WebCrypto
+    # läuft und in Dart nur als Rückfall. Beide MÜSSEN bitgleich rechnen:
+    # ein abweichender Schlüssel macht jedes bestehende Backup unlesbar, und
+    # zwar ohne Fehlermeldung, die auf die Ursache zeigt. `flutter test` läuft
+    # in der VM und sieht WebCrypto nie, `flutter build web` übersetzt nur.
+    - name: Schlüsselableitung im echten Browser prüfen
+      run: flutter test --platform chrome test/pbkdf2_web_equality_test.dart
+
     # Der einzige Schritt, der Dart-Code WIRKLICH IM BROWSER ausführt.
     #
     # Nötig, weil dart2js anders rechnet als die VM: BigInt liegt dort auf
@@ -61,6 +72,7 @@ jobs:
     # Chrome-Lauf der Suite würde ausserdem Minuten kosten.
     - name: NIP-44 im echten Browser prüfen
       run: flutter test --platform chrome test/nip44_web_smoke_test.dart
+ main
 
     # Der Web-Build ist hier drin, weil er die am wenigsten von Hand getestete
     # Plattform ist und gleichzeitig die, die Tester per Link bekommen.
