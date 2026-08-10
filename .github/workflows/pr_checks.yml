@@ -48,7 +48,6 @@ jobs:
     - name: Tests
       run: flutter test
 
-fix/pbkdf2-web
     # Führt Dart WIRKLICH im Browser aus — der einzige Schritt, der das tut.
     #
     # Nötig, weil die Schlüsselableitung des Backups im Web über WebCrypto
@@ -72,7 +71,6 @@ fix/pbkdf2-web
     # Chrome-Lauf der Suite würde ausserdem Minuten kosten.
     - name: NIP-44 im echten Browser prüfen
       run: flutter test --platform chrome test/nip44_web_smoke_test.dart
- main
 
     # Der Web-Build ist hier drin, weil er die am wenigsten von Hand getestete
     # Plattform ist und gleichzeitig die, die Tester per Link bekommen.
