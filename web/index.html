@@ -33,6 +33,46 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!--
+    passkeys_web erwartet ein globales `PasskeyAuthenticator` und ruft dessen
+    init() SCHON BEIM REGISTRIEREN DER PLUGINS auf — also vor main(). Das Objekt
+    kommt aus einem bundle.js, das man selbst einbinden muesste. Fehlt es, ruft
+    das Plugin window.close(): die PWA schliesst sich beim Start selbst, ohne
+    Fehlermeldung. Genau das ist passiert, als `passkeys` dazukam.
+
+    Dieser Stub haelt die App am Leben, ohne fremdes minifiziertes JS in denselben
+    Origin zu holen, in dem die verschluesselten Schluessel liegen. Passkeys sind
+    im Web damit aus — was ohnehin der Stand war: PasskeyPrfService laesst sie nur
+    auf einundzwanzig.space und localhost zu, nicht auf github.io.
+
+    hasPasskeySupport() = false sorgt dafuer, dass die Oberflaeche den Passkey gar
+    nicht anbietet. register()/login() lehnen mit PRF_UNSUPPORTED ab — den Text
+    kennt tPasskeyError() und macht daraus "Passkey ist auf diesem Geraet nicht
+    verfuegbar".
+
+    Wer Web-Passkeys wirklich will, ersetzt diesen Stub durch das echte Bundle
+    (github.com/corbado/flutter-passkeys). Dann aber bewusst: das ist Fremdcode
+    mit Zugriff auf denselben Origin wie der Schluesselspeicher.
+  -->
+  <script>
+    window.PasskeyAuthenticator = {
+      init: function () {},
+      hasPasskeySupport: function () { return false; },
+      isUserVerifyingPlatformAuthenticatorAvailable: function () {
+        return Promise.resolve(false);
+      },
+      isConditionalMediationAvailable: function () {
+        return Promise.resolve(false);
+      },
+      cancelCurrentAuthenticatorOperation: function () {},
+      register: function () {
+        return Promise.reject(new Error('PRF_UNSUPPORTED'));
+      },
+      login: function () {
+        return Promise.reject(new Error('PRF_UNSUPPORTED'));
+      },
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
