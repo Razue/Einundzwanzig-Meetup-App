@@ -2414,5 +2414,13 @@
   "idSetupBackupTitle": "Back up your key?",
   "idSetupBackupBody": "Copy the encrypted key into your password manager. Without the password it is useless.",
   "idSetupBackupCopy": "Copy",
-  "idSetupBackupLater": "Later"
+  "idSetupBackupLater": "Later",
+
+  "idSetupMeetupTitle": "Your meetup",
+  "idSetupMeetupHint": "Which meetup is yours? You can add more later.",
+  "idSetupMeetupPick": "Choose meetup",
+  "idSetupMeetupContinue": "Continue",
+  "idSetupMeetupLater": "Later",
+  "idSetupMeetupLoading": "Loading meetups…",
+  "idSetupMeetupLoadError": "Could not load meetups. You can set this later in your profile."
 }
