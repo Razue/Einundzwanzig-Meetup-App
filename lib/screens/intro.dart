@@ -186,15 +186,18 @@ class _IntroScreenState extends State<IntroScreen>
                     duration: const Duration(milliseconds: 800),
                     curve: Curves.easeOutExpo,
                     offset: _showLogo ? Offset.zero : const Offset(0, 0.3),
-                    child: Image.asset(
-                      'assets/images/intro_logo_86.png',
-                      width: 340,
-                      fit: BoxFit.contain,
+                    child: Transform.translate(
+                      offset: const Offset(-16, 0),
+                      child: Image.asset(
+                        'assets/images/intro_logo_86.png',
+                        width: 390,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 48),
+                const SizedBox(height: 28),
 
                 // SLOGAN
                 AnimatedOpacity(
