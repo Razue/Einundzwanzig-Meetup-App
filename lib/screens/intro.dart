@@ -187,8 +187,8 @@ class _IntroScreenState extends State<IntroScreen>
                     curve: Curves.easeOutExpo,
                     offset: _showLogo ? Offset.zero : const Offset(0, 0.3),
                     child: Image.asset(
-                      'assets/images/intro_logo_86.jpg',
-                      width: 260,
+                      'assets/images/logo.png',
+                      width: 300,
                       fit: BoxFit.contain,
                     ),
                   ),
