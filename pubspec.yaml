@@ -81,7 +81,7 @@ flutter:
   generate: true   # aktiviert gen-l10n (Mehrsprachigkeit)
   assets:
     - assets/images/logo.png
-    - assets/images/intro_logo_86.jpg
+    - assets/images/intro_logo_86.png
     - assets/images/intro_background_87.jpg
     - assets/images/app_icon_83.jpg
     - assets/images/einundzwanzig_logo.svg
