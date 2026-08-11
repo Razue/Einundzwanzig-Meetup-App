@@ -111,6 +111,19 @@ class _IntroScreenState extends State<IntroScreen>
       backgroundColor: cDark,
       body: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/intro_background_87.jpg',
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.52),
+            ),
+          ),
+
           // Ambient Glow
           Positioned(
             top: -80,
@@ -174,8 +187,8 @@ class _IntroScreenState extends State<IntroScreen>
                     curve: Curves.easeOutExpo,
                     offset: _showLogo ? Offset.zero : const Offset(0, 0.3),
                     child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 260,
+                      'assets/images/intro_logo_86.png',
+                      width: 340,
                       fit: BoxFit.contain,
                     ),
                   ),
