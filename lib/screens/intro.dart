@@ -188,7 +188,7 @@ class _IntroScreenState extends State<IntroScreen>
                     offset: _showLogo ? Offset.zero : const Offset(0, 0.3),
                     child: Image.asset(
                       'assets/images/intro_logo_86.png',
-                      width: 300,
+                      width: 340,
                       fit: BoxFit.contain,
                     ),
                   ),
