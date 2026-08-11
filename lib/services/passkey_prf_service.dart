@@ -120,6 +120,13 @@ class PasskeyPrfService {
           id: _b64urlWithPad(userIdBytes),
         ),
         excludeCredentials: const [],
+        // Ohne diese Liste liefert Android Credential Manager
+        // TYPE_NOT_SUPPORTED_ERROR: „None of the algorithms are supported".
+        // kickstr und die Android-Codelabs setzen dieselben beiden Algos.
+        pubKeyCredParams: [
+          PubKeyCredParamType(type: 'public-key', alg: -7), // ES256
+          PubKeyCredParamType(type: 'public-key', alg: -257), // RS256
+        ],
         authSelectionType: AuthenticatorSelectionType(
           authenticatorAttachment: 'platform',
           requireResidentKey: false,
@@ -127,6 +134,7 @@ class PasskeyPrfService {
           userVerification: 'preferred',
         ),
         timeout: 60000,
+        attestation: 'none',
         prf: _prfSaltB64,
       ),
     );
