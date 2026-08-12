@@ -82,18 +82,6 @@ class _NewsScreenState extends State<NewsScreen> {
         backgroundColor: cDark,
         elevation: 0,
         title: Text(t.newsTitle, style: const TextStyle(color: cText, fontWeight: FontWeight.w700)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_note_rounded, color: cOrange),
-            tooltip: t.newsWriteArticle,
-            onPressed: () => _openUrl(_writeUrl),
-          ),
-          IconButton(
-            icon: const Icon(Icons.open_in_new_rounded, color: cTextSecondary),
-            tooltip: t.newsOpenWebsite,
-            onPressed: _openWebsite,
-          ),
-        ],
       ),
       body: RefreshIndicator(
         color: cOrange,
@@ -102,7 +90,7 @@ class _NewsScreenState extends State<NewsScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _websiteCard(t),
+            _actionTiles(t),
             const SizedBox(height: 16),
             if (_loading)
               _loadingState(t)
@@ -119,34 +107,84 @@ class _NewsScreenState extends State<NewsScreen> {
     );
   }
 
-  Widget _websiteCard(AppLocalizations t) => GestureDetector(
-    onTap: _openWebsite,
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFF2A1E0A), cCard],
+  /// Die beiden Wege nach media.einundzwanzig.space: schreiben und lesen.
+  ///
+  /// Nebeneinander und gleich breit, damit keiner wichtiger aussieht als der
+  /// andere. IntrinsicHeight haelt beide auf derselben Hoehe, auch wenn eine
+  /// Beschriftung zweizeilig umbricht.
+  Widget _actionTiles(AppLocalizations t) => IntrinsicHeight(
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: _actionTile(
+            icon: Icons.edit_note_rounded,
+            label: t.newsWriteArticle,
+            onTap: () => _openUrl(_writeUrl),
+          ),
         ),
-        borderRadius: BorderRadius.circular(kTileRadius),
-        border: Border.all(color: cOrange.withValues(alpha: 0.4), width: 0.5),
-      ),
-      child: Row(children: [
-        Container(
-          width: 44, height: 44,
-          decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-          child: const Icon(Icons.public_rounded, color: cOrange, size: 22),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _actionTile(
+            icon: Icons.public_rounded,
+            label: t.newsOpenWebsite,
+            onTap: _openWebsite,
+          ),
         ),
-        const SizedBox(width: 14),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t.newsOpenWebsite, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 2),
-          Text('media.einundzwanzig.space', style: const TextStyle(color: cTextTertiary, fontSize: 12)),
-        ])),
-        const Icon(Icons.open_in_new_rounded, color: cOrange, size: 18),
-      ]),
+      ],
     ),
   );
+
+  Widget _actionTile({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) =>
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF2A1E0A), cCard],
+            ),
+            borderRadius: BorderRadius.circular(kTileRadius),
+            border:
+                Border.all(color: cOrange.withValues(alpha: 0.4), width: 0.5),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: cOrange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: cOrange, size: 22),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: const TextStyle(
+                    color: cText, fontSize: 14, fontWeight: FontWeight.w700,
+                    height: 1.25),
+              ),
+              const SizedBox(height: 2),
+              const Text('media.einundzwanzig.space',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: cTextTertiary, fontSize: 11)),
+            ],
+          ),
+        ),
+      );
 
   Widget _loadingState(AppLocalizations t) => Padding(
     padding: const EdgeInsets.only(top: 60),
