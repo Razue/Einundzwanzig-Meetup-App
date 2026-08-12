@@ -129,6 +129,18 @@ class NewsReactionsService {
     return true;
   }
 
+  /// Hat die eigene Identitaet diesen Artikel schon beherzt?
+  ///
+  /// Nur der Merkzettel, kein Netz — Antwort in Millisekunden. [fetchLikes]
+  /// prueft dasselbe erst NACH der Relay-Abfrage; solange sah das Herz leer
+  /// aus und lud zum zweiten Druck ein.
+  static Future<bool> hasLikedLocally(String articleAddress) async {
+    final myPubkey = await SigningService.pubkeyHex();
+    if (myPubkey == null) return false;
+    final entries = await _likedEntries();
+    return entries.contains(_entry(myPubkey, articleAddress));
+  }
+
   /// Laedt die Herzen zu einer Artikeladresse (`30023:<pubkey>:<d>`).
   static Future<ArticleLikes> fetchLikes(String articleAddress) async {
     final myPubkey = await SigningService.pubkeyHex();
@@ -157,11 +169,17 @@ class NewsReactionsService {
       if (!done.isCompleted) done.complete();
     }
 
+    // Fertig, sobald jedes Relay geantwortet hat. Vorher lief die Abfrage
+    // IMMER bis zur Zeitgrenze, auch wenn nach 300 ms alles da war. Der
+    // Timer bleibt als Notbremse fuer traege Relays.
+    final finished = <String>{};
+    void relayDone(String url) {
+      finished.add(url);
+      if (finished.length >= targets.length) finish();
+    }
+
     Timer(_timeout, finish);
 
-    // Auf EOSE aller Relays warten waere sauberer, dauert aber genauso lang
-    // wie der Timeout, sobald ein Relay traege ist. Deshalb: sammeln, bis
-    // die Zeit um ist, und dann zeigen was da ist.
     for (final url in targets) {
       () async {
         try {
@@ -186,6 +204,11 @@ class NewsReactionsService {
           ws.listen((data) {
             try {
               final msg = jsonDecode(data as String) as List<dynamic>;
+              // EOSE = "mehr habe ich nicht". Damit ist dieses Relay durch.
+              if (msg.isNotEmpty && msg[0] == 'EOSE') {
+                relayDone(url);
+                return;
+              }
               if (msg.length >= 3 && msg[0] == 'EVENT') {
                 final event = msg[2] as Map<String, dynamic>;
                 final content = (event['content'] ?? '').toString();
@@ -198,9 +221,10 @@ class NewsReactionsService {
             } catch (_) {
               // Eine kaputte Nachricht darf die uebrigen nicht verhindern.
             }
-          }, onError: (_) {}, onDone: () {});
+          }, onError: (_) => relayDone(url), onDone: () => relayDone(url));
         } catch (_) {
           // Relay nicht erreichbar — die anderen laufen weiter.
+          relayDone(url);
         }
       }();
     }

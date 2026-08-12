@@ -288,7 +288,22 @@ class _ArticleDetailState extends State<_ArticleDetail> {
   void initState() {
     super.initState();
     _loadFullArticle();
+    // Erst der Merkzettel (Millisekunden), dann die Relays (Sekunden).
+    // So steht das Herz sofort richtig, statt bis zur Netzantwort leer
+    // auszusehen — genau das verleitet zum zweiten Druck.
+    _loadLocalLike();
     _loadLikes();
+  }
+
+  Future<void> _loadLocalLike() async {
+    final liked =
+        await NewsReactionsService.hasLikedLocally(widget.article.id);
+    if (!mounted || !liked) return;
+    setState(() {
+      // Zahl bleibt offen, bis die Relays antworten — nur der Zustand des
+      // eigenen Herzens ist hier schon sicher.
+      _likes = ArticleLikes(count: _likes.count, mine: true);
+    });
   }
 
   Future<void> _loadLikes() async {
