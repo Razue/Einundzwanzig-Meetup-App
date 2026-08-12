@@ -495,6 +495,22 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
 
   bool get _boldBackground => _boldBackgroundSteps.contains(_step);
 
+  /// Abdunklung ueber dem Hintergrundbild.
+  ///
+  /// Die Zahlen sind am Bild gemessen, nicht geschaetzt: Das Motiv ist
+  /// bereits sehr dunkel — die hellsten Leiterbahnen liegen bei Helligkeit
+  /// 38 von 255. Bei 0.52 (wie im IntroScreen) bleiben davon 17 uebrig und
+  /// man sieht die Struktur; bei 0.86 nur noch 5, das ist auf dem Geraet
+  /// nicht mehr wahrnehmbar. 0.68 laesst rund 11 stehen: sichtbar als
+  /// Wasserzeichen, aber deutlich ruhiger als die kraeftigen Seiten.
+  static const double _veilBold = 0.52;
+  static const double _veilSubtle = 0.68;
+
+  /// Weichzeichnung des Wasserzeichens. Kraeftig genug, dass die Leiterbahnen
+  /// nicht mit den Eingabefeldern konkurrieren, schwach genug, dass ueberhaupt
+  /// eine Struktur erkennbar bleibt.
+  static const double _watermarkBlur = 5;
+
   /// Hintergrund fuer alle Schritte.
   ///
   /// Beide Fassungen liegen dauerhaft im Baum und werden ueberblendet,
@@ -522,7 +538,8 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               duration: fade,
               curve: Curves.easeInOut,
               child: ImageFiltered(
-                imageFilter: ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7),
+                imageFilter: ui.ImageFilter.blur(
+                    sigmaX: _watermarkBlur, sigmaY: _watermarkBlur),
                 child: const Image(
                   image: AssetImage(asset),
                   fit: BoxFit.cover,
@@ -530,12 +547,12 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               ),
             ),
 
-            // Abdunklung. 0.52 wie im IntroScreen, auf den Formularseiten
-            // deutlich staerker — Eingabefelder brauchen ruhigen Grund.
+            // Abdunklung — siehe _veilBold / _veilSubtle oben.
             AnimatedContainer(
               duration: fade,
               curve: Curves.easeInOut,
-              color: Colors.black.withValues(alpha: bold ? 0.52 : 0.86),
+              color: Colors.black
+                  .withValues(alpha: bold ? _veilBold : _veilSubtle),
             ),
 
             // Warmer Schein von oben, ebenfalls aus dem IntroScreen.
@@ -545,7 +562,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               right: 0,
               height: 500,
               child: AnimatedOpacity(
-                opacity: bold ? 1.0 : 0.45,
+                opacity: bold ? 1.0 : 0.7,
                 duration: fade,
                 curve: Curves.easeInOut,
                 child: Container(
