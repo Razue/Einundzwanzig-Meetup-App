@@ -385,7 +385,9 @@ class SocialAnalysis {
     // Mutual Follow = stärkste Einzelverbindung
     if (isMutual) {
       score += 1.0;
-    } else if (iFollow || followsMe) score += 0.3;
+    } else if (iFollow || followsMe) {
+      score += 0.3;
+    }
     // Gemeinsame Kontakte (log-skaliert)
     if (commonContactCount > 0) {
       score += (commonContactCount / (commonContactCount + 5)) * 1.0;

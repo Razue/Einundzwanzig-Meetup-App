@@ -32,14 +32,12 @@ import '../services/meetup_service.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/trust_score_service.dart';
 import '../services/admin_registry.dart';
-import '../services/nostr_service.dart';
 import '../services/badge_claim_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/nostr_profile_service.dart';
 import 'meetup_verification.dart';
 import 'meetup_selection.dart';
-import 'badge_details.dart';
 import 'profile_edit.dart';
 import 'identity_setup_screen.dart';
 import 'intro.dart';
@@ -68,14 +66,12 @@ import '../services/widget_service.dart';
 import '../services/signing_service.dart';
 import '../services/satoshiduell_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:home_widget/home_widget.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
 import '../services/promotion_claim_service.dart';
 import '../services/secure_key_store.dart';
 import '../services/local_key_vault.dart';
-import '../services/admin_status_verifier.dart';
 import '../services/platform_proof_service.dart';
 import '../services/humanity_proof_service.dart';
 import '../services/nip05_service.dart';
@@ -173,7 +169,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   List<String> _tileOrder = [];
   Set<String> _hiddenTiles = {};
   // Pflicht-Kacheln (nicht löschbar)
-  static const _requiredTiles = {'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
   static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
@@ -2716,9 +2711,13 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: visibleTiles.length,
-                onReorder: (oldI, newI) {
+                // onReorderItem statt onReorder: Der neue Rueckruf rechnet den
+                // newIndex bereits um das entnommene Element zurueck. Die
+                // frueher noetige Korrektur "if (newI > oldI) newI--;" faellt
+                // deshalb ersatzlos weg — bliebe sie stehen, saesse jede
+                // Kachel nach dem Verschieben eine Position zu weit oben.
+                onReorderItem: (oldI, newI) {
                   setState(() {
-                    if (newI > oldI) newI--;
                     final oldOrderIdx = _order.indexOf(visibleTiles[oldI]);
                     final newOrderIdx = _order.indexOf(visibleTiles[newI]);
                     final item = _order.removeAt(oldOrderIdx);

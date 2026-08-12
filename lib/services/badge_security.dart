@@ -324,8 +324,11 @@ class BadgeSecurity {
     final t = data['t'];
     if (t == 'B') {
       normalized['type'] = 'BADGE';
-    } else if (t is String) normalized['type'] = t;
-    else normalized['type'] = data['type'] ?? 'BADGE';
+    } else if (t is String) {
+      normalized['type'] = t;
+    } else {
+      normalized['type'] = data['type'] ?? 'BADGE';
+    }
 
     final m = data['m'] as String? ?? '';
     if (m.contains('-')) {
@@ -366,7 +369,9 @@ class BadgeSecurity {
 
     if (data['s'] != null) {
       normalized['sig'] = data['s'];
-    } else if (data['sig'] != null) normalized['sig'] = data['sig'];
+    } else if (data['sig'] != null) {
+      normalized['sig'] = data['sig'];
+    }
     if (data['sig_id'] != null) normalized['sig_id'] = data['sig_id'];
 
     if (data['qr_nonce'] != null) normalized['qr_nonce'] = data['qr_nonce'];

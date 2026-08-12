@@ -779,7 +779,9 @@ class VouchingService {
         totalCount++;
         if (admin.isSuspended) {
           suspendedCount++;
-        } else if (admin.distrustCount > 0) warnedCount++;
+        } else if (admin.distrustCount > 0) {
+          warnedCount++;
+        }
       }
     }
 

@@ -267,7 +267,6 @@ class PromotionClaimService {
       try {
         final proofMap = proof as Map<String, dynamic>;
         final sig = proofMap['sig'] as String? ?? '';
-        final sigId = proofMap['sig_id'] as String? ?? '';
         final adminPubkey = proofMap['admin_pubkey'] as String? ?? '';
         final sigVersion = proofMap['sig_version'] as int? ?? 0;
         final sigContent = proofMap['sig_content'] as String? ?? '';

@@ -820,18 +820,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   style: const TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: 'monospace')),
             ]),
             const SizedBox(height: 20),
-            // legacy Wrap compat — keep chip builder for session area below
-            Wrap(spacing: 8, runSpacing: 8, children: [
-              if (false) _buildStatusChip(
-                icon: _promotionSource == 'trust_score' ? Icons.trending_up : Icons.star,
-                label: _promotionSource == 'trust_score'
-                    ? AppLocalizations.of(context).apViaTrustScore
-                    : _promotionSource == 'seed_admin'
-                        ? AppLocalizations.of(context).apSeedAdmin
-                        : AppLocalizations.of(context).apOrganizer,
-                color: _promotionSource == 'trust_score' ? Colors.green : cOrange,
-              ),
-            ]),
 
             const SizedBox(height: 32),
 
@@ -1023,23 +1011,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
-  Widget _buildStatusChip({required IconData icon, required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: color, fontFamily: 'monospace', fontSize: 11)),
-        ],
-      ),
-    );
-  }
 
   Widget _buildAdminTile({
     required BuildContext context,

@@ -336,7 +336,6 @@ class PlatformProofService {
   static bool _verifySignature(ParsedVerifyString parsed) {
     try {
       final pubkeyHex = Nip19.decodePubkey(parsed.npub);
-      final int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
       // Content rekonstruieren
       // Wir können created_at nicht exakt rekonstruieren,
