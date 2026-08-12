@@ -2451,5 +2451,9 @@
   "rsTesting": "Verbindung wird geprüft …",
   "rsRelayAdded": "Relay hinzugefügt und erreichbar.",
   "rsEnabledHint": "Eingeschaltet — bedeutet nicht, dass das Relay gerade erreichbar ist.",
-  "wotNoRelayReachable": "Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log."
+  "wotNoRelayReachable": "Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.",
+  "newsWriteArticle": "Artikel schreiben",
+  "newsLike": "Gefällt mir",
+  "newsShare": "Teilen",
+  "newsLikeFailed": "Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen."
 }

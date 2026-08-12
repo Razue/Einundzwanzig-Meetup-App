@@ -2429,5 +2429,9 @@
   "rsTesting": "Comprobando la conexión …",
   "rsRelayAdded": "Relé añadido y accesible.",
   "rsEnabledHint": "Activado: no significa que el relé esté accesible en este momento.",
-  "wotNoRelayReachable": "Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico."
+  "wotNoRelayReachable": "Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico.",
+  "newsWriteArticle": "Escribir un artículo",
+  "newsLike": "Me gusta",
+  "newsShare": "Compartir",
+  "newsLikeFailed": "No se pudo enviar la reacción. Ningún relé la aceptó."
 }

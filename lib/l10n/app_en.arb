@@ -2429,5 +2429,9 @@
   "rsTesting": "Testing connection …",
   "rsRelayAdded": "Relay added and reachable.",
   "rsEnabledHint": "Enabled — this does not mean the relay is reachable right now.",
-  "wotNoRelayReachable": "No relay reachable. Are you online? Details are in the diagnostics log."
+  "wotNoRelayReachable": "No relay reachable. Are you online? Details are in the diagnostics log.",
+  "newsWriteArticle": "Write an article",
+  "newsLike": "Like",
+  "newsShare": "Share",
+  "newsLikeFailed": "Reaction could not be sent. No relay accepted it."
 }

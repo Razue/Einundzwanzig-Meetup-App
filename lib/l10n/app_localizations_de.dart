@@ -5246,4 +5246,17 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get wotNoRelayReachable =>
       'Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.';
+
+  @override
+  String get newsWriteArticle => 'Artikel schreiben';
+
+  @override
+  String get newsLike => 'Gefällt mir';
+
+  @override
+  String get newsShare => 'Teilen';
+
+  @override
+  String get newsLikeFailed =>
+      'Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen.';
 }

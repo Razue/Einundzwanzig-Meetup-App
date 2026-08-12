@@ -9537,6 +9537,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.'**
   String get wotNoRelayReachable;
+
+  /// No description provided for @newsWriteArticle.
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel schreiben'**
+  String get newsWriteArticle;
+
+  /// No description provided for @newsLike.
+  ///
+  /// In de, this message translates to:
+  /// **'Gefällt mir'**
+  String get newsLike;
+
+  /// No description provided for @newsShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get newsShare;
+
+  /// No description provided for @newsLikeFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen.'**
+  String get newsLikeFailed;
 }
 
 class _AppLocalizationsDelegate

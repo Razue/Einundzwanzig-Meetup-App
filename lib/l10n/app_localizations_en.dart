@@ -5198,4 +5198,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get wotNoRelayReachable =>
       'No relay reachable. Are you online? Details are in the diagnostics log.';
+
+  @override
+  String get newsWriteArticle => 'Write an article';
+
+  @override
+  String get newsLike => 'Like';
+
+  @override
+  String get newsShare => 'Share';
+
+  @override
+  String get newsLikeFailed =>
+      'Reaction could not be sent. No relay accepted it.';
 }

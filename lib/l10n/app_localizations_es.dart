@@ -5229,4 +5229,17 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get wotNoRelayReachable =>
       'Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String get newsWriteArticle => 'Escribir un artículo';
+
+  @override
+  String get newsLike => 'Me gusta';
+
+  @override
+  String get newsShare => 'Compartir';
+
+  @override
+  String get newsLikeFailed =>
+      'No se pudo enviar la reacción. Ningún relé la aceptó.';
 }
