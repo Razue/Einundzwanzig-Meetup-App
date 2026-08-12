@@ -787,7 +787,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     if (!presenceVerified && mounted) {
       // Kein Blocker mehr, aber der Teilnehmer soll wissen, woran er ist.
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(tr.badgeUnverifiedInfo),
+        content: Text(AppLocalizations.of(context).badgeUnverifiedInfo),
         backgroundColor: cSurface,
         duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
@@ -815,7 +815,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(tr.verifyBadgeDuplicate),
+            content: Text(AppLocalizations.of(context).verifyBadgeDuplicate),
             backgroundColor: cOrange,
             behavior: SnackBarBehavior.floating,
           ),
@@ -839,7 +839,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(tr.verifyBadgeSaved),
+          content: Text(AppLocalizations.of(context).verifyBadgeSaved),
           backgroundColor: cGreen,
           behavior: SnackBarBehavior.floating,
         ),
@@ -947,7 +947,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       if (mounted && count > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(tr.caPublished),
+            content: Text(AppLocalizations.of(context).caPublished),
             backgroundColor: cGreen,
             behavior: SnackBarBehavior.floating,
           ),
@@ -968,7 +968,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: Text(tr.verifyScanBadge)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanBadge)),
       body: Center(
         child: _success
             ? _buildConfirmationView()
@@ -1007,7 +1007,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
           // ── Titel ──
           Text(
-            isAlreadyCollected ? tr.verifyAlreadyCollected : tr.verifyBadgeFound,
+            isAlreadyCollected ? AppLocalizations.of(context).verifyAlreadyCollected : AppLocalizations.of(context).verifyBadgeFound,
             style: TextStyle(
               color: accentColor, fontSize: 11,
               fontWeight: FontWeight.w800, letterSpacing: 1.6,
@@ -1025,7 +1025,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
               border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 0.5),
             ),
             child: Text(
-              _statusText ?? tr.verifyReadyToScan,
+              _statusText ?? AppLocalizations.of(context).verifyReadyToScan,
               textAlign: TextAlign.left,
               style: const TextStyle(
                 color: cText, fontWeight: FontWeight.w500,
@@ -1045,7 +1045,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     MaterialPageRoute(builder: (_) => const BadgeWalletScreen())),
                 icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.black, size: 18),
                 label: Text(
-                  tr.verifyOpenWallet,
+                  AppLocalizations.of(context).verifyOpenWallet,
                   style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800,
                       fontSize: 13, letterSpacing: 0.8),
                 ),
@@ -1068,7 +1068,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                 onPressed: _confirmSaveBadge,
                 icon: const Icon(Icons.add_rounded, color: Colors.black),
                 label: Text(
-                  tr.verifyAddToWallet,
+                  AppLocalizations.of(context).verifyAddToWallet,
                   style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800,
                       fontSize: 13, letterSpacing: 0.8),
                 ),
@@ -1096,7 +1096,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                 ),
               ),
               child: Text(
-                isAlreadyCollected ? tr.verifyClose : tr.dialogCancel,
+                isAlreadyCollected ? AppLocalizations.of(context).verifyClose : AppLocalizations.of(context).dialogCancel,
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.8),
               ),
             ),
@@ -1126,12 +1126,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     ),
                   ),
                   const SizedBox(height: 40),
-                  Text(tr.verifyScanBadge,
+                  Text(AppLocalizations.of(context).verifyScanBadge,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white, letterSpacing: 2)),
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(tr.verifyScanInstruction,
+                    child: Text(AppLocalizations.of(context).verifyScanInstruction,
                       textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, height: 1.5)),
                   ),
                   const SizedBox(height: 40),
@@ -1142,7 +1142,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     child: ElevatedButton.icon(
                       onPressed: _startNfcRead,
                       icon: const Icon(Icons.nfc, color: Colors.white),
-                      label: Text(tr.verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(backgroundColor: cOrange),
                     ),
                   ),
@@ -1154,7 +1154,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     child: OutlinedButton.icon(
                       onPressed: _startQRScan,
                       icon: const Icon(Icons.qr_code_scanner, color: cCyan),
-                      label: Text(tr.verifyScanQrCaps, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
+                      label: Text(AppLocalizations.of(context).verifyScanQrCaps, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(side: const BorderSide(color: cCyan, width: 2)),
                     ),
                   ),
@@ -1162,7 +1162,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(_statusText ?? tr.verifyReadyToScan, textAlign: TextAlign.center,
+                    child: Text(_statusText ?? AppLocalizations.of(context).verifyReadyToScan, textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ),
                 ],
@@ -1207,7 +1207,7 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: Text(tr.verifyScanQr)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
       body: Stack(children: [
         MobileScanner(onDetect: _onDetect),
         // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
@@ -1218,7 +1218,7 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(12)),
-            child: Text(tr.verifyScanQrInstruction,
+            child: Text(AppLocalizations.of(context).verifyScanQrInstruction,
               style: const TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
           ),
         ),

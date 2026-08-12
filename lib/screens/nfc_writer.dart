@@ -115,6 +115,12 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
   // =============================================
 
   void _writeTag() async {
+    // Uebersetzungen ganz am Anfang greifen, VOR dem ersten await. Der
+    // onDiscovered-Rueckruf weiter unten feuert erst, wenn der Nutzer den
+    // Tag anhaelt — beliebig lange spaeter und womoeglich, nachdem der
+    // Bildschirm schon verlassen wurde.
+    final tr = AppLocalizations.of(context);
+
     if (_homeMeetup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context).nwSelectHomeMeetup), backgroundColor: Colors.red),
@@ -207,12 +213,6 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
     ]);
 
     final actualSize = jsonData.length + 7; // 3 prefix + ~4 NDEF header
-
-    // Der onDiscovered-Rueckruf feuert erst, wenn der Nutzer den Tag
-    // anhaelt — beliebig lange nach dem Start der Sitzung und womoeglich,
-    // nachdem der Bildschirm schon verlassen wurde. Deshalb alle Texte
-    // JETZT einsammeln statt spaeter ueber den Context zu holen.
-    final tr = AppLocalizations.of(context);
 
     try {
       await NfcManager.instance.startSession(
