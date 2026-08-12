@@ -155,6 +155,9 @@ class NewsReactionsService {
     AppLogger.debug(_tag,
         'Herzen fuer $articleAddress: ${reactors.length} gesamt, eigenes: $mine, '
         'pro Relay: ${perRelay.isEmpty ? "keine Treffer" : perRelay}');
+    AppLogger.debug(_tag,
+        'eigener Pubkey: ${myPubkey == null ? "keiner" : "${myPubkey.substring(0, 8)}…"} | '
+        'gefundene Reagierende: ${reactors.map((p) => "${p.substring(0, 8)}…").join(", ")}');
     return ArticleLikes(count: reactors.length, mine: mine);
   }
 
@@ -262,6 +265,63 @@ class NewsReactionsService {
         'Herz ${signed.id} auf $articleAddress: '
         '${accepted.length} von ${targets.length} Relays angenommen');
 
+    // Entscheidende Gegenprobe: Ein Relay kann ein Ereignis mit "OK true"
+    // annehmen, live an offene Abos weiterreichen und es trotzdem nicht
+    // ablegen. Genau so sieht es aus, wenn eine geoeffnete Webseite die
+    // Reaktion sofort zeigt, sie nach einem Neustart aber verschwunden ist.
+    // Deshalb wird hier gezielt nach der eigenen Ereignis-ID gefragt.
+    if (accepted.isNotEmpty) {
+      unawaited(_verifyStored(signed.id, accepted.toList()));
+    }
+
     return accepted.isNotEmpty;
+  }
+
+  /// Fragt jedes annehmende Relay nach der frischen Ereignis-ID und
+  /// protokolliert, wer sie zurueckgibt. Laeuft im Hintergrund und haelt
+  /// die Oberflaeche nicht auf.
+  static Future<void> _verifyStored(String eventId, List<String> urls) async {
+    // Kurz warten: Manche Relays legen erst nach dem OK ab.
+    await Future<void>.delayed(const Duration(seconds: 2));
+
+    for (final url in urls) {
+      var found = false;
+      RelaySocket? ws;
+      try {
+        ws = await RelaySocket.connect(url).timeout(const Duration(seconds: 4));
+        final done = Completer<void>();
+        ws.listen((data) {
+          try {
+            final msg = jsonDecode(data as String) as List<dynamic>;
+            if (msg.length >= 3 && msg[0] == 'EVENT') {
+              found = true;
+              if (!done.isCompleted) done.complete();
+            } else if (msg.length >= 2 && msg[0] == 'EOSE') {
+              if (!done.isCompleted) done.complete();
+            }
+          } catch (_) {}
+        }, onError: (_) {}, onDone: () {
+          if (!done.isCompleted) done.complete();
+        });
+        ws.add(jsonEncode([
+          'REQ',
+          'verify',
+          {
+            'ids': [eventId]
+          }
+        ]));
+        await done.future.timeout(const Duration(seconds: 5),
+            onTimeout: () {});
+      } catch (_) {
+        AppLogger.debug(_tag, 'Gegenprobe $url: nicht erreichbar');
+        continue;
+      } finally {
+        try {
+          await ws?.close();
+        } catch (_) {}
+      }
+      AppLogger.debug(_tag,
+          'Gegenprobe $url: ${found ? "abgelegt" : "NICHT abgelegt (nur durchgereicht)"}');
+    }
   }
 }
