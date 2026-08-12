@@ -13,6 +13,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'app_logger.dart';
 import 'relay_config.dart';
 import 'relay_socket.dart';
@@ -56,7 +58,11 @@ class NewsReactionsService {
   ];
 
   /// Relays zum Abrufen: alles, was Treffer liefern kann.
-  static Future<List<String>> _readTargets() async {
+  ///
+  /// Oeffentlich, weil auch NewsZapService das Autorenprofil ueber genau
+  /// diese Relays sucht — zwei getrennte Listen wuerden frueher oder
+  /// spaeter auseinanderlaufen.
+  static Future<List<String>> readTargets() async {
     final all = <String>{...newsRelays, ...readOnlyRelays};
     try {
       all.addAll(await RelayConfig.getActiveRelays());
@@ -68,11 +74,51 @@ class NewsReactionsService {
 
   /// Relays zum Senden: dieselbe Menge OHNE die reinen Lesequellen.
   static Future<List<String>> _writeTargets() async {
-    final all = await _readTargets();
+    final all = await readTargets();
     return all.where((r) => !readOnlyRelays.contains(r)).toList();
   }
 
   static const Duration _timeout = Duration(seconds: 8);
+
+  /// Merkzettel der eigenen Herzen.
+  ///
+  /// Warum ueberhaupt lokal, wo doch alles auf Relays liegt? Weil die App
+  /// nicht das Netz fragen muss, um zu wissen, was der Nutzer selbst getan
+  /// hat. Im Test kam die eigene Reaktion bei einer spaeteren Abfrage nicht
+  /// zurueck, obwohl drei Relays sie angenommen und zwei sie nachweislich
+  /// abgelegt hatten — ohne Merkzettel liess sich dasselbe Herz beliebig oft
+  /// erneut senden. Der Merkzettel ist die Wahrheit ueber die EIGENE
+  /// Handlung; die Relays bleiben die Wahrheit ueber alle anderen.
+  static const String _likedKey = 'news_liked_reactions';
+
+  /// Ein Eintrag lautet `<pubkey>|<artikeladresse>` — mit Schluessel, damit
+  /// ein Identitaetswechsel nicht die Herzen der vorigen Identitaet erbt.
+  static String _entry(String pubkey, String address) => '$pubkey|$address';
+
+  static Future<Set<String>> _likedEntries() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return (prefs.getStringList(_likedKey) ?? const <String>[]).toSet();
+    } catch (_) {
+      return <String>{};
+    }
+  }
+
+  static Future<void> _rememberLike(String pubkey, String address) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList(_likedKey) ?? <String>[];
+      final entry = _entry(pubkey, address);
+      if (list.contains(entry)) return;
+      list.add(entry);
+      // Deckel gegen unbegrenztes Wachsen: Die aeltesten Eintraege fallen
+      // heraus. 500 Artikel reichen weit ueber jede reale Lesehistorie.
+      if (list.length > 500) list.removeRange(0, list.length - 500);
+      await prefs.setStringList(_likedKey, list);
+    } catch (e) {
+      AppLogger.warn(_tag, 'Merkzettel konnte nicht geschrieben werden', e);
+    }
+  }
 
   /// Inhalte, die NIP-25 als Zustimmung wertet. Ein "-" ist ausdruecklich
   /// eine Ablehnung und zaehlt nicht mit; alles andere (Emoji) gilt als
@@ -91,7 +137,7 @@ class NewsReactionsService {
     final reactors = <String>{};
     var mine = false;
 
-    final targets = await _readTargets();
+    final targets = await readTargets();
     // Wie viele Reaktionen kam von welchem Relay? Ohne diese Zeile ist
     // "das Herz ist weg" nicht von "kein Relay hat es" zu unterscheiden.
     final perRelay = <String, int>{};
@@ -160,13 +206,31 @@ class NewsReactionsService {
     }
 
     await done.future;
+
+    // Merkzettel schlaegt die Relay-Antwort: Wer selbst reagiert hat, sieht
+    // das Herz gefuellt, auch wenn kein Relay die eigene Reaktion
+    // zurueckliefert.
+    var localOnly = false;
+    if (myPubkey != null && !mine) {
+      final entries = await _likedEntries();
+      if (entries.contains(_entry(myPubkey, articleAddress))) {
+        mine = true;
+        localOnly = true;
+      }
+    }
+
     AppLogger.debug(_tag,
         'Herzen fuer $articleAddress: ${reactors.length} gesamt, eigenes: $mine, '
         'pro Relay: ${perRelay.isEmpty ? "keine Treffer" : perRelay}');
     AppLogger.debug(_tag,
         'eigener Pubkey: ${myPubkey == null ? "keiner" : "${myPubkey.substring(0, 8)}…"} | '
+        'eigenes Herz aus Merkzettel: $localOnly | '
         'gefundene Reagierende: ${reactors.map((p) => "${p.substring(0, 8)}…").join(", ")}');
-    return ArticleLikes(count: reactors.length, mine: mine);
+    // Kam die eigene Reaktion nicht von den Relays zurueck, ist sie auch
+    // nicht mitgezaehlt — dann eine dazurechnen, sonst faende sich ein
+    // gefuelltes Herz neben einer Zahl, die es nicht enthaelt.
+    final count = reactors.length + (localOnly ? 1 : 0);
+    return ArticleLikes(count: count, mine: mine);
   }
 
   /// Sendet ein Herz auf den Artikel.
@@ -184,6 +248,17 @@ class NewsReactionsService {
     required String articleAddress,
     required String authorPubkey,
   }) async {
+    // Doppelt senden waere doppelt gezaehlt: Die Webseite zaehlt Ereignisse,
+    // nicht Personen. Der Merkzettel verhindert das schon vor dem Signieren.
+    final myPubkey = await SigningService.pubkeyHex();
+    if (myPubkey != null) {
+      final entries = await _likedEntries();
+      if (entries.contains(_entry(myPubkey, articleAddress))) {
+        AppLogger.debug(_tag, 'Herz bereits vergeben — nichts gesendet.');
+        return true;
+      }
+    }
+
     final SignedEvent signed;
     try {
       signed = await SigningService.signEvent(
@@ -272,6 +347,10 @@ class NewsReactionsService {
     AppLogger.debug(_tag,
         'Herz ${signed.id} auf $articleAddress: '
         '${accepted.length} von ${targets.length} Relays angenommen');
+
+    if (accepted.isNotEmpty) {
+      await _rememberLike(signed.pubkey, articleAddress);
+    }
 
     return accepted.isNotEmpty;
   }

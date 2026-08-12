@@ -2433,5 +2433,14 @@
   "newsWriteArticle": "Write an article",
   "newsLike": "Like",
   "newsShare": "Share",
-  "newsLikeFailed": "Reaction could not be sent. No relay accepted it."
+  "newsLikeFailed": "Reaction could not be sent. No relay accepted it.",
+  "newsZap": "Zap",
+  "newsZapTitle": "Send sats to the author",
+  "newsZapBody": "Pick an amount. The invoice is then handed to your lightning wallet.",
+  "newsZapNoAddress": "The author has no lightning address in their profile.",
+  "newsZapUnsupportedAddress": "The author's lightning address is not supported (only addresses like name@domain).",
+  "newsZapAmountRange": "That amount is outside the range the author accepts.",
+  "newsZapFailed": "Zap failed. Details are in the diagnostics log.",
+  "newsZapNoWallet": "No lightning wallet found",
+  "newsZapCopyInvoice": "Copy invoice"
 }

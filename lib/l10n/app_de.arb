@@ -2455,5 +2455,14 @@
   "newsWriteArticle": "Artikel schreiben",
   "newsLike": "Gefällt mir",
   "newsShare": "Teilen",
-  "newsLikeFailed": "Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen."
+  "newsLikeFailed": "Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen.",
+  "newsZap": "Zap",
+  "newsZapTitle": "Sats an den Autor",
+  "newsZapBody": "Wähle einen Betrag. Die Rechnung wird anschließend an deine Lightning-Wallet übergeben.",
+  "newsZapNoAddress": "Der Autor hat keine Lightning-Adresse im Profil hinterlegt.",
+  "newsZapUnsupportedAddress": "Die Lightning-Adresse des Autors wird nicht unterstützt (nur Adressen der Form name@domain).",
+  "newsZapAmountRange": "Der Betrag liegt außerhalb dessen, was der Autor annimmt.",
+  "newsZapFailed": "Zap fehlgeschlagen. Einzelheiten stehen im Diagnose-Log.",
+  "newsZapNoWallet": "Keine Lightning-Wallet gefunden",
+  "newsZapCopyInvoice": "Rechnung kopieren"
 }

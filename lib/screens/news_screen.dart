@@ -7,12 +7,14 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/news_reactions_service.dart';
 import '../services/news_service.dart';
+import '../services/news_zap_service.dart';
 import '../widgets/markdown_view.dart';
 
 const String _websiteUrl = 'https://media.einundzwanzig.space/s/einundzwanzig-news';
@@ -30,9 +32,16 @@ Future<void> _openUrl(String url) async {
 }
 
 /// Oeffentliche Adresse eines Artikels — fuer Teilen und "im Browser lesen".
+///
+/// Achtung: NewsArticle.link faellt auf die guid zurueck, wenn der RSS-Feed
+/// kein `<link>` mitliefert — und die guid ist `30023:<pubkey>:<d>`, also
+/// KEINE URL. Frueher wurde die an die Webseitenadresse angehaengt und
+/// ergab einen toten Link. Deshalb hier: nur echte http(s)-Adressen
+/// verwenden, sonst die Uebersichtsseite.
 String _articleUrl(NewsArticle a) {
-  if (a.link.isEmpty) return kNewsWebsiteUrl;
-  return a.link.startsWith('http') ? a.link : '$kNewsWebsiteUrl${a.link}';
+  final link = a.link.trim();
+  if (link.startsWith('http://') || link.startsWith('https://')) return link;
+  return kNewsWebsiteUrl;
 }
 
 /// Wandelt einen Hex-Pubkey sicher in eine kurze npub-Anzeige um.
@@ -265,6 +274,7 @@ class _ArticleDetailState extends State<_ArticleDetail> {
   ArticleLikes _likes = ArticleLikes.empty;
   bool _likesLoaded = false;
   bool _liking = false;
+  bool _zapping = false;
 
   /// Hex-Pubkey des Autors. NewsArticle.pubkey traegt den ANZEIGENAMEN aus
   /// dem RSS-Feed, nicht den Schluessel — der steckt in der guid
@@ -318,6 +328,169 @@ class _ArticleDetailState extends State<_ArticleDetail> {
     }
   }
 
+  // ---------------------------------------------------------------
+  // ZAP
+  // ---------------------------------------------------------------
+
+  /// Betragsauswahl. Die Stufen folgen der 21 — das ist hier keine Spielerei,
+  /// sondern spart dem Nutzer die Zifferneingabe fuer den Normalfall.
+  static const List<int> _zapAmounts = [21, 210, 2100, 21000];
+
+  Future<void> _zap() async {
+    final t = AppLocalizations.of(context);
+    final amount = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: cCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t.newsZapTitle,
+                  style: const TextStyle(
+                      color: cText, fontSize: 17, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              Text(t.newsZapBody,
+                  style: const TextStyle(
+                      color: cTextSecondary, fontSize: 13, height: 1.5)),
+              const SizedBox(height: 18),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: _zapAmounts
+                    .map((sats) => OutlinedButton(
+                          onPressed: () => Navigator.pop(sheetContext, sats),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: cOrange),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 18, vertical: 12),
+                          ),
+                          child: Text('$sats sat',
+                              style: const TextStyle(
+                                  color: cOrange,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700)),
+                        ))
+                    .toList(),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (amount == null || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _zapping = true);
+
+    final result = await NewsZapService.createZapInvoice(
+      authorPubkey: _authorPubkey,
+      articleAddress: widget.article.id,
+      amountSats: amount,
+      comment: widget.article.title,
+    );
+
+    if (!mounted) return;
+    setState(() => _zapping = false);
+
+    if (!result.ok) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(_zapErrorText(t, result.error)),
+        backgroundColor: cRed,
+      ));
+      return;
+    }
+
+    // lightning:-URI: Android blendet von sich aus die Auswahl ALLER
+    // installierten Wallets ein, die das Schema behandeln. Eine eigene
+    // Liste zu bauen waere sowohl unvollstaendig als auch ueberfluessig.
+    final opened = await _openInvoice(result.invoice!);
+    if (!mounted) return;
+    if (!opened) _showInvoiceFallback(t, result.invoice!);
+  }
+
+  Future<bool> _openInvoice(String invoice) async {
+    final uri = Uri.parse('lightning:$invoice');
+    try {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Keine Wallet gefunden: Rechnung zum Kopieren zeigen, statt den Nutzer
+  /// mit einer wirkungslosen Meldung stehen zu lassen.
+  void _showInvoiceFallback(AppLocalizations t, String invoice) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t.newsZapNoWallet,
+                  style: const TextStyle(
+                      color: cText, fontSize: 17, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: cDark,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(invoice,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: cTextSecondary,
+                        fontSize: 11,
+                        fontFamily: 'monospace')),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: invoice));
+                    Navigator.pop(sheetContext);
+                  },
+                  icon: const Icon(Icons.copy_rounded,
+                      size: 18, color: Colors.black),
+                  style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+                  label: Text(t.newsZapCopyInvoice,
+                      style: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _zapErrorText(AppLocalizations t, ZapError? error) =>
+      switch (error) {
+        ZapError.noLightningAddress => t.newsZapNoAddress,
+        ZapError.unsupportedAddress => t.newsZapUnsupportedAddress,
+        ZapError.amountOutOfRange => t.newsZapAmountRange,
+        _ => t.newsZapFailed,
+      };
+
   void _share() {
     final a = widget.article;
     Share.share('${a.title}\n\n${_articleUrl(a)}');
@@ -351,6 +524,25 @@ class _ArticleDetailState extends State<_ArticleDetail> {
             ),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: liked ? cOrange : cBorder),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: _zapping ? null : _zap,
+            icon: _zapping
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: cOrange))
+                : const Icon(Icons.bolt_rounded, size: 18, color: cOrange),
+            label: Text(t.newsZap,
+                style: const TextStyle(color: cOrange, fontSize: 13)),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: cOrange.withValues(alpha: 0.5)),
               padding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),

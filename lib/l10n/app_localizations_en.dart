@@ -5211,4 +5211,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get newsLikeFailed =>
       'Reaction could not be sent. No relay accepted it.';
+
+  @override
+  String get newsZap => 'Zap';
+
+  @override
+  String get newsZapTitle => 'Send sats to the author';
+
+  @override
+  String get newsZapBody =>
+      'Pick an amount. The invoice is then handed to your lightning wallet.';
+
+  @override
+  String get newsZapNoAddress =>
+      'The author has no lightning address in their profile.';
+
+  @override
+  String get newsZapUnsupportedAddress =>
+      'The author\'s lightning address is not supported (only addresses like name@domain).';
+
+  @override
+  String get newsZapAmountRange =>
+      'That amount is outside the range the author accepts.';
+
+  @override
+  String get newsZapFailed => 'Zap failed. Details are in the diagnostics log.';
+
+  @override
+  String get newsZapNoWallet => 'No lightning wallet found';
+
+  @override
+  String get newsZapCopyInvoice => 'Copy invoice';
 }

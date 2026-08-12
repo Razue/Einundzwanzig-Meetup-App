@@ -5259,4 +5259,36 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get newsLikeFailed =>
       'Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen.';
+
+  @override
+  String get newsZap => 'Zap';
+
+  @override
+  String get newsZapTitle => 'Sats an den Autor';
+
+  @override
+  String get newsZapBody =>
+      'Wähle einen Betrag. Die Rechnung wird anschließend an deine Lightning-Wallet übergeben.';
+
+  @override
+  String get newsZapNoAddress =>
+      'Der Autor hat keine Lightning-Adresse im Profil hinterlegt.';
+
+  @override
+  String get newsZapUnsupportedAddress =>
+      'Die Lightning-Adresse des Autors wird nicht unterstützt (nur Adressen der Form name@domain).';
+
+  @override
+  String get newsZapAmountRange =>
+      'Der Betrag liegt außerhalb dessen, was der Autor annimmt.';
+
+  @override
+  String get newsZapFailed =>
+      'Zap fehlgeschlagen. Einzelheiten stehen im Diagnose-Log.';
+
+  @override
+  String get newsZapNoWallet => 'Keine Lightning-Wallet gefunden';
+
+  @override
+  String get newsZapCopyInvoice => 'Rechnung kopieren';
 }

@@ -9561,6 +9561,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen.'**
   String get newsLikeFailed;
+
+  /// No description provided for @newsZap.
+  ///
+  /// In de, this message translates to:
+  /// **'Zap'**
+  String get newsZap;
+
+  /// No description provided for @newsZapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sats an den Autor'**
+  String get newsZapTitle;
+
+  /// No description provided for @newsZapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle einen Betrag. Die Rechnung wird anschließend an deine Lightning-Wallet übergeben.'**
+  String get newsZapBody;
+
+  /// No description provided for @newsZapNoAddress.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Autor hat keine Lightning-Adresse im Profil hinterlegt.'**
+  String get newsZapNoAddress;
+
+  /// No description provided for @newsZapUnsupportedAddress.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Lightning-Adresse des Autors wird nicht unterstützt (nur Adressen der Form name@domain).'**
+  String get newsZapUnsupportedAddress;
+
+  /// No description provided for @newsZapAmountRange.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Betrag liegt außerhalb dessen, was der Autor annimmt.'**
+  String get newsZapAmountRange;
+
+  /// No description provided for @newsZapFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Zap fehlgeschlagen. Einzelheiten stehen im Diagnose-Log.'**
+  String get newsZapFailed;
+
+  /// No description provided for @newsZapNoWallet.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Lightning-Wallet gefunden'**
+  String get newsZapNoWallet;
+
+  /// No description provided for @newsZapCopyInvoice.
+  ///
+  /// In de, this message translates to:
+  /// **'Rechnung kopieren'**
+  String get newsZapCopyInvoice;
 }
 
 class _AppLocalizationsDelegate

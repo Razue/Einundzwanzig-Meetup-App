@@ -2433,5 +2433,14 @@
   "newsWriteArticle": "Escribir un artículo",
   "newsLike": "Me gusta",
   "newsShare": "Compartir",
-  "newsLikeFailed": "No se pudo enviar la reacción. Ningún relé la aceptó."
+  "newsLikeFailed": "No se pudo enviar la reacción. Ningún relé la aceptó.",
+  "newsZap": "Zap",
+  "newsZapTitle": "Enviar sats al autor",
+  "newsZapBody": "Elige un importe. Después se enviará la factura a tu cartera Lightning.",
+  "newsZapNoAddress": "El autor no tiene una dirección Lightning en su perfil.",
+  "newsZapUnsupportedAddress": "La dirección Lightning del autor no es compatible (solo direcciones del tipo nombre@dominio).",
+  "newsZapAmountRange": "El importe está fuera del rango que acepta el autor.",
+  "newsZapFailed": "El zap ha fallado. Los detalles están en el registro de diagnóstico.",
+  "newsZapNoWallet": "No se ha encontrado ninguna cartera Lightning",
+  "newsZapCopyInvoice": "Copiar factura"
 }

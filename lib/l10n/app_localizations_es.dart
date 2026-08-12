@@ -5242,4 +5242,36 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get newsLikeFailed =>
       'No se pudo enviar la reacción. Ningún relé la aceptó.';
+
+  @override
+  String get newsZap => 'Zap';
+
+  @override
+  String get newsZapTitle => 'Enviar sats al autor';
+
+  @override
+  String get newsZapBody =>
+      'Elige un importe. Después se enviará la factura a tu cartera Lightning.';
+
+  @override
+  String get newsZapNoAddress =>
+      'El autor no tiene una dirección Lightning en su perfil.';
+
+  @override
+  String get newsZapUnsupportedAddress =>
+      'La dirección Lightning del autor no es compatible (solo direcciones del tipo nombre@dominio).';
+
+  @override
+  String get newsZapAmountRange =>
+      'El importe está fuera del rango que acepta el autor.';
+
+  @override
+  String get newsZapFailed =>
+      'El zap ha fallado. Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String get newsZapNoWallet => 'No se ha encontrado ninguna cartera Lightning';
+
+  @override
+  String get newsZapCopyInvoice => 'Copiar factura';
 }
