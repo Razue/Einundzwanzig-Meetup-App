@@ -478,14 +478,19 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
   }
 
   /// Schritte, die den Hintergrund in voller Staerke tragen — dieselbe
-  /// Bildsprache wie der IntroScreen davor. Es sind die Seiten, auf denen
-  /// entschieden statt getippt wird; sobald ein Formular im Vordergrund
-  /// steht, tritt das Bild als Wasserzeichen zurueck.
+  /// Bildsprache wie der IntroScreen davor.
+  ///
+  /// Das Kriterium ist, ob die Seite EINGABEFELDER hat, nicht wie sie
+  /// heisst: Wo getippt wird, tritt das Bild als Wasserzeichen zurueck;
+  /// wo nur ein Knopf steht, darf es wirken. Wer eine Seite verschiebt,
+  /// aendert nur diese Menge.
+  ///
+  /// Mit Feldern (also NICHT hier): neu, resume, existingMore, nameOnly.
   static const _boldBackgroundSteps = <_SetupStep>{
     _SetupStep.choose,
-    _SetupStep.neu,
-    _SetupStep.resume,
+    _SetupStep.passkey,
     _SetupStep.existing,
+    _SetupStep.meetup,
   };
 
   bool get _boldBackground => _boldBackgroundSteps.contains(_step);
