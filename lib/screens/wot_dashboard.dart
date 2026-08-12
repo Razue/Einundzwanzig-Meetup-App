@@ -41,7 +41,13 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
   bool _isRefreshing = false;
   bool _isPublishing = false;
   String? _myNpub;
-  String _statusMessage = '';
+
+  /// Fehler aus dem letzten Laden bzw. Abgleich — ROH gespeichert und erst
+  /// in build() uebersetzt. Frueher stand hier der fertige Text, erzeugt mit
+  /// AppLocalizations.of(context) mitten in einem catch nach einem await;
+  /// dort ist der BuildContext nicht mehr zuverlaessig gueltig.
+  Object? _loadError;
+  Object? _syncError;
 
   @override
   void initState() {
@@ -80,7 +86,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         _consensus = null;
       }
     } catch (e) {
-      _statusMessage = AppLocalizations.of(context).wotErrorLoading(e.toString());
+      _loadError = e;
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -95,9 +101,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       } catch (_) {}
       _consensus = await VouchingService.calculateConsensus(forceRefresh: true);
       _myVouches = await AdminRegistry.getMyVouches();
-      _statusMessage = '';
+      _syncError = null;
     } catch (e) {
-      _statusMessage = AppLocalizations.of(context).wotSyncFailed(e.toString());
+      _syncError = e;
     }
     if (mounted) setState(() => _isRefreshing = false);
   }
@@ -187,6 +193,40 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     );
   }
 
+  /// Zeigt einen Fehler aus Laden oder Abgleich. Ohne diesen Streifen
+  /// blieb ein fehlgeschlagener Relay-Abruf fuer den Nutzer unsichtbar —
+  /// die Meldung wurde erzeugt und nie angezeigt.
+  Widget _buildErrorBanner(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final String? message = _syncError != null
+        ? t.wotSyncFailed(_syncError.toString())
+        : _loadError != null
+            ? t.wotErrorLoading(_loadError.toString())
+            : null;
+    if (message == null) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cRed.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline_rounded, color: cRed, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(message,
+                style: const TextStyle(color: cRed, fontSize: 12, height: 1.3)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -220,12 +260,19 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cOrange))
-          : TabBarView(
-              controller: _tabController,
+          : Column(
               children: [
-                _buildNetworkTab(),
-                _buildVouchingTab(),
-                _buildDistrustTab(),
+                _buildErrorBanner(context),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildNetworkTab(),
+                      _buildVouchingTab(),
+                      _buildDistrustTab(),
+                    ],
+                  ),
+                ),
               ],
             ),
       floatingActionButton: _tabController.index == 1

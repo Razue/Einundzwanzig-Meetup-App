@@ -328,44 +328,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
-  void _showGpsError(GpsStatus status) {
-    final t = AppLocalizations.of(context);
-    String msg;
-    switch (status) {
-      case GpsStatus.denied: msg = t.gpsDenied; break;
-      case GpsStatus.serviceDisabled: msg = t.gpsDisabled; break;
-      default: msg = t.gpsError;
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(children: [
-          const Icon(Icons.location_off_rounded, color: cRed, size: 22),
-          const SizedBox(width: 10),
-          Expanded(child: Text(t.gpsRequired, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
-        ]),
-        content: Text('${t.gpsRequiredOrg}\n\n$msg', style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
-        actions: [
-          // Direkter Weg in die Einstellungen — beim Feldtest stand das
-          // Meetup genau vor dieser Wand. Der Dialog bleibt bewusst OFFEN,
-          // damit man nach dem Umschalten gleich "Erneut versuchen" tippen kann.
-          if (status == GpsStatus.serviceDisabled)
-            TextButton(
-              onPressed: () => MeetupLocationService.openLocationSettings(),
-              child: Text(t.gpsOpenLocationSettings, style: const TextStyle(color: cTextSecondary)),
-            ),
-          if (status == GpsStatus.denied)
-            TextButton(
-              onPressed: () => MeetupLocationService.openAppSettings(),
-              child: Text(t.gpsOpenAppSettings, style: const TextStyle(color: cTextSecondary)),
-            ),
-          TextButton(onPressed: () { Navigator.pop(ctx); _startNewSession(); }, child: Text(t.gpsRetry, style: const TextStyle(color: cOrange))),
-        ],
-      ),
-    );
-  }
 
   /// Fragt den Meetup-Namen ab, wenn kein Portal-Meetup in der Nähe ist.
   /// Der GPS-Standort wurde bereits erfasst und wird als Veranstaltungsort
@@ -708,6 +670,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   // Öffnet das Einundzwanzig-Portal, damit der Organisator dort einen
   // Termin eintragen kann. Aktuell der direkte Weg ins Portal (Login nötig);
   // echte In-App-Erstellung folgt, sobald das Portal eine API bereitstellt.
+  // ignore: unused_element  — geparkt, siehe Kommentar oben.
   Future<void> _openPortalForEvent() async {
     final user = await UserProfile.load();
 

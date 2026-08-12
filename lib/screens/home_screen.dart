@@ -940,7 +940,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false);
     }
   }
-  void _scanAnyMeetup() async { final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0); await Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupVerificationScreen(meetup: d))); _loadBadges(); _calculateTrustScore(); }
   void _selectHomeMeetup() async {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen()));
     // WICHTIG: erst den User FERTIG laden (neue Favoritenliste!), DANN die
@@ -1516,24 +1515,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     );
   }
 
-  Widget _buildCountdownTile() {
-    if (_countdownLoading) return _tile(accentColor: cCyan, child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Icon(Icons.hourglass_top_rounded, color: cCyan, size: 22), const Spacer(), const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: cCyan)), const SizedBox(height: 8), const Text('Lade...', style: TextStyle(color: cTextTertiary, fontSize: 11))]));
-    if (_nextHomeMeetup != null) {
-      final days = _daysUntil(_nextHomeMeetup!.startTime);
-      return _tile(accentColor: cCyan, opacity: 0.08, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _user.homeMeetupId))),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Icon(Icons.event_available_rounded, color: cCyan, size: 22), const Spacer(),
-          days <= 0 ? const Text('Heute!', style: TextStyle(color: cCyan, fontSize: 26, fontWeight: FontWeight.w900, height: 1))
-            : Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Text('$days', style: TextStyle(color: cText, fontSize: 32, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)), const SizedBox(width: 4),
-              Padding(padding: const EdgeInsets.only(bottom: 2), child: Text(days == 1 ? 'Tag' : 'Tage', style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)))]),
-          const SizedBox(height: 4), const Text('Nächstes Meetup', style: TextStyle(color: cText, fontSize: 11))]));
-    }
-    return _tile(accentColor: const Color(0xFF606068), opacity: 0.04, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 22), const Spacer(),
-        Text('--', style: TextStyle(color: cText, fontSize: 28, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)), const SizedBox(height: 4),
-        Text(_user.homeMeetupId.isNotEmpty ? 'Kein Termin in Sicht.\nWird Zeit, das zu ändern!' : 'Erst Home Meetup\nwählen!', style: const TextStyle(color: cTextSecondary, fontSize: 10, height: 1.3))]));
-  }
 
   /// MEETUP-WAPPEN im "Cover-Flow"-Stil (iTunes): quadratisches Wappen,
   /// linke Kante fest, kippt perspektivisch nach rechts hinten und blendet
@@ -1766,7 +1747,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   }
 
-  Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
   /// WERT-KACHEL: kleines Etikett oben, grosser Wert darunter, Zusatz klein.
   ///
   /// Der Unterschied zur bisherigen Bauform ist inhaltlich, nicht kosmetisch:
@@ -2258,6 +2238,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // BOTTOM SHEETS (Help, Settings, Score Info) — wie in v4.2
   // Hier nur gekürzt, identische Logik
   // ============================================================
+  // ignore: unused_element  — Erklaer-Sheet ohne Einstiegspunkt; Inhalt
+  // bleibt erhalten, bis wieder ein Knopf darauf zeigt.
   void _showHelpSheet() { showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))), builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.5, expand: false, builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
     Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
     const Text("SO FUNKTIONIERT'S", style: TextStyle(color: cOrange, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 20),
@@ -2539,6 +2521,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
 
+  // ignore: unused_element  — Erklaerung des Trust Score, derzeit ohne
+  // Einstiegspunkt. Siehe _showHelpSheet.
   void _showScoreInfoSheet() {
     final score = _trustScore; final idCount = _platformProofCount + (_humanityVerified ? 1 : 0) + (_nip05Verified ? 1 : 0);
     showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -2647,20 +2631,6 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
     }
   }
 
-  Color _colorFor(String id) {
-    switch (id) {
-      case 'trust_score': return Colors.amber;
-      case 'home_meetup': return const Color(0xFFF7931A);
-      case 'reputation': return Colors.amber;
-      case 'community': return const Color(0xFF00B4CF);
-      case 'events': return const Color(0xFF8090A0);
-      case 'shoutout': return const Color(0xFFF7931A);
-      case 'podcast': return const Color(0xFFA915FF);
-      case 'organisator': return const Color(0xFFA915FF);
-      case 'wot_dashboard': return const Color(0xFF00B4CF);
-      default: return const Color(0xFF9A9AA0);
-    }
-  }
 
   void _hide(String id) => setState(() => _hidden.add(id));
   void _show(String id) => setState(() => _hidden.remove(id));

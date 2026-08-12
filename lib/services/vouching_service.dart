@@ -182,9 +182,14 @@ class VouchingService {
   static const String _adminDTag = 'einundzwanzig-admins';
   static const String _distrustDTag = 'einundzwanzig-distrust';
 
-  // Cache Keys
+  // Cache Keys — reserviert. Der Zwischenspeicher ist nie gebaut worden;
+  // die Namen stehen hier, damit eine spaetere Umsetzung dieselben
+  // SharedPreferences-Schluessel benutzt und keine Altdaten verwaisen.
+  // ignore: unused_field
   static const String _consensusCacheKey = 'vouching_consensus_cache';
+  // ignore: unused_field
   static const String _consensusTimestampKey = 'vouching_consensus_ts';
+  // ignore: unused_field
   static const String _distrustCacheKey = 'distrust_reports_cache';
 
   // Timeouts

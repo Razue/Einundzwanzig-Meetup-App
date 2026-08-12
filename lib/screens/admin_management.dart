@@ -23,7 +23,6 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
   bool _isLoading = true;
   bool _isPublishing = false;
   bool _isRefreshing = false;
-  Duration? _cacheAge;
   String _statusMessage = '';
 
   @override
@@ -51,11 +50,9 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
     // Persönliche Bürgschaften anzeigen (derselbe Topf, der publiziert
     // und wiederhergestellt wird) — nicht der Netzwerk-Cache aller Admins.
     final admins = await AdminRegistry.getMyVouches();
-    final age = await AdminRegistry.cacheAge();
     if (mounted) {
       setState(() {
         _admins = admins;
-        _cacheAge = age;
         _isLoading = false;
       });
     }
