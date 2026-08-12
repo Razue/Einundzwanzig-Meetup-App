@@ -2,6 +2,8 @@
 // IDENTITY SETUP — Erststart „Neu“ / „Schon dabei“
 // ============================================
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -475,13 +477,102 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     if (ok && mounted) await _goHome();
   }
 
+  /// Schritte, die den Hintergrund in voller Staerke tragen — dieselbe
+  /// Bildsprache wie der IntroScreen davor. Es sind die Seiten, auf denen
+  /// entschieden statt getippt wird; sobald ein Formular im Vordergrund
+  /// steht, tritt das Bild als Wasserzeichen zurueck.
+  static const _boldBackgroundSteps = <_SetupStep>{
+    _SetupStep.choose,
+    _SetupStep.neu,
+    _SetupStep.resume,
+    _SetupStep.existing,
+  };
+
+  bool get _boldBackground => _boldBackgroundSteps.contains(_step);
+
+  /// Hintergrund fuer alle Schritte.
+  ///
+  /// Beide Fassungen liegen dauerhaft im Baum und werden ueberblendet,
+  /// statt sie je nach Schritt neu aufzubauen: So gibt es beim Wechsel
+  /// kein Aufblitzen, und das Bild wird nur einmal dekodiert.
+  Widget _buildBackground() {
+    final bold = _boldBackground;
+    const asset = 'assets/images/intro_background_87.jpg';
+    const fade = Duration(milliseconds: 450);
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Scharfe Fassung wie im IntroScreen.
+            const Image(
+              image: AssetImage(asset),
+              fit: BoxFit.cover,
+            ),
+
+            // Weichgezeichnete Fassung, blendet auf den Formularseiten ein.
+            AnimatedOpacity(
+              opacity: bold ? 0.0 : 1.0,
+              duration: fade,
+              curve: Curves.easeInOut,
+              child: ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(sigmaX: 7, sigmaY: 7),
+                child: const Image(
+                  image: AssetImage(asset),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+            // Abdunklung. 0.52 wie im IntroScreen, auf den Formularseiten
+            // deutlich staerker — Eingabefelder brauchen ruhigen Grund.
+            AnimatedContainer(
+              duration: fade,
+              curve: Curves.easeInOut,
+              color: Colors.black.withValues(alpha: bold ? 0.52 : 0.86),
+            ),
+
+            // Warmer Schein von oben, ebenfalls aus dem IntroScreen.
+            Positioned(
+              top: -80,
+              left: 0,
+              right: 0,
+              height: 500,
+              child: AnimatedOpacity(
+                opacity: bold ? 1.0 : 0.45,
+                duration: fade,
+                curve: Curves.easeInOut,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.topCenter,
+                      radius: 1.0,
+                      colors: [
+                        cOrange.withValues(alpha: 0.08),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: cDark,
+      // Der Hintergrund reicht bis unter die Titelleiste — sonst saesse
+      // dort ein schwarzer Balken und das Bild begaenne mit einer Kante.
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: cDark,
+        backgroundColor: Colors.transparent,
         foregroundColor: cText,
         elevation: 0,
         title: Text(_title(t),
@@ -516,53 +607,61 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                       },
               ),
       ),
-      body: SafeArea(
-        child: AbsorbPointer(
-          absorbing: _busy || _bootstrapping,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-            children: [
-              if (_error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: cRed.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+      body: Stack(
+        children: [
+          _buildBackground(),
+          SafeArea(
+            child: AbsorbPointer(
+            absorbing: _busy || _bootstrapping,
+            child: ListView(
+              // Oben kToolbarHeight zusaetzlich: Durch extendBodyBehindAppBar
+              // beginnt der Body hinter der Titelleiste.
+              padding: const EdgeInsets.fromLTRB(
+                  24, 8 + kToolbarHeight, 24, 32),
+              children: [
+                if (_error != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: cRed.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(_error!,
+                        style: const TextStyle(color: cRed, height: 1.3)),
                   ),
-                  child: Text(_error!,
-                      style: const TextStyle(color: cRed, height: 1.3)),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                ],
+                if (_busy || _bootstrapping)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: LinearProgressIndicator(
+                      color: cOrange,
+                      backgroundColor: cBorder,
+                    ),
+                  ),
+                if (_bootstrapping)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 48),
+                    child: Text(t.idSetupSubtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: cTextSecondary)),
+                  )
+                else
+                  ...switch (_step) {
+                    _SetupStep.choose => _buildChoose(t),
+                    _SetupStep.neu => _buildNeu(t),
+                    _SetupStep.resume => _buildResume(t),
+                    _SetupStep.passkey => _buildPasskey(t),
+                    _SetupStep.existing => _buildExisting(t),
+                    _SetupStep.existingMore => _buildExistingMore(t),
+                    _SetupStep.nameOnly => _buildNameOnly(t),
+                    _SetupStep.meetup => _buildMeetup(t),
+                  },
               ],
-              if (_busy || _bootstrapping)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 16),
-                  child: LinearProgressIndicator(
-                    color: cOrange,
-                    backgroundColor: cBorder,
-                  ),
-                ),
-              if (_bootstrapping)
-                Padding(
-                  padding: const EdgeInsets.only(top: 48),
-                  child: Text(t.idSetupSubtitle,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: cTextSecondary)),
-                )
-              else
-                ...switch (_step) {
-                  _SetupStep.choose => _buildChoose(t),
-                  _SetupStep.neu => _buildNeu(t),
-                  _SetupStep.resume => _buildResume(t),
-                  _SetupStep.passkey => _buildPasskey(t),
-                  _SetupStep.existing => _buildExisting(t),
-                  _SetupStep.existingMore => _buildExistingMore(t),
-                  _SetupStep.nameOnly => _buildNameOnly(t),
-                  _SetupStep.meetup => _buildMeetup(t),
-                },
-            ],
+            ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
