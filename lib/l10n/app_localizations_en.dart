@@ -5173,4 +5173,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get idSetupMeetupLoadError =>
       'Could not load meetups. You can set this later in your profile.';
+
+  @override
+  String get rsInvalidUrl =>
+      'Invalid address. Expected wss://host.tld with no path.';
+
+  @override
+  String get rsRelayUnreachable =>
+      'Relay unreachable. Check the address or your internet connection.';
+
+  @override
+  String get rsRelayAlreadyAdded => 'This relay is already on the list.';
+
+  @override
+  String get rsTesting => 'Testing connection …';
+
+  @override
+  String get rsRelayAdded => 'Relay added and reachable.';
+
+  @override
+  String get rsEnabledHint =>
+      'Enabled — this does not mean the relay is reachable right now.';
+
+  @override
+  String get wotNoRelayReachable =>
+      'No relay reachable. Are you online? Details are in the diagnostics log.';
 }

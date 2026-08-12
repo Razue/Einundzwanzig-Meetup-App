@@ -50,7 +50,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'nostr_service.dart';
 import 'signing_service.dart';
 import 'badge_security.dart';
-import 'secure_key_store.dart';
 import 'mempool.dart';
 
 class RollingQRService {
@@ -424,15 +423,6 @@ class RollingQRService {
   /// Wird nicht mehr aufgerufen — alle Aufrufer wurden entfernt.
   /// Behält die Methode für Code-Kompatibilität, gibt aber
   /// ein unsigniertes Payload zurück das von verify() abgelehnt wird.
-  static Map<String, dynamic> _legacyPayload(String meetupId, int blockHeight) {
-    return {
-      'v': 1,
-      't': 'B',
-      'm': meetupId,
-      'b': blockHeight,
-      'sig': '', // Leer — wird von verify() abgelehnt
-    };
-  }
 
   // =============================================
   // NONCE VALIDIEREN (Scanner-Seite)

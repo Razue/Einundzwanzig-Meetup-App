@@ -364,11 +364,11 @@ class PortalApiService {
       if (location != null && location.isNotEmpty) 'location': location,
       if (description != null && description.isNotEmpty) 'description': description,
       if (link != null && link.isNotEmpty) 'link': link,
-      if (recurrenceType != null) 'recurrence_type': recurrenceType,
-      if (recurrenceDayOfWeek != null) 'recurrence_day_of_week': recurrenceDayOfWeek,
-      if (recurrenceDayPosition != null) 'recurrence_day_position': recurrenceDayPosition,
-      if (recurrenceInterval != null) 'recurrence_interval': recurrenceInterval,
-      if (recurrenceEndDate != null) 'recurrence_end_date': recurrenceEndDate,
+      'recurrence_type': ?recurrenceType,
+      'recurrence_day_of_week': ?recurrenceDayOfWeek,
+      'recurrence_day_position': ?recurrenceDayPosition,
+      'recurrence_interval': ?recurrenceInterval,
+      'recurrence_end_date': ?recurrenceEndDate,
     };
     return _write('POST', '$_apiBase/meetup-events', payload);
   }
@@ -390,16 +390,16 @@ class PortalApiService {
     String? recurrenceEndDate,
   }) async {
     final payload = <String, dynamic>{
-      if (meetupId != null) 'meetup_id': meetupId,
-      if (start != null) 'start': start,
-      if (location != null) 'location': location,
-      if (description != null) 'description': description,
-      if (link != null) 'link': link,
-      if (recurrenceType != null) 'recurrence_type': recurrenceType,
-      if (recurrenceDayOfWeek != null) 'recurrence_day_of_week': recurrenceDayOfWeek,
-      if (recurrenceDayPosition != null) 'recurrence_day_position': recurrenceDayPosition,
-      if (recurrenceInterval != null) 'recurrence_interval': recurrenceInterval,
-      if (recurrenceEndDate != null) 'recurrence_end_date': recurrenceEndDate,
+      'meetup_id': ?meetupId,
+      'start': ?start,
+      'location': ?location,
+      'description': ?description,
+      'link': ?link,
+      'recurrence_type': ?recurrenceType,
+      'recurrence_day_of_week': ?recurrenceDayOfWeek,
+      'recurrence_day_position': ?recurrenceDayPosition,
+      'recurrence_interval': ?recurrenceInterval,
+      'recurrence_end_date': ?recurrenceEndDate,
     };
     return _write('PATCH', '$_apiBase/meetup-events/$eventId', payload);
   }

@@ -2,13 +2,11 @@ import 'dart:ui';
 import '../services/haptic_service.dart';
 import '../widgets/shadows.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'badge_wallet.dart';
-import 'calendar_screen.dart';
 import 'events_hub_screen.dart';
 import 'meetup_verification.dart';
 import 'reputation_qr.dart';
@@ -64,8 +62,8 @@ class _AppShellState extends State<AppShell> {
           Navigator.pop(ctx);
           final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0);
           await Navigator.push<bool>(context, PageRouteBuilder(
-            pageBuilder: (_, __, ___) => MeetupVerificationScreen(meetup: d),
-            transitionsBuilder: (_, a, __, c) => SlideTransition(
+            pageBuilder: (_, _, _) => MeetupVerificationScreen(meetup: d),
+            transitionsBuilder: (_, a, _, c) => SlideTransition(
               position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
                 .animate(CurvedAnimation(parent: a, curve: Curves.easeOutCubic)), child: c)));
           // Bei Erfolg wechselt der Verification-Screen selbst direkt in die
@@ -75,8 +73,8 @@ class _AppShellState extends State<AppShell> {
         onReputation: () async {
           Navigator.pop(ctx);
           await Navigator.push(context, PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const ReputationQRScreen(),
-            transitionsBuilder: (_, a, __, c) => SlideTransition(
+            pageBuilder: (_, _, _) => const ReputationQRScreen(),
+            transitionsBuilder: (_, a, _, c) => SlideTransition(
               position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
                 .animate(CurvedAnimation(parent: a, curve: Curves.easeOutCubic)), child: c)));
         },

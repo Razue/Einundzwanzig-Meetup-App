@@ -17,6 +17,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:convert';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import '../services/app_logger.dart';
 import '../services/vouching_service.dart';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
@@ -41,7 +42,13 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
   bool _isRefreshing = false;
   bool _isPublishing = false;
   String? _myNpub;
-  String _statusMessage = '';
+
+  /// Fehler aus dem letzten Laden bzw. Abgleich — ROH gespeichert und erst
+  /// in build() uebersetzt. Frueher stand hier der fertige Text, erzeugt mit
+  /// AppLocalizations.of(context) mitten in einem catch nach einem await;
+  /// dort ist der BuildContext nicht mehr zuverlaessig gueltig.
+  Object? _loadError;
+  Object? _syncError;
 
   @override
   void initState() {
@@ -80,7 +87,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         _consensus = null;
       }
     } catch (e) {
-      _statusMessage = AppLocalizations.of(context).wotErrorLoading(e.toString());
+      _loadError = e;
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -95,9 +102,9 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       } catch (_) {}
       _consensus = await VouchingService.calculateConsensus(forceRefresh: true);
       _myVouches = await AdminRegistry.getMyVouches();
-      _statusMessage = '';
+      _syncError = null;
     } catch (e) {
-      _statusMessage = AppLocalizations.of(context).wotSyncFailed(e.toString());
+      _syncError = e;
     }
     if (mounted) setState(() => _isRefreshing = false);
   }
@@ -126,7 +133,8 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).wotRestoreFailed(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).wotRestoreFailed(
+              _shortError(AppLocalizations.of(context), e))),
               backgroundColor: Colors.red),
         );
       }
@@ -156,31 +164,90 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cRed),
             onPressed: () async {
+              // Messenger und Texte vor dem await greifen. Der Dialog wird
+              // gleich geschlossen — danach ist sein Context hinfaellig,
+              // und der mounted-Check unten meint den State, nicht ihn.
+              final messenger = ScaffoldMessenger.of(context);
+              final tr = AppLocalizations.of(context);
               Navigator.pop(context);
               setState(() => _isPublishing = true);
               try {
                 await AdminRegistry.revokeAllVouches();
                 _myVouches = await AdminRegistry.getMyVouches();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context).wotAllRevoked),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(tr.wotAllRevoked),
+                    backgroundColor: Colors.green,
+                  ),
+                );
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).wotRevocationFailed(e.toString())),
-                        backgroundColor: Colors.red),
-                  );
-                }
+                messenger.showSnackBar(
+                  SnackBar(content: Text(tr.wotRevocationFailed(_shortError(tr, e))),
+                      backgroundColor: Colors.red),
+                );
               }
               if (mounted) setState(() => _isPublishing = false);
             },
             child: Text(AppLocalizations.of(context).wotRevokeAll,
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Macht aus einem rohen Fehler eine Zeile, die man lesen kann.
+  ///
+  /// Ist kein Relay erreichbar, liefert die Nostr-Schicht eine Ausnahme mit
+  /// EINER Zeile PRO Relay — im Flugmodus also vier Bloecke voller
+  /// SocketException und "errno = 7". Das gehoert ins Diagnose-Log, nicht
+  /// in eine SnackBar.
+  String _shortError(AppLocalizations tr, Object error) {
+    final raw = error.toString();
+    AppLogger.warn('WoT', 'Relay-Fehler', error);
+    const netMarkers = [
+      'Failed host lookup',
+      'SocketException',
+      'WebSocketChannelException',
+      'keinen Relay',
+      'No address associated',
+    ];
+    if (netMarkers.any(raw.contains)) return tr.wotNoRelayReachable;
+    // Unbekannter Fehler: erste Zeile reicht, der Rest steht im Log.
+    final firstLine = raw.split('\n').first.trim();
+    return firstLine.length > 160
+        ? '${firstLine.substring(0, 160)}…'
+        : firstLine;
+  }
+
+  /// Zeigt einen Fehler aus Laden oder Abgleich. Ohne diesen Streifen
+  /// blieb ein fehlgeschlagener Relay-Abruf fuer den Nutzer unsichtbar —
+  /// die Meldung wurde erzeugt und nie angezeigt.
+  Widget _buildErrorBanner(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final String? message = _syncError != null
+        ? t.wotSyncFailed(_shortError(t, _syncError!))
+        : _loadError != null
+            ? t.wotErrorLoading(_shortError(t, _loadError!))
+            : null;
+    if (message == null) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cRed.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.error_outline_rounded, color: cRed, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(message,
+                style: const TextStyle(color: cRed, fontSize: 12, height: 1.3)),
           ),
         ],
       ),
@@ -220,12 +287,19 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: cOrange))
-          : TabBarView(
-              controller: _tabController,
+          : Column(
               children: [
-                _buildNetworkTab(),
-                _buildVouchingTab(),
-                _buildDistrustTab(),
+                _buildErrorBanner(context),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildNetworkTab(),
+                      _buildVouchingTab(),
+                      _buildDistrustTab(),
+                    ],
+                  ),
+                ),
               ],
             ),
       floatingActionButton: _tabController.index == 1
@@ -1365,10 +1439,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         title: Text(AppLocalizations.of(context).wotRevokeVouchTitle,
             style: const TextStyle(color: cRed, fontWeight: FontWeight.w700, fontSize: 16)),
         content: Text(
-          '${admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub)} ' +
-          AppLocalizations.of(context).wotRemovedFromList +
-          AppLocalizations.of(context).wotPublishUpdated +
-          AppLocalizations.of(context).wotSoNetworkKnows,
+          '${admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub)} ${AppLocalizations.of(context).wotRemovedFromList}${AppLocalizations.of(context).wotPublishUpdated}${AppLocalizations.of(context).wotSoNetworkKnows}',
           style: TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4),
         ),
         actions: [
@@ -1379,18 +1450,19 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cRed),
             onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final withdrawnText = AppLocalizations.of(context).wotVouchWithdrawn;
               await AdminRegistry.removeVouch(admin.npub);
-              if (mounted) {
-                Navigator.pop(context);
-                _myVouches = await AdminRegistry.getMyVouches();
-                setState(() {});
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(AppLocalizations.of(context).wotVouchWithdrawn),
-                    backgroundColor: Colors.orange,
-                  ),
-                );
-              }
+              navigator.pop();
+              _myVouches = await AdminRegistry.getMyVouches();
+              if (mounted) setState(() {});
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(withdrawnText),
+                  backgroundColor: Colors.orange,
+                ),
+              );
             },
             child: const Text('ENTZIEHEN', style: TextStyle(color: Colors.white)),
           ),
@@ -1493,25 +1565,26 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             style: ElevatedButton.styleFrom(backgroundColor: cPurple,
                 foregroundColor: Colors.white),
             onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final givenText = AppLocalizations.of(context).wotVouchGiven;
               try {
                 await AdminRegistry.addVouch(AdminEntry(
                   npub: npubController.text.trim(),
                   meetup: meetupController.text.trim(),
                   name: nameController.text.trim(),
                 ));
-                if (mounted) {
-                  Navigator.pop(context);
-                  _myVouches = await AdminRegistry.getMyVouches();
-                  setState(() {});
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context).wotVouchGiven),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
+                navigator.pop();
+                _myVouches = await AdminRegistry.getMyVouches();
+                if (mounted) setState(() {});
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(givenText),
+                    backgroundColor: Colors.green,
+                  ),
+                );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text('$e'), backgroundColor: Colors.red),
                 );
               }

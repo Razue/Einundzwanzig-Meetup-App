@@ -138,8 +138,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
   /// Gibt true zurück, wenn danach verbunden. Zeigt dezenten Fortschritt.
   Future<bool> _ensurePortalLogin() async {
     final t = AppLocalizations.of(context);
+    // Messenger zusammen mit den Uebersetzungen vor dem ersten await
+    // greifen — danach steht der Context nicht mehr zwingend.
+    final messenger = ScaffoldMessenger.of(context);
     if (await PortalApiService.tokenMatchesCurrentKey()) return true;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    messenger.showSnackBar(SnackBar(
         content: Text(t.portalConnecting), backgroundColor: cCard,
         duration: const Duration(seconds: 8), behavior: SnackBarBehavior.floating));
     final res = await PortalApiService.loginWithNostr();
@@ -442,7 +445,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       borderRadius: BorderRadius.circular(9),
       child: Image.network(
         url, width: 42, height: 42, fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => fallback,
+        errorBuilder: (_, _, _) => fallback,
       ),
     );
   }
@@ -575,6 +578,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark, // Dunkler Hintergrund

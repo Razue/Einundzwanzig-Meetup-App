@@ -98,7 +98,7 @@ class SatoshiDuellService {
       // or() verwenden — in Einzelfiltern (eq./neq.) wirken die Quotes
       // NICHT als Quoting und verfaelschen den Vergleich!
       final safeName = me.replaceAll('"', '');
-      final quoted = '"' + safeName + '"';
+      final quoted = '"$safeName"';
       final meEnc = Uri.encodeQueryComponent(quoted);
 
       // Call 1: MEINE Duelle (wie fetchUserGames der WebApp, ohne Arena-Scan).

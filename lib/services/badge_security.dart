@@ -164,9 +164,9 @@ class BadgeSecurity {
         }
       }
 
-      const _contentKeys = {'v', 't', 'm', 'b', 'x'};
+      const contentKeys = {'v', 't', 'm', 'b', 'x'};
       final Map<String, dynamic> content = {};
-      for (final key in _contentKeys) {
+      for (final key in contentKeys) {
         if (data.containsKey(key)) {
           content[key] = data[key];
         }
@@ -322,9 +322,13 @@ class BadgeSecurity {
     normalized['v'] = data['v'] ?? 1;
 
     final t = data['t'];
-    if (t == 'B') normalized['type'] = 'BADGE';
-    else if (t is String) normalized['type'] = t;
-    else normalized['type'] = data['type'] ?? 'BADGE';
+    if (t == 'B') {
+      normalized['type'] = 'BADGE';
+    } else if (t is String) {
+      normalized['type'] = t;
+    } else {
+      normalized['type'] = data['type'] ?? 'BADGE';
+    }
 
     final m = data['m'] as String? ?? '';
     if (m.contains('-')) {
@@ -363,8 +367,11 @@ class BadgeSecurity {
       normalized['admin_npub'] = data['admin_npub'] ?? '';
     }
 
-    if (data['s'] != null) normalized['sig'] = data['s'];
-    else if (data['sig'] != null) normalized['sig'] = data['sig'];
+    if (data['s'] != null) {
+      normalized['sig'] = data['s'];
+    } else if (data['sig'] != null) {
+      normalized['sig'] = data['sig'];
+    }
     if (data['sig_id'] != null) normalized['sig_id'] = data['sig_id'];
 
     if (data['qr_nonce'] != null) normalized['qr_nonce'] = data['qr_nonce'];

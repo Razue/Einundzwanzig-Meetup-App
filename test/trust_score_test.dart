@@ -23,7 +23,7 @@ void main() {
   // =============================================
   
   /// Erzeugt ein Test-Badge mit optionalen Parametern
-  MeetupBadge _badge({
+  MeetupBadge badge({
     String id = 'test',
     String meetupName = 'Aschaffenburg',
     DateTime? date,
@@ -64,9 +64,9 @@ void main() {
 
     test('nur v1 Legacy Badges → Score 0 (Security Audit C1)', () {
       final legacyBadges = [
-        _badge(id: '1', sigVersion: 1, sig: 'legacy1' * 18 + 'ab'),
-        _badge(id: '2', sigVersion: 1, sig: 'legacy2' * 18 + 'ab'),
-        _badge(id: '3', sigVersion: 0, sig: ''),
+        badge(id: '1', sigVersion: 1, sig: 'legacy1' * 18 + 'ab'),
+        badge(id: '2', sigVersion: 1, sig: 'legacy2' * 18 + 'ab'),
+        badge(id: '3', sigVersion: 0, sig: ''),
       ];
       final score = TrustScoreService.calculateScore(
         badges: legacyBadges,
@@ -84,8 +84,8 @@ void main() {
   group('Bootstrap-Phasen', () {
     test('Keimphase: nur 1 Signer', () {
       final badges = [
-        _badge(id: '1', signerNpub: 'npub1signer_a'),
-        _badge(id: '2', signerNpub: 'npub1signer_a'),
+        badge(id: '1', signerNpub: 'npub1signer_a'),
+        badge(id: '2', signerNpub: 'npub1signer_a'),
       ];
       final score = TrustScoreService.calculateScore(
         badges: badges,
@@ -96,9 +96,9 @@ void main() {
 
     test('Wachstum: 2-5 Signer', () {
       final badges = [
-        _badge(id: '1', signerNpub: 'npub1signer_a'),
-        _badge(id: '2', signerNpub: 'npub1signer_b'),
-        _badge(id: '3', signerNpub: 'npub1signer_c'),
+        badge(id: '1', signerNpub: 'npub1signer_a'),
+        badge(id: '2', signerNpub: 'npub1signer_b'),
+        badge(id: '3', signerNpub: 'npub1signer_c'),
       ];
       final score = TrustScoreService.calculateScore(
         badges: badges,
@@ -109,7 +109,7 @@ void main() {
 
     test('Stabil: 6+ Signer', () {
       final badges = List.generate(6, (i) => 
-        _badge(id: '$i', signerNpub: 'npub1signer_$i'));
+        badge(id: '$i', signerNpub: 'npub1signer_$i'));
       final score = TrustScoreService.calculateScore(
         badges: badges,
         firstBadgeDate: DateTime.now().subtract(const Duration(days: 90)),
@@ -124,11 +124,11 @@ void main() {
 
   group('Score-Berechnung', () {
     test('mehr Badges = höherer Score', () {
-      final few = [_badge(id: '1')];
+      final few = [badge(id: '1')];
       final many = [
-        _badge(id: '1', meetupName: 'A', signerNpub: 'npub1a'),
-        _badge(id: '2', meetupName: 'B', signerNpub: 'npub1b'),
-        _badge(id: '3', meetupName: 'C', signerNpub: 'npub1c'),
+        badge(id: '1', meetupName: 'A', signerNpub: 'npub1a'),
+        badge(id: '2', meetupName: 'B', signerNpub: 'npub1b'),
+        badge(id: '3', meetupName: 'C', signerNpub: 'npub1c'),
       ];
       
       final scoreFew = TrustScoreService.calculateScore(
@@ -142,7 +142,7 @@ void main() {
     });
 
     test('älteres Konto = höherer Maturity-Score', () {
-      final badges = [_badge(id: '1')];
+      final badges = [badge(id: '1')];
       
       final young = TrustScoreService.calculateScore(
         badges: badges,
@@ -158,12 +158,12 @@ void main() {
 
     test('verschiedene Meetups = höherer Diversity-Score', () {
       final sameMeetup = [
-        _badge(id: '1', meetupName: 'A'),
-        _badge(id: '2', meetupName: 'A'),
+        badge(id: '1', meetupName: 'A'),
+        badge(id: '2', meetupName: 'A'),
       ];
       final diverseMeetups = [
-        _badge(id: '1', meetupName: 'A', signerNpub: 'npub1a'),
-        _badge(id: '2', meetupName: 'B', signerNpub: 'npub1b'),
+        badge(id: '1', meetupName: 'A', signerNpub: 'npub1a'),
+        badge(id: '2', meetupName: 'B', signerNpub: 'npub1b'),
       ];
       
       final scoreSame = TrustScoreService.calculateScore(
@@ -178,10 +178,10 @@ void main() {
 
     test('alte Badges verlieren durch Time Decay an Wert', () {
       final recent = [
-        _badge(id: '1', date: DateTime.now().subtract(const Duration(days: 1))),
+        badge(id: '1', date: DateTime.now().subtract(const Duration(days: 1))),
       ];
       final old = [
-        _badge(id: '1', date: DateTime.now().subtract(const Duration(days: 365))),
+        badge(id: '1', date: DateTime.now().subtract(const Duration(days: 365))),
       ];
       
       final scoreRecent = TrustScoreService.calculateScore(
@@ -204,9 +204,9 @@ void main() {
       // 3 Badges am selben Tag → nur 2 zählen
       final date = DateTime.now().subtract(const Duration(days: 1));
       final badges = [
-        _badge(id: '1', date: date, meetupName: 'A'),
-        _badge(id: '2', date: date, meetupName: 'B'),
-        _badge(id: '3', date: date, meetupName: 'C'),
+        badge(id: '1', date: date, meetupName: 'A'),
+        badge(id: '2', date: date, meetupName: 'B'),
+        badge(id: '3', date: date, meetupName: 'C'),
       ];
       
       final score = TrustScoreService.calculateScore(
@@ -227,9 +227,9 @@ void main() {
     test('erfüllt Keimphase-Bedingungen', () {
       // Keimphase: 3 Badges, 2 Meetups, 1 Signer, 14 Tage, Score 5
       final badges = [
-        _badge(id: '1', meetupName: 'A', date: DateTime.now().subtract(const Duration(days: 20))),
-        _badge(id: '2', meetupName: 'B', date: DateTime.now().subtract(const Duration(days: 14))),
-        _badge(id: '3', meetupName: 'C', date: DateTime.now().subtract(const Duration(days: 7))),
+        badge(id: '1', meetupName: 'A', date: DateTime.now().subtract(const Duration(days: 20))),
+        badge(id: '2', meetupName: 'B', date: DateTime.now().subtract(const Duration(days: 14))),
+        badge(id: '3', meetupName: 'C', date: DateTime.now().subtract(const Duration(days: 7))),
       ];
       
       final score = TrustScoreService.calculateScore(
@@ -263,24 +263,24 @@ void main() {
   group('calculateBridgeScore', () {
     test('weniger als 3 Badges → 0', () {
       expect(TrustScoreService.calculateBridgeScore([
-        _badge(id: '1'),
-        _badge(id: '2'),
+        badge(id: '1'),
+        badge(id: '2'),
       ]), 0);
     });
 
     test('nur ein Meetup → 0', () {
       expect(TrustScoreService.calculateBridgeScore([
-        _badge(id: '1', meetupName: 'A'),
-        _badge(id: '2', meetupName: 'A'),
-        _badge(id: '3', meetupName: 'A'),
+        badge(id: '1', meetupName: 'A'),
+        badge(id: '2', meetupName: 'A'),
+        badge(id: '3', meetupName: 'A'),
       ]), 0);
     });
 
     test('verschiedene Meetups und Signer → positiver Score', () {
       final score = TrustScoreService.calculateBridgeScore([
-        _badge(id: '1', meetupName: 'A', signerNpub: 'npub1x'),
-        _badge(id: '2', meetupName: 'B', signerNpub: 'npub1y'),
-        _badge(id: '3', meetupName: 'C', signerNpub: 'npub1z'),
+        badge(id: '1', meetupName: 'A', signerNpub: 'npub1x'),
+        badge(id: '2', meetupName: 'B', signerNpub: 'npub1y'),
+        badge(id: '3', meetupName: 'C', signerNpub: 'npub1z'),
       ]);
       // 3 cities × 3 signers = 9
       expect(score, greaterThan(0));
@@ -294,7 +294,7 @@ void main() {
   group('detectSuspiciousPatterns', () {
     test('alle Badges von einem Signer → Warnung', () {
       final badges = List.generate(4, (i) =>
-        _badge(id: '$i', signerNpub: 'npub1single'));
+        badge(id: '$i', signerNpub: 'npub1single'));
       
       final warnings = TrustScoreService.detectSuspiciousPatterns(badges, null);
       expect(warnings, contains(contains('einem Ersteller')));
@@ -303,7 +303,7 @@ void main() {
     test('viele Badges am gleichen Tag → Warnung', () {
       final date = DateTime.now();
       final badges = List.generate(4, (i) =>
-        _badge(id: '$i', date: date, signerNpub: 'npub1_$i'));
+        badge(id: '$i', date: date, signerNpub: 'npub1_$i'));
       
       final warnings = TrustScoreService.detectSuspiciousPatterns(badges, null);
       expect(warnings, contains(contains('an einem Tag')));
@@ -311,9 +311,9 @@ void main() {
 
     test('normale Aktivität → keine Warnung', () {
       final badges = [
-        _badge(id: '1', signerNpub: 'npub1a', 
+        badge(id: '1', signerNpub: 'npub1a', 
                date: DateTime.now().subtract(const Duration(days: 30))),
-        _badge(id: '2', signerNpub: 'npub1b',
+        badge(id: '2', signerNpub: 'npub1b',
                date: DateTime.now().subtract(const Duration(days: 14))),
       ];
       final warnings = TrustScoreService.detectSuspiciousPatterns(badges, null);
@@ -331,7 +331,7 @@ void main() {
 
   group('TrustScore — Level & Display', () {
     test('level Zuordnung korrekt', () {
-      TrustScore _makeScore(double total) => TrustScore(
+      TrustScore makeScore(double total) => TrustScore(
         totalScore: total, maturityScore: 0, diversityScore: 0,
         qualityScore: 0, activityScore: 0, totalBadges: 0,
         uniqueMeetups: 0, uniqueSigners: 0, uniqueCities: 0,
@@ -342,15 +342,15 @@ void main() {
         progress: {},
       );
 
-      expect(_makeScore(0).level, 'NEU');
-      expect(_makeScore(3).level, 'STARTER');
-      expect(_makeScore(10).level, 'AKTIV');
-      expect(_makeScore(20).level, 'ETABLIERT');
-      expect(_makeScore(40).level, 'VETERAN');
+      expect(makeScore(0).level, 'NEU');
+      expect(makeScore(3).level, 'STARTER');
+      expect(makeScore(10).level, 'AKTIV');
+      expect(makeScore(20).level, 'ETABLIERT');
+      expect(makeScore(40).level, 'VETERAN');
     });
 
     test('displayScore: 0-10 Skala', () {
-      TrustScore _makeScore(double total) => TrustScore(
+      TrustScore makeScore(double total) => TrustScore(
         totalScore: total, maturityScore: 0, diversityScore: 0,
         qualityScore: 0, activityScore: 0, totalBadges: 0,
         uniqueMeetups: 0, uniqueSigners: 0, uniqueCities: 0,
@@ -361,14 +361,14 @@ void main() {
         progress: {},
       );
 
-      expect(_makeScore(0).displayScore, 0.0);
-      expect(_makeScore(25).displayScore, 5.0);
-      expect(_makeScore(50).displayScore, 10.0);
-      expect(_makeScore(100).displayScore, 10.0); // Clamped
+      expect(makeScore(0).displayScore, 0.0);
+      expect(makeScore(25).displayScore, 5.0);
+      expect(makeScore(50).displayScore, 10.0);
+      expect(makeScore(100).displayScore, 10.0); // Clamped
     });
 
     test('promotionProgress: Durchschnitt', () {
-      TrustScore _makeWithProgress(Map<String, PromotionProgress> progress) => TrustScore(
+      TrustScore makeWithProgress(Map<String, PromotionProgress> progress) => TrustScore(
         totalScore: 0, maturityScore: 0, diversityScore: 0,
         qualityScore: 0, activityScore: 0, totalBadges: 0,
         uniqueMeetups: 0, uniqueSigners: 0, uniqueCities: 0,
@@ -379,7 +379,7 @@ void main() {
         progress: progress,
       );
 
-      final half = _makeWithProgress({
+      final half = makeWithProgress({
         'a': PromotionProgress(label: 'A', current: 5, required: 10),
         'b': PromotionProgress(label: 'B', current: 10, required: 10),
       });

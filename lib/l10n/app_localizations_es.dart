@@ -5204,4 +5204,29 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get idSetupMeetupLoadError =>
       'No se pudieron cargar los meetups. Puedes hacerlo después en el perfil.';
+
+  @override
+  String get rsInvalidUrl =>
+      'Dirección no válida. Se espera wss://host.tld sin ruta.';
+
+  @override
+  String get rsRelayUnreachable =>
+      'Relé inaccesible. Comprueba la dirección o tu conexión a internet.';
+
+  @override
+  String get rsRelayAlreadyAdded => 'Este relé ya está en la lista.';
+
+  @override
+  String get rsTesting => 'Comprobando la conexión …';
+
+  @override
+  String get rsRelayAdded => 'Relé añadido y accesible.';
+
+  @override
+  String get rsEnabledHint =>
+      'Activado: no significa que el relé esté accesible en este momento.';
+
+  @override
+  String get wotNoRelayReachable =>
+      'Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico.';
 }

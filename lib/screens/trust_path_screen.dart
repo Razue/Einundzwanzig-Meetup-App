@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/haptic_service.dart';
-import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';

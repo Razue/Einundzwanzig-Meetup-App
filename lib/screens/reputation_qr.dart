@@ -7,10 +7,8 @@
 
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
@@ -20,7 +18,6 @@ import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
 import '../services/badge_security.dart';
-import '../services/nostr_service.dart';
 import '../services/trust_score_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/platform_proof_service.dart';
@@ -435,61 +432,6 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     );
   }
 
-  Widget _buildTrustHeader() {
-    final score = _trustScore!;
-    final color = levelColor(score.level);
-    final icon = levelIcon(score.level);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: cCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        children: [
-          // Level Icon (kleiner)
-          Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 12),
-          // Level + Stats
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  score.level,
-                  style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.w800, letterSpacing: 1),
-                ),
-                Text(
-                  "${score.totalBadges} Badges · ${score.uniqueMeetups} Meetups · ${score.uniqueSigners} Signer",
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 10),
-                ),
-              ],
-            ),
-          ),
-          // Score Zahl (rechts)
-          Text(
-            score.totalScore.toStringAsFixed(1),
-            style: TextStyle(
-              color: color,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'monospace',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildQRCard(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -738,47 +680,6 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
     ]);
   }
 
-  Widget _buildActionTile({
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: cCard,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withValues(alpha: 0.2)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 40, height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(height: 10),
-              Text(label,
-                style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-              const SizedBox(height: 2),
-              Text(subtitle,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 10)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 

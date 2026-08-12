@@ -31,12 +31,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:nostr/nostr.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'admin_registry.dart';
 import 'app_logger.dart';
 import 'nostr_service.dart';
 import 'relay_config.dart';
-import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'relay_socket.dart';
 
@@ -184,9 +182,14 @@ class VouchingService {
   static const String _adminDTag = 'einundzwanzig-admins';
   static const String _distrustDTag = 'einundzwanzig-distrust';
 
-  // Cache Keys
+  // Cache Keys — reserviert. Der Zwischenspeicher ist nie gebaut worden;
+  // die Namen stehen hier, damit eine spaetere Umsetzung dieselben
+  // SharedPreferences-Schluessel benutzt und keine Altdaten verwaisen.
+  // ignore: unused_field
   static const String _consensusCacheKey = 'vouching_consensus_cache';
+  // ignore: unused_field
   static const String _consensusTimestampKey = 'vouching_consensus_ts';
+  // ignore: unused_field
   static const String _distrustCacheKey = 'distrust_reports_cache';
 
   // Timeouts
@@ -779,8 +782,11 @@ class VouchingService {
     for (final admin in consensus.allAdmins) {
       if (admin.vouchers.contains(npub)) {
         totalCount++;
-        if (admin.isSuspended) suspendedCount++;
-        else if (admin.distrustCount > 0) warnedCount++;
+        if (admin.isSuspended) {
+          suspendedCount++;
+        } else if (admin.distrustCount > 0) {
+          warnedCount++;
+        }
       }
     }
 

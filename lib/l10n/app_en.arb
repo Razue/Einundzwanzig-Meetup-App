@@ -2422,5 +2422,12 @@
   "idSetupMeetupContinue": "Continue",
   "idSetupMeetupLater": "Later",
   "idSetupMeetupLoading": "Loading meetups…",
-  "idSetupMeetupLoadError": "Could not load meetups. You can set this later in your profile."
+  "idSetupMeetupLoadError": "Could not load meetups. You can set this later in your profile.",
+  "rsInvalidUrl": "Invalid address. Expected wss://host.tld with no path.",
+  "rsRelayUnreachable": "Relay unreachable. Check the address or your internet connection.",
+  "rsRelayAlreadyAdded": "This relay is already on the list.",
+  "rsTesting": "Testing connection …",
+  "rsRelayAdded": "Relay added and reachable.",
+  "rsEnabledHint": "Enabled — this does not mean the relay is reachable right now.",
+  "wotNoRelayReachable": "No relay reachable. Are you online? Details are in the diagnostics log."
 }

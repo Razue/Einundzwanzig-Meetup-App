@@ -42,6 +42,10 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
     }
   }
 
+  /// Laeuft gerade ein Verbindungstest? Sperrt den Knopf und zeigt einen
+  /// Ladekringel, damit niemand mehrfach tippt.
+  bool _isTestingRelay = false;
+
   void _toggleDefault(String url, bool enabled) async {
     await RelayConfig.setDefaultRelayEnabled(url, enabled);
     _load();
@@ -52,7 +56,8 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
         backgroundColor: cCard,
         title: Text(AppLocalizations.of(context).rsAddRelay, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: TextField(
@@ -73,23 +78,74 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
             child: Text(AppLocalizations.of(context).apCancel, style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-            onPressed: () async {
-              try {
-                await RelayConfig.addCustomRelay(controller.text);
-                Navigator.pop(context);
-                _load();
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$e'), backgroundColor: Colors.red),
-                );
-              }
-            },
+            onPressed: _isTestingRelay
+                ? null
+                : () async {
+                    // Alles vor dem await greifen: Der Dialog-Context ist
+                    // danach nicht mehr verlaesslich, und der Messenger des
+                    // Dialogs waere ohnehin der falsche Anker fuer eine
+                    // Meldung nach dem Pop.
+                    final navigator = Navigator.of(context);
+                    final messenger = ScaffoldMessenger.of(context);
+                    final tr = AppLocalizations.of(context);
+
+                    // Der Verbindungsversuch dauert bis zu fuenf Sekunden —
+                    // ohne Rueckmeldung wirkt der Knopf tot.
+                    setDialogState(() => _isTestingRelay = true);
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(tr.rsTesting),
+                        duration: const Duration(seconds: 6),
+                        backgroundColor: cCard,
+                      ),
+                    );
+
+                    final result =
+                        await RelayConfig.addCustomRelay(controller.text);
+                    _isTestingRelay = false;
+                    messenger.hideCurrentSnackBar();
+
+                    switch (result) {
+                      case RelayAddResult.added:
+                        navigator.pop();
+                        _load();
+                        messenger.showSnackBar(SnackBar(
+                            content: Text(tr.rsRelayAdded),
+                            backgroundColor: Colors.green));
+                      case RelayAddResult.invalidUrl:
+                        setDialogState(() {});
+                        messenger.showSnackBar(SnackBar(
+                            content: Text(tr.rsInvalidUrl),
+                            backgroundColor: Colors.red));
+                      case RelayAddResult.unreachable:
+                        setDialogState(() {});
+                        messenger.showSnackBar(SnackBar(
+                            content: Text(tr.rsRelayUnreachable),
+                            backgroundColor: Colors.red));
+                      case RelayAddResult.alreadyPresent:
+                        navigator.pop();
+                        messenger.showSnackBar(SnackBar(
+                            content: Text(tr.rsRelayAlreadyAdded),
+                            backgroundColor: cCard));
+                    }
+                  },
             style: ElevatedButton.styleFrom(backgroundColor: cOrange),
-            child: Text(AppLocalizations.of(context).rsAdd, style: const TextStyle(color: Colors.black)),
+            child: _isTestingRelay
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.black))
+                : Text(AppLocalizations.of(context).rsAdd,
+                    style: const TextStyle(color: Colors.black)),
           ),
         ],
+        ),
       ),
     );
+    // Zustand zuruecksetzen, falls der Dialog waehrend eines Tests
+    // weggewischt wurde.
+    _isTestingRelay = false;
   }
 
   void _removeCustomRelay(String url) async {
@@ -254,13 +310,17 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
         decoration: BoxDecoration(
           color: cCard,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: enabled ? Colors.green.withValues(alpha: 0.2) : Colors.white10),
+          border: Border.all(color: enabled ? cBorder : Colors.white10),
         ),
         child: Row(
           children: [
+            // Neutrales Symbol statt gruenem Haken: Es zeigt an, dass das
+            // Relay EINGESCHALTET ist — nicht, dass es gerade antwortet.
+            // Gruen mit Wolkensymbol wurde als "erreichbar" gelesen, und
+            // ein Tippfehler stand dann mit Haken in der Liste.
             Icon(
-              enabled ? Icons.cloud_done : Icons.cloud_off,
-              color: enabled ? Colors.green : Colors.grey.shade700,
+              enabled ? Icons.cloud_queue : Icons.cloud_off,
+              color: enabled ? cTextSecondary : Colors.grey.shade700,
               size: 18,
             ),
             const SizedBox(width: 12),
@@ -279,7 +339,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
               Switch(
                 value: enabled,
                 onChanged: onToggle,
-                activeColor: Colors.green,
+                activeThumbColor: Colors.green,
               ),
             if (!isDefault && onRemove != null)
               IconButton(

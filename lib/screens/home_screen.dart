@@ -32,14 +32,11 @@ import '../services/meetup_service.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/trust_score_service.dart';
 import '../services/admin_registry.dart';
-import '../services/nostr_service.dart';
 import '../services/badge_claim_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/nostr_profile_service.dart';
-import 'meetup_verification.dart';
 import 'meetup_selection.dart';
-import 'badge_details.dart';
 import 'profile_edit.dart';
 import 'identity_setup_screen.dart';
 import 'intro.dart';
@@ -68,14 +65,12 @@ import '../services/widget_service.dart';
 import '../services/signing_service.dart';
 import '../services/satoshiduell_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:home_widget/home_widget.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
 import '../services/promotion_claim_service.dart';
 import '../services/secure_key_store.dart';
 import '../services/local_key_vault.dart';
-import '../services/admin_status_verifier.dart';
 import '../services/platform_proof_service.dart';
 import '../services/humanity_proof_service.dart';
 import '../services/nip05_service.dart';
@@ -173,7 +168,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   List<String> _tileOrder = [];
   Set<String> _hiddenTiles = {};
   // Pflicht-Kacheln (nicht löschbar)
-  static const _requiredTiles = {'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
   static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
@@ -580,7 +574,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Stadt matchte sonst den Favoriten "Frankfurt" — dessen Karte
         // zeigte dann den fremden Termin (dein 4-statt-6-Tage-Fall).
         return terms.any((term) =>
-            RegExp('\\b' + RegExp.escape(term) + '\\b').hasMatch(hay));
+            RegExp('\\b${RegExp.escape(term)}\\b').hasMatch(hay));
       }
 
       // KALENDERTAG-KULANZ: ein Meetup bleibt den ganzen Tag "naechstes".
@@ -893,6 +887,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (choice == null || choice == 'cancel') return;
 
     if (choice == 'backup') {
+      // Der Auswahldialog oben war ein await — erst pruefen, dann den
+      // Context weiterreichen.
+      if (!mounted) return;
       // Backup erstellen (gleiche Logik wie der manuelle Button)
       final ok = await BackupService.createBackup(context);
       if (!ok) return; // Backup abgebrochen/fehlgeschlagen -> NICHT zurücksetzen
@@ -945,7 +942,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false);
     }
   }
-  void _scanAnyMeetup() async { final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0); await Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupVerificationScreen(meetup: d))); _loadBadges(); _calculateTrustScore(); }
   void _selectHomeMeetup() async {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen()));
     // WICHTIG: erst den User FERTIG laden (neue Favoritenliste!), DANN die
@@ -1227,7 +1223,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // pinned=false -> verfuegbare Kacheln (bisher "ausgeblendet"), grau
     final visibleTiles = _tileOrder
       .map((id) => _tileDefs.where((t) => t.id == id).firstOrNull)
-      .where((t) => t != null && t.visible() && (_hiddenTiles.contains(t!.id) != pinned))
+      .where((t) => t != null && t.visible() && (_hiddenTiles.contains(t.id) != pinned))
       .cast<_TileDef>()
       .where((t) => !excludeHomeMeetup || t.id != 'home_meetup')
       .toList();
@@ -1311,9 +1307,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                       ? NetworkImage(_localProfilePic!)
                       : FileImage(File(_localProfilePic!)),
                   fit: BoxFit.cover, width: 40, height: 40,
-                  errorBuilder: (_, __, ___) => _avatarFallback())
+                  errorBuilder: (_, _, _) => _avatarFallback())
               : _profilePicUrl != null
-                ? Image.network(_profilePicUrl!, fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, __, ___) => _avatarFallback())
+                ? Image.network(_profilePicUrl!, fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, _, _) => _avatarFallback())
                 : _avatarFallback(),
           ),
         ),
@@ -1521,24 +1517,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     );
   }
 
-  Widget _buildCountdownTile() {
-    if (_countdownLoading) return _tile(accentColor: cCyan, child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Icon(Icons.hourglass_top_rounded, color: cCyan, size: 22), const Spacer(), const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: cCyan)), const SizedBox(height: 8), const Text('Lade...', style: TextStyle(color: cTextTertiary, fontSize: 11))]));
-    if (_nextHomeMeetup != null) {
-      final days = _daysUntil(_nextHomeMeetup!.startTime);
-      return _tile(accentColor: cCyan, opacity: 0.08, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _user.homeMeetupId))),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Icon(Icons.event_available_rounded, color: cCyan, size: 22), const Spacer(),
-          days <= 0 ? const Text('Heute!', style: TextStyle(color: cCyan, fontSize: 26, fontWeight: FontWeight.w900, height: 1))
-            : Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Text('$days', style: TextStyle(color: cText, fontSize: 32, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)), const SizedBox(width: 4),
-              Padding(padding: const EdgeInsets.only(bottom: 2), child: Text(days == 1 ? 'Tag' : 'Tage', style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)))]),
-          const SizedBox(height: 4), const Text('Nächstes Meetup', style: TextStyle(color: cText, fontSize: 11))]));
-    }
-    return _tile(accentColor: const Color(0xFF606068), opacity: 0.04, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 22), const Spacer(),
-        Text('--', style: TextStyle(color: cText, fontSize: 28, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)), const SizedBox(height: 4),
-        Text(_user.homeMeetupId.isNotEmpty ? 'Kein Termin in Sicht.\nWird Zeit, das zu ändern!' : 'Erst Home Meetup\nwählen!', style: const TextStyle(color: cTextSecondary, fontSize: 10, height: 1.3))]));
-  }
 
   /// MEETUP-WAPPEN im "Cover-Flow"-Stil (iTunes): quadratisches Wappen,
   /// linke Kante fest, kippt perspektivisch nach rechts hinten und blendet
@@ -1574,7 +1552,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                errorBuilder: (_, _, _) => const SizedBox.shrink()),
           ),
         ),
       ),
@@ -1771,7 +1749,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   }
 
-  Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
   /// WERT-KACHEL: kleines Etikett oben, grosser Wert darunter, Zusatz klein.
   ///
   /// Der Unterschied zur bisherigen Bauform ist inhaltlich, nicht kosmetisch:
@@ -1809,7 +1786,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     color: accent, fontSize: 12, letterSpacing: 1.1, fontWeight: FontWeight.w800)),
           ),
         ),
-        if (trailing != null) trailing,
+        ?trailing,
       ]),
       const SizedBox(height: 7),
       Text(value,
@@ -2046,7 +2023,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     watermark: Icons.graphic_eq_rounded,
     child: ValueListenableBuilder<int?>(
       valueListenable: PlebrapAudio.index,
-      builder: (_, idx, __) {
+      builder: (_, idx, _) {
         final song = idx != null ? kPlebSongs[idx] : null;
         return Row(children: [
           Expanded(child: _heroContent(
@@ -2063,7 +2040,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           // Play/Pause — Spinner waehrend des Ladens
           ValueListenableBuilder<bool>(
             valueListenable: PlebrapAudio.loading,
-            builder: (_, busy, __) => StreamBuilder<PlayerState>(
+            builder: (_, busy, _) => StreamBuilder<PlayerState>(
               stream: PlebrapAudio.player.playerStateStream,
               builder: (_, snap) {
                 final playing = snap.data?.playing ?? false;
@@ -2247,7 +2224,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     ),
   );
 
-  Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, __) => GestureDetector(
+  Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, _) => GestureDetector(
     onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const RollingQRScreen())); _checkActiveSession(); },
     child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cGreen.withValues(alpha: 0.25), width: 0.5)),
     child: Row(children: [Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withValues(alpha: 0.5 + _pulseController.value * 0.5), boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.3 * _pulseController.value), blurRadius: 8)])),
@@ -2263,6 +2240,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // BOTTOM SHEETS (Help, Settings, Score Info) — wie in v4.2
   // Hier nur gekürzt, identische Logik
   // ============================================================
+  // Erklaer-Sheet ohne Einstiegspunkt; Inhalt bleibt erhalten, bis wieder
+  // ein Knopf darauf zeigt.
+  // ignore: unused_element
   void _showHelpSheet() { showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))), builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.5, expand: false, builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
     Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
     const Text("SO FUNKTIONIERT'S", style: TextStyle(color: cOrange, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 20),
@@ -2364,7 +2344,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                       // Sprache
                       ValueListenableBuilder<Locale?>(
                         valueListenable: LocaleController.locale,
-                        builder: (_, current, __) => _sRowCustom(
+                        builder: (_, current, _) => _sRowCustom(
                           Icons.language_rounded, cGreen,
                           AppLocalizations.of(context).settingsLanguageTitle,
                           '${_flagFor(current)}  ${LocaleController.displayName(current)}',
@@ -2378,7 +2358,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         Icons.vibration_rounded, cGreen,
                         AppLocalizations.of(context).settingsHaptic,
                         haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff,
-                        trailing: Switch(value: haptic, activeColor: cOrange,
+                        trailing: Switch(value: haptic, activeThumbColor: cOrange,
                           onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
                       ),
                       _sDivider(),
@@ -2470,7 +2450,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
             ]),
           ),
-          if (trailing != null) trailing,
+          ?trailing,
         ]),
       ),
     );
@@ -2496,7 +2476,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       context: context,
       builder: (dialogCtx) => ValueListenableBuilder<Locale?>(
         valueListenable: LocaleController.locale,
-        builder: (_, current, __) => Dialog(
+        builder: (_, current, _) => Dialog(
           backgroundColor: cCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -2544,6 +2524,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
 
+  // Erklaerung des Trust Score, derzeit ohne Einstiegspunkt.
+  // Siehe _showHelpSheet.
+  // ignore: unused_element
   void _showScoreInfoSheet() {
     final score = _trustScore; final idCount = _platformProofCount + (_humanityVerified ? 1 : 0) + (_nip05Verified ? 1 : 0);
     showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -2652,20 +2635,6 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
     }
   }
 
-  Color _colorFor(String id) {
-    switch (id) {
-      case 'trust_score': return Colors.amber;
-      case 'home_meetup': return const Color(0xFFF7931A);
-      case 'reputation': return Colors.amber;
-      case 'community': return const Color(0xFF00B4CF);
-      case 'events': return const Color(0xFF8090A0);
-      case 'shoutout': return const Color(0xFFF7931A);
-      case 'podcast': return const Color(0xFFA915FF);
-      case 'organisator': return const Color(0xFFA915FF);
-      case 'wot_dashboard': return const Color(0xFF00B4CF);
-      default: return const Color(0xFF9A9AA0);
-    }
-  }
 
   void _hide(String id) => setState(() => _hidden.add(id));
   void _show(String id) => setState(() => _hidden.remove(id));
@@ -2716,9 +2685,13 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: visibleTiles.length,
-                onReorder: (oldI, newI) {
+                // onReorderItem statt onReorder: Der neue Rueckruf rechnet den
+                // newIndex bereits um das entnommene Element zurueck. Die
+                // frueher noetige Korrektur "if (newI > oldI) newI--;" faellt
+                // deshalb ersatzlos weg — bliebe sie stehen, saesse jede
+                // Kachel nach dem Verschieben eine Position zu weit oben.
+                onReorderItem: (oldI, newI) {
                   setState(() {
-                    if (newI > oldI) newI--;
                     final oldOrderIdx = _order.indexOf(visibleTiles[oldI]);
                     final newOrderIdx = _order.indexOf(visibleTiles[newI]);
                     final item = _order.removeAt(oldOrderIdx);
@@ -2773,7 +2746,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
           ? const Icon(Icons.lock_outline_rounded, color: cTextTertiary, size: 13)
           : Switch(
               value: true,
-              activeColor: cOrange,
+              activeThumbColor: cOrange,
               onChanged: (_) => _hide(id),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -2791,7 +2764,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
       Expanded(child: Text(_labelFor(id), style: const TextStyle(color: cTextTertiary, fontSize: 13, fontWeight: FontWeight.w500))),
       Switch(
         value: false,
-        activeColor: cOrange,
+        activeThumbColor: cOrange,
         onChanged: (_) => _show(id),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),

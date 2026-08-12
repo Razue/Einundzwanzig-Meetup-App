@@ -115,6 +115,12 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
   // =============================================
 
   void _writeTag() async {
+    // Uebersetzungen ganz am Anfang greifen, VOR dem ersten await. Der
+    // onDiscovered-Rueckruf weiter unten feuert erst, wenn der Nutzer den
+    // Tag anhaelt — beliebig lange spaeter und womoeglich, nachdem der
+    // Bildschirm schon verlassen wurde.
+    final tr = AppLocalizations.of(context);
+
     if (_homeMeetup == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context).nwSelectHomeMeetup), backgroundColor: Colors.red),
@@ -223,27 +229,27 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
               var formatable = NdefFormatableAndroid.from(tag);
               if (formatable != null) {
                 try {
-                  setState(() => _statusText = AppLocalizations.of(context).writerFormatting);
+                  setState(() => _statusText = tr.writerFormatting);
                   await formatable.format(message);
                   await NfcManager.instance.stopSession();
                   _handleSuccessInUI(jsonData.length);
                   return;
                 } catch (e) {
                   await NfcManager.instance.stopSession();
-                  _handleErrorInUI(AppLocalizations.of(context).writerFormatFailed);
+                  _handleErrorInUI(tr.writerFormatFailed);
                   _isProcessingTag = false;
                   return;
                 }
               }
               await NfcManager.instance.stopSession();
-              _handleErrorInUI(AppLocalizations.of(context).writerNoNdef);
+              _handleErrorInUI(tr.writerNoNdef);
               _isProcessingTag = false;
               return;
             }
 
             if (!ndef.isWritable) {
               await NfcManager.instance.stopSession();
-              _handleErrorInUI(AppLocalizations.of(context).writerTagReadOnly);
+              _handleErrorInUI(tr.writerTagReadOnly);
               _isProcessingTag = false;
               return;
             }
@@ -253,8 +259,8 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
             if (actualSize > maxSize) {
               await NfcManager.instance.stopSession();
               _handleErrorInUI(
-                AppLocalizations.of(context).writerTagTooSmall(actualSize, maxSize) +
-                AppLocalizations.of(context).writerUseNtag215
+                tr.writerTagTooSmall(actualSize, maxSize) +
+                tr.writerUseNtag215
               );
               _isProcessingTag = false;
               return;
@@ -269,9 +275,9 @@ class _NFCWriterScreenState extends State<NFCWriterScreen> with SingleTickerProv
             await NfcManager.instance.stopSession();
             final errorMsg = e.toString();
             if (errorMsg.contains('IOException')) {
-              _handleErrorInUI(AppLocalizations.of(context).writerTagRemovedEarly);
+              _handleErrorInUI(tr.writerTagRemovedEarly);
             } else if (errorMsg.contains('TagLost')) {
-              _handleErrorInUI(AppLocalizations.of(context).writerTagLost);
+              _handleErrorInUI(tr.writerTagLost);
             } else {
               _handleErrorInUI(errorMsg);
             }

@@ -5221,4 +5221,29 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get idSetupMeetupLoadError =>
       'Meetups konnten nicht geladen werden. Später im Profil nachholen.';
+
+  @override
+  String get rsInvalidUrl =>
+      'Ungültige Adresse. Erwartet wird wss://host.tld ohne Pfad.';
+
+  @override
+  String get rsRelayUnreachable =>
+      'Relay nicht erreichbar. Adresse prüfen oder Internetverbindung kontrollieren.';
+
+  @override
+  String get rsRelayAlreadyAdded => 'Dieses Relay ist bereits eingetragen.';
+
+  @override
+  String get rsTesting => 'Verbindung wird geprüft …';
+
+  @override
+  String get rsRelayAdded => 'Relay hinzugefügt und erreichbar.';
+
+  @override
+  String get rsEnabledHint =>
+      'Eingeschaltet — bedeutet nicht, dass das Relay gerade erreichbar ist.';
+
+  @override
+  String get wotNoRelayReachable =>
+      'Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.';
 }

@@ -2422,5 +2422,12 @@
   "idSetupMeetupContinue": "Continuar",
   "idSetupMeetupLater": "Más tarde",
   "idSetupMeetupLoading": "Cargando meetups…",
-  "idSetupMeetupLoadError": "No se pudieron cargar los meetups. Puedes hacerlo después en el perfil."
+  "idSetupMeetupLoadError": "No se pudieron cargar los meetups. Puedes hacerlo después en el perfil.",
+  "rsInvalidUrl": "Dirección no válida. Se espera wss://host.tld sin ruta.",
+  "rsRelayUnreachable": "Relé inaccesible. Comprueba la dirección o tu conexión a internet.",
+  "rsRelayAlreadyAdded": "Este relé ya está en la lista.",
+  "rsTesting": "Comprobando la conexión …",
+  "rsRelayAdded": "Relé añadido y accesible.",
+  "rsEnabledHint": "Activado: no significa que el relé esté accesible en este momento.",
+  "wotNoRelayReachable": "Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico."
 }

@@ -19,7 +19,7 @@ const String kNewsFeedUrl =
 const String kNewsWebsiteUrl =
     'https://media.einundzwanzig.space/s/einundzwanzig-news';
 
-/// Ein einzelner Artikel (aus einem RSS <item>).
+/// Ein einzelner Artikel (aus einem RSS `<item>`).
 class NewsArticle {
   final String id;
   final String pubkey;      // Autor-Name (RSS: <dc:creator>/<author>)
@@ -156,7 +156,7 @@ class NewsService {
 
   /// Holt den VOLLEN Artikeltext (Markdown) zu einem Feed-Artikel aus dem
   /// zugehörigen Nostr-Longform-Event (kind 30023). Die RSS-guid hat das
-  /// Format "30023:<pubkey>:<d-identifier>". Damit fragen wir das
+  /// Format "30023:`<pubkey>`:`<d-identifier>`". Damit fragen wir das
   /// adressierbare Event gezielt über mehrere Relays ab und nehmen das erste
   /// Ergebnis. Gibt den Markdown-Content zurück, oder null bei Misserfolg.
   static Future<String?> fetchArticleContent(String guid) async {
@@ -227,7 +227,7 @@ class NewsService {
     return completer.future;
   }
 
-  /// Parst RSS 2.0 <item>-Elemente. Bewusst tolerant (RegExp statt XML-Lib),
+  /// Parst RSS 2.0 `<item>`-Elemente. Bewusst tolerant (RegExp statt XML-Lib),
   /// damit keine zusätzliche Abhängigkeit nötig ist.
   static List<NewsArticle> _parseRss(String xml) {
     final items = <NewsArticle>[];
