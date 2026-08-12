@@ -580,7 +580,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Stadt matchte sonst den Favoriten "Frankfurt" — dessen Karte
         // zeigte dann den fremden Termin (dein 4-statt-6-Tage-Fall).
         return terms.any((term) =>
-            RegExp('\\b' + RegExp.escape(term) + '\\b').hasMatch(hay));
+            RegExp('\\b${RegExp.escape(term)}\\b').hasMatch(hay));
       }
 
       // KALENDERTAG-KULANZ: ein Meetup bleibt den ganzen Tag "naechstes".
@@ -1227,7 +1227,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // pinned=false -> verfuegbare Kacheln (bisher "ausgeblendet"), grau
     final visibleTiles = _tileOrder
       .map((id) => _tileDefs.where((t) => t.id == id).firstOrNull)
-      .where((t) => t != null && t.visible() && (_hiddenTiles.contains(t!.id) != pinned))
+      .where((t) => t != null && t.visible() && (_hiddenTiles.contains(t.id) != pinned))
       .cast<_TileDef>()
       .where((t) => !excludeHomeMeetup || t.id != 'home_meetup')
       .toList();
@@ -1311,9 +1311,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                       ? NetworkImage(_localProfilePic!)
                       : FileImage(File(_localProfilePic!)),
                   fit: BoxFit.cover, width: 40, height: 40,
-                  errorBuilder: (_, __, ___) => _avatarFallback())
+                  errorBuilder: (_, _, _) => _avatarFallback())
               : _profilePicUrl != null
-                ? Image.network(_profilePicUrl!, fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, __, ___) => _avatarFallback())
+                ? Image.network(_profilePicUrl!, fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, _, _) => _avatarFallback())
                 : _avatarFallback(),
           ),
         ),
@@ -1574,7 +1574,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                errorBuilder: (_, _, _) => const SizedBox.shrink()),
           ),
         ),
       ),
@@ -1809,7 +1809,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     color: accent, fontSize: 12, letterSpacing: 1.1, fontWeight: FontWeight.w800)),
           ),
         ),
-        if (trailing != null) trailing,
+        ?trailing,
       ]),
       const SizedBox(height: 7),
       Text(value,
@@ -2046,7 +2046,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     watermark: Icons.graphic_eq_rounded,
     child: ValueListenableBuilder<int?>(
       valueListenable: PlebrapAudio.index,
-      builder: (_, idx, __) {
+      builder: (_, idx, _) {
         final song = idx != null ? kPlebSongs[idx] : null;
         return Row(children: [
           Expanded(child: _heroContent(
@@ -2063,7 +2063,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           // Play/Pause — Spinner waehrend des Ladens
           ValueListenableBuilder<bool>(
             valueListenable: PlebrapAudio.loading,
-            builder: (_, busy, __) => StreamBuilder<PlayerState>(
+            builder: (_, busy, _) => StreamBuilder<PlayerState>(
               stream: PlebrapAudio.player.playerStateStream,
               builder: (_, snap) {
                 final playing = snap.data?.playing ?? false;
@@ -2247,7 +2247,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     ),
   );
 
-  Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, __) => GestureDetector(
+  Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, _) => GestureDetector(
     onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const RollingQRScreen())); _checkActiveSession(); },
     child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cGreen.withValues(alpha: 0.25), width: 0.5)),
     child: Row(children: [Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withValues(alpha: 0.5 + _pulseController.value * 0.5), boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.3 * _pulseController.value), blurRadius: 8)])),
@@ -2364,7 +2364,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                       // Sprache
                       ValueListenableBuilder<Locale?>(
                         valueListenable: LocaleController.locale,
-                        builder: (_, current, __) => _sRowCustom(
+                        builder: (_, current, _) => _sRowCustom(
                           Icons.language_rounded, cGreen,
                           AppLocalizations.of(context).settingsLanguageTitle,
                           '${_flagFor(current)}  ${LocaleController.displayName(current)}',
@@ -2378,7 +2378,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         Icons.vibration_rounded, cGreen,
                         AppLocalizations.of(context).settingsHaptic,
                         haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff,
-                        trailing: Switch(value: haptic, activeColor: cOrange,
+                        trailing: Switch(value: haptic, activeThumbColor: cOrange,
                           onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
                       ),
                       _sDivider(),
@@ -2470,7 +2470,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
             ]),
           ),
-          if (trailing != null) trailing,
+          ?trailing,
         ]),
       ),
     );
@@ -2496,7 +2496,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       context: context,
       builder: (dialogCtx) => ValueListenableBuilder<Locale?>(
         valueListenable: LocaleController.locale,
-        builder: (_, current, __) => Dialog(
+        builder: (_, current, _) => Dialog(
           backgroundColor: cCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -2773,7 +2773,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
           ? const Icon(Icons.lock_outline_rounded, color: cTextTertiary, size: 13)
           : Switch(
               value: true,
-              activeColor: cOrange,
+              activeThumbColor: cOrange,
               onChanged: (_) => _hide(id),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -2791,7 +2791,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
       Expanded(child: Text(_labelFor(id), style: const TextStyle(color: cTextTertiary, fontSize: 13, fontWeight: FontWeight.w500))),
       Switch(
         value: false,
-        activeColor: cOrange,
+        activeThumbColor: cOrange,
         onChanged: (_) => _show(id),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),

@@ -1365,10 +1365,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         title: Text(AppLocalizations.of(context).wotRevokeVouchTitle,
             style: const TextStyle(color: cRed, fontWeight: FontWeight.w700, fontSize: 16)),
         content: Text(
-          '${admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub)} ' +
-          AppLocalizations.of(context).wotRemovedFromList +
-          AppLocalizations.of(context).wotPublishUpdated +
-          AppLocalizations.of(context).wotSoNetworkKnows,
+          '${admin.name.isNotEmpty ? admin.name : NostrService.shortenNpub(admin.npub)} ${AppLocalizations.of(context).wotRemovedFromList}${AppLocalizations.of(context).wotPublishUpdated}${AppLocalizations.of(context).wotSoNetworkKnows}',
           style: TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4),
         ),
         actions: [

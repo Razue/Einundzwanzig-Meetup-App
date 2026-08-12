@@ -115,7 +115,7 @@ class _NostrAvatarState extends State<NostrAvatar> {
       backgroundColor: widget.backgroundColor,
       backgroundImage: NetworkImage(_pictureUrl!),
       // Wenn das Bild nicht lädt, bleibt der farbige Kreis als Hintergrund.
-      onBackgroundImageError: (_, __) {
+      onBackgroundImageError: (_, _) {
         if (mounted) setState(() => _pictureUrl = null);
       },
     );

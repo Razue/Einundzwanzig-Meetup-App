@@ -102,7 +102,7 @@ class _ScannerOverlayState extends State<ScannerOverlay>
               _corner(Alignment.bottomRight, false, false),
               AnimatedBuilder(
                 animation: _controller,
-                builder: (_, __) => Positioned(
+                builder: (_, _) => Positioned(
                   top: 12 + (size - 24) * _controller.value,
                   left: 14,
                   right: 14,

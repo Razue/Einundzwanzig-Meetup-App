@@ -51,7 +51,7 @@ class MeetupCalendarService {
     if (s.isEmpty) return null;
     if (!_loggedUtcFormat) {
       _loggedUtcFormat = true;
-      AppLogger.diag('Portal', 'my-meetup-events Rohformat: "' + s + '"');
+      AppLogger.diag('Portal', 'my-meetup-events Rohformat: "$s"');
     }
     final dt = DateTime.tryParse(s);
     if (dt == null) return null;
@@ -145,16 +145,14 @@ class MeetupCalendarService {
         
         List<CalendarEvent> events = [];
         
-        if (iCalendar.data != null) {
-          for (var item in iCalendar.data) {
-            if (item['type'] == 'VEVENT') {
-              // Basis-Event parsen
-              final base = CalendarEvent.fromMap(item);
-              // Wiederkehrende Termine (RRULE) in einzelne Vorkommen expandieren.
-              // Ohne RRULE liefert expand() einfach nur [base].
-              final rrule = item['rrule']?.toString();
-              events.addAll(RecurrenceExpander.expand(base, rrule));
-            }
+        for (var item in iCalendar.data) {
+          if (item['type'] == 'VEVENT') {
+            // Basis-Event parsen
+            final base = CalendarEvent.fromMap(item);
+            // Wiederkehrende Termine (RRULE) in einzelne Vorkommen expandieren.
+            // Ohne RRULE liefert expand() einfach nur [base].
+            final rrule = item['rrule']?.toString();
+            events.addAll(RecurrenceExpander.expand(base, rrule));
           }
         }
         

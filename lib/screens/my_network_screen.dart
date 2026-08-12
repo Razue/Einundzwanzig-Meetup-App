@@ -3,12 +3,10 @@ import '../widgets/npub_chip.dart';
 import '../services/haptic_service.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/user.dart';
-import '../services/nostr_service.dart';
 import '../services/coattendance_service.dart';
 import 'verify_person_screen.dart';
 
@@ -135,7 +133,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
                 onTapUp: (details) => _handleGraphTap(details.localPosition, nodes, t),
                 child: AnimatedBuilder(
                   animation: _pulse,
-                  builder: (_, __) => CustomPaint(
+                  builder: (_, _) => CustomPaint(
                     painter: _NetworkGraphPainter(
                       nodes: nodes,
                       pulse: _pulse.value,

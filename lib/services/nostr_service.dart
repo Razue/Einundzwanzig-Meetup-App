@@ -23,7 +23,6 @@
 
 import 'package:nostr/nostr.dart';
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'nip49.dart';
 import 'secure_key_store.dart';
 import 'signing_service.dart';

@@ -25,7 +25,6 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'nostr_service.dart';
-import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'app_logger.dart';
 import 'relay_socket.dart';

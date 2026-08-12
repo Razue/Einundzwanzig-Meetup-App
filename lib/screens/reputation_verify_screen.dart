@@ -19,7 +19,6 @@ import 'package:nostr/nostr.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/platform_proof_service.dart';
-import '../services/reputation_publisher.dart';
 import '../services/social_graph_service.dart';
 import '../services/zap_verification_service.dart';
 import '../services/nip05_service.dart';

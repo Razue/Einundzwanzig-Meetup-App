@@ -65,7 +65,7 @@ class CalendarEvent {
     String cleanDesc = rawDesc
         .replaceAll('\\n', '\n')
         .replaceAll('\\', '')
-        .replaceAll('\,', ',');
+        .replaceAll(',', ',');
 
     return CalendarEvent(
       title: map['summary']?.toString() ?? 'Meetup',

@@ -156,7 +156,7 @@ class _NewsScreenState extends State<NewsScreen> {
           if (a.image.isNotEmpty)
             Image.network(
               a.image, height: 150, width: double.infinity, fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
               loadingBuilder: (ctx, child, p) => p == null ? child : Container(height: 150, color: cSurface),
             ),
           Padding(
@@ -233,7 +233,7 @@ class _ArticleDetailState extends State<_ArticleDetail> {
             ClipRRect(
               borderRadius: BorderRadius.circular(kTileRadius),
               child: Image.network(article.image, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                  errorBuilder: (_, _, _) => const SizedBox.shrink()),
             ),
             const SizedBox(height: 18),
           ],

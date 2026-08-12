@@ -7,10 +7,8 @@
 
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:convert';
@@ -20,7 +18,6 @@ import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../models/user.dart';
 import '../services/badge_security.dart';
-import '../services/nostr_service.dart';
 import '../services/trust_score_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/platform_proof_service.dart';

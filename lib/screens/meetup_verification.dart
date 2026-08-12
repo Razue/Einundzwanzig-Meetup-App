@@ -24,7 +24,6 @@
 import 'package:flutter/material.dart';
 import '../services/app_logger.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';    // Ndef (cross-platform)
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -37,7 +36,6 @@ import '../services/meetup_location_service.dart';
 import '../services/meetup_service.dart';
 import '../models/badge.dart';
 import '../models/meetup.dart';
-import '../models/user.dart';
 import '../services/badge_security.dart';
 import '../services/badge_claim_service.dart';               // NEU: Claim-Binding
 import '../services/reputation_publisher.dart';              // NEU: Auto-Publish
@@ -128,12 +126,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                 ? AppLocalizations.of(context).verifyNoNfcLong +
                   AppLocalizations.of(context).verifyUseQrInstead +
                   AppLocalizations.of(context).verifyToGetBadge
-                : AppLocalizations.of(context).nfcEnableHint +
-                  AppLocalizations.of(context).verifyToGetBadge +
-                  "\n\n" +
-                  AppLocalizations.of(context).nfcSettingsAndroid +
-                  "\n" +
-                  AppLocalizations.of(context).nfcSettingsIos,
+                : "${AppLocalizations.of(context).nfcEnableHint}${AppLocalizations.of(context).verifyToGetBadge}\n\n${AppLocalizations.of(context).nfcSettingsAndroid}\n${AppLocalizations.of(context).nfcSettingsIos}",
             style: const TextStyle(color: Colors.grey, height: 1.5),
           ),
           actions: [
@@ -446,9 +439,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         if (isSelfScan) {
           setState(() {
             _success = false;
-            _statusText = "✗ " +
-                AppLocalizations.of(context).verifyCantSelfBadge +
-                AppLocalizations.of(context).verifyAskScan;
+            _statusText = "✗ ${AppLocalizations.of(context).verifyCantSelfBadge}${AppLocalizations.of(context).verifyAskScan}";
           });
           return; // ← Abbruch, kein Badge wird gespeichert
         }

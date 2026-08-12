@@ -253,8 +253,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
     if (myBadges.isEmpty) return;
 
     final user = await UserProfile.load();
-    final json = await
-        MeetupBadge.exportBadgesForReputation(
+    final json = MeetupBadge.exportBadgesForReputation(
           myBadges,
           user.nostrNpub,
           nickname: user.nickname,

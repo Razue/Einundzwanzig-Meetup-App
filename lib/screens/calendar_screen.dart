@@ -442,7 +442,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       borderRadius: BorderRadius.circular(9),
       child: Image.network(
         url, width: 42, height: 42, fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => fallback,
+        errorBuilder: (_, _, _) => fallback,
       ),
     );
   }
@@ -575,6 +575,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark, // Dunkler Hintergrund

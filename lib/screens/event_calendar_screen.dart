@@ -670,7 +670,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: Image.network(logo, width: 26, height: 26, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                    errorBuilder: (_, _, _) => const SizedBox.shrink()),
               ),
             );
           }),

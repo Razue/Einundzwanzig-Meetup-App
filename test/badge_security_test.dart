@@ -12,9 +12,7 @@
 //   - QR-Legacy-Ablehnung
 // ============================================
 
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:crypto/crypto.dart';
 import 'package:nostr/nostr.dart';
 import 'package:einundzwanzig_meetup_app/services/badge_security.dart';
 
@@ -34,7 +32,7 @@ void main() {
   });
 
   /// Erzeugt einen gültig signierten Kompakt-Payload mit dem Test-Keychain
-  Map<String, dynamic> _createValidCompactPayload({
+  Map<String, dynamic> createValidCompactPayload({
     String meetupId = 'aschaffenburg-de',
     int blockHeight = 875000,
     int? expiresAt,
@@ -87,7 +85,7 @@ void main() {
 
     test('lehnt Nicht-Hex-Zeichen ab', () {
       expect(BadgeSecurity.isValidPubkeyHex('g' * 64), isFalse);
-      expect(BadgeSecurity.isValidPubkeyHex('x' + 'a' * 63), isFalse);
+      expect(BadgeSecurity.isValidPubkeyHex('x${'a' * 63}'), isFalse);
     });
 
     test('lehnt leeren String ab', () {
@@ -197,7 +195,7 @@ void main() {
 
   group('verifyCompact — Schnorr-Signaturen', () {
     test('akzeptiert gültig signiertes Kompakt-Badge', () {
-      final payload = _createValidCompactPayload();
+      final payload = createValidCompactPayload();
       final result = BadgeSecurity.verifyCompact(payload);
       
       expect(result.isValid, isTrue);
@@ -208,7 +206,7 @@ void main() {
     });
 
     test('lehnt manipierten Meetup-Namen ab', () {
-      final payload = _createValidCompactPayload(meetupId: 'aschaffenburg-de');
+      final payload = createValidCompactPayload(meetupId: 'aschaffenburg-de');
       payload['m'] = 'manipuliert-de'; // Meetup-ID geändert
       
       final result = BadgeSecurity.verifyCompact(payload);
@@ -216,7 +214,7 @@ void main() {
     });
 
     test('lehnt manipierte Blockhöhe ab', () {
-      final payload = _createValidCompactPayload(blockHeight: 875000);
+      final payload = createValidCompactPayload(blockHeight: 875000);
       payload['b'] = 999999; // Blockhöhe manipuliert
       
       final result = BadgeSecurity.verifyCompact(payload);
@@ -224,7 +222,7 @@ void main() {
     });
 
     test('lehnt manipierten Pubkey ab', () {
-      final payload = _createValidCompactPayload();
+      final payload = createValidCompactPayload();
       final otherKey = Keychain.generate();
       payload['p'] = otherKey.public; // Anderer Pubkey
       
@@ -233,7 +231,7 @@ void main() {
     });
 
     test('lehnt manipierte Signatur ab', () {
-      final payload = _createValidCompactPayload();
+      final payload = createValidCompactPayload();
       // Signatur-Bit flippen
       final sigChars = payload['s'].split('');
       sigChars[0] = sigChars[0] == 'a' ? 'b' : 'a';
@@ -245,7 +243,7 @@ void main() {
 
     test('lehnt abgelaufenes Badge ab', () {
       final expired = DateTime.now().millisecondsSinceEpoch ~/ 1000 - 3600; // 1h her
-      final payload = _createValidCompactPayload(expiresAt: expired);
+      final payload = createValidCompactPayload(expiresAt: expired);
       
       final result = BadgeSecurity.verifyCompact(payload);
       expect(result.isValid, isFalse);
@@ -309,7 +307,7 @@ void main() {
 
   group('verify() — Unified Routing', () {
     test('routet Kompakt-Format (p+s) korrekt', () {
-      final payload = _createValidCompactPayload();
+      final payload = createValidCompactPayload();
       final result = BadgeSecurity.verify(payload);
       
       expect(result.isValid, isTrue);

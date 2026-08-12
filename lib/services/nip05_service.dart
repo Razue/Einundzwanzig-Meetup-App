@@ -20,8 +20,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:nostr/nostr.dart';
-import 'secure_key_store.dart';
 import 'dart:math';
 import 'app_logger.dart';
 import 'relay_socket.dart';

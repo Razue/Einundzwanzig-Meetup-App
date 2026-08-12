@@ -20,7 +20,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import '../models/badge.dart';
-import 'nostr_service.dart';
 import 'badge_security.dart';
 import 'signing_service.dart';
 

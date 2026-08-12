@@ -31,12 +31,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:nostr/nostr.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'admin_registry.dart';
 import 'app_logger.dart';
 import 'nostr_service.dart';
 import 'relay_config.dart';
-import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'relay_socket.dart';
 
@@ -779,8 +777,9 @@ class VouchingService {
     for (final admin in consensus.allAdmins) {
       if (admin.vouchers.contains(npub)) {
         totalCount++;
-        if (admin.isSuspended) suspendedCount++;
-        else if (admin.distrustCount > 0) warnedCount++;
+        if (admin.isSuspended) {
+          suspendedCount++;
+        } else if (admin.distrustCount > 0) warnedCount++;
       }
     }
 

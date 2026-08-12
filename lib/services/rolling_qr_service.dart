@@ -50,7 +50,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'nostr_service.dart';
 import 'signing_service.dart';
 import 'badge_security.dart';
-import 'secure_key_store.dart';
 import 'mempool.dart';
 
 class RollingQRService {

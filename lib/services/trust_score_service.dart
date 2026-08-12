@@ -298,16 +298,16 @@ class TrustScoreService {
     // die SUMME aller Badge-Werte). Reputation zaehlt jetzt nur noch
     // EINDEUTIGE Badges — gleiches Meetup am gleichen Tag = ein Badge.
     // Aeltester Eintrag gewinnt, damit der urspruengliche Claim zaehlt.
-    final _trusted = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList()
+    final trusted = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
-    final _seen = <String>{};
+    final seen = <String>{};
     final trustedBadges = <MeetupBadge>[];
-    for (final b in _trusted) {
-      if (_seen.add(MeetupBadge.identityKey(b))) trustedBadges.add(b);
+    for (final b in trusted) {
+      if (seen.add(MeetupBadge.identityKey(b))) trustedBadges.add(b);
     }
-    if (trustedBadges.length != _trusted.length) {
+    if (trustedBadges.length != trusted.length) {
       AppLogger.diag('TrustScore',
-          '${_trusted.length - trustedBadges.length} doppelte Badge(s) fuer die Reputation ignoriert.');
+          '${trusted.length - trustedBadges.length} doppelte Badge(s) fuer die Reputation ignoriert.');
     }
     
     if (trustedBadges.isEmpty) {

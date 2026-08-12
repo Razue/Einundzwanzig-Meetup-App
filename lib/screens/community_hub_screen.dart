@@ -952,7 +952,7 @@ Widget _headerCard(String img, String title, String sub, IconData fb) => Contain
   child: Row(children: [
     ClipRRect(borderRadius: BorderRadius.circular(12),
       child: img.isNotEmpty
-          ? Image.network(img, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _fbIcon(fb))
+          ? Image.network(img, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (_, _, _) => _fbIcon(fb))
           : _fbIcon(fb)),
     const SizedBox(width: 14),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -974,7 +974,7 @@ Widget _rowCard(String img, String title, String sub, IconData fb) => Container(
   decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
   child: Row(children: [
     ClipRRect(borderRadius: BorderRadius.circular(9),
-      child: img.isNotEmpty ? Image.network(img, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _fbSmall(fb)) : _fbSmall(fb)),
+      child: img.isNotEmpty ? Image.network(img, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (_, _, _) => _fbSmall(fb)) : _fbSmall(fb)),
     const SizedBox(width: 11),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(title, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),

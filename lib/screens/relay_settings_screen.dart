@@ -279,7 +279,7 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
               Switch(
                 value: enabled,
                 onChanged: onToggle,
-                activeColor: Colors.green,
+                activeThumbColor: Colors.green,
               ),
             if (!isDefault && onRemove != null)
               IconButton(
