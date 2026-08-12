@@ -497,19 +497,34 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
 
   /// Abdunklung ueber dem Hintergrundbild.
   ///
-  /// Die Zahlen sind am Bild gemessen, nicht geschaetzt: Das Motiv ist
-  /// bereits sehr dunkel — die hellsten Leiterbahnen liegen bei Helligkeit
-  /// 38 von 255. Bei 0.52 (wie im IntroScreen) bleiben davon 17 uebrig und
-  /// man sieht die Struktur; bei 0.86 nur noch 5, das ist auf dem Geraet
-  /// nicht mehr wahrnehmbar. 0.68 laesst rund 11 stehen: sichtbar als
-  /// Wasserzeichen, aber deutlich ruhiger als die kraeftigen Seiten.
+  /// Alle Zahlen hier sind am Bild GEMESSEN. Das Motiv ist von Haus aus
+  /// sehr dunkel: Die hellsten Leiterbahnen liegen bei Helligkeit 36 von
+  /// 255, die Flaeche dazwischen bei 0. Bei 0.52 — dem Wert des
+  /// IntroScreens — bleiben davon 17 uebrig, und genau so sieht der
+  /// Startbildschirm aus.
+  ///
+  /// Fuer das Wasserzeichen war MEHR Schwarz der falsche Hebel: Bei 0.68
+  /// blieben 11 stehen, bei 0.86 nur 5 — beides ist auf dem Geraet nicht
+  /// mehr von Schwarz zu unterscheiden. Deshalb wird das Bild fuer das
+  /// Wasserzeichen stattdessen AUFGEHELLT (siehe _watermarkBoost) und dann
+  /// normal abgedunkelt.
   static const double _veilBold = 0.52;
-  static const double _veilSubtle = 0.68;
+  static const double _veilSubtle = 0.55;
 
-  /// Weichzeichnung des Wasserzeichens. Kraeftig genug, dass die Leiterbahnen
-  /// nicht mit den Eingabefeldern konkurrieren, schwach genug, dass ueberhaupt
-  /// eine Struktur erkennbar bleibt.
-  static const double _watermarkBlur = 5;
+  /// Aufhellung des Wasserzeichens.
+  ///
+  /// Multipliziert die Helligkeit. Schwarz bleibt dabei schwarz (0 x 2.2 = 0),
+  /// nur die Leiterbahnen werden heller — der Kontrast steigt also, statt
+  /// dass alles grau wird. Nach Weichzeichnen und Abdunklung stehen die
+  /// Linien bei rund 33 und damit etwa doppelt so hell wie auf den
+  /// kraeftigen Seiten; die weiche Zeichnung haelt sie trotzdem im
+  /// Hintergrund.
+  static const double _watermarkBoost = 2.2;
+
+  /// Weichzeichnung des Wasserzeichens. Sie kostet kaum Helligkeit
+  /// (gemessen 36 auf 33), sorgt aber dafuer, dass die Leiterbahnen nicht
+  /// mit den Eingabefeldern um Aufmerksamkeit konkurrieren.
+  static const double _watermarkBlur = 4;
 
   /// Hintergrund fuer alle Schritte.
   ///
@@ -532,7 +547,8 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               fit: BoxFit.cover,
             ),
 
-            // Weichgezeichnete Fassung, blendet auf den Formularseiten ein.
+            // Weichgezeichnete UND aufgehellte Fassung, blendet auf den
+            // Formularseiten ein.
             AnimatedOpacity(
               opacity: bold ? 0.0 : 1.0,
               duration: fade,
@@ -540,9 +556,19 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               child: ImageFiltered(
                 imageFilter: ui.ImageFilter.blur(
                     sigmaX: _watermarkBlur, sigmaY: _watermarkBlur),
-                child: const Image(
-                  image: AssetImage(asset),
-                  fit: BoxFit.cover,
+                child: ColorFiltered(
+                  // Reine Helligkeitsmultiplikation: Die Diagonale skaliert
+                  // R, G und B, die Alpha-Zeile bleibt unveraendert.
+                  colorFilter: const ColorFilter.matrix(<double>[
+                    _watermarkBoost, 0, 0, 0, 0, //
+                    0, _watermarkBoost, 0, 0, 0, //
+                    0, 0, _watermarkBoost, 0, 0, //
+                    0, 0, 0, 1, 0, //
+                  ]),
+                  child: const Image(
+                    image: AssetImage(asset),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
