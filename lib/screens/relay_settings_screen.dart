@@ -74,12 +74,17 @@ class _RelaySettingsScreenState extends State<RelaySettingsScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              // Beide vor dem await greifen: Der Dialog-Context ist danach
+              // nicht mehr verlaesslich, und der Messenger des Dialogs waere
+              // ohnehin der falsche Anker fuer eine Meldung nach dem Pop.
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
               try {
                 await RelayConfig.addCustomRelay(controller.text);
-                Navigator.pop(context);
+                navigator.pop();
                 _load();
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text('$e'), backgroundColor: Colors.red),
                 );
               }

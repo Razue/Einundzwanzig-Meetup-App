@@ -479,6 +479,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         'Meetup-Auswahl: ${mine.length} eigene(s) oben, ${others.length} weitere alphabetisch.');
 
     final search = TextEditingController();
+    // Nach den Portal-Abfragen oben ist der Context nicht mehr garantiert
+    // gueltig; das mounted-Feld des States ist hier die richtige Pruefung.
+    if (!mounted) return null;
     final t = AppLocalizations.of(context);
 
     return showDialog<Meetup>(

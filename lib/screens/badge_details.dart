@@ -65,6 +65,12 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
   }
 
   void _shareBadge() async {
+    // Alles Context-Abhaengige vor dem await einsammeln: Nach dem Laden des
+    // Profils kann der Bildschirm schon geschlossen sein.
+    final t = AppLocalizations.of(context);
+    final deliveryLabel = _deliveryLabelOf(context);
+    final sigLabel = _sigLabelOf(context);
+
     final user = await UserProfile.load();
     final reputationText = b.toReputationString();
     final hash = b.getVerificationHash();
@@ -74,9 +80,9 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
 
 $reputationText
 
-Block: ${b.blockHeight > 0 ? _formatBlock(b.blockHeight) : AppLocalizations.of(context).badgeUnknown}
-Delivery: ${_deliveryLabelOf(context)}
-Signatur: ${_sigLabelOf(context)}
+Block: ${b.blockHeight > 0 ? _formatBlock(b.blockHeight) : t.badgeUnknown}
+Delivery: $deliveryLabel
+Signatur: $sigLabel
 Hash: $hash
 ${user.nostrNpub.isNotEmpty ? 'Npub: ${user.nostrNpub}' : ''}
 
@@ -424,11 +430,13 @@ Verifizierbar über die Einundzwanzig Meetup App
     final hash = b.getVerificationHash();
     return GestureDetector(
       onTap: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        final copiedText = AppLocalizations.of(context).badgeHashCopied;
         await Clipboard.setData(ClipboardData(text: hash));
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).badgeHashCopied),
+              content: Text(copiedText),
               backgroundColor: cCard,
               duration: Duration(seconds: 2),
             ),

@@ -36,7 +36,6 @@ import '../services/badge_claim_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/nostr_profile_service.dart';
-import 'meetup_verification.dart';
 import 'meetup_selection.dart';
 import 'profile_edit.dart';
 import 'identity_setup_screen.dart';
@@ -2238,8 +2237,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // BOTTOM SHEETS (Help, Settings, Score Info) — wie in v4.2
   // Hier nur gekürzt, identische Logik
   // ============================================================
-  // ignore: unused_element  — Erklaer-Sheet ohne Einstiegspunkt; Inhalt
-  // bleibt erhalten, bis wieder ein Knopf darauf zeigt.
+  // Erklaer-Sheet ohne Einstiegspunkt; Inhalt bleibt erhalten, bis wieder
+  // ein Knopf darauf zeigt.
+  // ignore: unused_element
   void _showHelpSheet() { showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))), builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.5, expand: false, builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
     Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
     const Text("SO FUNKTIONIERT'S", style: TextStyle(color: cOrange, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 20),
@@ -2521,8 +2521,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
 
-  // ignore: unused_element  — Erklaerung des Trust Score, derzeit ohne
-  // Einstiegspunkt. Siehe _showHelpSheet.
+  // Erklaerung des Trust Score, derzeit ohne Einstiegspunkt.
+  // Siehe _showHelpSheet.
+  // ignore: unused_element
   void _showScoreInfoSheet() {
     final score = _trustScore; final idCount = _platformProofCount + (_humanityVerified ? 1 : 0) + (_nip05Verified ? 1 : 0);
     showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),

@@ -524,6 +524,13 @@ class BackupService {
   static Future<bool> restoreBackup(BuildContext context) async {
     if (_busy) return false;
     _busy = true;
+
+    // Uebersetzungen VOR dem ersten await greifen. Danach kann das Widget
+    // laengst weg sein — der Dateiwaehler und die Schluesselableitung
+    // dauern zusammen mehrere Sekunden. Das AppLocalizations-Objekt selbst
+    // bleibt gueltig, auch wenn der Context es nicht mehr ist.
+    final t = AppLocalizations.of(context);
+
     try {
       // withData: true, damit die Bytes auf ALLEN Plattformen mitkommen.
       //
@@ -558,7 +565,7 @@ class BackupService {
 
           try {
             final parts = content.split(':');
-            if (parts.length != 4) throw Exception(AppLocalizations.of(context).backupCorrupt);
+            if (parts.length != 4) throw Exception(t.backupCorrupt);
 
             final salt = Uint8List.fromList(base64Decode(parts[1]));
             final iv = enc.IV.fromBase64(parts[2]);
@@ -611,7 +618,7 @@ class BackupService {
 
           try {
             final parts = content.split(':');
-            if (parts.length != 3) throw Exception(AppLocalizations.of(context).backupCorrupt);
+            if (parts.length != 3) throw Exception(t.backupCorrupt);
 
             final iv = enc.IV.fromBase64(parts[1]);
             final cipherText = parts[2];
@@ -641,11 +648,11 @@ class BackupService {
         try {
           data = jsonDecode(decryptedJson);
         } catch (e) {
-          throw Exception(AppLocalizations.of(context).backupNotValid);
+          throw Exception(t.backupNotValid);
         }
 
         if (!data.containsKey('user') || !data.containsKey('badges')) {
-          throw Exception(AppLocalizations.of(context).backupNotEinundzwanzig);
+          throw Exception(t.backupNotEinundzwanzig);
         }
 
         final int version = data['version'] ?? 1;

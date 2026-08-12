@@ -149,8 +149,10 @@ class _RollingQRScreenState extends State<RollingQRScreen> with WidgetsBindingOb
         });
       }
     } catch (e) {
-      AppLogger.debug('RollingQR', AppLocalizations.of(context).wotErrorShort(e.toString()));
-
+      // Reine Log-Zeile: der Text geht ins Diagnose-Log, nicht auf den
+      // Bildschirm. Uebersetzung ueber den Context waere hier nach dem
+      // await ohnehin unsicher und brachte nichts.
+      AppLogger.debug('RollingQR', 'QR-Erzeugung fehlgeschlagen: $e');
     }
   }
 
