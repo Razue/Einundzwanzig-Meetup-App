@@ -2444,5 +2444,12 @@
   "idSetupMeetupContinue": "Weiter",
   "idSetupMeetupLater": "Später",
   "idSetupMeetupLoading": "Meetups werden geladen…",
-  "idSetupMeetupLoadError": "Meetups konnten nicht geladen werden. Später im Profil nachholen."
+  "idSetupMeetupLoadError": "Meetups konnten nicht geladen werden. Später im Profil nachholen.",
+  "rsInvalidUrl": "Ungültige Adresse. Erwartet wird wss://host.tld ohne Pfad.",
+  "rsRelayUnreachable": "Relay nicht erreichbar. Adresse prüfen oder Internetverbindung kontrollieren.",
+  "rsRelayAlreadyAdded": "Dieses Relay ist bereits eingetragen.",
+  "rsTesting": "Verbindung wird geprüft …",
+  "rsRelayAdded": "Relay hinzugefügt und erreichbar.",
+  "rsEnabledHint": "Eingeschaltet — bedeutet nicht, dass das Relay gerade erreichbar ist.",
+  "wotNoRelayReachable": "Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log."
 }

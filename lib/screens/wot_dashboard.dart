@@ -17,6 +17,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:convert';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import '../services/app_logger.dart';
 import '../services/vouching_service.dart';
 import '../services/admin_registry.dart';
 import '../services/nostr_service.dart';
@@ -132,7 +133,8 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).wotRestoreFailed(e.toString())),
+          SnackBar(content: Text(AppLocalizations.of(context).wotRestoreFailed(
+              _shortError(AppLocalizations.of(context), e))),
               backgroundColor: Colors.red),
         );
       }
@@ -180,7 +182,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
                 );
               } catch (e) {
                 messenger.showSnackBar(
-                  SnackBar(content: Text(tr.wotRevocationFailed(e.toString())),
+                  SnackBar(content: Text(tr.wotRevocationFailed(_shortError(tr, e))),
                       backgroundColor: Colors.red),
                 );
               }
@@ -194,15 +196,39 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
     );
   }
 
+  /// Macht aus einem rohen Fehler eine Zeile, die man lesen kann.
+  ///
+  /// Ist kein Relay erreichbar, liefert die Nostr-Schicht eine Ausnahme mit
+  /// EINER Zeile PRO Relay — im Flugmodus also vier Bloecke voller
+  /// SocketException und "errno = 7". Das gehoert ins Diagnose-Log, nicht
+  /// in eine SnackBar.
+  String _shortError(AppLocalizations tr, Object error) {
+    final raw = error.toString();
+    AppLogger.warn('WoT', 'Relay-Fehler', error);
+    const netMarkers = [
+      'Failed host lookup',
+      'SocketException',
+      'WebSocketChannelException',
+      'keinen Relay',
+      'No address associated',
+    ];
+    if (netMarkers.any(raw.contains)) return tr.wotNoRelayReachable;
+    // Unbekannter Fehler: erste Zeile reicht, der Rest steht im Log.
+    final firstLine = raw.split('\n').first.trim();
+    return firstLine.length > 160
+        ? '${firstLine.substring(0, 160)}…'
+        : firstLine;
+  }
+
   /// Zeigt einen Fehler aus Laden oder Abgleich. Ohne diesen Streifen
   /// blieb ein fehlgeschlagener Relay-Abruf fuer den Nutzer unsichtbar —
   /// die Meldung wurde erzeugt und nie angezeigt.
   Widget _buildErrorBanner(BuildContext context) {
     final t = AppLocalizations.of(context);
     final String? message = _syncError != null
-        ? t.wotSyncFailed(_syncError.toString())
+        ? t.wotSyncFailed(_shortError(t, _syncError!))
         : _loadError != null
-            ? t.wotErrorLoading(_loadError.toString())
+            ? t.wotErrorLoading(_shortError(t, _loadError!))
             : null;
     if (message == null) return const SizedBox.shrink();
 

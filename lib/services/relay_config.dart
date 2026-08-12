@@ -11,7 +11,18 @@
 // hinzufügen oder Default-Relays deaktivieren.
 // ============================================
 
+import 'dart:async';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+
+/// Ergebnis des Hinzufuegens eines Relays.
+///
+/// Bewusst ein eigener Typ statt geworfener Ausnahmen: Der Aufrufer muss
+/// die Faelle unterscheiden koennen, um den passenden UEBERSETZTEN Text zu
+/// zeigen. Der frueher geworfene ArgumentError trug einen fest verdrahteten
+/// deutschen Text — weder uebersetzbar noch unterscheidbar.
+enum RelayAddResult { added, invalidUrl, unreachable, alreadyPresent }
 
 class RelayConfig {
   // =============================================
@@ -64,17 +75,71 @@ class RelayConfig {
     return prefs.getStringList(_customRelaysKey) ?? [];
   }
 
-  static Future<void> addCustomRelay(String url) async {
+  /// Prueft die Schreibweise einer Relay-Adresse.
+  ///
+  /// Die alte Pruefung sah nur das Praefix. `wss://Test.nostr.band` kam
+  /// damit durch — syntaktisch tadellos, nur existiert der Host nicht.
+  /// Deshalb prueft diese Methode nur das Offensichtliche; ob wirklich
+  /// jemand antwortet, klaert [probeRelay].
+  static bool isWellFormedRelayUrl(String url) {
     final trimmed = url.trim();
-    if (!trimmed.startsWith('wss://')) {
-      throw ArgumentError('Relay-URL muss mit wss:// beginnen');
+    if (!trimmed.startsWith('wss://')) return false;
+
+    final uri = Uri.tryParse(trimmed);
+    if (uri == null || uri.scheme != 'wss') return false;
+
+    final host = uri.host;
+    if (host.isEmpty) return false;
+    // Ein Punkt mit etwas davor und dahinter; keine Leerzeichen.
+    if (!host.contains('.')) return false;
+    if (host.startsWith('.') || host.endsWith('.')) return false;
+    if (host.contains(' ')) return false;
+    // Pfad, Abfrage oder Fragment gehoeren nicht in eine Relay-Adresse.
+    if (uri.path.isNotEmpty && uri.path != '/') return false;
+    if (uri.hasQuery || uri.hasFragment) return false;
+    return true;
+  }
+
+  /// Baut testweise eine Verbindung auf und gibt zurueck, ob das Relay
+  /// antwortet. Ohne diesen Schritt landen Tippfehler dauerhaft in der
+  /// Liste und zaehlen dort als "aktives Relay" mit.
+  static Future<bool> probeRelay(
+    String url, {
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
+    WebSocketChannel? channel;
+    try {
+      channel = WebSocketChannel.connect(Uri.parse(url.trim()));
+      await channel.ready.timeout(timeout);
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      // Verbindung in jedem Fall wieder schliessen — auch im Erfolgsfall,
+      // die Pruefung soll keine offene Leitung hinterlassen.
+      try {
+        await channel?.sink.close();
+      } catch (_) {}
     }
+  }
+
+  /// Fuegt ein eigenes Relay hinzu — nur, wenn die Adresse stimmt UND das
+  /// Relay antwortet.
+  static Future<RelayAddResult> addCustomRelay(String url) async {
+    final trimmed = url.trim();
+    if (!isWellFormedRelayUrl(trimmed)) return RelayAddResult.invalidUrl;
 
     final prefs = await SharedPreferences.getInstance();
     final current = prefs.getStringList(_customRelaysKey) ?? [];
-    if (current.contains(trimmed)) return; // Bereits vorhanden
+    if (current.contains(trimmed) || defaultRelays.contains(trimmed)) {
+      return RelayAddResult.alreadyPresent;
+    }
+
+    if (!await probeRelay(trimmed)) return RelayAddResult.unreachable;
+
     current.add(trimmed);
     await prefs.setStringList(_customRelaysKey, current);
+    return RelayAddResult.added;
   }
 
   static Future<void> removeCustomRelay(String url) async {

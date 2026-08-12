@@ -9495,6 +9495,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Meetups konnten nicht geladen werden. Später im Profil nachholen.'**
   String get idSetupMeetupLoadError;
+
+  /// No description provided for @rsInvalidUrl.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültige Adresse. Erwartet wird wss://host.tld ohne Pfad.'**
+  String get rsInvalidUrl;
+
+  /// No description provided for @rsRelayUnreachable.
+  ///
+  /// In de, this message translates to:
+  /// **'Relay nicht erreichbar. Adresse prüfen oder Internetverbindung kontrollieren.'**
+  String get rsRelayUnreachable;
+
+  /// No description provided for @rsRelayAlreadyAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Relay ist bereits eingetragen.'**
+  String get rsRelayAlreadyAdded;
+
+  /// No description provided for @rsTesting.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung wird geprüft …'**
+  String get rsTesting;
+
+  /// No description provided for @rsRelayAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Relay hinzugefügt und erreichbar.'**
+  String get rsRelayAdded;
+
+  /// No description provided for @rsEnabledHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Eingeschaltet — bedeutet nicht, dass das Relay gerade erreichbar ist.'**
+  String get rsEnabledHint;
+
+  /// No description provided for @wotNoRelayReachable.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.'**
+  String get wotNoRelayReachable;
 }
 
 class _AppLocalizationsDelegate
