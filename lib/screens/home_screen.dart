@@ -887,6 +887,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (choice == null || choice == 'cancel') return;
 
     if (choice == 'backup') {
+      // Der Auswahldialog oben war ein await — erst pruefen, dann den
+      // Context weiterreichen.
+      if (!mounted) return;
       // Backup erstellen (gleiche Logik wie der manuelle Button)
       final ok = await BackupService.createBackup(context);
       if (!ok) return; // Backup abgebrochen/fehlgeschlagen -> NICHT zurücksetzen

@@ -9,7 +9,7 @@
 // Der QR enthält:
 //   - Badge-Daten (kompakt, EINMALIG Schnorr-signiert)
 //   - Rolling Nonce (10s gültig, Screenshot = wertlos)
-//   - Session-Ablauf (6h)
+//   - Session-Ablauf (4h)
 //
 // ============================================
 

@@ -560,6 +560,8 @@ class BackupService {
         // enc_v2: PBKDF2 + AES-GCM (neues Format)
         // =============================================
         if (content.startsWith("enc_v2:")) {
+          // Statische Methode ohne State: context.mounted statt mounted.
+          if (!context.mounted) return false;
           final password = await _promptForPassword(context, isExport: false);
           if (password == null) return false;
 
@@ -613,6 +615,7 @@ class BackupService {
         // Rückwärtskompatibilität — wird trotzdem entschlüsselt
         // =============================================
         else if (content.startsWith("enc_v1:")) {
+          if (!context.mounted) return false;
           final password = await _promptForPassword(context, isExport: false);
           if (password == null) return false;
 

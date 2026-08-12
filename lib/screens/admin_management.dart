@@ -161,21 +161,25 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cPurple, foregroundColor: Colors.white),
             onPressed: () async {
+              // Alles vor dem await greifen. Der bisherige mounted-Check
+              // gehoerte zum State, nicht zum Dialog-Context — der Analyzer
+              // nannte das zu Recht eine "unrelated mounted check".
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final addedText = AppLocalizations.of(context).admCoAdminAdded;
               try {
                 await AdminRegistry.addVouch(AdminEntry(
                   npub: npubController.text.trim(),
                   meetup: meetupController.text.trim(),
                   name: nameController.text.trim(),
                 ));
-                if (mounted) {
-                  Navigator.pop(context);
-                  _loadAdmins();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).admCoAdminAdded), backgroundColor: Colors.green),
-                  );
-                }
+                navigator.pop();
+                _loadAdmins();
+                messenger.showSnackBar(
+                  SnackBar(content: Text(addedText), backgroundColor: Colors.green),
+                );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text("❌ $e"), backgroundColor: Colors.red),
                 );
               }
@@ -207,11 +211,10 @@ class _AdminManagementScreenState extends State<AdminManagementScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
+              final navigator = Navigator.of(context);
               await AdminRegistry.removeVouch(admin.npub);
-              if (mounted) {
-                Navigator.pop(context);
-                _loadAdmins();
-              }
+              navigator.pop();
+              if (mounted) _loadAdmins();
             },
             child: Text(AppLocalizations.of(context).admRemove, style: const TextStyle(color: Colors.white)),
           ),

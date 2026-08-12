@@ -162,26 +162,27 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cRed),
             onPressed: () async {
+              // Messenger und Texte vor dem await greifen. Der Dialog wird
+              // gleich geschlossen — danach ist sein Context hinfaellig,
+              // und der mounted-Check unten meint den State, nicht ihn.
+              final messenger = ScaffoldMessenger.of(context);
+              final tr = AppLocalizations.of(context);
               Navigator.pop(context);
               setState(() => _isPublishing = true);
               try {
                 await AdminRegistry.revokeAllVouches();
                 _myVouches = await AdminRegistry.getMyVouches();
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context).wotAllRevoked),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(tr.wotAllRevoked),
+                    backgroundColor: Colors.green,
+                  ),
+                );
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context).wotRevocationFailed(e.toString())),
-                        backgroundColor: Colors.red),
-                  );
-                }
+                messenger.showSnackBar(
+                  SnackBar(content: Text(tr.wotRevocationFailed(e.toString())),
+                      backgroundColor: Colors.red),
+                );
               }
               if (mounted) setState(() => _isPublishing = false);
             },
@@ -1423,18 +1424,19 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: cRed),
             onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final withdrawnText = AppLocalizations.of(context).wotVouchWithdrawn;
               await AdminRegistry.removeVouch(admin.npub);
-              if (mounted) {
-                Navigator.pop(context);
-                _myVouches = await AdminRegistry.getMyVouches();
-                setState(() {});
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(AppLocalizations.of(context).wotVouchWithdrawn),
-                    backgroundColor: Colors.orange,
-                  ),
-                );
-              }
+              navigator.pop();
+              _myVouches = await AdminRegistry.getMyVouches();
+              if (mounted) setState(() {});
+              messenger.showSnackBar(
+                SnackBar(
+                  content: Text(withdrawnText),
+                  backgroundColor: Colors.orange,
+                ),
+              );
             },
             child: const Text('ENTZIEHEN', style: TextStyle(color: Colors.white)),
           ),
@@ -1537,25 +1539,26 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
             style: ElevatedButton.styleFrom(backgroundColor: cPurple,
                 foregroundColor: Colors.white),
             onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final givenText = AppLocalizations.of(context).wotVouchGiven;
               try {
                 await AdminRegistry.addVouch(AdminEntry(
                   npub: npubController.text.trim(),
                   meetup: meetupController.text.trim(),
                   name: nameController.text.trim(),
                 ));
-                if (mounted) {
-                  Navigator.pop(context);
-                  _myVouches = await AdminRegistry.getMyVouches();
-                  setState(() {});
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context).wotVouchGiven),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
+                navigator.pop();
+                _myVouches = await AdminRegistry.getMyVouches();
+                if (mounted) setState(() {});
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(givenText),
+                    backgroundColor: Colors.green,
+                  ),
+                );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                messenger.showSnackBar(
                   SnackBar(content: Text('$e'), backgroundColor: Colors.red),
                 );
               }

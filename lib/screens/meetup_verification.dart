@@ -329,10 +329,16 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   }) async {
     if (!mounted) return;
 
+    // Uebersetzungen EINMAL vorab greifen. Danach folgen Netzabrufe
+    // (Blockhoehe, Admin-Pruefung, Badge-Bindung) von mehreren Sekunden;
+    // der Bildschirm kann in der Zeit geschlossen worden sein, und der
+    // fertige Meldungstext wird ohnehin erst am Ende zusammengesetzt.
+    final tr = AppLocalizations.of(context);
+
     // Kompakt-Format normalisieren
     final normalized = BadgeSecurity.normalize(tagData);
 
-    final String meetupName = normalized['meetup_name'] ?? AppLocalizations.of(context).verifyUnknownMeetup;
+    final String meetupName = normalized['meetup_name'] ?? tr.verifyUnknownMeetup;
     final String meetupCountry = normalized['meetup_country'] ?? '';
     final String meetupId = normalized['meetup_id'] ?? DateTime.now().toString();
 
@@ -439,7 +445,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         if (isSelfScan) {
           setState(() {
             _success = false;
-            _statusText = "✗ ${AppLocalizations.of(context).verifyCantSelfBadge}${AppLocalizations.of(context).verifyAskScan}";
+            _statusText = "✗ ${tr.verifyCantSelfBadge}${tr.verifyAskScan}";
           });
           return; // ← Abbruch, kein Badge wird gespeichert
         }
@@ -477,7 +483,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       // bleibt gueltig, es wird nur keine Anwesenheit veroeffentlicht —
       // besser keine Verknuepfung als eine falsche.
       final nameSlug = meetupName.trim().toLowerCase().replaceAll(' ', '-');
-      final unknownSlug = AppLocalizations.of(context)
+      final unknownSlug = tr
           .verifyUnknownMeetup
           .trim()
           .toLowerCase()
@@ -509,18 +515,18 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           final adminResult = await AdminRegistry.checkAdminByPubkey(adminPubkey);
           isKnownAdmin = adminResult.isAdmin;
           if (isKnownAdmin) {
-            final adminName = adminResult.name ?? adminResult.meetup ?? AppLocalizations.of(context).verifyVerifiedAdmin;
-            adminCheckInfo = AppLocalizations.of(context).mvKnownOrganizer(adminName);
+            final adminName = adminResult.name ?? adminResult.meetup ?? tr.verifyVerifiedAdmin;
+            adminCheckInfo = tr.mvKnownOrganizer(adminName);
           } else {
-            adminCheckInfo = AppLocalizations.of(context).mvUnknownSigner;
+            adminCheckInfo = tr.mvUnknownSigner;
           }
         } catch (e) {
           // Offline: Cache-Miss → Warnung anzeigen
-          adminCheckInfo = AppLocalizations.of(context).mvAdminCheckFailed;
+          adminCheckInfo = tr.mvAdminCheckFailed;
         }
       } else if (verifyResult != null && verifyResult.version == 1) {
         // Legacy v1: Shared Secret, per Definition nicht vertrauenswürdig
-        adminCheckInfo = AppLocalizations.of(context).mvLegacyBadge;
+        adminCheckInfo = tr.mvLegacyBadge;
       }
 
       // Originalen signierten Content für Re-Verifikation
@@ -552,7 +558,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           claimEventId = claimResult.claimEventId;
           claimPubkey = claimResult.claimPubkey;
           claimTimestamp = claimResult.claimTimestamp;
-          claimInfo = AppLocalizations.of(context).mvBadgeBound;
+          claimInfo = tr.mvBadgeBound;
         } else {
           claimInfo = '⚠ Binding: ${claimResult.message}';
         }
@@ -587,11 +593,11 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         isRetroactive: false,
       );
 
-      msg = "${AppLocalizations.of(context).verifyBadgeFound}\n\n";
-      msg += "${AppLocalizations.of(context).verifyMsgLocation(fullName)}\n";
-      if (currentBlockHeight > 0) msg += "${AppLocalizations.of(context).verifyMsgBlock(currentBlockHeight)}\n";
-      if (tagData['_verified_by'] != null) msg += "${AppLocalizations.of(context).verifyMsgSignedBy(tagData['_verified_by'].toString())}\n";
-      if (sigVersion == 2) msg += "${AppLocalizations.of(context).verifyMsgProof}\n";
+      msg = "${tr.verifyBadgeFound}\n\n";
+      msg += "${tr.verifyMsgLocation(fullName)}\n";
+      if (currentBlockHeight > 0) msg += "${tr.verifyMsgBlock(currentBlockHeight)}\n";
+      if (tagData['_verified_by'] != null) msg += "${tr.verifyMsgSignedBy(tagData['_verified_by'].toString())}\n";
+      if (sigVersion == 2) msg += "${tr.verifyMsgProof}\n";
       if (claimInfo.isNotEmpty) msg += claimInfo;
 
       if (adminCheckInfo.isNotEmpty) {
@@ -599,14 +605,14 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       }
 
       final expiryStr = BadgeSecurity.expiryInfo(tagData);
-      if (expiryStr != AppLocalizations.of(context).verifyNoExpiry) msg += "\n\n${AppLocalizations.of(context).verifyMsgTagExpiry(expiryStr)}";
+      if (expiryStr != tr.verifyNoExpiry) msg += "\n\n${tr.verifyMsgTagExpiry(expiryStr)}";
 
       if (!isKnownAdmin && verifyResult != null && verifyResult.version >= 2 && adminPubkey.isNotEmpty) {
         _isUnknownSigner = true;
       }
 
     } else {
-      msg = AppLocalizations.of(context).verifyAlreadyToday(fullName);
+      msg = tr.verifyAlreadyToday(fullName);
       _pendingBadge = null;
       _pendingOrgLat = 0;
       _pendingOrgLng = 0;
@@ -781,7 +787,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     if (!presenceVerified && mounted) {
       // Kein Blocker mehr, aber der Teilnehmer soll wissen, woran er ist.
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(AppLocalizations.of(context).badgeUnverifiedInfo),
+        content: Text(tr.badgeUnverifiedInfo),
         backgroundColor: cSurface,
         duration: const Duration(seconds: 5),
         behavior: SnackBarBehavior.floating,
@@ -809,7 +815,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).verifyBadgeDuplicate),
+            content: Text(tr.verifyBadgeDuplicate),
             backgroundColor: cOrange,
             behavior: SnackBarBehavior.floating,
           ),
@@ -833,7 +839,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context).verifyBadgeSaved),
+          content: Text(tr.verifyBadgeSaved),
           backgroundColor: cGreen,
           behavior: SnackBarBehavior.floating,
         ),
@@ -941,7 +947,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       if (mounted && count > 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).caPublished),
+            content: Text(tr.caPublished),
             backgroundColor: cGreen,
             behavior: SnackBarBehavior.floating,
           ),
@@ -962,7 +968,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanBadge)),
+      appBar: AppBar(title: Text(tr.verifyScanBadge)),
       body: Center(
         child: _success
             ? _buildConfirmationView()
@@ -1001,7 +1007,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
           // ── Titel ──
           Text(
-            isAlreadyCollected ? AppLocalizations.of(context).verifyAlreadyCollected : AppLocalizations.of(context).verifyBadgeFound,
+            isAlreadyCollected ? tr.verifyAlreadyCollected : tr.verifyBadgeFound,
             style: TextStyle(
               color: accentColor, fontSize: 11,
               fontWeight: FontWeight.w800, letterSpacing: 1.6,
@@ -1019,7 +1025,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
               border: Border.all(color: accentColor.withValues(alpha: 0.2), width: 0.5),
             ),
             child: Text(
-              _statusText ?? AppLocalizations.of(context).verifyReadyToScan,
+              _statusText ?? tr.verifyReadyToScan,
               textAlign: TextAlign.left,
               style: const TextStyle(
                 color: cText, fontWeight: FontWeight.w500,
@@ -1039,7 +1045,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     MaterialPageRoute(builder: (_) => const BadgeWalletScreen())),
                 icon: const Icon(Icons.account_balance_wallet_rounded, color: Colors.black, size: 18),
                 label: Text(
-                  AppLocalizations.of(context).verifyOpenWallet,
+                  tr.verifyOpenWallet,
                   style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800,
                       fontSize: 13, letterSpacing: 0.8),
                 ),
@@ -1062,7 +1068,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                 onPressed: _confirmSaveBadge,
                 icon: const Icon(Icons.add_rounded, color: Colors.black),
                 label: Text(
-                  AppLocalizations.of(context).verifyAddToWallet,
+                  tr.verifyAddToWallet,
                   style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800,
                       fontSize: 13, letterSpacing: 0.8),
                 ),
@@ -1090,7 +1096,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                 ),
               ),
               child: Text(
-                isAlreadyCollected ? AppLocalizations.of(context).verifyClose : AppLocalizations.of(context).dialogCancel,
+                isAlreadyCollected ? tr.verifyClose : tr.dialogCancel,
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.8),
               ),
             ),
@@ -1120,12 +1126,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     ),
                   ),
                   const SizedBox(height: 40),
-                  Text(AppLocalizations.of(context).verifyScanBadge,
+                  Text(tr.verifyScanBadge,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.white, letterSpacing: 2)),
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(AppLocalizations.of(context).verifyScanInstruction,
+                    child: Text(tr.verifyScanInstruction,
                       textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, height: 1.5)),
                   ),
                   const SizedBox(height: 40),
@@ -1136,7 +1142,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     child: ElevatedButton.icon(
                       onPressed: _startNfcRead,
                       icon: const Icon(Icons.nfc, color: Colors.white),
-                      label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: Text(tr.verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(backgroundColor: cOrange),
                     ),
                   ),
@@ -1148,7 +1154,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                     child: OutlinedButton.icon(
                       onPressed: _startQRScan,
                       icon: const Icon(Icons.qr_code_scanner, color: cCyan),
-                      label: Text(AppLocalizations.of(context).verifyScanQrCaps, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
+                      label: Text(tr.verifyScanQrCaps, style: const TextStyle(color: cCyan, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(side: const BorderSide(color: cCyan, width: 2)),
                     ),
                   ),
@@ -1156,7 +1162,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Text(_statusText ?? AppLocalizations.of(context).verifyReadyToScan, textAlign: TextAlign.center,
+                    child: Text(_statusText ?? tr.verifyReadyToScan, textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.grey, fontSize: 12)),
                   ),
                 ],
@@ -1201,7 +1207,7 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
+      appBar: AppBar(title: Text(tr.verifyScanQr)),
       body: Stack(children: [
         MobileScanner(onDetect: _onDetect),
         // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
@@ -1212,7 +1218,7 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(12)),
-            child: Text(AppLocalizations.of(context).verifyScanQrInstruction,
+            child: Text(tr.verifyScanQrInstruction,
               style: const TextStyle(color: Colors.white, fontSize: 14), textAlign: TextAlign.center),
           ),
         ),
