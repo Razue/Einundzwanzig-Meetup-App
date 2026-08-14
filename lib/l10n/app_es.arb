@@ -2529,5 +2529,6 @@
     }
   },
   "mvEventNotFound": "No se encuentra el evento vinculado. Sin conexión no se puede comprobar el permiso.",
-  "evBadgeShowSession": "Mostrar código QR"
+  "evBadgeShowSession": "Mostrar código QR",
+  "badgeShareTagline": "Estuve allí en persona: verificado por Nostr."
 }

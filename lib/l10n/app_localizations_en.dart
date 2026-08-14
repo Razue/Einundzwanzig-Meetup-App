@@ -5394,4 +5394,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evBadgeShowSession => 'Show QR code';
+
+  @override
+  String get badgeShareTagline => 'Was there in person — verified over Nostr.';
 }

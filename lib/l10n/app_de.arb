@@ -2551,5 +2551,6 @@
     }
   },
   "mvEventNotFound": "Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.",
-  "evBadgeShowSession": "QR anzeigen"
+  "evBadgeShowSession": "QR anzeigen",
+  "badgeShareTagline": "Vor Ort dabei gewesen — bestätigt über Nostr."
 }

@@ -9867,6 +9867,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'QR anzeigen'**
   String get evBadgeShowSession;
+
+  /// No description provided for @badgeShareTagline.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor Ort dabei gewesen — bestätigt über Nostr.'**
+  String get badgeShareTagline;
 }
 
 class _AppLocalizationsDelegate

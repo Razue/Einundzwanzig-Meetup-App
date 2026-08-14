@@ -2529,5 +2529,6 @@
     }
   },
   "mvEventNotFound": "The linked event cannot be found. Without a connection the permission cannot be checked.",
-  "evBadgeShowSession": "Show QR code"
+  "evBadgeShowSession": "Show QR code",
+  "badgeShareTagline": "Was there in person — verified over Nostr."
 }
