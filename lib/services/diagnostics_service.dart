@@ -22,6 +22,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../models/badge.dart';
 import '../models/user.dart';
+import '../features.dart';
 import 'app_logger.dart';
 import 'signing_service.dart';
 
@@ -83,11 +84,18 @@ class DiagnosticsService {
     }
 
     // ---- NFC ----
-    try {
-      final avail = await NfcManager.instance.checkAvailability();
-      AppLogger.info(_tag, 'NFC: ${avail.name}');
-    } catch (e) {
-      AppLogger.warn(_tag, 'NFC-Status nicht ermittelbar', e);
+    // Nur abfragen, wenn die Funktion ueberhaupt aktiv ist. Sonst stuende
+    // im Log jedes Mal ein NFC-Status, den nichts in der App benutzt — und
+    // beim naechsten Fehlerbericht faengt jemand an, dort zu suchen.
+    if (kNfcEnabled) {
+      try {
+        final avail = await NfcManager.instance.checkAvailability();
+        AppLogger.info(_tag, 'NFC: ${avail.name}');
+      } catch (e) {
+        AppLogger.warn(_tag, 'NFC-Status nicht ermittelbar', e);
+      }
+    } else {
+      AppLogger.info(_tag, 'NFC: abgeschaltet (features.dart)');
     }
 
     // ---- Identitaet (ohne Schluessel!) ----

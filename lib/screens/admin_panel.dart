@@ -16,6 +16,7 @@ import '../services/meetup_service.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
 import 'wot_dashboard.dart';
+import '../features.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
 
@@ -259,9 +260,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         Navigator.pop(context);
         _checkSession();
 
+        // Der Wizard fuehrt durch den NFC-Schritt. Ist NFC abgeschaltet,
+        // besteht er nur noch aus "Ueberspringen" — dann gleich zum QR.
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MeetupSessionWizard()),
+          MaterialPageRoute(
+              builder: (context) => kNfcEnabled
+                  ? const MeetupSessionWizard()
+                  : const RollingQRScreen()),
         );
       }
     } catch (e) {

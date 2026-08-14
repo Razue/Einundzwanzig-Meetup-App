@@ -31,6 +31,7 @@ import 'package:nostr/nostr.dart';
 import '../theme.dart';
 import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
+import '../features.dart';
 import '../services/coattendance_service.dart';
 import '../services/event_badge_chain_service.dart';
 import '../services/meetup_location_service.dart';
@@ -95,6 +96,9 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   // Dialog angezeigt statt einen Fake-Badge zu erstellen.
   // =============================================
 
+  /// NFC-Lesen. Bleibt im Code, wird aber nicht mehr aufgerufen, solange
+  /// [kNfcEnabled] false ist — siehe lib/features.dart.
+  // ignore: unused_element
   void _startNfcRead() async {
     setState(() => _statusText = AppLocalizations.of(context).verifyCheckingNfc);
 
@@ -1170,19 +1174,22 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                   ),
                   const SizedBox(height: 40),
 
-                  // NFC Button
-                  SizedBox(
-                    width: 250, height: 56,
-                    child: ElevatedButton.icon(
-                      onPressed: _startNfcRead,
-                      icon: const Icon(Icons.nfc, color: Colors.white),
-                      label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+                  // NFC Button — abgeschaltet, siehe lib/features.dart
+                  if (kNfcEnabled) ...[
+                    SizedBox(
+                      width: 250, height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: _startNfcRead,
+                        icon: const Icon(Icons.nfc, color: Colors.white),
+                        label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                  ],
 
-                  // QR Button
+                  // QR Button — ohne NFC der einzige Weg, deshalb gefuellt
+                  // statt umrandet.
                   SizedBox(
                     width: 250, height: 56,
                     child: OutlinedButton.icon(
