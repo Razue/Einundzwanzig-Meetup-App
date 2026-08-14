@@ -5336,4 +5336,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get evBadgeYouIssueSub =>
       'On the day of the event you can start a session on site and hand out badges.';
+
+  @override
+  String get evBadgeStartSession => 'Start badge session';
+
+  @override
+  String get evSessionNoIdentity => 'No Nostr key available. Create one first.';
+
+  @override
+  String get evSessionNotIssuer =>
+      'You are not listed as an issuer for this event.';
+
+  @override
+  String get evSessionOutsideWindow =>
+      'Badges are only available on the day of the event.';
+
+  @override
+  String get evSessionNoEventLocation =>
+      'No location is stored for this event. Without coordinates there is no way to check that you are on site.';
+
+  @override
+  String get evSessionNoLocation =>
+      'Location unavailable. Check the location service and permission.';
+
+  @override
+  String evSessionTooFar(String km) {
+    return 'You are $km km from the venue. Badges can only be issued on site.';
+  }
+
+  @override
+  String get evSessionFailed =>
+      'Could not start the session. Details are in the diagnostics log.';
 }

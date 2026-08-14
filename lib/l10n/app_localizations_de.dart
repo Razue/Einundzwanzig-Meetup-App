@@ -5388,4 +5388,35 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get evBadgeYouIssueSub =>
       'Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen.';
+
+  @override
+  String get evBadgeStartSession => 'Badge-Session starten';
+
+  @override
+  String get evSessionNoIdentity =>
+      'Kein Nostr-Schlüssel vorhanden. Lege zuerst einen an.';
+
+  @override
+  String get evSessionNotIssuer =>
+      'Du bist bei diesem Event nicht als Aussteller eingetragen.';
+
+  @override
+  String get evSessionOutsideWindow => 'Badges gibt es nur am Tag des Events.';
+
+  @override
+  String get evSessionNoEventLocation =>
+      'Für dieses Event ist kein Ort hinterlegt. Ohne Koordinaten lässt sich nicht prüfen, ob du vor Ort bist.';
+
+  @override
+  String get evSessionNoLocation =>
+      'Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.';
+
+  @override
+  String evSessionTooFar(String km) {
+    return 'Du bist $km km vom Veranstaltungsort entfernt. Badges lassen sich nur vor Ort ausgeben.';
+  }
+
+  @override
+  String get evSessionFailed =>
+      'Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log.';
 }

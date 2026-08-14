@@ -5369,4 +5369,34 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get evBadgeYouIssueSub =>
       'El día del evento puedes iniciar una sesión en el lugar y repartir insignias.';
+
+  @override
+  String get evBadgeStartSession => 'Iniciar sesión de insignias';
+
+  @override
+  String get evSessionNoIdentity => 'No hay clave Nostr. Crea una primero.';
+
+  @override
+  String get evSessionNotIssuer => 'No figuras como emisor de este evento.';
+
+  @override
+  String get evSessionOutsideWindow =>
+      'Las insignias solo están disponibles el día del evento.';
+
+  @override
+  String get evSessionNoEventLocation =>
+      'Este evento no tiene ubicación guardada. Sin coordenadas no se puede comprobar que estés en el lugar.';
+
+  @override
+  String get evSessionNoLocation =>
+      'No se puede determinar la ubicación. Comprueba el servicio de localización y el permiso.';
+
+  @override
+  String evSessionTooFar(String km) {
+    return 'Estás a $km km del lugar. Las insignias solo se pueden emitir allí.';
+  }
+
+  @override
+  String get evSessionFailed =>
+      'No se pudo iniciar la sesión. Los detalles están en el registro de diagnóstico.';
 }

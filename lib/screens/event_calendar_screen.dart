@@ -18,7 +18,9 @@ import 'package:image_picker/image_picker.dart';
 import '../services/blossom_upload_service.dart';
 import '../services/event_badge_auth_service.dart';
 import '../services/nostr_service.dart';
+import '../services/event_badge_session_service.dart';
 import '../services/signing_service.dart';
+import 'rolling_qr_screen.dart';
 import 'location_picker_screen.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/portal_api_service.dart';
@@ -132,6 +134,11 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   /// Die Termine liegen ohnehin schon geladen vor.
   String? _myPubkey;
 
+  /// Laeuft gerade ein Sessionstart? Sperrt den Knopf — die Ortspruefung
+  /// dauert ein paar Sekunden, und zweimal tippen erzeugt sonst zwei
+  /// Versuche.
+  bool _startingSession = false;
+
   @override
   void initState() {
     super.initState();
@@ -177,11 +184,82 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                     : t.evBadgeAvailableSub,
                 style: const TextStyle(
                     color: cTextSecondary, fontSize: 12, height: 1.45)),
+            // Der Knopf erscheint NUR am Termintag. Ihn ganzjaehrig zu
+            // zeigen und dann abzulehnen waere eine Einladung ins Leere.
+            if (iAmIssuer && (e.nostr?.isBadgeWindowOpen ?? false)) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _startingSession ? null : () => _startEventSession(e),
+                  icon: _startingSession
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.black))
+                      : const Icon(Icons.qr_code_2_rounded,
+                          color: Colors.black, size: 18),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cOrange,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(kTileRadius)),
+                  ),
+                  label: Text(t.evBadgeStartSession,
+                      style: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
           ]),
         ),
       ]),
     );
   }
+
+  /// Badge-Session fuer ein Event starten.
+  Future<void> _startEventSession(_CalItem e) async {
+    final event = e.nostr;
+    if (event == null) return;
+
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() => _startingSession = true);
+
+    final res = await EventBadgeSessionService.start(event);
+
+    if (!mounted) return;
+    setState(() => _startingSession = false);
+
+    if (!res.ok) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(_sessionErrorText(t, res)),
+        backgroundColor: cRed,
+        duration: const Duration(seconds: 5),
+      ));
+      return;
+    }
+
+    // Detailblatt schliessen, dann den QR zeigen — sonst laege der Code
+    // hinter dem halbhohen Blatt.
+    navigator.pop();
+    navigator.push(
+      MaterialPageRoute(builder: (_) => const RollingQRScreen()),
+    );
+  }
+
+  String _sessionErrorText(AppLocalizations t, EventSessionResult res) =>
+      switch (res.error) {
+        EventSessionError.noIdentity => t.evSessionNoIdentity,
+        EventSessionError.notIssuer => t.evSessionNotIssuer,
+        EventSessionError.outsideWindow => t.evSessionOutsideWindow,
+        EventSessionError.noEventLocation => t.evSessionNoEventLocation,
+        EventSessionError.locationUnavailable => t.evSessionNoLocation,
+        EventSessionError.tooFarAway =>
+          t.evSessionTooFar((res.distanceKm ?? 0).toStringAsFixed(1)),
+        _ => t.evSessionFailed,
+      };
 
   Future<void> _load() async {
     setState(() => _loading = true);

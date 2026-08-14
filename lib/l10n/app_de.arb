@@ -2499,5 +2499,20 @@
   "evBadgeAvailable": "Hier gibt es ein Badge",
   "evBadgeAvailableSub": "Vor Ort kannst du dir ein Badge abholen — am Tag des Events, in der Nähe des Veranstaltungsorts.",
   "evBadgeYouIssue": "Du darfst hier Badges ausgeben",
-  "evBadgeYouIssueSub": "Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen."
+  "evBadgeYouIssueSub": "Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen.",
+  "evBadgeStartSession": "Badge-Session starten",
+  "evSessionNoIdentity": "Kein Nostr-Schlüssel vorhanden. Lege zuerst einen an.",
+  "evSessionNotIssuer": "Du bist bei diesem Event nicht als Aussteller eingetragen.",
+  "evSessionOutsideWindow": "Badges gibt es nur am Tag des Events.",
+  "evSessionNoEventLocation": "Für dieses Event ist kein Ort hinterlegt. Ohne Koordinaten lässt sich nicht prüfen, ob du vor Ort bist.",
+  "evSessionNoLocation": "Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.",
+  "evSessionTooFar": "Du bist {km} km vom Veranstaltungsort entfernt. Badges lassen sich nur vor Ort ausgeben.",
+  "@evSessionTooFar": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "evSessionFailed": "Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log."
 }

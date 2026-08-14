@@ -9783,6 +9783,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen.'**
   String get evBadgeYouIssueSub;
+
+  /// No description provided for @evBadgeStartSession.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge-Session starten'**
+  String get evBadgeStartSession;
+
+  /// No description provided for @evSessionNoIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Nostr-Schlüssel vorhanden. Lege zuerst einen an.'**
+  String get evSessionNoIdentity;
+
+  /// No description provided for @evSessionNotIssuer.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist bei diesem Event nicht als Aussteller eingetragen.'**
+  String get evSessionNotIssuer;
+
+  /// No description provided for @evSessionOutsideWindow.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges gibt es nur am Tag des Events.'**
+  String get evSessionOutsideWindow;
+
+  /// No description provided for @evSessionNoEventLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Für dieses Event ist kein Ort hinterlegt. Ohne Koordinaten lässt sich nicht prüfen, ob du vor Ort bist.'**
+  String get evSessionNoEventLocation;
+
+  /// No description provided for @evSessionNoLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.'**
+  String get evSessionNoLocation;
+
+  /// No description provided for @evSessionTooFar.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist {km} km vom Veranstaltungsort entfernt. Badges lassen sich nur vor Ort ausgeben.'**
+  String evSessionTooFar(String km);
+
+  /// No description provided for @evSessionFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log.'**
+  String get evSessionFailed;
 }
 
 class _AppLocalizationsDelegate

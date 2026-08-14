@@ -2477,5 +2477,20 @@
   "evBadgeAvailable": "Aquí hay una insignia",
   "evBadgeAvailableSub": "Puedes recoger una insignia en el lugar: el día del evento y cerca del sitio.",
   "evBadgeYouIssue": "Puedes emitir insignias aquí",
-  "evBadgeYouIssueSub": "El día del evento puedes iniciar una sesión en el lugar y repartir insignias."
+  "evBadgeYouIssueSub": "El día del evento puedes iniciar una sesión en el lugar y repartir insignias.",
+  "evBadgeStartSession": "Iniciar sesión de insignias",
+  "evSessionNoIdentity": "No hay clave Nostr. Crea una primero.",
+  "evSessionNotIssuer": "No figuras como emisor de este evento.",
+  "evSessionOutsideWindow": "Las insignias solo están disponibles el día del evento.",
+  "evSessionNoEventLocation": "Este evento no tiene ubicación guardada. Sin coordenadas no se puede comprobar que estés en el lugar.",
+  "evSessionNoLocation": "No se puede determinar la ubicación. Comprueba el servicio de localización y el permiso.",
+  "evSessionTooFar": "Estás a {km} km del lugar. Las insignias solo se pueden emitir allí.",
+  "@evSessionTooFar": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "evSessionFailed": "No se pudo iniciar la sesión. Los detalles están en el registro de diagnóstico."
 }
