@@ -5443,4 +5443,7 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get mvEventNotFound =>
       'Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.';
+
+  @override
+  String get evBadgeShowSession => 'QR anzeigen';
 }

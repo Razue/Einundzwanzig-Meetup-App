@@ -5391,4 +5391,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mvEventNotFound =>
       'The linked event cannot be found. Without a connection the permission cannot be checked.';
+
+  @override
+  String get evBadgeShowSession => 'Show QR code';
 }

@@ -2528,5 +2528,6 @@
       }
     }
   },
-  "mvEventNotFound": "The linked event cannot be found. Without a connection the permission cannot be checked."
+  "mvEventNotFound": "The linked event cannot be found. Without a connection the permission cannot be checked.",
+  "evBadgeShowSession": "Show QR code"
 }

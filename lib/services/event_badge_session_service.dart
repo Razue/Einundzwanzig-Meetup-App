@@ -18,7 +18,10 @@
 // halten — die Ausstellerliste im Event macht seine Signatur gueltig.
 // ============================================
 
+import 'dart:async';
+
 import 'app_logger.dart';
+import 'coattendance_service.dart';
 import 'badge_security.dart';
 import 'calendar_event_service.dart';
 import 'meetup_location_service.dart';
@@ -65,6 +68,19 @@ class EventBadgeSessionService {
   /// "Westerwald" auf einen groben Mittelpunkt. Hier hat der Ersteller den
   /// Punkt selbst auf der Karte gesetzt, der darf also genau sein.
   static const double issuerRadiusKm = 5.0;
+
+  /// Ende des Veranstaltungstags als Unix-Sekunden.
+  ///
+  /// Geht ein Event ueber mehrere Tage, zaehlt der letzte. Mitternacht ist
+  /// bewusst der Schnitt und nicht "Eventende plus Puffer": Das Badge wird
+  /// nach Datum zusammengefasst, ein Scan um 23:50 gehoert noch dazu, einer
+  /// um 00:10 waere schon ein anderer Tag.
+  static int _endOfEventDay(NostrCalendarEvent event) {
+    final last = event.end ?? event.start;
+    final midnight = DateTime(last.year, last.month, last.day)
+        .add(const Duration(days: 1));
+    return midnight.millisecondsSinceEpoch ~/ 1000;
+  }
 
   /// Prueft alles und legt die Session an.
   static Future<EventSessionResult> start(NostrCalendarEvent event) async {
@@ -119,11 +135,31 @@ class EventBadgeSessionService {
         // Helfer zufaellig stand, als er die Session startete.
         lat: event.lat,
         lng: event.lng,
+        // Bis zum Ende des Veranstaltungstags statt der ueblichen vier
+        // Stunden. Ein Event dauert laenger als ein Meetup, mehrere Helfer
+        // starten zu verschiedenen Zeiten, und das Badge traegt ohnehin nur
+        // das Datum — es ist also gleichgueltig, wann am Tag jemand scannt.
+        validUntilEpoch: _endOfEventDay(event),
       );
       if (session == null) {
         return const EventSessionResult.failure(
             EventSessionError.sessionFailed);
       }
+      // Der Helfer war selbst da. Ohne diesen Eintrag saesse er ausserhalb
+      // des Event-Graphen, waehrend alle, die bei ihm gescannt haben, darin
+      // sind — er waere von seinen eigenen Teilnehmern getrennt.
+      //
+      // Der Aufruf laeuft im Hintergrund: Er kostet einen Relay-Versand, und
+      // der QR soll nicht darauf warten.
+      unawaited(CoAttendanceService.recordOrganizerAttendance(
+        meetupName: event.title,
+        date: DateTime.now(),
+        blockHeight: session.blockHeight,
+        lat: event.lat,
+        lng: event.lng,
+        isEvent: true,
+      ));
+
       AppLogger.debug(_tag,
           'Session fuer "${event.title}" gestartet, ${distance.toStringAsFixed(2)} km entfernt.');
       return EventSessionResult.success(session);

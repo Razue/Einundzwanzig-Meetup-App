@@ -9861,6 +9861,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.'**
   String get mvEventNotFound;
+
+  /// No description provided for @evBadgeShowSession.
+  ///
+  /// In de, this message translates to:
+  /// **'QR anzeigen'**
+  String get evBadgeShowSession;
 }
 
 class _AppLocalizationsDelegate

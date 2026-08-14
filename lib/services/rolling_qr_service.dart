@@ -177,10 +177,23 @@ class RollingQRService {
     required int blockHeight,
     double lat = 0,
     double lng = 0,
+    /// Eigenes Ablaufdatum als Unix-Sekunden. Ohne Angabe gelten die vier
+    /// Stunden aus [sessionValidityHours].
+    ///
+    /// Fuer EVENTS ist das zu kurz: Ein Blocktrainer-Abend geht laenger,
+    /// und die Helfer starten zu unterschiedlichen Zeiten. Dort wird das
+    /// Ende des Veranstaltungstags gesetzt — das Badge traegt ohnehin nur
+    /// das Datum, es macht also keinen Unterschied, WANN am Tag jemand
+    /// scannt.
+    int? validUntilEpoch,
   }) async {
     final prefs = await SharedPreferences.getInstance();
 
     // Bestehende Session prüfen
+    // Laeuft schon eine Session fuer dasselbe Ziel, wird sie
+    // WEITERVERWENDET — nicht ersetzt. Sonst bekaeme jeder, der zwischendurch
+    // aus dem QR heraus- und wieder hineingeht, eine neue Session, und die
+    // vorher ausgegebenen Codes waeren entwertet.
     final existing = await loadSession();
     if (existing != null && !existing.isExpired && existing.meetupId == meetupId) {
       return existing;
@@ -207,6 +220,7 @@ class RollingQRService {
       blockHeight: finalBlockHeight,
       lat: lat,
       lng: lng,
+      validUntilEpoch: validUntilEpoch,
     );
   }
 
@@ -253,13 +267,18 @@ class RollingQRService {
     required int blockHeight,
     double lat = 0,
     double lng = 0,
+    int? validUntilEpoch,
   }) async {
     // 1. Keys laden (nur pubkey für die Session-Metadaten)
     final pubkey = await NostrService.getNpub() ?? '';
     
     // 2. Zeitstempel
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final expiresAt = now + (sessionValidityHours * 3600);
+    // Nie in der Vergangenheit: Ein uebergebenes Ende, das schon vorbei
+    // ist, waere eine Session, die sofort abgelaufen ist.
+    final expiresAt = (validUntilEpoch != null && validUntilEpoch > now)
+        ? validUntilEpoch
+        : now + (sessionValidityHours * 3600);
 
     // 3. Session-Seed: CSPRNG statt Private-Key-Ableitung
     //

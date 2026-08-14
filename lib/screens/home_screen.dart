@@ -1849,10 +1849,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     return _tile(
       accentColor: hasToday ? cOrange : cTextTertiary,
       watermark: Icons.event_rounded,
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => EventCalendarScreen(initialDay: DateTime.now()))),
+      // Nach der Rueckkehr die Session pruefen: Im Kalender laesst sich
+      // inzwischen eine Event-Badge-Session starten, und ohne diese Zeile
+      // erschiene die laufende Session erst beim naechsten Aktualisieren
+      // des Dashboards.
+      onTap: () async {
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => EventCalendarScreen(initialDay: DateTime.now())));
+        _checkActiveSession();
+      },
       child: _heroContent(
         icon: Icons.event_rounded,
         accent: hasToday ? cOrange : cTextSecondary,

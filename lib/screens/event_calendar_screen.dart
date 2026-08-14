@@ -19,6 +19,7 @@ import '../services/blossom_upload_service.dart';
 import '../services/event_badge_auth_service.dart';
 import '../services/nostr_service.dart';
 import '../services/event_badge_session_service.dart';
+import '../services/rolling_qr_service.dart';
 import '../services/signing_service.dart';
 import 'rolling_qr_screen.dart';
 import 'location_picker_screen.dart';
@@ -139,6 +140,12 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   /// Versuche.
   bool _startingSession = false;
 
+  /// meetupId einer bereits laufenden Session, sonst null. Damit der Knopf
+  /// "QR anzeigen" statt "Session starten" heisst — sonst sieht es aus, als
+  /// muesste man jedes Mal neu beginnen, obwohl die alte Session
+  /// weiterlaeuft.
+  String? _runningSessionId;
+
   @override
   void initState() {
     super.initState();
@@ -146,7 +153,15 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     _focused = DateTime(start.year, start.month);
     _selected = DateTime(start.year, start.month, start.day);
     _loadMyPubkey();
+    _loadRunningSession();
     _load();
+  }
+
+  Future<void> _loadRunningSession() async {
+    final s = await RollingQRService.loadSession();
+    if (!mounted) return;
+    setState(() =>
+        _runningSessionId = (s != null && !s.isExpired) ? s.meetupId : null);
   }
 
   Future<void> _loadMyPubkey() async {
@@ -205,7 +220,12 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(kTileRadius)),
                   ),
-                  label: Text(t.evBadgeStartSession,
+                  label: Text(
+                      _runningSessionId != null &&
+                              e.nostr != null &&
+                              _runningSessionId!.contains(e.nostr!.dTag)
+                          ? t.evBadgeShowSession
+                          : t.evBadgeStartSession,
                       style: const TextStyle(
                           color: Colors.black, fontWeight: FontWeight.w800)),
                 ),
@@ -244,9 +264,10 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     // Detailblatt schliessen, dann den QR zeigen — sonst laege der Code
     // hinter dem halbhohen Blatt.
     navigator.pop();
-    navigator.push(
+    await navigator.push(
       MaterialPageRoute(builder: (_) => const RollingQRScreen()),
     );
+    if (mounted) _loadRunningSession();
   }
 
   String _sessionErrorText(AppLocalizations t, EventSessionResult res) =>

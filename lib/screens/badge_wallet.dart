@@ -748,7 +748,12 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             // 1b. MEETUP-WAPPEN als Wasserzeichen darueber. Macht jedes
             // Badge auf einen Blick zuordenbar. Faellt still weg, wenn
             // kein Wappen vorliegt — dann traegt die Grafik allein.
-            MeetupCrestWatermark(meetupName: badge.meetupName),
+            // Bei Event-Badges das hochgeladene Bild statt der
+            // Wappen-Suche — "Blocktrainer Event" steht in keiner
+            // Meetup-Liste.
+            MeetupCrestWatermark(
+                meetupName: badge.meetupName,
+                imageUrl: badge.coverUrl.isNotEmpty ? badge.coverUrl : null),
 
             // 2. DUNKLER VERLAUF UNTEN
             Container(
@@ -918,7 +923,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             // Wappen auch hier, aber zurueckhaltender — die kompakte
             // Karte hat weniger Platz und mehr Text pro Flaeche.
             MeetupCrestWatermark(
-                meetupName: badge.meetupName, opacity: 0.17, widthFactor: 0.95),
+                meetupName: badge.meetupName,
+                opacity: 0.17,
+                widthFactor: 0.95,
+                imageUrl: badge.coverUrl.isNotEmpty ? badge.coverUrl : null),
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(

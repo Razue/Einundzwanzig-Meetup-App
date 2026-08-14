@@ -22,23 +22,37 @@ class MeetupCrestWatermark extends StatelessWidget {
   /// Anteil der Kartenbreite, den das Wappen einnimmt.
   final double widthFactor;
 
+  /// Feste Bild-URL, die Vorrang vor der Wappen-Suche hat.
+  ///
+  /// Fuer EVENT-BADGES: Deren Bild kommt aus dem Kalender-Event und nicht
+  /// aus der Meetup-Liste des Portals. Die Suche nach "Blocktrainer Event"
+  /// haette dort nie etwas gefunden, und das hochgeladene Bild waere im
+  /// Badge nie aufgetaucht.
+  final String? imageUrl;
+
   const MeetupCrestWatermark({
     super.key,
     required this.meetupName,
     this.opacity = 0.20,
     this.widthFactor = 1.05,
+    this.imageUrl,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Der Badge-Name traegt das Land hinten dran — fuer die Wappen-Suche
-    // zaehlt nur der Teil davor.
-    final city = meetupName.split(',').first.trim();
-    if (city.isEmpty) return const SizedBox.shrink();
+    // Feste URL schlaegt die Suche.
+    String url = (imageUrl ?? '').trim();
 
-    final url = MeetupCalendarService.absoluteImageUrl(
-      MeetupCalendarService.logoFor(city),
-    );
+    if (url.isEmpty) {
+      // Der Badge-Name traegt das Land hinten dran — fuer die Wappen-Suche
+      // zaehlt nur der Teil davor.
+      final city = meetupName.split(',').first.trim();
+      if (city.isEmpty) return const SizedBox.shrink();
+
+      url = MeetupCalendarService.absoluteImageUrl(
+        MeetupCalendarService.logoFor(city),
+      );
+    }
     if (url.isEmpty) return const SizedBox.shrink();
 
     return LayoutBuilder(

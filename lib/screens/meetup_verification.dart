@@ -516,6 +516,10 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       // signierten Payload.
       final String? eventAddress = BadgeSecurity.eventAddressOf(normalized);
 
+      /// Bild des Event-Badges — kommt aus dem Kalender-Event und wandert
+      /// gleich mit ins Badge.
+      String eventBadgeImage = '';
+
       if (verifyResult != null && verifyResult.version >= 2 && adminPubkey.isNotEmpty) {
         if (eventAddress != null) {
           final chain = await EventBadgeChainService.verify(
@@ -523,6 +527,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             signerPubkey: adminPubkey,
           );
           isKnownAdmin = chain.ok;
+          eventBadgeImage = chain.badgeImageUrl;
           adminCheckInfo = switch (chain.status) {
             EventChainStatus.verified => tr.mvEventIssuerOk(
                 chain.eventTitle, chain.creatorName ?? tr.verifyVerifiedAdmin),
@@ -616,6 +621,10 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         claimPubkey: claimPubkey,
         claimTimestamp: claimTimestamp,
         isRetroactive: false,
+        // Event-Badge: wirkt im Trust Score und im Vertrauensnetzwerk
+        // anders als ein Meetup-Badge.
+        isEvent: eventAddress != null,
+        coverUrl: eventBadgeImage,
       );
 
       msg = "${tr.verifyBadgeFound}\n\n";

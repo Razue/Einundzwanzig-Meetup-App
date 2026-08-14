@@ -55,11 +55,17 @@ class EventChainResult {
   /// Name des Erstellers aus der Admin-Registry, sofern bekannt.
   final String? creatorName;
 
+  /// Bild des Event-Badges. Kommt aus dem Kalender-Event und wird beim
+  /// Scannen ins Badge uebernommen — sonst haette der Sammler ein Badge
+  /// ohne das Bild, das der Veranstalter extra hochgeladen hat.
+  final String badgeImageUrl;
+
   const EventChainResult({
     required this.status,
     this.eventTitle = '',
     this.creatorPubkey = '',
     this.creatorName,
+    this.badgeImageUrl = '',
   });
 
   bool get ok => status == EventChainStatus.verified;
@@ -86,6 +92,7 @@ class EventBadgeChainService {
         status: EventChainStatus.eventHasNoBadge,
         eventTitle: event.title,
         creatorPubkey: event.pubkey,
+        badgeImageUrl: event.badgeImageUrl,
       );
     }
 
@@ -99,6 +106,7 @@ class EventBadgeChainService {
         status: EventChainStatus.signerNotListed,
         eventTitle: event.title,
         creatorPubkey: event.pubkey,
+        badgeImageUrl: event.badgeImageUrl,
       );
     }
 
@@ -119,6 +127,7 @@ class EventBadgeChainService {
           status: EventChainStatus.creatorNotAuthorized,
           eventTitle: event.title,
           creatorPubkey: event.pubkey,
+          badgeImageUrl: event.badgeImageUrl,
         );
       }
 
@@ -129,6 +138,7 @@ class EventBadgeChainService {
         eventTitle: event.title,
         creatorPubkey: event.pubkey,
         creatorName: admin.name ?? admin.meetup,
+        badgeImageUrl: event.badgeImageUrl,
       );
     } catch (e) {
       // Registry nicht erreichbar: Das Badge ist nicht falsch, nur
@@ -139,6 +149,7 @@ class EventBadgeChainService {
         status: EventChainStatus.creatorNotAuthorized,
         eventTitle: event.title,
         creatorPubkey: event.pubkey,
+        badgeImageUrl: event.badgeImageUrl,
       );
     }
   }

@@ -2550,5 +2550,6 @@
       }
     }
   },
-  "mvEventNotFound": "Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen."
+  "mvEventNotFound": "Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.",
+  "evBadgeShowSession": "QR anzeigen"
 }
