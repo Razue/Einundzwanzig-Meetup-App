@@ -5322,4 +5322,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locPickConfirm => 'Use this location';
+
+  @override
+  String get evBadgeAvailable => 'A badge is available here';
+
+  @override
+  String get evBadgeAvailableSub =>
+      'You can collect a badge on site — on the day of the event, near the venue.';
+
+  @override
+  String get evBadgeYouIssue => 'You may issue badges here';
+
+  @override
+  String get evBadgeYouIssueSub =>
+      'On the day of the event you can start a session on site and hand out badges.';
 }

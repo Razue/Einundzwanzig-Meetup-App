@@ -5374,4 +5374,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get locPickConfirm => 'Ort übernehmen';
+
+  @override
+  String get evBadgeAvailable => 'Hier gibt es ein Badge';
+
+  @override
+  String get evBadgeAvailableSub =>
+      'Vor Ort kannst du dir ein Badge abholen — am Tag des Events, in der Nähe des Veranstaltungsorts.';
+
+  @override
+  String get evBadgeYouIssue => 'Du darfst hier Badges ausgeben';
+
+  @override
+  String get evBadgeYouIssueSub =>
+      'Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen.';
 }

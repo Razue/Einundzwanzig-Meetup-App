@@ -5355,4 +5355,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get locPickConfirm => 'Usar esta ubicación';
+
+  @override
+  String get evBadgeAvailable => 'Aquí hay una insignia';
+
+  @override
+  String get evBadgeAvailableSub =>
+      'Puedes recoger una insignia en el lugar: el día del evento y cerca del sitio.';
+
+  @override
+  String get evBadgeYouIssue => 'Puedes emitir insignias aquí';
+
+  @override
+  String get evBadgeYouIssueSub =>
+      'El día del evento puedes iniciar una sesión en el lugar y repartir insignias.';
 }

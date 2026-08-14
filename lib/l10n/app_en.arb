@@ -2473,5 +2473,9 @@
   "locPickHint": "Tap the map to set the venue.",
   "locPickHintDone": "Tap again to move the marker.",
   "locPickJumpToMe": "Jump to my location",
-  "locPickConfirm": "Use this location"
+  "locPickConfirm": "Use this location",
+  "evBadgeAvailable": "A badge is available here",
+  "evBadgeAvailableSub": "You can collect a badge on site — on the day of the event, near the venue.",
+  "evBadgeYouIssue": "You may issue badges here",
+  "evBadgeYouIssueSub": "On the day of the event you can start a session on site and hand out badges."
 }

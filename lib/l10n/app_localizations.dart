@@ -9759,6 +9759,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Ort übernehmen'**
   String get locPickConfirm;
+
+  /// No description provided for @evBadgeAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier gibt es ein Badge'**
+  String get evBadgeAvailable;
+
+  /// No description provided for @evBadgeAvailableSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor Ort kannst du dir ein Badge abholen — am Tag des Events, in der Nähe des Veranstaltungsorts.'**
+  String get evBadgeAvailableSub;
+
+  /// No description provided for @evBadgeYouIssue.
+  ///
+  /// In de, this message translates to:
+  /// **'Du darfst hier Badges ausgeben'**
+  String get evBadgeYouIssue;
+
+  /// No description provided for @evBadgeYouIssueSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen.'**
+  String get evBadgeYouIssueSub;
 }
 
 class _AppLocalizationsDelegate

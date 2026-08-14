@@ -18,6 +18,7 @@ import 'package:image_picker/image_picker.dart';
 import '../services/blossom_upload_service.dart';
 import '../services/event_badge_auth_service.dart';
 import '../services/nostr_service.dart';
+import '../services/signing_service.dart';
 import 'location_picker_screen.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/portal_api_service.dart';
@@ -39,6 +40,12 @@ class _CalItem {
   final bool isCourse; // Portal-Kurstermin (eigene Farbe)
   final String url;
 
+  /// Das zugrunde liegende Nostr-Event — nur bei Terminen aus dem
+  /// Nostr-Kalender gesetzt. Traegt Badge-Bild, Koordinaten und die
+  /// Aussteller-Liste; die Anzeige greift direkt darauf zu, statt jedes
+  /// Feld einzeln durchzureichen.
+  final NostrCalendarEvent? nostr;
+
   _CalItem({
     required this.title,
     required this.description,
@@ -49,10 +56,17 @@ class _CalItem {
     required this.isMeetup,
     this.isCourse = false,
     this.url = '',
+    this.nostr,
   });
 
   DateTime get day => DateTime(start.year, start.month, start.day);
   Color get color => isCourse ? cCourse : (isMeetup ? cOrange : cNostr);
+
+  /// Gibt es fuer diesen Termin ein Badge?
+  bool get hasBadge => nostr?.badgeEnabled ?? false;
+
+  /// Bild des Event-Badges, leer wenn keines hinterlegt ist.
+  String get badgeImage => nostr?.badgeImageUrl ?? '';
 
   factory _CalItem.fromNostr(NostrCalendarEvent e) => _CalItem(
         title: e.title,
@@ -62,6 +76,7 @@ class _CalItem {
         end: e.end,
         allDay: e.allDay,
         isMeetup: false,
+        nostr: e,
       );
 
   factory _CalItem.fromMeetup(ical.CalendarEvent e) => _CalItem(
@@ -75,6 +90,8 @@ class _CalItem {
       );
 }
 
+/// Kennung fuer den eigenen Schluessel im Kalender-Bildschirm. Wird einmal
+/// beim Laden geholt und dann nur noch verglichen.
 class EventCalendarScreen extends StatefulWidget {
   /// Tag, der beim Oeffnen ausgewaehlt sein soll. Wird von der
   /// Dashboard-Kachel gesetzt, damit man direkt in der Tagesuebersicht
@@ -109,13 +126,61 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     super.dispose();
   }
 
+  /// Eigener Schluessel — einmal geholt, danach nur noch verglichen. Damit
+  /// erkennt der Bildschirm, ob man bei einem Termin als Aussteller
+  /// eingetragen ist. Eine eigene Relay-Abfrage dafuer waere ueberfluessig:
+  /// Die Termine liegen ohnehin schon geladen vor.
+  String? _myPubkey;
+
   @override
   void initState() {
     super.initState();
     final start = widget.initialDay ?? DateTime.now();
     _focused = DateTime(start.year, start.month);
     _selected = DateTime(start.year, start.month, start.day);
+    _loadMyPubkey();
     _load();
+  }
+
+  Future<void> _loadMyPubkey() async {
+    final key = await SigningService.pubkeyHex();
+    if (mounted) setState(() => _myPubkey = key);
+  }
+
+  /// Hinweiskasten unter dem Termin: Es gibt ein Badge — und wer es
+  /// ausgeben darf, erfaehrt es hier.
+  Widget _badgeNotice(AppLocalizations t, _CalItem e) {
+    final iAmIssuer =
+        _myPubkey != null && (e.nostr?.isIssuer(_myPubkey!) ?? false);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cOrange.withValues(alpha: iAmIssuer ? 0.12 : 0.06),
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(
+            color: cOrange.withValues(alpha: iAmIssuer ? 0.5 : 0.25),
+            width: 0.5),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Icon(Icons.military_tech_rounded, color: cOrange, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(iAmIssuer ? t.evBadgeYouIssue : t.evBadgeAvailable,
+                style: const TextStyle(
+                    color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Text(
+                iAmIssuer
+                    ? t.evBadgeYouIssueSub
+                    : t.evBadgeAvailableSub,
+                style: const TextStyle(
+                    color: cTextSecondary, fontSize: 12, height: 1.45)),
+          ]),
+        ),
+      ]),
+    );
   }
 
   Future<void> _load() async {
@@ -682,6 +747,19 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
           }),
           const SizedBox(width: 8),
           Expanded(child: Text(e.title, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700))),
+          // Abzeichen "hier gibt es ein Badge" — steht VOR dem Typ-Etikett,
+          // weil es die seltenere und damit interessantere Information ist.
+          if (e.hasBadge) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                  color: cOrange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6)),
+              child: const Icon(Icons.military_tech_rounded,
+                  color: cOrange, size: 13),
+            ),
+            const SizedBox(width: 6),
+          ],
           // Typ-Badge (Meetup = orange, Veranstaltung = cyan)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -690,6 +768,21 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                 style: TextStyle(color: e.color, fontSize: 10, fontWeight: FontWeight.w700)),
           ),
         ]),
+        // Badge-Bild als schmales Band. Bewusst niedrig: Die Liste soll
+        // uebersichtlich bleiben, das Bild ist Wiedererkennung, nicht Inhalt.
+        if (e.badgeImage.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              e.badgeImage,
+              height: 84,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         Row(children: [
           const Icon(Icons.schedule_rounded, color: cTextTertiary, size: 13),
@@ -765,6 +858,10 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             if (e.description.isNotEmpty) ...[
               const SizedBox(height: 14),
               Text(e.description, style: const TextStyle(color: cText, fontSize: 14, height: 1.5)),
+            ],
+            if (e.hasBadge) ...[
+              const SizedBox(height: 16),
+              _badgeNotice(t, e),
             ],
             if (links.isNotEmpty) ...[
               const SizedBox(height: 16),

@@ -2495,5 +2495,9 @@
   "locPickHint": "Tippe auf die Karte, um den Veranstaltungsort zu setzen.",
   "locPickHintDone": "Tippe erneut, um den Punkt zu verschieben.",
   "locPickJumpToMe": "Zu meinem Standort",
-  "locPickConfirm": "Ort übernehmen"
+  "locPickConfirm": "Ort übernehmen",
+  "evBadgeAvailable": "Hier gibt es ein Badge",
+  "evBadgeAvailableSub": "Vor Ort kannst du dir ein Badge abholen — am Tag des Events, in der Nähe des Veranstaltungsorts.",
+  "evBadgeYouIssue": "Du darfst hier Badges ausgeben",
+  "evBadgeYouIssueSub": "Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen."
 }

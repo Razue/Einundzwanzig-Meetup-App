@@ -2473,5 +2473,9 @@
   "locPickHint": "Toca el mapa para marcar el lugar.",
   "locPickHintDone": "Toca de nuevo para mover el marcador.",
   "locPickJumpToMe": "Ir a mi ubicación",
-  "locPickConfirm": "Usar esta ubicación"
+  "locPickConfirm": "Usar esta ubicación",
+  "evBadgeAvailable": "Aquí hay una insignia",
+  "evBadgeAvailableSub": "Puedes recoger una insignia en el lugar: el día del evento y cerca del sitio.",
+  "evBadgeYouIssue": "Puedes emitir insignias aquí",
+  "evBadgeYouIssueSub": "El día del evento puedes iniciar una sesión en el lugar y repartir insignias."
 }
