@@ -13,9 +13,12 @@ import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/calendar_event_service.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../services/blossom_upload_service.dart';
 import '../services/event_badge_auth_service.dart';
-import '../services/meetup_location_service.dart';
 import '../services/nostr_service.dart';
+import 'location_picker_screen.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/portal_api_service.dart';
 import '../models/calendar_event.dart' as ical;
@@ -861,15 +864,16 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
 
   // --- Event-Badge ---
   final _imageCtrl = TextEditingController();
-  final _issuerCtrl = TextEditingController();
   bool _badgeEnabled = false;
   double _lat = 0;
   double _lng = 0;
-  bool _locating = false;
+  bool _uploading = false;
 
-  /// Eingetragene Aussteller als Hex-Pubkeys, dazu die npub-Schreibweise
-  /// fuer die Anzeige.
-  final List<({String hex, String npub})> _issuers = [];
+  /// Ein Eingabefeld je Helfer. Bewusst Felder statt einer festen Liste:
+  /// Ein eingefuegter npub laesst sich so noch korrigieren, ohne ihn erst
+  /// loeschen und neu einfuegen zu muessen. Die erste Zeile steht von
+  /// Anfang an da, damit sichtbar ist, worum es geht.
+  final List<TextEditingController> _issuerCtrls = [TextEditingController()];
 
   /// null = wird noch geprueft. Jeder darf Events anlegen; das Badge daran
   /// ist an die Berechtigung gebunden.
@@ -895,69 +899,118 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     _locationCtrl.dispose();
     _descCtrl.dispose();
     _imageCtrl.dispose();
-    _issuerCtrl.dispose();
+    for (final c in _issuerCtrls) {
+      c.dispose();
+    }
     super.dispose();
   }
 
-  /// Aussteller aus dem Eingabefeld uebernehmen.
+  /// Wandelt eine Eingabezeile in einen Hex-Pubkey.
   ///
-  /// Akzeptiert npub UND Hex — beim Kopieren aus verschiedenen Quellen
-  /// bekommt man mal das eine, mal das andere, und eine Fehlermeldung
-  /// dafuer waere reine Schikane.
-  void _addIssuer() {
-    final t = AppLocalizations.of(context);
-    final raw = _issuerCtrl.text.trim();
-    if (raw.isEmpty) return;
-
-    String? hex;
-    if (raw.startsWith('npub1')) {
+  /// Nimmt npub UND Hex — beim Kopieren aus verschiedenen Quellen bekommt
+  /// man mal das eine, mal das andere. Gibt null zurueck, wenn nichts
+  /// Verwertbares drinsteht.
+  String? _toHex(String raw) {
+    final s = raw.trim();
+    if (s.isEmpty) return null;
+    if (s.startsWith('npub1')) {
       try {
-        hex = NostrService.npubToHex(raw);
+        final hex = NostrService.npubToHex(s);
+        return hex.length == 64 ? hex.toLowerCase() : null;
       } catch (_) {
-        hex = null;
+        return null;
       }
-    } else if (RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(raw)) {
-      hex = raw.toLowerCase();
     }
+    if (RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(s)) return s.toLowerCase();
+    return null;
+  }
 
-    if (hex == null || hex.length != 64) {
-      _snack(t.evBadgeIssuerInvalid, cRed);
-      return;
+  /// Alle gueltigen Aussteller, ohne Doppelte und ohne leere Zeilen.
+  List<String> get _issuerHexes {
+    final out = <String>[];
+    for (final c in _issuerCtrls) {
+      final hex = _toHex(c.text);
+      if (hex != null && !out.contains(hex)) out.add(hex);
     }
-    if (_issuers.any((i) => i.hex == hex)) {
-      _snack(t.evBadgeIssuerDuplicate, cTextSecondary);
-      _issuerCtrl.clear();
-      return;
-    }
+    return out;
+  }
 
-    String npub;
-    try {
-      npub = NostrService.hexToNpub(hex);
-    } catch (_) {
-      npub = hex;
-    }
+  /// Steht in dieser Zeile etwas, das kein npub ist? Nur dann wird gemeckert —
+  /// eine leere Zeile ist kein Fehler, sondern ein Angebot.
+  bool _rowInvalid(TextEditingController c) =>
+      c.text.trim().isNotEmpty && _toHex(c.text) == null;
+
+  void _addIssuerRow() {
+    setState(() => _issuerCtrls.add(TextEditingController()));
+  }
+
+  void _removeIssuerRow(int index) {
     setState(() {
-      _issuers.add((hex: hex!, npub: npub));
-      _issuerCtrl.clear();
+      _issuerCtrls[index].dispose();
+      _issuerCtrls.removeAt(index);
+      // Nie ganz ohne Zeile dastehen — sonst waere der Abschnitt leer und
+      // niemand wuesste, wie man wieder eine bekommt.
+      if (_issuerCtrls.isEmpty) _issuerCtrls.add(TextEditingController());
     });
   }
 
-  /// Koordinaten des Veranstaltungsorts vom aktuellen Standort uebernehmen.
-  Future<void> _useCurrentLocation() async {
-    final t = AppLocalizations.of(context);
-    setState(() => _locating = true);
-    final res = await MeetupLocationService.resolveLocation();
-    if (!mounted) return;
-    setState(() => _locating = false);
-
-    if (res.lat == 0 && res.lng == 0) {
-      _snack(t.evBadgeNoLocation, cRed);
-      return;
-    }
+  /// Ort des Events auf der Karte waehlen.
+  Future<void> _pickLocation() async {
+    final picked = await Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LocationPickerScreen(
+          initialLat: _lat != 0 ? _lat : null,
+          initialLng: _lng != 0 ? _lng : null,
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
     setState(() {
-      _lat = res.lat;
-      _lng = res.lng;
+      _lat = picked.latitude as double;
+      _lng = picked.longitude as double;
     });
+  }
+
+  /// Bild aus der Galerie waehlen und hochladen.
+  ///
+  /// Der Upload ist keine Bequemlichkeit, sondern Pflicht: Im Kalender-Event
+  /// steht eine URL, die JEDER laden koennen muss. Ein Galeriepfad waere auf
+  /// jedem anderen Geraet wertlos.
+  Future<void> _pickImage() async {
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+      if (image == null || !mounted) return;
+
+      setState(() => _uploading = true);
+      final res = await BlossomUploadService.uploadImage(image.path);
+      if (!mounted) return;
+      setState(() => _uploading = false);
+
+      if (res.ok) {
+        setState(() => _imageCtrl.text = res.url!);
+      } else {
+        messenger.showSnackBar(SnackBar(
+          content: Text(t.evBadgeUploadFailed(res.error ?? '')),
+          backgroundColor: cRed,
+        ));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _uploading = false);
+      messenger.showSnackBar(SnackBar(
+        content: Text(t.evBadgeUploadFailed(e.toString())),
+        backgroundColor: cRed,
+      ));
+    }
   }
 
   Future<void> _pickStart() async {
@@ -1011,7 +1064,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
       badgeImageUrl: withBadge ? _imageCtrl.text.trim() : '',
       lat: withBadge ? _lat : 0,
       lng: withBadge ? _lng : 0,
-      issuers: withBadge ? _issuers.map((i) => i.hex).toList() : const [],
+      issuers: withBadge ? _issuerHexes : const [],
     );
     if (!mounted) return;
     setState(() => _publishing = false);
@@ -1171,12 +1224,54 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
         if (_badgeEnabled) ...[
           const SizedBox(height: 18),
           _label(t.evBadgeImage),
-          _input(_imageCtrl, t.evBadgeImageHint),
+          Row(children: [
+            Expanded(child: _input(_imageCtrl, t.evBadgeImageHint)),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _uploading ? null : _pickImage,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cOrange,
+                  disabledBackgroundColor: cSurface,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(kTileRadius)),
+                ),
+                child: _uploading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: cOrange))
+                    : const Icon(Icons.photo_library_rounded,
+                        color: Colors.black, size: 20),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 6),
+          Text(_uploading ? t.evBadgeUploading : t.evBadgeImageInfo,
+              style: const TextStyle(
+                  color: cTextTertiary, fontSize: 11, height: 1.4)),
+
+          if (_imageCtrl.text.trim().startsWith('http')) ...[
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(kTileRadius),
+              child: Image.network(
+                _imageCtrl.text.trim(),
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                // Kaputte URL: lieber gar nichts als ein Fehlersymbol.
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 16),
           _label(t.evBadgeLocation),
           GestureDetector(
-            onTap: _locating ? null : _useCurrentLocation,
+            onTap: _pickLocation,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               decoration: BoxDecoration(
@@ -1187,21 +1282,15 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                     width: (_lat != 0 || _lng != 0) ? 1 : 0.5),
               ),
               child: Row(children: [
-                _locating
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: cOrange))
-                    : Icon(Icons.my_location_rounded,
-                        color: (_lat != 0 || _lng != 0) ? cOrange : cTextTertiary,
-                        size: 18),
+                Icon(Icons.map_rounded,
+                    color: (_lat != 0 || _lng != 0) ? cOrange : cTextTertiary,
+                    size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     (_lat != 0 || _lng != 0)
                         ? '${_lat.toStringAsFixed(5)}, ${_lng.toStringAsFixed(5)}'
-                        : t.evBadgeLocationHint,
+                        : t.evBadgeLocationPick,
                     style: TextStyle(
                         color: (_lat != 0 || _lng != 0) ? cText : cTextTertiary,
                         fontSize: 14,
@@ -1213,7 +1302,10 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                     onTap: () => setState(() { _lat = 0; _lng = 0; }),
                     child: const Icon(Icons.close_rounded,
                         color: cTextTertiary, size: 18),
-                  ),
+                  )
+                else
+                  const Icon(Icons.chevron_right_rounded,
+                      color: cTextTertiary, size: 18),
               ]),
             ),
           ),
@@ -1224,61 +1316,53 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
 
           const SizedBox(height: 16),
           _label(t.evBadgeIssuers),
-          Row(children: [
-            Expanded(child: _input(_issuerCtrl, t.evBadgeIssuerHint)),
-            const SizedBox(width: 10),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _addIssuer,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: cOrange,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(kTileRadius)),
+          for (int i = 0; i < _issuerCtrls.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(children: [
+                Expanded(
+                  child: _input(_issuerCtrls[i], t.evBadgeIssuerHint,
+                      onChanged: (_) => setState(() {}),
+                      borderColor: _rowInvalid(_issuerCtrls[i]) ? cRed : null),
                 ),
-                child: const Icon(Icons.add_rounded, color: Colors.black),
-              ),
+                const SizedBox(width: 10),
+                // Nur die LETZTE Zeile traegt das Plus, alle anderen den
+                // Papierkorb. Zwei Knoepfe pro Zeile waeren doppelt so viel
+                // zum Zielen und halb so klar.
+                SizedBox(
+                  height: 48,
+                  width: 48,
+                  child: i == _issuerCtrls.length - 1
+                      ? ElevatedButton(
+                          onPressed: _addIssuerRow,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            backgroundColor: cOrange,
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(kTileRadius)),
+                          ),
+                          child: const Icon(Icons.add_rounded,
+                              color: Colors.black),
+                        )
+                      : ElevatedButton(
+                          onPressed: () => _removeIssuerRow(i),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            backgroundColor: cSurface,
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(kTileRadius)),
+                          ),
+                          child: const Icon(Icons.delete_outline_rounded,
+                              color: cRed),
+                        ),
+                ),
+              ]),
             ),
-          ]),
-          const SizedBox(height: 6),
           Text(t.evBadgeIssuerInfo,
               style: const TextStyle(
                   color: cTextTertiary, fontSize: 11, height: 1.4)),
-
-          if (_issuers.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            for (final issuer in _issuers)
-              Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: cSurface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: cTileBorder, width: 0.5),
-                ),
-                child: Row(children: [
-                  const Icon(Icons.person_rounded, color: cNostr, size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      // Mitte gekuerzt: Anfang und Ende sind das, woran man
-                      // einen npub wiedererkennt.
-                      issuer.npub.length > 24
-                          ? '${issuer.npub.substring(0, 12)}…${issuer.npub.substring(issuer.npub.length - 8)}'
-                          : issuer.npub,
-                      style: const TextStyle(
-                          color: cText, fontSize: 12, fontFamily: 'monospace'),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() => _issuers.remove(issuer)),
-                    child: const Icon(Icons.delete_outline_rounded,
-                        color: cRed, size: 18),
-                  ),
-                ]),
-              ),
-          ],
         ],
       ]),
     );
@@ -1302,18 +1386,24 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     ),
   );
 
-  Widget _input(TextEditingController c, String hint, {int maxLines = 1}) => TextField(
+  /// [onChanged] und [borderColor] sind fuer die Aussteller-Zeilen dazu-
+  /// gekommen: Sie faerben sich rot, sobald etwas drinsteht, das kein npub
+  /// ist — waehrend des Tippens, nicht erst beim Veroeffentlichen.
+  Widget _input(TextEditingController c, String hint,
+          {int maxLines = 1, ValueChanged<String>? onChanged, Color? borderColor}) =>
+      TextField(
     controller: c,
     maxLines: maxLines,
+    onChanged: onChanged,
     style: const TextStyle(color: cText, fontSize: 15),
     decoration: InputDecoration(
       hintText: hint,
       hintStyle: const TextStyle(color: cTextTertiary, fontSize: 14),
       filled: true, fillColor: cCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cOrange, width: 1.5)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: BorderSide(color: borderColor ?? cTileBorder, width: 0.5)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: BorderSide(color: borderColor ?? cTileBorder, width: borderColor != null ? 1 : 0.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: BorderSide(color: borderColor ?? cOrange, width: 1.5)),
     ),
   );
 }

@@ -5325,4 +5325,34 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get evBadgeIssuerDuplicate => 'Esa clave ya está en la lista.';
+
+  @override
+  String get evBadgeImageInfo =>
+      'Elige una imagen de tu galería: se subirá para que todos puedan verla. También sirve una URL ya lista.';
+
+  @override
+  String get evBadgeUploading => 'Subiendo la imagen …';
+
+  @override
+  String evBadgeUploadFailed(String msg) {
+    return 'Error al subir: $msg';
+  }
+
+  @override
+  String get evBadgeLocationPick => 'Elegir en el mapa';
+
+  @override
+  String get locPickTitle => 'Ubicación del evento';
+
+  @override
+  String get locPickHint => 'Toca el mapa para marcar el lugar.';
+
+  @override
+  String get locPickHintDone => 'Toca de nuevo para mover el marcador.';
+
+  @override
+  String get locPickJumpToMe => 'Ir a mi ubicación';
+
+  @override
+  String get locPickConfirm => 'Usar esta ubicación';
 }

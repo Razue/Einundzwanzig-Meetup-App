@@ -9705,6 +9705,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dieser Schlüssel steht bereits in der Liste.'**
   String get evBadgeIssuerDuplicate;
+
+  /// No description provided for @evBadgeImageInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild aus der Galerie wählen — es wird hochgeladen, damit alle es sehen können. Eine fertige URL geht auch.'**
+  String get evBadgeImageInfo;
+
+  /// No description provided for @evBadgeUploading.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild wird hochgeladen …'**
+  String get evBadgeUploading;
+
+  /// No description provided for @evBadgeUploadFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Upload fehlgeschlagen: {msg}'**
+  String evBadgeUploadFailed(String msg);
+
+  /// No description provided for @evBadgeLocationPick.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf der Karte wählen'**
+  String get evBadgeLocationPick;
+
+  /// No description provided for @locPickTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort des Events'**
+  String get locPickTitle;
+
+  /// No description provided for @locPickHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf die Karte, um den Veranstaltungsort zu setzen.'**
+  String get locPickHint;
+
+  /// No description provided for @locPickHintDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe erneut, um den Punkt zu verschieben.'**
+  String get locPickHintDone;
+
+  /// No description provided for @locPickJumpToMe.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu meinem Standort'**
+  String get locPickJumpToMe;
+
+  /// No description provided for @locPickConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort übernehmen'**
+  String get locPickConfirm;
 }
 
 class _AppLocalizationsDelegate

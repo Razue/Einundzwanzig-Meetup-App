@@ -5292,4 +5292,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evBadgeIssuerDuplicate => 'That key is already on the list.';
+
+  @override
+  String get evBadgeImageInfo =>
+      'Pick an image from your gallery — it gets uploaded so everyone can see it. A ready-made URL works too.';
+
+  @override
+  String get evBadgeUploading => 'Uploading image …';
+
+  @override
+  String evBadgeUploadFailed(String msg) {
+    return 'Upload failed: $msg';
+  }
+
+  @override
+  String get evBadgeLocationPick => 'Pick on the map';
+
+  @override
+  String get locPickTitle => 'Event location';
+
+  @override
+  String get locPickHint => 'Tap the map to set the venue.';
+
+  @override
+  String get locPickHintDone => 'Tap again to move the marker.';
+
+  @override
+  String get locPickJumpToMe => 'Jump to my location';
+
+  @override
+  String get locPickConfirm => 'Use this location';
 }

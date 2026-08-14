@@ -2479,5 +2479,21 @@
   "evBadgeIssuerHint": "npub1… einfügen",
   "evBadgeIssuerInfo": "Du selbst darfst immer. Trage weitere Helfer ein, die vor Ort Badges verteilen sollen — sie brauchen keine eigene Organisatoren-Rolle.",
   "evBadgeIssuerInvalid": "Das ist kein gültiger npub. Erwartet wird npub1… oder ein 64-stelliger Hex-Schlüssel.",
-  "evBadgeIssuerDuplicate": "Dieser Schlüssel steht bereits in der Liste."
+  "evBadgeIssuerDuplicate": "Dieser Schlüssel steht bereits in der Liste.",
+  "evBadgeImageInfo": "Bild aus der Galerie wählen — es wird hochgeladen, damit alle es sehen können. Eine fertige URL geht auch.",
+  "evBadgeUploading": "Bild wird hochgeladen …",
+  "evBadgeUploadFailed": "Upload fehlgeschlagen: {msg}",
+  "@evBadgeUploadFailed": {
+    "placeholders": {
+        "msg": {
+            "type": "String"
+        }
+    }
+  },
+  "evBadgeLocationPick": "Auf der Karte wählen",
+  "locPickTitle": "Ort des Events",
+  "locPickHint": "Tippe auf die Karte, um den Veranstaltungsort zu setzen.",
+  "locPickHintDone": "Tippe erneut, um den Punkt zu verschieben.",
+  "locPickJumpToMe": "Zu meinem Standort",
+  "locPickConfirm": "Ort übernehmen"
 }

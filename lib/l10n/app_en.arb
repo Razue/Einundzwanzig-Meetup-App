@@ -2457,5 +2457,21 @@
   "evBadgeIssuerHint": "Paste npub1…",
   "evBadgeIssuerInfo": "You are always allowed. Add helpers who should hand out badges on site — they need no organiser role of their own.",
   "evBadgeIssuerInvalid": "That is not a valid npub. Expected npub1… or a 64-character hex key.",
-  "evBadgeIssuerDuplicate": "That key is already on the list."
+  "evBadgeIssuerDuplicate": "That key is already on the list.",
+  "evBadgeImageInfo": "Pick an image from your gallery — it gets uploaded so everyone can see it. A ready-made URL works too.",
+  "evBadgeUploading": "Uploading image …",
+  "evBadgeUploadFailed": "Upload failed: {msg}",
+  "@evBadgeUploadFailed": {
+    "placeholders": {
+        "msg": {
+            "type": "String"
+        }
+    }
+  },
+  "evBadgeLocationPick": "Pick on the map",
+  "locPickTitle": "Event location",
+  "locPickHint": "Tap the map to set the venue.",
+  "locPickHintDone": "Tap again to move the marker.",
+  "locPickJumpToMe": "Jump to my location",
+  "locPickConfirm": "Use this location"
 }

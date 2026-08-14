@@ -2457,5 +2457,21 @@
   "evBadgeIssuerHint": "Pega npub1…",
   "evBadgeIssuerInfo": "Tú siempre puedes. Añade ayudantes que repartirán insignias en el lugar: no necesitan un rol de organizador propio.",
   "evBadgeIssuerInvalid": "Eso no es un npub válido. Se espera npub1… o una clave hex de 64 caracteres.",
-  "evBadgeIssuerDuplicate": "Esa clave ya está en la lista."
+  "evBadgeIssuerDuplicate": "Esa clave ya está en la lista.",
+  "evBadgeImageInfo": "Elige una imagen de tu galería: se subirá para que todos puedan verla. También sirve una URL ya lista.",
+  "evBadgeUploading": "Subiendo la imagen …",
+  "evBadgeUploadFailed": "Error al subir: {msg}",
+  "@evBadgeUploadFailed": {
+    "placeholders": {
+        "msg": {
+            "type": "String"
+        }
+    }
+  },
+  "evBadgeLocationPick": "Elegir en el mapa",
+  "locPickTitle": "Ubicación del evento",
+  "locPickHint": "Toca el mapa para marcar el lugar.",
+  "locPickHintDone": "Toca de nuevo para mover el marcador.",
+  "locPickJumpToMe": "Ir a mi ubicación",
+  "locPickConfirm": "Usar esta ubicación"
 }
