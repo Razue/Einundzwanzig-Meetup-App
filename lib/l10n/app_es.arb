@@ -2442,5 +2442,20 @@
   "newsZapAmountRange": "El importe está fuera del rango que acepta el autor.",
   "newsZapFailed": "El zap ha fallado. Los detalles están en el registro de diagnóstico.",
   "newsZapNoWallet": "No se ha encontrado ninguna cartera Lightning",
-  "newsZapCopyInvoice": "Copiar factura"
+  "newsZapCopyInvoice": "Copiar factura",
+  "evBadgeCreate": "Crear insignia del evento",
+  "evBadgeCreateSub": "Los asistentes pueden recoger una insignia en el lugar.",
+  "evBadgeNotAllowed": "Solo los organizadores y líderes de meetups pueden repartir insignias. Aun así puedes crear el evento.",
+  "evBadgeChecking": "Comprobando el permiso …",
+  "evBadgeImage": "Imagen de la insignia",
+  "evBadgeImageHint": "https://…/imagen.png",
+  "evBadgeLocation": "Ubicación del evento",
+  "evBadgeLocationHint": "Usar la ubicación actual",
+  "evBadgeLocationInfo": "Las insignias solo se pueden emitir cerca de estas coordenadas y solo el día del evento.",
+  "evBadgeNoLocation": "No se puede determinar la ubicación. Comprueba el servicio de localización y el permiso.",
+  "evBadgeIssuers": "¿Quién puede emitir insignias?",
+  "evBadgeIssuerHint": "Pega npub1…",
+  "evBadgeIssuerInfo": "Tú siempre puedes. Añade ayudantes que repartirán insignias en el lugar: no necesitan un rol de organizador propio.",
+  "evBadgeIssuerInvalid": "Eso no es un npub válido. Se espera npub1… o una clave hex de 64 caracteres.",
+  "evBadgeIssuerDuplicate": "Esa clave ya está en la lista."
 }

@@ -9615,6 +9615,96 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Rechnung kopieren'**
   String get newsZapCopyInvoice;
+
+  /// No description provided for @evBadgeCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Event-Badge erstellen'**
+  String get evBadgeCreate;
+
+  /// No description provided for @evBadgeCreateSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilnehmer können sich vor Ort ein Badge abholen.'**
+  String get evBadgeCreateSub;
+
+  /// No description provided for @evBadgeNotAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Meetup-Organisatoren und Leader können Badges vergeben. Das Event kannst du trotzdem eintragen.'**
+  String get evBadgeNotAllowed;
+
+  /// No description provided for @evBadgeChecking.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigung wird geprüft …'**
+  String get evBadgeChecking;
+
+  /// No description provided for @evBadgeImage.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild fürs Badge'**
+  String get evBadgeImage;
+
+  /// No description provided for @evBadgeImageHint.
+  ///
+  /// In de, this message translates to:
+  /// **'https://…/bild.png'**
+  String get evBadgeImageHint;
+
+  /// No description provided for @evBadgeLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort des Events'**
+  String get evBadgeLocation;
+
+  /// No description provided for @evBadgeLocationHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktuellen Standort übernehmen'**
+  String get evBadgeLocationHint;
+
+  /// No description provided for @evBadgeLocationInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges lassen sich nur in der Nähe dieser Koordinaten und nur am Tag des Events ausgeben.'**
+  String get evBadgeLocationInfo;
+
+  /// No description provided for @evBadgeNoLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.'**
+  String get evBadgeNoLocation;
+
+  /// No description provided for @evBadgeIssuers.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer darf Badges ausgeben?'**
+  String get evBadgeIssuers;
+
+  /// No description provided for @evBadgeIssuerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'npub1… einfügen'**
+  String get evBadgeIssuerHint;
+
+  /// No description provided for @evBadgeIssuerInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Du selbst darfst immer. Trage weitere Helfer ein, die vor Ort Badges verteilen sollen — sie brauchen keine eigene Organisatoren-Rolle.'**
+  String get evBadgeIssuerInfo;
+
+  /// No description provided for @evBadgeIssuerInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist kein gültiger npub. Erwartet wird npub1… oder ein 64-stelliger Hex-Schlüssel.'**
+  String get evBadgeIssuerInvalid;
+
+  /// No description provided for @evBadgeIssuerDuplicate.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Schlüssel steht bereits in der Liste.'**
+  String get evBadgeIssuerDuplicate;
 }
 
 class _AppLocalizationsDelegate

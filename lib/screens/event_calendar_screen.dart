@@ -13,6 +13,9 @@ import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/calendar_event_service.dart';
+import '../services/event_badge_auth_service.dart';
+import '../services/meetup_location_service.dart';
+import '../services/nostr_service.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/portal_api_service.dart';
 import '../models/calendar_event.dart' as ical;
@@ -856,12 +859,105 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   DateTime? _end;
   bool _publishing = false;
 
+  // --- Event-Badge ---
+  final _imageCtrl = TextEditingController();
+  final _issuerCtrl = TextEditingController();
+  bool _badgeEnabled = false;
+  double _lat = 0;
+  double _lng = 0;
+  bool _locating = false;
+
+  /// Eingetragene Aussteller als Hex-Pubkeys, dazu die npub-Schreibweise
+  /// fuer die Anzeige.
+  final List<({String hex, String npub})> _issuers = [];
+
+  /// null = wird noch geprueft. Jeder darf Events anlegen; das Badge daran
+  /// ist an die Berechtigung gebunden.
+  EventBadgeRight? _right;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRight();
+  }
+
+  Future<void> _checkRight() async {
+    final right = await EventBadgeAuthService.myRight();
+    if (mounted) setState(() => _right = right);
+  }
+
+  bool get _mayCreateBadge =>
+      _right != null && _right != EventBadgeRight.none;
+
   @override
   void dispose() {
     _titleCtrl.dispose();
     _locationCtrl.dispose();
     _descCtrl.dispose();
+    _imageCtrl.dispose();
+    _issuerCtrl.dispose();
     super.dispose();
+  }
+
+  /// Aussteller aus dem Eingabefeld uebernehmen.
+  ///
+  /// Akzeptiert npub UND Hex — beim Kopieren aus verschiedenen Quellen
+  /// bekommt man mal das eine, mal das andere, und eine Fehlermeldung
+  /// dafuer waere reine Schikane.
+  void _addIssuer() {
+    final t = AppLocalizations.of(context);
+    final raw = _issuerCtrl.text.trim();
+    if (raw.isEmpty) return;
+
+    String? hex;
+    if (raw.startsWith('npub1')) {
+      try {
+        hex = NostrService.npubToHex(raw);
+      } catch (_) {
+        hex = null;
+      }
+    } else if (RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(raw)) {
+      hex = raw.toLowerCase();
+    }
+
+    if (hex == null || hex.length != 64) {
+      _snack(t.evBadgeIssuerInvalid, cRed);
+      return;
+    }
+    if (_issuers.any((i) => i.hex == hex)) {
+      _snack(t.evBadgeIssuerDuplicate, cTextSecondary);
+      _issuerCtrl.clear();
+      return;
+    }
+
+    String npub;
+    try {
+      npub = NostrService.hexToNpub(hex);
+    } catch (_) {
+      npub = hex;
+    }
+    setState(() {
+      _issuers.add((hex: hex!, npub: npub));
+      _issuerCtrl.clear();
+    });
+  }
+
+  /// Koordinaten des Veranstaltungsorts vom aktuellen Standort uebernehmen.
+  Future<void> _useCurrentLocation() async {
+    final t = AppLocalizations.of(context);
+    setState(() => _locating = true);
+    final res = await MeetupLocationService.resolveLocation();
+    if (!mounted) return;
+    setState(() => _locating = false);
+
+    if (res.lat == 0 && res.lng == 0) {
+      _snack(t.evBadgeNoLocation, cRed);
+      return;
+    }
+    setState(() {
+      _lat = res.lat;
+      _lng = res.lng;
+    });
   }
 
   Future<void> _pickStart() async {
@@ -899,6 +995,11 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     if (_titleCtrl.text.trim().isEmpty) { _snack(t.calNeedTitle, cRed); return; }
     if (_start == null) { _snack(t.calNeedStart, cRed); return; }
     setState(() => _publishing = true);
+    // Badge nur mitsenden, wenn es angehakt UND erlaubt ist. Die zweite
+    // Bedingung ist kein Zierrat: Der Schalter koennte durch einen spaeteren
+    // Umbau erreichbar werden, ohne dass die Pruefung noch greift.
+    final withBadge = _badgeEnabled && _mayCreateBadge;
+
     final count = await CalendarEventService.publishEvent(
       title: _titleCtrl.text.trim(),
       description: _descCtrl.text.trim(),
@@ -906,6 +1007,11 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
       start: _start!,
       end: _end,
       allDay: _allDay,
+      badgeEnabled: withBadge,
+      badgeImageUrl: withBadge ? _imageCtrl.text.trim() : '',
+      lat: withBadge ? _lat : 0,
+      lng: withBadge ? _lng : 0,
+      issuers: withBadge ? _issuers.map((i) => i.hex).toList() : const [],
     );
     if (!mounted) return;
     setState(() => _publishing = false);
@@ -983,6 +1089,8 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
             _label(t.calFieldDescription),
             _input(_descCtrl, t.calFieldDescriptionHint, maxLines: 4),
             const SizedBox(height: 16),
+            _badgeSection(t),
+            const SizedBox(height: 16),
             // Hinweis: öffentlich bei Nostr
             Container(
               padding: const EdgeInsets.all(12),
@@ -1010,6 +1118,169 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
           ]),
         ),
       ),
+    );
+  }
+
+  /// Der gesamte Event-Badge-Abschnitt.
+  ///
+  /// Sichtbar fuer alle — auch fuer Leute ohne Berechtigung. Einen Bereich
+  /// ganz zu verstecken laesst niemanden verstehen, dass es ihn gibt; ein
+  /// gesperrter Schalter mit Begruendung schon.
+  Widget _badgeSection(AppLocalizations t) {
+    final may = _mayCreateBadge;
+    final checking = _right == null;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cCard,
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(
+            color: _badgeEnabled ? cOrange.withValues(alpha: 0.5) : cTileBorder,
+            width: _badgeEnabled ? 1 : 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          Icon(Icons.military_tech_rounded,
+              color: may ? cOrange : cTextTertiary, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(t.evBadgeCreate,
+                  style: TextStyle(
+                      color: may ? cText : cTextTertiary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(
+                checking
+                    ? t.evBadgeChecking
+                    : (may ? t.evBadgeCreateSub : t.evBadgeNotAllowed),
+                style: const TextStyle(
+                    color: cTextTertiary, fontSize: 11.5, height: 1.4),
+              ),
+            ]),
+          ),
+          Switch(
+            value: _badgeEnabled,
+            activeTrackColor: cOrange,
+            onChanged: may ? (v) => setState(() => _badgeEnabled = v) : null,
+          ),
+        ]),
+
+        if (_badgeEnabled) ...[
+          const SizedBox(height: 18),
+          _label(t.evBadgeImage),
+          _input(_imageCtrl, t.evBadgeImageHint),
+
+          const SizedBox(height: 16),
+          _label(t.evBadgeLocation),
+          GestureDetector(
+            onTap: _locating ? null : _useCurrentLocation,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              decoration: BoxDecoration(
+                color: cSurface,
+                borderRadius: BorderRadius.circular(kTileRadius),
+                border: Border.all(
+                    color: (_lat != 0 || _lng != 0) ? cOrange : cTileBorder,
+                    width: (_lat != 0 || _lng != 0) ? 1 : 0.5),
+              ),
+              child: Row(children: [
+                _locating
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: cOrange))
+                    : Icon(Icons.my_location_rounded,
+                        color: (_lat != 0 || _lng != 0) ? cOrange : cTextTertiary,
+                        size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    (_lat != 0 || _lng != 0)
+                        ? '${_lat.toStringAsFixed(5)}, ${_lng.toStringAsFixed(5)}'
+                        : t.evBadgeLocationHint,
+                    style: TextStyle(
+                        color: (_lat != 0 || _lng != 0) ? cText : cTextTertiary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+                if (_lat != 0 || _lng != 0)
+                  GestureDetector(
+                    onTap: () => setState(() { _lat = 0; _lng = 0; }),
+                    child: const Icon(Icons.close_rounded,
+                        color: cTextTertiary, size: 18),
+                  ),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(t.evBadgeLocationInfo,
+              style: const TextStyle(
+                  color: cTextTertiary, fontSize: 11, height: 1.4)),
+
+          const SizedBox(height: 16),
+          _label(t.evBadgeIssuers),
+          Row(children: [
+            Expanded(child: _input(_issuerCtrl, t.evBadgeIssuerHint)),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _addIssuer,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cOrange,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(kTileRadius)),
+                ),
+                child: const Icon(Icons.add_rounded, color: Colors.black),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 6),
+          Text(t.evBadgeIssuerInfo,
+              style: const TextStyle(
+                  color: cTextTertiary, fontSize: 11, height: 1.4)),
+
+          if (_issuers.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            for (final issuer in _issuers)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: cSurface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: cTileBorder, width: 0.5),
+                ),
+                child: Row(children: [
+                  const Icon(Icons.person_rounded, color: cNostr, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      // Mitte gekuerzt: Anfang und Ende sind das, woran man
+                      // einen npub wiedererkennt.
+                      issuer.npub.length > 24
+                          ? '${issuer.npub.substring(0, 12)}…${issuer.npub.substring(issuer.npub.length - 8)}'
+                          : issuer.npub,
+                      style: const TextStyle(
+                          color: cText, fontSize: 12, fontFamily: 'monospace'),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() => _issuers.remove(issuer)),
+                    child: const Icon(Icons.delete_outline_rounded,
+                        color: cRed, size: 18),
+                  ),
+                ]),
+              ),
+          ],
+        ],
+      ]),
     );
   }
 

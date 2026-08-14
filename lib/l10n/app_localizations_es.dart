@@ -5274,4 +5274,55 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get newsZapCopyInvoice => 'Copiar factura';
+
+  @override
+  String get evBadgeCreate => 'Crear insignia del evento';
+
+  @override
+  String get evBadgeCreateSub =>
+      'Los asistentes pueden recoger una insignia en el lugar.';
+
+  @override
+  String get evBadgeNotAllowed =>
+      'Solo los organizadores y líderes de meetups pueden repartir insignias. Aun así puedes crear el evento.';
+
+  @override
+  String get evBadgeChecking => 'Comprobando el permiso …';
+
+  @override
+  String get evBadgeImage => 'Imagen de la insignia';
+
+  @override
+  String get evBadgeImageHint => 'https://…/imagen.png';
+
+  @override
+  String get evBadgeLocation => 'Ubicación del evento';
+
+  @override
+  String get evBadgeLocationHint => 'Usar la ubicación actual';
+
+  @override
+  String get evBadgeLocationInfo =>
+      'Las insignias solo se pueden emitir cerca de estas coordenadas y solo el día del evento.';
+
+  @override
+  String get evBadgeNoLocation =>
+      'No se puede determinar la ubicación. Comprueba el servicio de localización y el permiso.';
+
+  @override
+  String get evBadgeIssuers => '¿Quién puede emitir insignias?';
+
+  @override
+  String get evBadgeIssuerHint => 'Pega npub1…';
+
+  @override
+  String get evBadgeIssuerInfo =>
+      'Tú siempre puedes. Añade ayudantes que repartirán insignias en el lugar: no necesitan un rol de organizador propio.';
+
+  @override
+  String get evBadgeIssuerInvalid =>
+      'Eso no es un npub válido. Se espera npub1… o una clave hex de 64 caracteres.';
+
+  @override
+  String get evBadgeIssuerDuplicate => 'Esa clave ya está en la lista.';
 }

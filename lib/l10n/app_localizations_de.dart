@@ -5291,4 +5291,56 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get newsZapCopyInvoice => 'Rechnung kopieren';
+
+  @override
+  String get evBadgeCreate => 'Event-Badge erstellen';
+
+  @override
+  String get evBadgeCreateSub =>
+      'Teilnehmer können sich vor Ort ein Badge abholen.';
+
+  @override
+  String get evBadgeNotAllowed =>
+      'Nur Meetup-Organisatoren und Leader können Badges vergeben. Das Event kannst du trotzdem eintragen.';
+
+  @override
+  String get evBadgeChecking => 'Berechtigung wird geprüft …';
+
+  @override
+  String get evBadgeImage => 'Bild fürs Badge';
+
+  @override
+  String get evBadgeImageHint => 'https://…/bild.png';
+
+  @override
+  String get evBadgeLocation => 'Ort des Events';
+
+  @override
+  String get evBadgeLocationHint => 'Aktuellen Standort übernehmen';
+
+  @override
+  String get evBadgeLocationInfo =>
+      'Badges lassen sich nur in der Nähe dieser Koordinaten und nur am Tag des Events ausgeben.';
+
+  @override
+  String get evBadgeNoLocation =>
+      'Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.';
+
+  @override
+  String get evBadgeIssuers => 'Wer darf Badges ausgeben?';
+
+  @override
+  String get evBadgeIssuerHint => 'npub1… einfügen';
+
+  @override
+  String get evBadgeIssuerInfo =>
+      'Du selbst darfst immer. Trage weitere Helfer ein, die vor Ort Badges verteilen sollen — sie brauchen keine eigene Organisatoren-Rolle.';
+
+  @override
+  String get evBadgeIssuerInvalid =>
+      'Das ist kein gültiger npub. Erwartet wird npub1… oder ein 64-stelliger Hex-Schlüssel.';
+
+  @override
+  String get evBadgeIssuerDuplicate =>
+      'Dieser Schlüssel steht bereits in der Liste.';
 }

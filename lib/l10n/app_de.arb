@@ -2464,5 +2464,20 @@
   "newsZapAmountRange": "Der Betrag liegt außerhalb dessen, was der Autor annimmt.",
   "newsZapFailed": "Zap fehlgeschlagen. Einzelheiten stehen im Diagnose-Log.",
   "newsZapNoWallet": "Keine Lightning-Wallet gefunden",
-  "newsZapCopyInvoice": "Rechnung kopieren"
+  "newsZapCopyInvoice": "Rechnung kopieren",
+  "evBadgeCreate": "Event-Badge erstellen",
+  "evBadgeCreateSub": "Teilnehmer können sich vor Ort ein Badge abholen.",
+  "evBadgeNotAllowed": "Nur Meetup-Organisatoren und Leader können Badges vergeben. Das Event kannst du trotzdem eintragen.",
+  "evBadgeChecking": "Berechtigung wird geprüft …",
+  "evBadgeImage": "Bild fürs Badge",
+  "evBadgeImageHint": "https://…/bild.png",
+  "evBadgeLocation": "Ort des Events",
+  "evBadgeLocationHint": "Aktuellen Standort übernehmen",
+  "evBadgeLocationInfo": "Badges lassen sich nur in der Nähe dieser Koordinaten und nur am Tag des Events ausgeben.",
+  "evBadgeNoLocation": "Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.",
+  "evBadgeIssuers": "Wer darf Badges ausgeben?",
+  "evBadgeIssuerHint": "npub1… einfügen",
+  "evBadgeIssuerInfo": "Du selbst darfst immer. Trage weitere Helfer ein, die vor Ort Badges verteilen sollen — sie brauchen keine eigene Organisatoren-Rolle.",
+  "evBadgeIssuerInvalid": "Das ist kein gültiger npub. Erwartet wird npub1… oder ein 64-stelliger Hex-Schlüssel.",
+  "evBadgeIssuerDuplicate": "Dieser Schlüssel steht bereits in der Liste."
 }
