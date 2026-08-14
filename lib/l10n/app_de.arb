@@ -2514,5 +2514,41 @@
       }
     }
   },
-  "evSessionFailed": "Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log."
+  "evSessionFailed": "Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log.",
+  "mvEventIssuerOk": "Event-Badge von „{event}“ — ausgegeben mit Erlaubnis von {creator}.",
+  "@mvEventIssuerOk": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      },
+      "creator": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventSignerNotListed": "Achtung: Der Aussteller ist bei „{event}“ nicht als Helfer eingetragen.",
+  "@mvEventSignerNotListed": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventCreatorNotAuthorized": "Achtung: Wer „{event}“ angelegt hat, ist kein eingetragener Organisator.",
+  "@mvEventCreatorNotAuthorized": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventHasNoBadge": "Achtung: Für „{event}“ ist gar kein Badge vorgesehen.",
+  "@mvEventHasNoBadge": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventNotFound": "Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen."
 }

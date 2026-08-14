@@ -5367,4 +5367,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get evSessionFailed =>
       'Could not start the session. Details are in the diagnostics log.';
+
+  @override
+  String mvEventIssuerOk(String event, String creator) {
+    return 'Event badge from “$event” — issued with permission from $creator.';
+  }
+
+  @override
+  String mvEventSignerNotListed(String event) {
+    return 'Careful: the issuer is not listed as a helper for “$event”.';
+  }
+
+  @override
+  String mvEventCreatorNotAuthorized(String event) {
+    return 'Careful: whoever created “$event” is not a registered organiser.';
+  }
+
+  @override
+  String mvEventHasNoBadge(String event) {
+    return 'Careful: “$event” is not supposed to hand out badges at all.';
+  }
+
+  @override
+  String get mvEventNotFound =>
+      'The linked event cannot be found. Without a connection the permission cannot be checked.';
 }

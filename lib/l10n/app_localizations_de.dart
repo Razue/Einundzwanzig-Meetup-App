@@ -5419,4 +5419,28 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get evSessionFailed =>
       'Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log.';
+
+  @override
+  String mvEventIssuerOk(String event, String creator) {
+    return 'Event-Badge von „$event“ — ausgegeben mit Erlaubnis von $creator.';
+  }
+
+  @override
+  String mvEventSignerNotListed(String event) {
+    return 'Achtung: Der Aussteller ist bei „$event“ nicht als Helfer eingetragen.';
+  }
+
+  @override
+  String mvEventCreatorNotAuthorized(String event) {
+    return 'Achtung: Wer „$event“ angelegt hat, ist kein eingetragener Organisator.';
+  }
+
+  @override
+  String mvEventHasNoBadge(String event) {
+    return 'Achtung: Für „$event“ ist gar kein Badge vorgesehen.';
+  }
+
+  @override
+  String get mvEventNotFound =>
+      'Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.';
 }

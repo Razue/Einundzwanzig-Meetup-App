@@ -32,6 +32,7 @@ import '../theme.dart';
 import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
 import '../services/coattendance_service.dart';
+import '../services/event_badge_chain_service.dart';
 import '../services/meetup_location_service.dart';
 import '../services/meetup_service.dart';
 import '../models/badge.dart';
@@ -510,19 +511,43 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       bool isKnownAdmin = false;
       String adminCheckInfo = '';
 
+      // Event-Badge? Dann steht die Berechtigung nicht in der Registry,
+      // sondern im Kalender-Event. Die Adresse dafuer kommt aus dem
+      // signierten Payload.
+      final String? eventAddress = BadgeSecurity.eventAddressOf(normalized);
+
       if (verifyResult != null && verifyResult.version >= 2 && adminPubkey.isNotEmpty) {
-        try {
-          final adminResult = await AdminRegistry.checkAdminByPubkey(adminPubkey);
-          isKnownAdmin = adminResult.isAdmin;
-          if (isKnownAdmin) {
-            final adminName = adminResult.name ?? adminResult.meetup ?? tr.verifyVerifiedAdmin;
-            adminCheckInfo = tr.mvKnownOrganizer(adminName);
-          } else {
-            adminCheckInfo = tr.mvUnknownSigner;
+        if (eventAddress != null) {
+          final chain = await EventBadgeChainService.verify(
+            eventAddress: eventAddress,
+            signerPubkey: adminPubkey,
+          );
+          isKnownAdmin = chain.ok;
+          adminCheckInfo = switch (chain.status) {
+            EventChainStatus.verified => tr.mvEventIssuerOk(
+                chain.eventTitle, chain.creatorName ?? tr.verifyVerifiedAdmin),
+            EventChainStatus.signerNotListed =>
+              tr.mvEventSignerNotListed(chain.eventTitle),
+            EventChainStatus.creatorNotAuthorized =>
+              tr.mvEventCreatorNotAuthorized(chain.eventTitle),
+            EventChainStatus.eventHasNoBadge =>
+              tr.mvEventHasNoBadge(chain.eventTitle),
+            EventChainStatus.eventNotFound => tr.mvEventNotFound,
+          };
+        } else {
+          try {
+            final adminResult = await AdminRegistry.checkAdminByPubkey(adminPubkey);
+            isKnownAdmin = adminResult.isAdmin;
+            if (isKnownAdmin) {
+              final adminName = adminResult.name ?? adminResult.meetup ?? tr.verifyVerifiedAdmin;
+              adminCheckInfo = tr.mvKnownOrganizer(adminName);
+            } else {
+              adminCheckInfo = tr.mvUnknownSigner;
+            }
+          } catch (e) {
+            // Offline: Cache-Miss → Warnung anzeigen
+            adminCheckInfo = tr.mvAdminCheckFailed;
           }
-        } catch (e) {
-          // Offline: Cache-Miss → Warnung anzeigen
-          adminCheckInfo = tr.mvAdminCheckFailed;
         }
       } else if (verifyResult != null && verifyResult.version == 1) {
         // Legacy v1: Shared Secret, per Definition nicht vertrauenswürdig

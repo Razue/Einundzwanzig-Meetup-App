@@ -2492,5 +2492,41 @@
       }
     }
   },
-  "evSessionFailed": "Could not start the session. Details are in the diagnostics log."
+  "evSessionFailed": "Could not start the session. Details are in the diagnostics log.",
+  "mvEventIssuerOk": "Event badge from “{event}” — issued with permission from {creator}.",
+  "@mvEventIssuerOk": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      },
+      "creator": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventSignerNotListed": "Careful: the issuer is not listed as a helper for “{event}”.",
+  "@mvEventSignerNotListed": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventCreatorNotAuthorized": "Careful: whoever created “{event}” is not a registered organiser.",
+  "@mvEventCreatorNotAuthorized": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventHasNoBadge": "Careful: “{event}” is not supposed to hand out badges at all.",
+  "@mvEventHasNoBadge": {
+    "placeholders": {
+      "event": {
+        "type": "String"
+      }
+    }
+  },
+  "mvEventNotFound": "The linked event cannot be found. Without a connection the permission cannot be checked."
 }

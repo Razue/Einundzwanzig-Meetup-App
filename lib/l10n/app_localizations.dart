@@ -9831,6 +9831,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log.'**
   String get evSessionFailed;
+
+  /// No description provided for @mvEventIssuerOk.
+  ///
+  /// In de, this message translates to:
+  /// **'Event-Badge von „{event}“ — ausgegeben mit Erlaubnis von {creator}.'**
+  String mvEventIssuerOk(String event, String creator);
+
+  /// No description provided for @mvEventSignerNotListed.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung: Der Aussteller ist bei „{event}“ nicht als Helfer eingetragen.'**
+  String mvEventSignerNotListed(String event);
+
+  /// No description provided for @mvEventCreatorNotAuthorized.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung: Wer „{event}“ angelegt hat, ist kein eingetragener Organisator.'**
+  String mvEventCreatorNotAuthorized(String event);
+
+  /// No description provided for @mvEventHasNoBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung: Für „{event}“ ist gar kein Badge vorgesehen.'**
+  String mvEventHasNoBadge(String event);
+
+  /// No description provided for @mvEventNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.'**
+  String get mvEventNotFound;
 }
 
 class _AppLocalizationsDelegate

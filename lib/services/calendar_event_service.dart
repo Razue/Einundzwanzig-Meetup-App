@@ -225,6 +225,84 @@ class CalendarEventService {
     return all;
   }
 
+  /// Holt EIN Kalender-Event ueber seine Adresse `<kind>:<pubkey>:<dTag>`.
+  ///
+  /// Gebraucht beim Scannen eines Event-Badges: Der Payload nennt nur die
+  /// Adresse; wer ausstellen darf und wer das Event angelegt hat, steht im
+  /// Event selbst. Ohne diesen Abruf waere die Ausstellerliste nicht
+  /// pruefbar.
+  ///
+  /// Sucht auf ALLEN aktiven Relays, nicht nur auf dem Community-Relay: Ein
+  /// Event kann von woanders stammen, und ein Badge abzulehnen, weil man am
+  /// falschen Ort gesucht hat, waere das schlechteste Ergebnis.
+  static Future<NostrCalendarEvent?> fetchByAddress(String address) async {
+    final parts = address.split(':');
+    if (parts.length < 3) return null;
+    final kind = int.tryParse(parts[0]);
+    final author = parts[1];
+    final dTag = parts.sublist(2).join(':');
+    if (kind == null || author.length != 64 || dTag.isEmpty) return null;
+
+    final relays = <String>{
+      kCommunityRelay,
+      ...await RelayConfig.getActiveRelays(),
+    };
+
+    NostrCalendarEvent? newest;
+    for (final relayUrl in relays) {
+      RelaySocket? ws;
+      try {
+        ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
+        final completer = Completer<void>();
+        final random = Random.secure();
+        final subId = 'cal1-${List.generate(6, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+
+        ws.listen((data) {
+          try {
+            final msg = jsonDecode(data as String) as List<dynamic>;
+            if (msg.length >= 3 && msg[0] == 'EVENT') {
+              final ev = NostrCalendarEvent.fromEvent(msg[2] as Map<String, dynamic>);
+              // Ersetzbare Events: Die neueste Fassung gewinnt.
+              if (ev != null && (newest == null || ev.start.isAfter(newest!.start))) {
+                newest = ev;
+              }
+            } else if (msg.isNotEmpty && msg[0] == 'EOSE') {
+              if (!completer.isCompleted) completer.complete();
+            }
+          } catch (_) {}
+        }, onError: (_) {
+          if (!completer.isCompleted) completer.complete();
+        }, onDone: () {
+          if (!completer.isCompleted) completer.complete();
+        });
+
+        ws.add(jsonEncode([
+          'REQ',
+          subId,
+          {
+            'kinds': [kind],
+            'authors': [author],
+            '#d': [dTag],
+            'limit': 1,
+          }
+        ]));
+        await completer.future.timeout(_timeout, onTimeout: () {});
+      } catch (e) {
+        AppLogger.debug(_tag, 'fetchByAddress $relayUrl: $e');
+      } finally {
+        try {
+          ws?.close();
+        } catch (_) {}
+      }
+      // Gefunden reicht — weitere Relays wuerden dasselbe liefern.
+      if (newest != null) break;
+    }
+
+    AppLogger.debug(_tag,
+        'fetchByAddress $address -> ${newest == null ? "nicht gefunden" : "gefunden"}');
+    return newest;
+  }
+
   static Future<List<NostrCalendarEvent>?> _fetchFromRelay(String relayUrl, int limit) async {
     RelaySocket? ws;
     final tally = RelayParseTally('Calendar', 'Nostr-Kalender von $relayUrl');

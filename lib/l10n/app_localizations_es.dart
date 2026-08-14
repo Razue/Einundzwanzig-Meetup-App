@@ -5399,4 +5399,28 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get evSessionFailed =>
       'No se pudo iniciar la sesión. Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String mvEventIssuerOk(String event, String creator) {
+    return 'Insignia del evento «$event»: emitida con permiso de $creator.';
+  }
+
+  @override
+  String mvEventSignerNotListed(String event) {
+    return 'Atención: el emisor no figura como ayudante de «$event».';
+  }
+
+  @override
+  String mvEventCreatorNotAuthorized(String event) {
+    return 'Atención: quien creó «$event» no es un organizador registrado.';
+  }
+
+  @override
+  String mvEventHasNoBadge(String event) {
+    return 'Atención: «$event» no debería repartir insignias.';
+  }
+
+  @override
+  String get mvEventNotFound =>
+      'No se encuentra el evento vinculado. Sin conexión no se puede comprobar el permiso.';
 }
