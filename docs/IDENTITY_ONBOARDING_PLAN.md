@@ -3,7 +3,7 @@
 **Branch:** `feat/identity-onboarding-easyauth`  
 **Stand:** Implementierung auf dem Branch; Native-Passkeys brauchen noch Domain-Verknüpfung (siehe unten).
 
-## Entscheidung (fest)
+## Entscheidung
 
 - **Variante 1:** EasyAuth-Crypto **nur im Client**, kein Identity-Vault, **keine Email**.
 - Neu-Pfad: **Name + Passwort**, plus **Passkey/PRF** wie bei kickstr.
