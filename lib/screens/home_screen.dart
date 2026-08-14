@@ -207,6 +207,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Handy über Nacht in der Tasche, morgens aufgeklappt -> stimmt sofort.
       _loadNextHomeMeetup();
       _scheduleMidnightRefresh();
+      // Laufende Session ebenfalls neu pruefen. Ohne diese Zeile erschien
+      // die Kachel erst beim naechsten KALTSTART: Wer die App nur in den
+      // Hintergrund schiebt — der Normalfall auf einem Event — kam zurueck
+      // und sah nichts, obwohl die Session lief.
+      _checkActiveSession();
     }
   }
 
@@ -2231,12 +2236,25 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     ),
   );
 
+  /// Kachel fuer die laufende Session.
+  ///
+  /// Sie fuehrt direkt zum QR — auf einem Event will man die App oeffnen und
+  /// den Code zeigen, nicht erst durch den Kalender navigieren. Event- und
+  /// Meetup-Sessions unterscheiden sich nur im Symbol; alles andere ist
+  /// gleich, weil auch die Handlung dieselbe ist.
   Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, _) => GestureDetector(
     onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const RollingQRScreen())); _checkActiveSession(); },
     child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cGreen.withValues(alpha: 0.25), width: 0.5)),
     child: Row(children: [Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withValues(alpha: 0.5 + _pulseController.value * 0.5), boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.3 * _pulseController.value), blurRadius: 8)])),
       const SizedBox(width: 14), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: Text(AppLocalizations.of(context).statusLive, style: TextStyle(color: Colors.green.shade300, fontSize: 9, fontWeight: FontWeight.w800))),
-      const SizedBox(width: 10), Expanded(child: Text(_activeSession!.meetupName.isNotEmpty ? _activeSession!.meetupName : AppLocalizations.of(context).statusMeetupActive, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
+      const SizedBox(width: 10),
+      // Ordenssymbol bei Event-Sessions: Auf dem Dashboard soll erkennbar
+      // sein, WOFUER der Code gerade laeuft — Meetup oder Sondereevent.
+      if (_activeSession!.meetupId.startsWith('evt:')) ...[
+        const Icon(Icons.military_tech_rounded, color: cOrange, size: 15),
+        const SizedBox(width: 6),
+      ],
+      Expanded(child: Text(_activeSession!.meetupName.isNotEmpty ? _activeSession!.meetupName : AppLocalizations.of(context).statusMeetupActive, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
       const SizedBox(width: 8), Text(_sessionTimeLeft, style: TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: fontMono)), const SizedBox(width: 8), Icon(Icons.arrow_forward_ios_rounded, color: Colors.green.withValues(alpha: 0.4), size: 14)]))));
 
   Widget _buildDeviceWarning() => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.5)),

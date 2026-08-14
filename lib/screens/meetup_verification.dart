@@ -1160,7 +1160,16 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                         border: Border.all(color: cOrange, width: 4),
                         boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 5)],
                       ),
-                      child: const Center(child: Icon(Icons.nfc, size: 80, color: Colors.white)),
+                      // Symbol folgt der Funktion: Ohne NFC wird hier nur
+                      // noch der QR gescannt, und ein NFC-Zeichen liesse
+                      // Leute nach einem Tag suchen, den es nicht gibt.
+                      child: Center(
+                          child: Icon(
+                              kNfcEnabled
+                                  ? Icons.nfc
+                                  : Icons.qr_code_scanner_rounded,
+                              size: 80,
+                              color: Colors.white)),
                     ),
                   ),
                   const SizedBox(height: 40),

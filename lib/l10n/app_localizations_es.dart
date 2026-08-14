@@ -359,7 +359,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scanBadge => 'Escanear insignia';
 
   @override
-  String get scanBadgeSub => 'Código QR o etiqueta NFC del meetup';
+  String get scanBadgeSub => 'Código QR del meetup';
 
   @override
   String get scanReputation => 'Verificar reputación';
@@ -402,7 +402,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get walletNoBadgesSub =>
-      '¡Visita meetups y escanea etiquetas NFC para coleccionar insignias!';
+      '¡Visita meetups y escanea el código QR para coleccionar insignias!';
 
   @override
   String get walletShareReputation => 'COMPARTIR REPUTACIÓN';
@@ -1370,7 +1370,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get verifyScanInstruction =>
-      'Escanea la etiqueta NFC o el código QR\ndel organizador del meetup.';
+      'Escanea el código QR\ndel organizador del meetup.';
 
   @override
   String get verifyScanQrInstruction =>
@@ -2608,7 +2608,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get siBecomeOrgDesc =>
-      'Promoción automática al alcanzar suficiente Trust Score. Luego puedes crear tus propias etiquetas NFC y códigos QR.';
+      'Promoción automática al alcanzar suficiente Trust Score. Luego puedes crear tus propios códigos QR.';
 
   @override
   String siProgressLabel(Object name) {
@@ -2796,8 +2796,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get apHowStep1 => '1. Inicia un nuevo meetup (sesión).\n';
 
   @override
-  String get apHowStep2 =>
-      '2. Luego escribe etiquetas NFC o muestra el código QR.\n';
+  String get apHowStep2 => '2. Luego muestra el código QR.\n';
 
   @override
   String get apHowStep4 =>

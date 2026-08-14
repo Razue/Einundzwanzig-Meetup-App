@@ -751,7 +751,7 @@ abstract class AppLocalizations {
   /// No description provided for @scanBadgeSub.
   ///
   /// In de, this message translates to:
-  /// **'QR-Code oder NFC-Tag vom Meetup'**
+  /// **'QR-Code vom Meetup'**
   String get scanBadgeSub;
 
   /// No description provided for @scanReputation.
@@ -835,7 +835,7 @@ abstract class AppLocalizations {
   /// No description provided for @walletNoBadgesSub.
   ///
   /// In de, this message translates to:
-  /// **'Besuche Meetups und scanne NFC-Tags um Badges zu sammeln!'**
+  /// **'Besuche Meetups und scanne den QR-Code, um Badges zu sammeln!'**
   String get walletNoBadgesSub;
 
   /// No description provided for @walletShareReputation.
@@ -2647,7 +2647,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyScanInstruction.
   ///
   /// In de, this message translates to:
-  /// **'Scanne den NFC-Tag oder QR-Code\ndes Meetup-Organisators.'**
+  /// **'Scanne den QR-Code\ndes Meetup-Organisators.'**
   String get verifyScanInstruction;
 
   /// No description provided for @verifyScanQrInstruction.
@@ -4813,7 +4813,7 @@ abstract class AppLocalizations {
   /// No description provided for @siBecomeOrgDesc.
   ///
   /// In de, this message translates to:
-  /// **'Automatische Beförderung ab genügend Trust Score. Dann eigene NFC-Tags und QR-Codes erstellen.'**
+  /// **'Automatische Beförderung ab genügend Trust Score. Dann eigene QR-Codes erstellen.'**
   String get siBecomeOrgDesc;
 
   /// No description provided for @siProgressLabel.
@@ -5107,7 +5107,7 @@ abstract class AppLocalizations {
   /// No description provided for @apHowStep2.
   ///
   /// In de, this message translates to:
-  /// **'2. Beschreibe danach NFC Tags oder zeige den QR-Code.\n'**
+  /// **'2. Zeige danach den QR-Code.\n'**
   String get apHowStep2;
 
   /// No description provided for @apHowStep4.
