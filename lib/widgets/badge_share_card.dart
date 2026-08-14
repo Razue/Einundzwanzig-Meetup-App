@@ -16,6 +16,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
 import '../screens/badge_wallet.dart' show BadgeArtPainter;
 import '../theme.dart';
@@ -23,7 +24,12 @@ import 'meetup_crest_watermark.dart';
 
 /// Groesse der Karte in logischen Pixeln. Seitenverhaeltnis 3:4 — hochkant,
 /// wie es Messenger und soziale Netze am wenigsten beschneiden.
-const Size kShareCardSize = Size(360, 480);
+const Size kShareCardSize = Size(360, 560);
+
+/// Wo es die App gibt. Steht als Text auf der Karte — ein QR-Code waere
+/// zwar bequemer, aber die Karte landet meist in einem Messenger, wo man
+/// den Code nicht abscannen kann, weil er auf demselben Geraet liegt.
+const String kAppStoreUrl = 'zapstore.dev/apps/space.einundzwanzig.meetup';
 
 class BadgeShareCard extends StatelessWidget {
   final MeetupBadge badge;
@@ -57,8 +63,19 @@ class BadgeShareCard extends StatelessWidget {
     return buf.toString();
   }
 
+  /// Zeitpunkt des Scans, falls das Badge einen Claim traegt.
+  String get _scanLine {
+    if (badge.claimTimestamp <= 0) return '';
+    final d = DateTime.fromMillisecondsSinceEpoch(badge.claimTimestamp * 1000);
+    return '${d.day.toString().padLeft(2, '0')}.'
+        '${d.month.toString().padLeft(2, '0')}.${d.year}  '
+        '${d.hour.toString().padLeft(2, '0')}:'
+        '${d.minute.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final hash = badge.getVerificationHash();
 
     return SizedBox(
@@ -175,20 +192,54 @@ class BadgeShareCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (collectorName.isNotEmpty) ...[
-                    _footRow(Icons.person_rounded, 'Gesammelt von',
+                    _footRow(Icons.person_rounded, t.shareCardCollectedBy,
                         collectorName),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 7),
                   ],
                   if (_blockLine.isNotEmpty) ...[
-                    _footRow(Icons.link_rounded, 'Block', _blockLine,
+                    _footRow(Icons.link_rounded, t.shareCardBlock, _blockLine,
                         mono: true, accent: true),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 7),
+                  ],
+                  if (_scanLine.isNotEmpty) ...[
+                    _footRow(Icons.schedule_rounded, t.shareCardScanned,
+                        _scanLine, mono: true),
+                    const SizedBox(height: 7),
                   ],
                   if (hash.isNotEmpty)
-                    _footRow(Icons.fingerprint_rounded, 'Prüfsumme',
+                    _footRow(Icons.fingerprint_rounded, t.shareCardChecksum,
                         hash.length > 16 ? '${hash.substring(0, 16)}…' : hash,
                         mono: true),
+
                   const SizedBox(height: 12),
+                  Container(height: 0.5, color: cTileBorder),
+                  const SizedBox(height: 12),
+
+                  // Werbezeile. Wer das Bild sieht, soll wissen, worum es
+                  // geht UND wo es die App gibt — sonst ist es nur ein
+                  // huebsches Bild ohne Anschluss.
+                  Text(t.shareCardPromo,
+                      style: const TextStyle(
+                          color: cText,
+                          fontSize: 11.5,
+                          height: 1.4,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    const Icon(Icons.download_rounded, color: cOrange, size: 13),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(kAppStoreUrl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: cOrange,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'monospace')),
+                    ),
+                  ]),
+                  const SizedBox(height: 10),
                   Row(children: [
                     const Icon(Icons.bolt_rounded, color: cOrange, size: 13),
                     const SizedBox(width: 5),

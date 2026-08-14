@@ -2530,5 +2530,10 @@
   },
   "mvEventNotFound": "No se encuentra el evento vinculado. Sin conexión no se puede comprobar el permiso.",
   "evBadgeShowSession": "Mostrar código QR",
-  "badgeShareTagline": "Estuve allí en persona: verificado por Nostr."
+  "badgeShareTagline": "Estuve allí en persona: verificado por Nostr.",
+  "shareCardCollectedBy": "Recogida por",
+  "shareCardBlock": "Bloque",
+  "shareCardScanned": "Escaneada",
+  "shareCardChecksum": "Suma de verificación",
+  "shareCardPromo": "¿Has estado en un meetup de Einundzwanzig? Consigue tu insignia: prueba criptográfica de que estuviste allí."
 }

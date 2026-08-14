@@ -5449,4 +5449,20 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get badgeShareTagline =>
       'Vor Ort dabei gewesen — bestätigt über Nostr.';
+
+  @override
+  String get shareCardCollectedBy => 'Gesammelt von';
+
+  @override
+  String get shareCardBlock => 'Block';
+
+  @override
+  String get shareCardScanned => 'Gescannt';
+
+  @override
+  String get shareCardChecksum => 'Prüfsumme';
+
+  @override
+  String get shareCardPromo =>
+      'Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst.';
 }

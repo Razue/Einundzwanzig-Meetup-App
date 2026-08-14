@@ -2530,5 +2530,10 @@
   },
   "mvEventNotFound": "The linked event cannot be found. Without a connection the permission cannot be checked.",
   "evBadgeShowSession": "Show QR code",
-  "badgeShareTagline": "Was there in person — verified over Nostr."
+  "badgeShareTagline": "Was there in person — verified over Nostr.",
+  "shareCardCollectedBy": "Collected by",
+  "shareCardBlock": "Block",
+  "shareCardScanned": "Scanned",
+  "shareCardChecksum": "Checksum",
+  "shareCardPromo": "Been to an Einundzwanzig meetup? Collect your badge — cryptographic proof that you were there."
 }

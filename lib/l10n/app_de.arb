@@ -2552,5 +2552,10 @@
   },
   "mvEventNotFound": "Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.",
   "evBadgeShowSession": "QR anzeigen",
-  "badgeShareTagline": "Vor Ort dabei gewesen — bestätigt über Nostr."
+  "badgeShareTagline": "Vor Ort dabei gewesen — bestätigt über Nostr.",
+  "shareCardCollectedBy": "Gesammelt von",
+  "shareCardBlock": "Block",
+  "shareCardScanned": "Gescannt",
+  "shareCardChecksum": "Prüfsumme",
+  "shareCardPromo": "Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst."
 }

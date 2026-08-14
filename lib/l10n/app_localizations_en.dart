@@ -5397,4 +5397,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get badgeShareTagline => 'Was there in person — verified over Nostr.';
+
+  @override
+  String get shareCardCollectedBy => 'Collected by';
+
+  @override
+  String get shareCardBlock => 'Block';
+
+  @override
+  String get shareCardScanned => 'Scanned';
+
+  @override
+  String get shareCardChecksum => 'Checksum';
+
+  @override
+  String get shareCardPromo =>
+      'Been to an Einundzwanzig meetup? Collect your badge — cryptographic proof that you were there.';
 }

@@ -9873,6 +9873,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Vor Ort dabei gewesen — bestätigt über Nostr.'**
   String get badgeShareTagline;
+
+  /// No description provided for @shareCardCollectedBy.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesammelt von'**
+  String get shareCardCollectedBy;
+
+  /// No description provided for @shareCardBlock.
+  ///
+  /// In de, this message translates to:
+  /// **'Block'**
+  String get shareCardBlock;
+
+  /// No description provided for @shareCardScanned.
+  ///
+  /// In de, this message translates to:
+  /// **'Gescannt'**
+  String get shareCardScanned;
+
+  /// No description provided for @shareCardChecksum.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfsumme'**
+  String get shareCardChecksum;
+
+  /// No description provided for @shareCardPromo.
+  ///
+  /// In de, this message translates to:
+  /// **'Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst.'**
+  String get shareCardPromo;
 }
 
 class _AppLocalizationsDelegate
