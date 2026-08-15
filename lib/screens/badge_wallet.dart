@@ -739,9 +739,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                 offset: const Offset(0, 4)),
           ],
         ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
             // 1. GENERATIVE ART
             CustomPaint(painter: BadgeArtPainter(seed: seed)),
 
@@ -891,7 +893,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                 ],
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -916,9 +919,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.8),
         ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
             CustomPaint(painter: BadgeArtPainter(seed: seed)),
             // Wappen auch hier, aber zurueckhaltender — die kompakte
             // Karte hat weniger Platz und mehr Text pro Flaeche.
@@ -983,7 +988,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
                 ],
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
