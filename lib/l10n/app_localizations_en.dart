@@ -5894,4 +5894,114 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get guideEvBadgeIssuersBody =>
       'Add the npubs of everyone who should hand out badges on site. They need no organiser role — the permission lives in the event and applies to this event only. You are always allowed.';
+
+  @override
+  String get glTitle => 'Reference';
+
+  @override
+  String get glSearchHint => 'Search — e.g. badge, trust score, backup';
+
+  @override
+  String get glNoResults =>
+      'Nothing found. Try another word — the search also covers the body text.';
+
+  @override
+  String get glCatStart => 'Getting started';
+
+  @override
+  String get glCatBadges => 'Badges';
+
+  @override
+  String get glCatReputation => 'Reputation';
+
+  @override
+  String get glWhatIsAppTitle => 'What this app does';
+
+  @override
+  String get glWhatIsAppBody =>
+      'It proves you were physically present at a Bitcoin meetup. Over time those proofs add up to a reputation that belongs to you and that nobody can revoke — it does not sit on an Einundzwanzig server but signed on the Nostr network.';
+
+  @override
+  String get glCollectTitle => 'How to collect a badge';
+
+  @override
+  String get glCollectBody =>
+      'Go to the meetup and ask the organiser to show the QR code. Tap the round scan button in the bottom bar, capture the code — done. The badge then sits in your badge wallet.';
+
+  @override
+  String get glHomeMeetupTitle => 'Your home meetup';
+
+  @override
+  String get glHomeMeetupBody =>
+      'The meetup you attend regularly. It decides which events you see first and which crest appears on your badges. You can pick several favourites — the first counts as your home meetup. You can change it any time in your profile.';
+
+  @override
+  String get glOfflineTitle => 'What works offline';
+
+  @override
+  String get glOfflineBody =>
+      'Scanning and receiving a badge works offline — your device verifies the signature itself. Without a connection you only lose what comes from outside: block height, price, events and the check whether the organiser is registered.';
+
+  @override
+  String get glBadgeProofTitle => 'What a badge proves';
+
+  @override
+  String get glBadgeProofBody =>
+      'That you were at a particular place at a particular time — confirmed by someone who was there too. The confirmation is a Schnorr signature per BIP-340. Nobody can forge it, not even the developers, because that would require the organiser\'s private key.';
+
+  @override
+  String get glRollingQrTitle => 'The rolling QR';
+
+  @override
+  String get glRollingQrBody =>
+      'The organiser\'s code changes every few seconds. A photo of it is worthless minutes later — only someone actually standing in front of it can capture it. That is exactly why a badge cannot be passed on via chat.';
+
+  @override
+  String get glOnSiteTitle => 'Why only on site';
+
+  @override
+  String get glOnSiteBody =>
+      'Besides the rotating code the app also checks distance: anyone too far from the meetup gets no badge. For meetups the limits are generous because some groups cover whole regions; for special events the location is precise and the limit tight.';
+
+  @override
+  String get glBadgeShareTitle => 'Sharing a badge';
+
+  @override
+  String get glBadgeShareBody =>
+      'Open a badge and tap share in the top right. The app renders an image with place, date, block height and checksum. Anyone who sees it can follow the details — your private key is not in there.';
+
+  @override
+  String get glTrustScoreTitle => 'The trust score';
+
+  @override
+  String get glTrustScoreBody =>
+      'A number summarising how solid your attendance record is. Quantity alone does not decide it: different meetups, different organisers and regularity over time weigh more than twenty visits to the same place in one week.';
+
+  @override
+  String get glLevelsTitle => 'The levels';
+
+  @override
+  String get glLevelsBody =>
+      'As your trust score grows you reach higher levels. From a certain level you can run sessions and issue badges yourself — that is not an award but a responsibility: your signature then sits under other people\'s badges.';
+
+  @override
+  String get glHumanityTitle => 'Proof of humanity';
+
+  @override
+  String get glHumanityBody =>
+      'A single lightning zap shows that a person with a real wallet stands behind the profile. It is the most effective guard against automatically created accounts in the web of trust. Optional — the app works without it.';
+
+  @override
+  String get glPlatformsTitle => 'Platform proofs';
+
+  @override
+  String get glPlatformsBody =>
+      'You can link accounts such as Telegram or X to your Nostr identity. Every confirmed platform feeds into the trust score and shows others that an established person stands behind the profile. Also optional.';
+
+  @override
+  String get guideHomeGlossaryTitle => 'Look it up';
+
+  @override
+  String get guideHomeGlossaryBody =>
+      'Everything is explained again here, calmly — sorted by topic and searchable. When this tour is over and a question remains, the answer is in here.';
 }

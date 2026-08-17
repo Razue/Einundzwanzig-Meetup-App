@@ -5933,4 +5933,114 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get guideEvBadgeIssuersBody =>
       'Añade los npubs de todos los que repartirán insignias en el lugar. No necesitan rol de organizador: el permiso vive en el evento y solo vale para él. Tú siempre puedes.';
+
+  @override
+  String get glTitle => 'Referencia';
+
+  @override
+  String get glSearchHint => 'Buscar: insignia, trust score, copia…';
+
+  @override
+  String get glNoResults =>
+      'No se ha encontrado nada. Prueba otra palabra: la búsqueda también cubre el texto.';
+
+  @override
+  String get glCatStart => 'Primeros pasos';
+
+  @override
+  String get glCatBadges => 'Insignias';
+
+  @override
+  String get glCatReputation => 'Reputación';
+
+  @override
+  String get glWhatIsAppTitle => 'Qué hace esta app';
+
+  @override
+  String get glWhatIsAppBody =>
+      'Demuestra que estuviste realmente en un meetup de Bitcoin. Con el tiempo, esas pruebas forman una reputación que te pertenece y que nadie puede retirarte: no está en un servidor de Einundzwanzig, sino firmada en la red Nostr.';
+
+  @override
+  String get glCollectTitle => 'Cómo conseguir una insignia';
+
+  @override
+  String get glCollectBody =>
+      'Ve al meetup y pide al organizador que muestre el código QR. Toca el botón redondo de escaneo en la barra inferior, captura el código y listo. La insignia queda en tu cartera.';
+
+  @override
+  String get glHomeMeetupTitle => 'Tu meetup principal';
+
+  @override
+  String get glHomeMeetupBody =>
+      'El meetup al que vas con regularidad. Determina qué eventos ves primero y qué escudo aparece en tus insignias. Puedes elegir varios favoritos; el primero cuenta como principal. Se puede cambiar en cualquier momento en el perfil.';
+
+  @override
+  String get glOfflineTitle => 'Qué funciona sin conexión';
+
+  @override
+  String get glOfflineBody =>
+      'Escanear y recibir una insignia funciona sin conexión: tu dispositivo verifica la firma. Sin red solo faltan los datos externos: altura de bloque, precio, eventos y la comprobación de si el organizador está registrado.';
+
+  @override
+  String get glBadgeProofTitle => 'Qué demuestra una insignia';
+
+  @override
+  String get glBadgeProofBody =>
+      'Que estuviste en un lugar concreto en un momento concreto, confirmado por alguien que también estaba allí. La confirmación es una firma Schnorr según BIP-340. Nadie puede falsificarla, ni los desarrolladores, porque haría falta la clave privada del organizador.';
+
+  @override
+  String get glRollingQrTitle => 'El QR rotativo';
+
+  @override
+  String get glRollingQrBody =>
+      'El código del organizador cambia cada pocos segundos. Una foto no sirve minutos después: solo quien está realmente delante puede capturarlo. Por eso una insignia no se puede pasar por chat.';
+
+  @override
+  String get glOnSiteTitle => 'Por qué solo en el lugar';
+
+  @override
+  String get glOnSiteBody =>
+      'Además del código rotativo, la app comprueba la distancia: quien esté demasiado lejos no recibe insignia. En los meetups los límites son amplios porque algunos grupos abarcan regiones enteras; en eventos especiales la ubicación es exacta y el límite estrecho.';
+
+  @override
+  String get glBadgeShareTitle => 'Compartir una insignia';
+
+  @override
+  String get glBadgeShareBody =>
+      'Abre una insignia y toca compartir arriba a la derecha. La app genera una imagen con lugar, fecha, altura de bloque y suma de verificación. Quien la vea puede comprobar los datos; tu clave privada no está incluida.';
+
+  @override
+  String get glTrustScoreTitle => 'El trust score';
+
+  @override
+  String get glTrustScoreBody =>
+      'Un número que resume la solidez de tu historial de asistencia. No decide solo la cantidad: meetups distintos, organizadores distintos y la regularidad pesan más que veinte visitas al mismo sitio en una semana.';
+
+  @override
+  String get glLevelsTitle => 'Los niveles';
+
+  @override
+  String get glLevelsBody =>
+      'A medida que sube tu trust score alcanzas niveles superiores. A partir de cierto nivel puedes iniciar sesiones y emitir insignias: no es un premio sino una responsabilidad, porque tu firma queda bajo las insignias de otros.';
+
+  @override
+  String get glHumanityTitle => 'Prueba de humanidad';
+
+  @override
+  String get glHumanityBody =>
+      'Un único zap de Lightning demuestra que detrás del perfil hay una persona con una cartera real. Es la defensa más eficaz contra cuentas creadas automáticamente en la red de confianza. Es opcional: la app funciona sin ello.';
+
+  @override
+  String get glPlatformsTitle => 'Pruebas de plataforma';
+
+  @override
+  String get glPlatformsBody =>
+      'Puedes vincular cuentas como Telegram o X con tu identidad Nostr. Cada plataforma confirmada suma al trust score y muestra a los demás que detrás del perfil hay una persona con historia. También es opcional.';
+
+  @override
+  String get guideHomeGlossaryTitle => 'Para consultar';
+
+  @override
+  String get guideHomeGlossaryBody =>
+      'Aquí está todo explicado con calma, ordenado por temas y con búsqueda. Cuando termine esta visita y quede alguna duda, la respuesta está aquí.';
 }

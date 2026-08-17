@@ -10743,6 +10743,198 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Trage die npubs aller ein, die vor Ort Badges verteilen sollen. Sie brauchen keine Organisatoren-Rolle — die Erlaubnis steht im Termin und gilt nur für dieses Event. Du selbst darfst immer.'**
   String get guideEvBadgeIssuersBody;
+
+  /// No description provided for @glTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachschlagen'**
+  String get glTitle;
+
+  /// No description provided for @glSearchHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Suchen — z. B. Badge, Trust Score, Backup'**
+  String get glSearchHint;
+
+  /// No description provided for @glNoResults.
+  ///
+  /// In de, this message translates to:
+  /// **'Dazu findet sich nichts. Versuch ein anderes Wort — gesucht wird auch im Text der Einträge.'**
+  String get glNoResults;
+
+  /// No description provided for @glCatStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Erste Schritte'**
+  String get glCatStart;
+
+  /// No description provided for @glCatBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges'**
+  String get glCatBadges;
+
+  /// No description provided for @glCatReputation.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation'**
+  String get glCatReputation;
+
+  /// No description provided for @glWhatIsAppTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was diese App tut'**
+  String get glWhatIsAppTitle;
+
+  /// No description provided for @glWhatIsAppBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sie belegt, dass du bei einem Bitcoin-Meetup wirklich vor Ort warst. Aus vielen solcher Belege entsteht mit der Zeit eine Reputation, die dir gehört und die niemand entziehen kann — sie liegt nicht auf einem Server von Einundzwanzig, sondern signiert im Nostr-Netzwerk.'**
+  String get glWhatIsAppBody;
+
+  /// No description provided for @glCollectTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie du ein Badge sammelst'**
+  String get glCollectTitle;
+
+  /// No description provided for @glCollectBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Geh zum Meetup und lass dir vom Organisator den QR-Code zeigen. Unten in der Leiste auf den runden Scan-Knopf tippen, Code erfassen — fertig. Das Badge liegt danach in deiner Badge-Wallet.'**
+  String get glCollectBody;
+
+  /// No description provided for @glHomeMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Home-Meetup'**
+  String get glHomeMeetupTitle;
+
+  /// No description provided for @glHomeMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Meetup, zu dem du regelmäßig gehst. Es bestimmt, welche Termine du zuerst siehst und welches Wappen auf deinen Badges erscheint. Du kannst mehrere Favoriten wählen — der erste gilt als Home-Meetup. Ändern lässt sich das jederzeit im Profil.'**
+  String get glHomeMeetupBody;
+
+  /// No description provided for @glOfflineTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was ohne Internet geht'**
+  String get glOfflineTitle;
+
+  /// No description provided for @glOfflineBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Scannen und Badge erhalten funktioniert offline — die Prüfung der Signatur rechnet dein Gerät selbst. Ohne Netz fehlen nur die Dinge, die von außen kommen: Blockhöhe, Kurs, Termine und die Prüfung, ob der Organisator eingetragen ist.'**
+  String get glOfflineBody;
+
+  /// No description provided for @glBadgeProofTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was ein Badge beweist'**
+  String get glBadgeProofTitle;
+
+  /// No description provided for @glBadgeProofBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dass du zu einer bestimmten Zeit an einem bestimmten Ort warst — bestätigt von jemandem, der dort ebenfalls war. Die Bestätigung ist eine Schnorr-Signatur nach BIP-340. Fälschen kann sie niemand, auch die Entwickler nicht, weil dafür der private Schlüssel des Organisators nötig wäre.'**
+  String get glBadgeProofBody;
+
+  /// No description provided for @glRollingQrTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Rolling QR'**
+  String get glRollingQrTitle;
+
+  /// No description provided for @glRollingQrBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Code des Organisators wechselt alle paar Sekunden. Ein Foto davon ist damit Minuten später wertlos — nur wer wirklich davorsteht, kann ihn erfassen. Genau deshalb lässt sich ein Badge nicht per Chat weiterreichen.'**
+  String get glRollingQrBody;
+
+  /// No description provided for @glOnSiteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Warum nur vor Ort'**
+  String get glOnSiteTitle;
+
+  /// No description provided for @glOnSiteBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Neben dem wechselnden Code prüft die App auch die Entfernung: Wer zu weit vom Meetup entfernt ist, bekommt kein Badge. Bei Meetups sind die Grenzen weit gefasst, weil manche Gruppen ganze Regionen abdecken; bei Sondereevents ist der Ort genau gesetzt und die Grenze eng.'**
+  String get glOnSiteBody;
+
+  /// No description provided for @glBadgeShareTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge teilen'**
+  String get glBadgeShareTitle;
+
+  /// No description provided for @glBadgeShareBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffne ein Badge und tippe oben rechts auf Teilen. Die App erzeugt daraus ein Bild mit Ort, Datum, Blockhöhe und Prüfsumme. Wer es sieht, kann die Angaben nachvollziehen — dein privater Schlüssel steckt nicht darin.'**
+  String get glBadgeShareBody;
+
+  /// No description provided for @glTrustScoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Trust Score'**
+  String get glTrustScoreTitle;
+
+  /// No description provided for @glTrustScoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine Zahl, die zusammenfasst, wie belastbar deine Anwesenheitsbelege sind. Es zählt nicht nur die Menge: Verschiedene Meetups, verschiedene Organisatoren und Regelmäßigkeit über die Zeit wiegen schwerer als zwanzig Besuche am selben Ort in derselben Woche.'**
+  String get glTrustScoreBody;
+
+  /// No description provided for @glLevelsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Stufen'**
+  String get glLevelsTitle;
+
+  /// No description provided for @glLevelsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit steigendem Trust Score erreichst du höhere Stufen. Ab einer bestimmten Stufe kannst du selbst Sessions starten und Badges ausgeben — das ist keine Auszeichnung, sondern eine Verantwortung: Deine Signatur steht dann unter den Badges anderer Leute.'**
+  String get glLevelsBody;
+
+  /// No description provided for @glHumanityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Proof of Humanity'**
+  String get glHumanityTitle;
+
+  /// No description provided for @glHumanityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein einmaliger Lightning-Zap belegt, dass hinter dem Profil jemand mit einer echten Wallet steht. Das ist der wirksamste Schutz gegen automatisch angelegte Konten im Vertrauensnetzwerk. Freiwillig — die App funktioniert auch ohne.'**
+  String get glHumanityBody;
+
+  /// No description provided for @glPlatformsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattform-Nachweise'**
+  String get glPlatformsTitle;
+
+  /// No description provided for @glPlatformsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst Konten wie Telegram oder X mit deiner Nostr-Identität verknüpfen. Jede bestätigte Plattform zahlt auf den Trust Score ein und zeigt anderen, dass hinter dem Profil eine gewachsene Person steht. Ebenfalls freiwillig.'**
+  String get glPlatformsBody;
+
+  /// No description provided for @guideHomeGlossaryTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Nachschlagen'**
+  String get guideHomeGlossaryTitle;
+
+  /// No description provided for @guideHomeGlossaryBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier steht alles nochmal in Ruhe erklärt — nach Themen sortiert und durchsuchbar. Wenn diese Tour vorbei ist und eine Frage bleibt, findest du die Antwort hier.'**
+  String get guideHomeGlossaryBody;
 }
 
 class _AppLocalizationsDelegate

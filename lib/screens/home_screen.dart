@@ -82,6 +82,7 @@ import 'package:provider/provider.dart';
 
 import '../services/guide_service.dart';
 import '../tours/home_tour.dart';
+import 'glossary_screen.dart';
 import '../tours/settings_tour.dart';
 import '../l10n/level_labels.dart';
 
@@ -1311,6 +1312,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     SvgPicture.asset('assets/images/einundzwanzig_logo.svg', height: 16),
     const Spacer(),
     _headerIcon(_refreshing ? Icons.hourglass_empty_rounded : Icons.refresh_rounded, _refreshing ? () {} : _refreshAll),
+    // Nachschlagen steht LINKS vom Zahnrad: Wer nicht weiterweiss, sucht
+    // eher Hilfe als Einstellungen — und trifft sie so zuerst.
+    KeyedSubtree(
+        key: HomeTour.glossaryKey,
+        child: _headerIcon(
+            Icons.help_outline_rounded,
+            () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const GlossaryScreen())))),
     KeyedSubtree(
         key: HomeTour.settingsKey,
         child: _headerIcon(Icons.settings_rounded, _showSettings)),

@@ -35,11 +35,22 @@ class HomeTour {
   static final newsKey = GlobalKey(debugLabel: 'guide_news');
   static final myMeetupsKey = GlobalKey(debugLabel: 'guide_my_meetups');
   static final settingsKey = GlobalKey(debugLabel: 'guide_settings');
+  static final glossaryKey = GlobalKey(debugLabel: 'guide_glossary');
 
   /// Reihenfolge folgt der Kachel-Definition im HomeScreen, damit die
   /// Tour von oben nach unten durchlaeuft und nicht hin und her
   /// springt. Die Bedienelemente der unteren Leiste kommen zuletzt.
   static List<GuideStep> steps() => [
+        // 0 — Nachschlagen. Steht bewusst GANZ VORN: Wer die Tour gleich
+        //     wegtippt, hat wenigstens dieses eine gesehen — und findet
+        //     alles Weitere selbst.
+        GuideStep(
+          targetKey: glossaryKey,
+          titleKey: 'guideHomeGlossaryTitle',
+          bodyKey: 'guideHomeGlossaryBody',
+          scrollIntoView: false,
+        ),
+
         // 1 — Trust Score
         GuideStep(
           targetKey: trustScoreKey,
