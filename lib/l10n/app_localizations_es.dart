@@ -5463,4 +5463,474 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get idSetupOtherWaySub =>
       'nsec, ncryptsec, bunker o copia de seguridad';
+
+  @override
+  String get guideWelcomeTitle => '¡Bienvenido!';
+
+  @override
+  String get guideWelcomeBody =>
+      '¿Quieres un recorrido rápido por la app? Te mostraremos las funciones más importantes.';
+
+  @override
+  String get guideStart => 'Iniciar tour';
+
+  @override
+  String get guideNoThanks => 'No, gracias';
+
+  @override
+  String get guideSkip => 'SALTAR';
+
+  @override
+  String get guideFinishTour => 'Terminar tour';
+
+  @override
+  String get guideBack => 'Atrás';
+
+  @override
+  String get guideOnboardWelcomeTitle => 'Configuremos tu perfil';
+
+  @override
+  String get guideOnboardWelcomeBody =>
+      'Te guiaremos paso a paso por la configuración. Solo toma un minuto.';
+
+  @override
+  String get guideOnboardNicknameTitle => 'Elige un Apodo';
+
+  @override
+  String get guideOnboardNicknameBody =>
+      'Así te verán otros miembros de la comunidad. ¡Elige algo memorable!';
+
+  @override
+  String get guideOnboardMeetupTitle => 'Selecciona tu Meetup Principal';
+
+  @override
+  String get guideOnboardMeetupBody =>
+      'Tu meetup principal determina qué insignias puedes coleccionar y qué eventos ves primero.';
+
+  @override
+  String get guideOnboardNostrTitle => 'Tu Clave Nostr';
+
+  @override
+  String get guideOnboardNostrBody =>
+      'Esta clave criptográfica firma tus insignias y verifica tu reputación. Se almacena solo en tu dispositivo.';
+
+  @override
+  String get guideOnboardSaveTitle => 'Guardar tu Perfil';
+
+  @override
+  String get guideOnboardSaveBody =>
+      'Toca aquí cuando termines. Siempre puedes cambiar esta configuración después.';
+
+  @override
+  String get guideHomeMeetupTitle => 'Tu Meetup Principal';
+
+  @override
+  String get guideHomeMeetupBody =>
+      'Tus meetups favoritos y el próximo evento – de un vistazo.';
+
+  @override
+  String get guideHomeTrustScoreTitle => 'Tu Trust Score';
+
+  @override
+  String get guideHomeTrustScoreBody =>
+      'Aquí ves tu posición actual. Toca para ver el desglose por diversidad, actividad y calidad.';
+
+  @override
+  String get guideHomeReputationTitle => 'Reputación';
+
+  @override
+  String get guideHomeReputationBody =>
+      'Verifica tu reputación o la puntuación de confianza de otra persona.';
+
+  @override
+  String get guideHomeWotTitle => 'Red de Confianza';
+
+  @override
+  String get guideHomeWotBody =>
+      'Ve cómo estás conectado con otros en la Web of Trust.';
+
+  @override
+  String get guideHomeCommunityTitle => 'Portal de la Comunidad';
+
+  @override
+  String get guideHomeCommunityBody =>
+      'Accede al podcast, shoutouts, merch y más.';
+
+  @override
+  String get guideHomeUmrechnerTitle => 'Conversor';
+
+  @override
+  String get guideHomeUmrechnerBody =>
+      'Convierte rápidamente entre EUR y sats.';
+
+  @override
+  String get guideHomeBitcoinTitle => 'Precio de Bitcoin';
+
+  @override
+  String get guideHomeBitcoinBody =>
+      'Precio actual, estadísticas de red y altura de bloque.';
+
+  @override
+  String get guideHomeBadgeWalletTitle => 'Cartera de Insignias';
+
+  @override
+  String get guideHomeBadgeWalletBody =>
+      'Todas las insignias coleccionadas – firmadas criptográficamente y almacenadas solo en tu dispositivo.';
+
+  @override
+  String get guideHomeScanTitle => 'Reclamar una Insignia';
+
+  @override
+  String get guideHomeScanBody =>
+      'Toca aquí para escanear el código QR del organizador en un meetup o acerca tu dispositivo vía NFC.';
+
+  @override
+  String get guideHomeSettingsTitle => 'Configuración';
+
+  @override
+  String get guideHomeSettingsBody =>
+      'Configura copia de seguridad, idioma, relays y más. ¡No olvides crear una copia de seguridad!';
+
+  @override
+  String get guideSettingsBackupTitle => '¡Crea una Copia de Seguridad!';
+
+  @override
+  String get guideSettingsBackupBody =>
+      'IMPORTANTE: Crea una copia para proteger tu cuenta. Sin ella, tus insignias y perfil se pierden si pierdes tu dispositivo.';
+
+  @override
+  String get guideSettingsLanguageTitle => 'Idioma';
+
+  @override
+  String get guideSettingsLanguageBody =>
+      'Cambia entre alemán, inglés y español.';
+
+  @override
+  String get guideSettingsRelaysTitle => 'Relays Nostr';
+
+  @override
+  String get guideSettingsRelaysBody =>
+      'Configura a qué relays Nostr se conecta tu app.';
+
+  @override
+  String get guideSettingsHapticTitle => 'Retroalimentación Háptica';
+
+  @override
+  String get guideSettingsHapticBody =>
+      'Activa o desactiva la retroalimentación por vibración.';
+
+  @override
+  String get guideSettingsResetTitle => 'Restablecer App';
+
+  @override
+  String get guideSettingsResetBody =>
+      'Esto elimina tu perfil y todas las insignias. ¡Asegúrate de tener una copia primero!';
+
+  @override
+  String get guideEventsSearchTitle => 'Buscar Eventos';
+
+  @override
+  String get guideEventsSearchBody =>
+      'Busca meetups por ciudad o palabra clave.';
+
+  @override
+  String get guideEventsCalendarTitle => 'Calendario';
+
+  @override
+  String get guideEventsCalendarBody =>
+      'Explora todos los próximos eventos de meetup.';
+
+  @override
+  String get guideEventsCardTitle => 'Detalles del Evento';
+
+  @override
+  String get guideEventsCardBody =>
+      'Toca un evento para ver detalles, ubicación y enlaces.';
+
+  @override
+  String get guideEventsCreateTitle => 'Crear Evento';
+
+  @override
+  String get guideEventsCreateBody =>
+      'Como organizador, puedes crear nuevos eventos de meetup aquí.';
+
+  @override
+  String get guidePortalShoutoutTitle => 'Enviar un Shoutout';
+
+  @override
+  String get guidePortalShoutoutBody =>
+      'Envía un shoutout público a la comunidad.';
+
+  @override
+  String get guidePortalPodcastTitle => 'Podcast';
+
+  @override
+  String get guidePortalPodcastBody =>
+      'Escucha el podcast Einundzwanzig directamente en la app.';
+
+  @override
+  String get guidePortalSoundboardTitle => 'Soundboard';
+
+  @override
+  String get guidePortalSoundboardBody =>
+      'Reproduce clips y sonidos del podcast.';
+
+  @override
+  String get guidePortalMerchTitle => 'Tienda';
+
+  @override
+  String get guidePortalMerchBody => 'Explora merch y productos Bitcoin.';
+
+  @override
+  String get guidePortalMembershipTitle => 'Hazte Miembro';
+
+  @override
+  String get guidePortalMembershipBody =>
+      'Apoya a la asociación haciéndote miembro.';
+
+  @override
+  String get guidePortalMapTitle => 'Mapa de Meetups';
+
+  @override
+  String get guidePortalMapBody => 'Encuentra meetups cerca de ti en el mapa.';
+
+  @override
+  String get guideWalletBadgesTitle => 'Tus Insignias';
+
+  @override
+  String get guideWalletBadgesBody =>
+      'Todas las insignias coleccionadas – firmadas criptográficamente y almacenadas solo en tu dispositivo.';
+
+  @override
+  String get guideWalletShareQrTitle => 'Compartir Código QR';
+
+  @override
+  String get guideWalletShareQrBody =>
+      'Muestra tu código QR de reputación para escanear en persona.';
+
+  @override
+  String get guideWalletExportTitle => 'Exportar como JSON';
+
+  @override
+  String get guideWalletExportBody =>
+      'Exportación firmada con prueba Schnorr para verificación.';
+
+  @override
+  String get guideWalletShareTextTitle => 'Compartir como Texto';
+
+  @override
+  String get guideWalletShareTextBody =>
+      'Comparte tu reputación como texto legible.';
+
+  @override
+  String get guideReputationScoreTitle => 'Tu Puntuación';
+
+  @override
+  String get guideReputationScoreBody =>
+      'Tu trust score se calcula a partir de insignias, diversidad y actividad.';
+
+  @override
+  String get guideReputationLevelTitle => 'Tu Nivel';
+
+  @override
+  String get guideReputationLevelBody =>
+      'De NUEVO a VETERANO – tu nivel crece con tu participación.';
+
+  @override
+  String get guideReputationStatsTitle => 'Estadísticas';
+
+  @override
+  String get guideReputationStatsBody =>
+      'Insignias, meetups, firmantes y pruebas vinculadas de un vistazo.';
+
+  @override
+  String get guideReputationShareTitle => 'Compartir Reputación';
+
+  @override
+  String get guideReputationShareBody =>
+      'Comparte tu reputación verificada vía código QR o texto.';
+
+  @override
+  String get guideReputationUpdateTitle => 'Actualizar en Relays';
+
+  @override
+  String get guideReputationUpdateBody =>
+      'Publica tu última reputación en la red Nostr.';
+
+  @override
+  String guideStepOf(int current, int total) {
+    return 'Paso $current de $total';
+  }
+
+  @override
+  String get guideStepDone => 'Hecho';
+
+  @override
+  String get guideHintNickname => 'Toca el campo e introduce tu apodo.';
+
+  @override
+  String get guideHintOpenPicker =>
+      'Toca el campo para abrir la selección de meetups.';
+
+  @override
+  String get guideHintSearchCity => 'Escribe las primeras letras de tu ciudad.';
+
+  @override
+  String get guideHintStarMeetup => 'Toca la estrella junto a tu meetup.';
+
+  @override
+  String get guideHintConfirmSelection =>
+      'Confirma tu selección con el botón de abajo.';
+
+  @override
+  String get guideHintNostrKey =>
+      'Crea una clave nueva o importa una existente.';
+
+  @override
+  String get guideHintSave => 'Toca GUARDAR PERFIL.';
+
+  @override
+  String get guideOnboardMeetupSearchTitle => 'Busca tu ciudad';
+
+  @override
+  String get guideOnboardMeetupSearchBody =>
+      'Escribe el nombre de tu ciudad — la lista se filtra al instante.';
+
+  @override
+  String get guideOnboardMeetupPickTitle => 'Marca tu meetup';
+
+  @override
+  String get guideOnboardMeetupPickBody =>
+      'Marca con la estrella tu meetup. Puedes elegir varios favoritos; el primero será tu meetup principal.';
+
+  @override
+  String get guideOnboardMeetupConfirmTitle => 'Confirma la selección';
+
+  @override
+  String get guideOnboardMeetupConfirmBody =>
+      'El botón muestra cuántos favoritos has elegido. Tócalo para volver a tu perfil.';
+
+  @override
+  String get guideOnboardPlatformsTitle => 'Vincula tus plataformas';
+
+  @override
+  String get guideOnboardPlatformsBody =>
+      'Conecta cuentas como Telegram, X o anuncios clasificados con tu identidad Nostr. Cada plataforma confirmada suma a tu puntuación de confianza y demuestra a los demás que detrás del perfil hay una persona real.';
+
+  @override
+  String get guideHintPlatforms =>
+      'Opcional — puedes hacerlo más tarde desde tu perfil.';
+
+  @override
+  String get guideOnboardHumanityTitle => 'Prueba de humanidad';
+
+  @override
+  String get guideOnboardHumanityBody =>
+      'Un único zap de Lightning demuestra que manejas una cartera real: la defensa más eficaz contra cuentas automatizadas en la red de confianza. Si ya has enviado un zap, verifícalo aquí.';
+
+  @override
+  String get guideHintHumanity =>
+      'Opcional — la aplicación funciona igual sin esta prueba.';
+
+  @override
+  String get guideHomeEventsTitle => 'Eventos';
+
+  @override
+  String get guideHomeEventsBody =>
+      'Este panel muestra si hay algo hoy. Se vuelve naranja en cuanto hay un evento programado para el día y te lleva al calendario con todos los encuentros próximos.';
+
+  @override
+  String get guideHomeShoutoutTitle => 'Shoutout';
+
+  @override
+  String get guideHomeShoutoutBody =>
+      'Envía un mensaje a la comunidad: aparecerá en la página de shoutouts de Einundzwanzig. El panel la abre en tu navegador.';
+
+  @override
+  String get guideHomePodcastTitle => 'Pódcast';
+
+  @override
+  String get guideHomePodcastBody =>
+      'El pódcast de Einundzwanzig, directamente desde la app. El panel abre la lista de episodios en tu navegador.';
+
+  @override
+  String get guideHomePortalConnectTitle => 'Conexión con el portal';
+
+  @override
+  String get guideHomePortalConnectBody =>
+      'Verde significa conectado, rojo desconectado. La conexión con el portal de Einundzwanzig te muestra los eventos y cursos que se gestionan allí. Un toque en el panel cambia el estado.';
+
+  @override
+  String get guideHomeNewsTitle => 'Noticias';
+
+  @override
+  String get guideHomeNewsBody =>
+      'El titular más reciente de la comunidad aparece en el propio panel. Tócalo para ver la lista completa.';
+
+  @override
+  String get guideHomeMyMeetupsTitle => 'Mis meetups';
+
+  @override
+  String get guideHomeMyMeetupsBody =>
+      'Aquí gestionas las fechas de tus meetups en el portal: crear, modificar, cancelar. Solo tiene sentido si organizas tú.';
+
+  @override
+  String get guideHomeMoreTitle => 'Y aún hay más';
+
+  @override
+  String get guideHomeMoreBody =>
+      'En tu panel te esperan cuatro paneles más: SatoshiDuell para partidas de preguntas por sats, PlebRap para música de la comunidad, el área del portal con meetups, eventos, cursos y mapa, y el panel de Nostr con las últimas notas de tu red. Cada uno se puede ocultar o mostrar de nuevo en los ajustes.';
+
+  @override
+  String get guideHomeNearbyTitle => 'Cerca de ti';
+
+  @override
+  String get guideHomeNearbyBody =>
+      'Muestra los meetups de tu entorno: útil cuando viajas o buscas un segundo grupo en la región. La pantalla se abre sobre la app; volver te trae de nuevo aquí.';
+
+  @override
+  String get guideHomeEventsTabTitle => 'Zona de eventos';
+
+  @override
+  String get guideHomeEventsTabBody =>
+      'El cuarto botón lleva al calendario completo: todos los eventos, filtrables por lugar y periodo, con recordatorios.';
+
+  @override
+  String get guideHomeSettingsBackupHint =>
+      'Ve directo a la copia de seguridad: sin ella, tu clave desaparece si pierdes el móvil.';
+
+  @override
+  String get guideHintBackup =>
+      'Crea ahora una copia cifrada: es cuestión de un minuto.';
+
+  @override
+  String get guideEvBadgeSwitchTitle => 'Insignia para tu evento';
+
+  @override
+  String get guideEvBadgeSwitchBody =>
+      'Activa el interruptor si los asistentes deben poder recoger una insignia en el lugar. Sin él, es solo una cita.';
+
+  @override
+  String get guideEvBadgeSwitchHint => 'Activa el interruptor para continuar.';
+
+  @override
+  String get guideEvBadgeImageTitle => 'La imagen';
+
+  @override
+  String get guideEvBadgeImageBody =>
+      'Elige una imagen de tu galería: se subirá y aparecerá en cada insignia de este evento. Sin ella, el gráfico generado sostiene la tarjeta por sí solo.';
+
+  @override
+  String get guideEvBadgeLocationTitle => 'La ubicación importa';
+
+  @override
+  String get guideEvBadgeLocationBody =>
+      'Coloca el marcador donde ocurre el evento, no donde estás ahora. Las insignias solo se pueden emitir cerca y solo el día del evento.';
+
+  @override
+  String get guideEvBadgeIssuersTitle => 'Tus ayudantes';
+
+  @override
+  String get guideEvBadgeIssuersBody =>
+      'Añade los npubs de todos los que repartirán insignias en el lugar. No necesitan rol de organizador: el permiso vive en el evento y solo vale para él. Tú siempre puedes.';
 }

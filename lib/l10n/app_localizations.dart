@@ -9933,6 +9933,816 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'nsec, ncryptsec, Bunker oder Backup'**
   String get idSetupOtherWaySub;
+
+  /// No description provided for @guideWelcomeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen!'**
+  String get guideWelcomeTitle;
+
+  /// No description provided for @guideWelcomeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du eine kurze Tour durch die App? Wir zeigen dir die wichtigsten Funktionen.'**
+  String get guideWelcomeBody;
+
+  /// No description provided for @guideStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour starten'**
+  String get guideStart;
+
+  /// No description provided for @guideNoThanks.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, danke'**
+  String get guideNoThanks;
+
+  /// No description provided for @guideSkip.
+  ///
+  /// In de, this message translates to:
+  /// **'ÜBERSPRINGEN'**
+  String get guideSkip;
+
+  /// No description provided for @guideFinishTour.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour beenden'**
+  String get guideFinishTour;
+
+  /// No description provided for @guideBack.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück'**
+  String get guideBack;
+
+  /// No description provided for @guideOnboardWelcomeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Lass uns dein Profil einrichten'**
+  String get guideOnboardWelcomeTitle;
+
+  /// No description provided for @guideOnboardWelcomeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wir führen dich Schritt für Schritt durch die Einrichtung. Es dauert nur eine Minute.'**
+  String get guideOnboardWelcomeBody;
+
+  /// No description provided for @guideOnboardNicknameTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle einen Nickname'**
+  String get guideOnboardNicknameTitle;
+
+  /// No description provided for @guideOnboardNicknameBody.
+  ///
+  /// In de, this message translates to:
+  /// **'So werden dich andere Community-Mitglieder sehen. Wähle etwas Einprägsames!'**
+  String get guideOnboardNicknameBody;
+
+  /// No description provided for @guideOnboardMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle dein Home-Meetup'**
+  String get guideOnboardMeetupTitle;
+
+  /// No description provided for @guideOnboardMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Home-Meetup bestimmt, welche Badges du sammeln kannst und welche Events du zuerst siehst.'**
+  String get guideOnboardMeetupBody;
+
+  /// No description provided for @guideOnboardNostrTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Nostr-Schlüssel'**
+  String get guideOnboardNostrTitle;
+
+  /// No description provided for @guideOnboardNostrBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser kryptografische Schlüssel signiert deine Badges und verifiziert deine Reputation. Er wird nur auf deinem Gerät gespeichert.'**
+  String get guideOnboardNostrBody;
+
+  /// No description provided for @guideOnboardSaveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil speichern'**
+  String get guideOnboardSaveTitle;
+
+  /// No description provided for @guideOnboardSaveBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe hier, wenn du fertig bist. Du kannst diese Einstellungen später jederzeit ändern.'**
+  String get guideOnboardSaveBody;
+
+  /// No description provided for @guideHomeMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Home Meetup'**
+  String get guideHomeMeetupTitle;
+
+  /// No description provided for @guideHomeMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Favoriten-Meetups und das nächste anstehende Event – direkt auf einen Blick.'**
+  String get guideHomeMeetupBody;
+
+  /// No description provided for @guideHomeTrustScoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Trust Score'**
+  String get guideHomeTrustScoreTitle;
+
+  /// No description provided for @guideHomeTrustScoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier siehst du deinen aktuellen Stand. Tippe darauf für die Aufschlüsselung nach Vielfalt, Aktivität & Qualität.'**
+  String get guideHomeTrustScoreBody;
+
+  /// No description provided for @guideHomeReputationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation'**
+  String get guideHomeReputationTitle;
+
+  /// No description provided for @guideHomeReputationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe deine Reputation oder verifiziere den Trust Score einer anderen Person.'**
+  String get guideHomeReputationBody;
+
+  /// No description provided for @guideHomeWotTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauensnetzwerk'**
+  String get guideHomeWotTitle;
+
+  /// No description provided for @guideHomeWotBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sieh, wie du mit anderen im Web of Trust verbunden bist.'**
+  String get guideHomeWotBody;
+
+  /// No description provided for @guideHomeCommunityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Community Portal'**
+  String get guideHomeCommunityTitle;
+
+  /// No description provided for @guideHomeCommunityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriff auf Podcast, Shoutouts, Merch und mehr.'**
+  String get guideHomeCommunityBody;
+
+  /// No description provided for @guideHomeUmrechnerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Umrechner'**
+  String get guideHomeUmrechnerTitle;
+
+  /// No description provided for @guideHomeUmrechnerBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Schnell zwischen EUR und Sats umrechnen.'**
+  String get guideHomeUmrechnerBody;
+
+  /// No description provided for @guideHomeBitcoinTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitcoin Kurs'**
+  String get guideHomeBitcoinTitle;
+
+  /// No description provided for @guideHomeBitcoinBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktueller Preis, Netzwerk-Stats und Blockhöhe.'**
+  String get guideHomeBitcoinBody;
+
+  /// No description provided for @guideHomeBadgeWalletTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge Wallet'**
+  String get guideHomeBadgeWalletTitle;
+
+  /// No description provided for @guideHomeBadgeWalletBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle gesammelten Badges – kryptographisch signiert und nur auf deinem Gerät gespeichert.'**
+  String get guideHomeBadgeWalletBody;
+
+  /// No description provided for @guideHomeScanTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge einfordern'**
+  String get guideHomeScanTitle;
+
+  /// No description provided for @guideHomeScanBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe hier, um beim Meetup den QR-Code des Organisators zu scannen oder dein Gerät per NFC anzuhalten.'**
+  String get guideHomeScanBody;
+
+  /// No description provided for @guideHomeSettingsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get guideHomeSettingsTitle;
+
+  /// No description provided for @guideHomeSettingsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguriere Backup, Sprache, Relays und mehr. Vergiss nicht, ein Backup zu erstellen!'**
+  String get guideHomeSettingsBody;
+
+  /// No description provided for @guideSettingsBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle ein Backup!'**
+  String get guideSettingsBackupTitle;
+
+  /// No description provided for @guideSettingsBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'WICHTIG: Erstelle ein Backup, um deinen Account zu schützen. Ohne Backup sind deine Badges und dein Profil verloren, wenn du dein Gerät verlierst.'**
+  String get guideSettingsBackupBody;
+
+  /// No description provided for @guideSettingsLanguageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get guideSettingsLanguageTitle;
+
+  /// No description provided for @guideSettingsLanguageBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wechsle zwischen Deutsch, Englisch und Spanisch.'**
+  String get guideSettingsLanguageBody;
+
+  /// No description provided for @guideSettingsRelaysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr Relays'**
+  String get guideSettingsRelaysTitle;
+
+  /// No description provided for @guideSettingsRelaysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguriere, mit welchen Nostr-Relays sich deine App verbindet.'**
+  String get guideSettingsRelaysBody;
+
+  /// No description provided for @guideSettingsHapticTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Haptisches Feedback'**
+  String get guideSettingsHapticTitle;
+
+  /// No description provided for @guideSettingsHapticBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere oder deaktiviere Vibrationsfeedback.'**
+  String get guideSettingsHapticBody;
+
+  /// No description provided for @guideSettingsResetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'App zurücksetzen'**
+  String get guideSettingsResetTitle;
+
+  /// No description provided for @guideSettingsResetBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dies löscht dein Profil und alle Badges. Stelle sicher, dass du zuerst ein Backup hast!'**
+  String get guideSettingsResetBody;
+
+  /// No description provided for @guideEventsSearchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Events suchen'**
+  String get guideEventsSearchTitle;
+
+  /// No description provided for @guideEventsSearchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche nach Meetups nach Stadt oder Stichwort.'**
+  String get guideEventsSearchBody;
+
+  /// No description provided for @guideEventsCalendarTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kalender'**
+  String get guideEventsCalendarTitle;
+
+  /// No description provided for @guideEventsCalendarBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Durchsuche alle kommenden Meetup-Events.'**
+  String get guideEventsCalendarBody;
+
+  /// No description provided for @guideEventsCardTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Event Details'**
+  String get guideEventsCardTitle;
+
+  /// No description provided for @guideEventsCardBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf ein Event, um Details, Ort und Links zu sehen.'**
+  String get guideEventsCardBody;
+
+  /// No description provided for @guideEventsCreateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Event erstellen'**
+  String get guideEventsCreateTitle;
+
+  /// No description provided for @guideEventsCreateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Organisator kannst du hier neue Meetup-Events erstellen.'**
+  String get guideEventsCreateBody;
+
+  /// No description provided for @guidePortalShoutoutTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Shoutout senden'**
+  String get guidePortalShoutoutTitle;
+
+  /// No description provided for @guidePortalShoutoutBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sende einen öffentlichen Shoutout an die Community.'**
+  String get guidePortalShoutoutBody;
+
+  /// No description provided for @guidePortalPodcastTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Podcast'**
+  String get guidePortalPodcastTitle;
+
+  /// No description provided for @guidePortalPodcastBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Höre den Einundzwanzig Podcast direkt in der App.'**
+  String get guidePortalPodcastBody;
+
+  /// No description provided for @guidePortalSoundboardTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Soundboard'**
+  String get guidePortalSoundboardTitle;
+
+  /// No description provided for @guidePortalSoundboardBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Spiele Clips und Sounds aus dem Podcast ab.'**
+  String get guidePortalSoundboardBody;
+
+  /// No description provided for @guidePortalMerchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Shop'**
+  String get guidePortalMerchTitle;
+
+  /// No description provided for @guidePortalMerchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Durchsuche Merch und Bitcoin-Produkte.'**
+  String get guidePortalMerchBody;
+
+  /// No description provided for @guidePortalMembershipTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglied werden'**
+  String get guidePortalMembershipTitle;
+
+  /// No description provided for @guidePortalMembershipBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterstütze den Verein, indem du Mitglied wirst.'**
+  String get guidePortalMembershipBody;
+
+  /// No description provided for @guidePortalMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup Karte'**
+  String get guidePortalMapTitle;
+
+  /// No description provided for @guidePortalMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Finde Meetups in deiner Nähe auf der Karte.'**
+  String get guidePortalMapBody;
+
+  /// No description provided for @guideWalletBadgesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Badges'**
+  String get guideWalletBadgesTitle;
+
+  /// No description provided for @guideWalletBadgesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle gesammelten Badges – kryptographisch signiert und nur auf deinem Gerät gespeichert.'**
+  String get guideWalletBadgesBody;
+
+  /// No description provided for @guideWalletShareQrTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code teilen'**
+  String get guideWalletShareQrTitle;
+
+  /// No description provided for @guideWalletShareQrBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeige deinen Reputations-QR-Code zum Scannen vor Ort.'**
+  String get guideWalletShareQrBody;
+
+  /// No description provided for @guideWalletExportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Als JSON exportieren'**
+  String get guideWalletExportTitle;
+
+  /// No description provided for @guideWalletExportBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Signierter Export mit Schnorr-Beweis zur Verifizierung.'**
+  String get guideWalletExportBody;
+
+  /// No description provided for @guideWalletShareTextTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Text teilen'**
+  String get guideWalletShareTextTitle;
+
+  /// No description provided for @guideWalletShareTextBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile deine Reputation als lesbaren Text.'**
+  String get guideWalletShareTextBody;
+
+  /// No description provided for @guideReputationScoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Score'**
+  String get guideReputationScoreTitle;
+
+  /// No description provided for @guideReputationScoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Trust Score wird aus Badges, Vielfalt und Aktivität berechnet.'**
+  String get guideReputationScoreBody;
+
+  /// No description provided for @guideReputationLevelTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Level'**
+  String get guideReputationLevelTitle;
+
+  /// No description provided for @guideReputationLevelBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Von NEU bis VETERAN – dein Level wächst mit deiner Teilnahme.'**
+  String get guideReputationLevelBody;
+
+  /// No description provided for @guideReputationStatsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Statistiken'**
+  String get guideReputationStatsTitle;
+
+  /// No description provided for @guideReputationStatsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges, Meetups, Signer und gebundene Beweise auf einen Blick.'**
+  String get guideReputationStatsBody;
+
+  /// No description provided for @guideReputationShareTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation teilen'**
+  String get guideReputationShareTitle;
+
+  /// No description provided for @guideReputationShareBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile deine verifizierte Reputation per QR-Code oder Text.'**
+  String get guideReputationShareBody;
+
+  /// No description provided for @guideReputationUpdateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf Relays aktualisieren'**
+  String get guideReputationUpdateTitle;
+
+  /// No description provided for @guideReputationUpdateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Veröffentliche deine neueste Reputation im Nostr-Netzwerk.'**
+  String get guideReputationUpdateBody;
+
+  /// No description provided for @guideStepOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Schritt {current} von {total}'**
+  String guideStepOf(int current, int total);
+
+  /// No description provided for @guideStepDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigt'**
+  String get guideStepDone;
+
+  /// No description provided for @guideHintNickname.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe ins Feld und gib deinen Nickname ein.'**
+  String get guideHintNickname;
+
+  /// No description provided for @guideHintOpenPicker.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf das Feld, um die Meetup-Auswahl zu öffnen.'**
+  String get guideHintOpenPicker;
+
+  /// No description provided for @guideHintSearchCity.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe die ersten Buchstaben deiner Stadt ein.'**
+  String get guideHintSearchCity;
+
+  /// No description provided for @guideHintStarMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf den Stern neben deinem Meetup.'**
+  String get guideHintStarMeetup;
+
+  /// No description provided for @guideHintConfirmSelection.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestätige deine Auswahl mit dem Knopf unten.'**
+  String get guideHintConfirmSelection;
+
+  /// No description provided for @guideHintNostrKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle einen neuen Schlüssel oder importiere einen bestehenden.'**
+  String get guideHintNostrKey;
+
+  /// No description provided for @guideHintSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf PROFIL SPEICHERN.'**
+  String get guideHintSave;
+
+  /// No description provided for @guideOnboardMeetupSearchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Stadt suchen'**
+  String get guideOnboardMeetupSearchTitle;
+
+  /// No description provided for @guideOnboardMeetupSearchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe den Namen deiner Stadt ein — die Liste filtert sich sofort.'**
+  String get guideOnboardMeetupSearchBody;
+
+  /// No description provided for @guideOnboardMeetupPickTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup markieren'**
+  String get guideOnboardMeetupPickTitle;
+
+  /// No description provided for @guideOnboardMeetupPickBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Setze den Stern bei deinem Meetup. Du kannst mehrere Favoriten wählen; der erste wird dein Home-Meetup.'**
+  String get guideOnboardMeetupPickBody;
+
+  /// No description provided for @guideOnboardMeetupConfirmTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswahl bestätigen'**
+  String get guideOnboardMeetupConfirmTitle;
+
+  /// No description provided for @guideOnboardMeetupConfirmBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Knopf zeigt, wie viele Favoriten du gewählt hast. Tippe darauf, um zurück zum Profil zu kommen.'**
+  String get guideOnboardMeetupConfirmBody;
+
+  /// No description provided for @guideOnboardPlatformsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattformen verknüpfen'**
+  String get guideOnboardPlatformsTitle;
+
+  /// No description provided for @guideOnboardPlatformsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier verbindest du Konten wie Telegram, X oder Kleinanzeigen mit deiner Nostr-Identität. Jede bestätigte Plattform zahlt auf deinen Trust Score ein und zeigt anderen, dass hinter dem Profil ein gewachsener Mensch steckt.'**
+  String get guideOnboardPlatformsBody;
+
+  /// No description provided for @guideHintPlatforms.
+  ///
+  /// In de, this message translates to:
+  /// **'Freiwillig — du kannst das jederzeit im Profil nachholen.'**
+  String get guideHintPlatforms;
+
+  /// No description provided for @guideOnboardHumanityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Proof of Humanity'**
+  String get guideOnboardHumanityTitle;
+
+  /// No description provided for @guideOnboardHumanityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein einmaliger Lightning-Zap belegt, dass du eine echte Wallet bedienst — der wirksamste Schutz gegen Bot-Konten im Vertrauensnetzwerk. Hast du schon gezappt, prüfst du es hier nach.'**
+  String get guideOnboardHumanityBody;
+
+  /// No description provided for @guideHintHumanity.
+  ///
+  /// In de, this message translates to:
+  /// **'Freiwillig — die App funktioniert auch ohne diesen Nachweis.'**
+  String get guideHintHumanity;
+
+  /// No description provided for @guideHomeEventsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Events'**
+  String get guideHomeEventsTitle;
+
+  /// No description provided for @guideHomeEventsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Kachel zeigt, ob heute etwas ansteht. Sie färbt sich orange, sobald ein Termin für den Tag eingetragen ist, und führt dich in den Kalender mit allen kommenden Treffen.'**
+  String get guideHomeEventsBody;
+
+  /// No description provided for @guideHomeShoutoutTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Shoutout'**
+  String get guideHomeShoutoutTitle;
+
+  /// No description provided for @guideHomeShoutoutBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Schick eine Nachricht an die Community — sie landet auf der Shoutout-Seite von Einundzwanzig. Die Kachel öffnet die Seite im Browser.'**
+  String get guideHomeShoutoutBody;
+
+  /// No description provided for @guideHomePodcastTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Podcast'**
+  String get guideHomePodcastTitle;
+
+  /// No description provided for @guideHomePodcastBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Einundzwanzig-Podcast, direkt aus der App heraus. Die Kachel öffnet die Folgenübersicht im Browser.'**
+  String get guideHomePodcastBody;
+
+  /// No description provided for @guideHomePortalConnectTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal-Verbindung'**
+  String get guideHomePortalConnectTitle;
+
+  /// No description provided for @guideHomePortalConnectBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Grün heißt verbunden, rot heißt getrennt. Mit der Verbindung zum Einundzwanzig-Portal siehst du Termine und Kurse, die dort gepflegt werden. Ein Tipp auf die Kachel schaltet um.'**
+  String get guideHomePortalConnectBody;
+
+  /// No description provided for @guideHomeNewsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'News'**
+  String get guideHomeNewsTitle;
+
+  /// No description provided for @guideHomeNewsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die jüngste Meldung aus der Community steht direkt auf der Kachel. Ein Tipp öffnet die vollständige Übersicht.'**
+  String get guideHomeNewsBody;
+
+  /// No description provided for @guideHomeMyMeetupsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get guideHomeMyMeetupsTitle;
+
+  /// No description provided for @guideHomeMyMeetupsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier verwaltest du die Termine deiner Meetups im Portal — anlegen, ändern, absagen. Nur sinnvoll, wenn du selbst organisierst.'**
+  String get guideHomeMyMeetupsBody;
+
+  /// No description provided for @guideHomeMoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Und noch mehr'**
+  String get guideHomeMoreTitle;
+
+  /// No description provided for @guideHomeMoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Vier weitere Kacheln warten auf dem Dashboard: SatoshiDuell für Quizrunden um Sats, PlebRap für Musik aus der Community, der Portal-Bereich mit Meetups, Events, Kursen und Karte, sowie die Nostr-Kachel mit den neuesten Notizen aus deinem Netzwerk. Jede lässt sich in den Einstellungen aus- oder wieder einblenden.'**
+  String get guideHomeMoreBody;
+
+  /// No description provided for @guideHomeNearbyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'In der Nähe'**
+  String get guideHomeNearbyTitle;
+
+  /// No description provided for @guideHomeNearbyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt Meetups in deiner Umgebung — praktisch auf Reisen oder wenn du ein zweites Treffen in der Region suchst. Der Bildschirm legt sich über die App, ein Zurück bringt dich hierher.'**
+  String get guideHomeNearbyBody;
+
+  /// No description provided for @guideHomeEventsTabTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Event-Bereich'**
+  String get guideHomeEventsTabTitle;
+
+  /// No description provided for @guideHomeEventsTabBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der vierte Knopf führt in den vollständigen Kalender: alle Termine, filterbar nach Ort und Zeitraum, mit Erinnerungsfunktion.'**
+  String get guideHomeEventsTabBody;
+
+  /// No description provided for @guideHomeSettingsBackupHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Geh gleich als Erstes ins Backup — ohne das ist dein Schlüssel bei Handyverlust weg.'**
+  String get guideHomeSettingsBackupHint;
+
+  /// No description provided for @guideHintBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Leg jetzt ein verschlüsseltes Backup an — es dauert eine Minute.'**
+  String get guideHintBackup;
+
+  /// No description provided for @guideEvBadgeSwitchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge für dein Event'**
+  String get guideEvBadgeSwitchTitle;
+
+  /// No description provided for @guideEvBadgeSwitchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Leg den Schalter um, wenn Teilnehmer sich vor Ort ein Badge abholen können sollen. Ohne ihn bleibt es ein reiner Termin.'**
+  String get guideEvBadgeSwitchBody;
+
+  /// No description provided for @guideEvBadgeSwitchHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Schalter umlegen, um weiterzumachen.'**
+  String get guideEvBadgeSwitchHint;
+
+  /// No description provided for @guideEvBadgeImageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Bild'**
+  String get guideEvBadgeImageTitle;
+
+  /// No description provided for @guideEvBadgeImageBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle ein Bild aus deiner Galerie — es wird hochgeladen und erscheint später auf jedem Badge dieses Events. Ohne Bild trägt die generative Grafik die Karte allein.'**
+  String get guideEvBadgeImageBody;
+
+  /// No description provided for @guideEvBadgeLocationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Ort zählt'**
+  String get guideEvBadgeLocationTitle;
+
+  /// No description provided for @guideEvBadgeLocationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Setze den Punkt dort, wo das Event stattfindet — nicht dort, wo du gerade bist. Badges lassen sich nur in seiner Nähe und nur am Tag des Events ausgeben.'**
+  String get guideEvBadgeLocationBody;
+
+  /// No description provided for @guideEvBadgeIssuersTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Helfer'**
+  String get guideEvBadgeIssuersTitle;
+
+  /// No description provided for @guideEvBadgeIssuersBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Trage die npubs aller ein, die vor Ort Badges verteilen sollen. Sie brauchen keine Organisatoren-Rolle — die Erlaubnis steht im Termin und gilt nur für dieses Event. Du selbst darfst immer.'**
+  String get guideEvBadgeIssuersBody;
 }
 
 class _AppLocalizationsDelegate

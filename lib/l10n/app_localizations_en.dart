@@ -5430,4 +5430,468 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get idSetupOtherWaySub => 'nsec, ncryptsec, bunker or backup';
+
+  @override
+  String get guideWelcomeTitle => 'Welcome!';
+
+  @override
+  String get guideWelcomeBody =>
+      'Would you like a quick tour of the app? We\'ll show you the most important features.';
+
+  @override
+  String get guideStart => 'Start tour';
+
+  @override
+  String get guideNoThanks => 'No thanks';
+
+  @override
+  String get guideSkip => 'SKIP';
+
+  @override
+  String get guideFinishTour => 'End tour';
+
+  @override
+  String get guideBack => 'Back';
+
+  @override
+  String get guideOnboardWelcomeTitle => 'Let\'s set up your profile';
+
+  @override
+  String get guideOnboardWelcomeBody =>
+      'We\'ll walk you through the setup step by step. It only takes a minute.';
+
+  @override
+  String get guideOnboardNicknameTitle => 'Choose a Nickname';
+
+  @override
+  String get guideOnboardNicknameBody =>
+      'This is how other community members will see you. Pick something memorable!';
+
+  @override
+  String get guideOnboardMeetupTitle => 'Select Your Home Meetup';
+
+  @override
+  String get guideOnboardMeetupBody =>
+      'Your home meetup determines which badges you can collect and which events you see first.';
+
+  @override
+  String get guideOnboardNostrTitle => 'Your Nostr Key';
+
+  @override
+  String get guideOnboardNostrBody =>
+      'This cryptographic key signs your badges and verifies your reputation. It\'s stored only on your device.';
+
+  @override
+  String get guideOnboardSaveTitle => 'Save Your Profile';
+
+  @override
+  String get guideOnboardSaveBody =>
+      'Tap here when you\'re done. You can always change these settings later.';
+
+  @override
+  String get guideHomeMeetupTitle => 'Your Home Meetup';
+
+  @override
+  String get guideHomeMeetupBody =>
+      'Your favorite meetups and the next upcoming event – at a glance.';
+
+  @override
+  String get guideHomeTrustScoreTitle => 'Your Trust Score';
+
+  @override
+  String get guideHomeTrustScoreBody =>
+      'Here you see your current standing. Tap for a breakdown by diversity, activity & quality.';
+
+  @override
+  String get guideHomeReputationTitle => 'Reputation';
+
+  @override
+  String get guideHomeReputationBody =>
+      'Check your reputation or verify someone else\'s trust score.';
+
+  @override
+  String get guideHomeWotTitle => 'Trust Network';
+
+  @override
+  String get guideHomeWotBody =>
+      'See how you\'re connected to others in the Web of Trust.';
+
+  @override
+  String get guideHomeCommunityTitle => 'Community Portal';
+
+  @override
+  String get guideHomeCommunityBody =>
+      'Access the podcast, shoutouts, merch and more.';
+
+  @override
+  String get guideHomeUmrechnerTitle => 'Converter';
+
+  @override
+  String get guideHomeUmrechnerBody => 'Quickly convert between EUR and sats.';
+
+  @override
+  String get guideHomeBitcoinTitle => 'Bitcoin Price';
+
+  @override
+  String get guideHomeBitcoinBody =>
+      'Current price, network stats and block height.';
+
+  @override
+  String get guideHomeBadgeWalletTitle => 'Badge Wallet';
+
+  @override
+  String get guideHomeBadgeWalletBody =>
+      'All collected badges – cryptographically signed and stored only on your device.';
+
+  @override
+  String get guideHomeScanTitle => 'Claim a Badge';
+
+  @override
+  String get guideHomeScanBody =>
+      'Tap here to scan the organizer\'s QR code at a meetup or hold your device via NFC.';
+
+  @override
+  String get guideHomeSettingsTitle => 'Settings';
+
+  @override
+  String get guideHomeSettingsBody =>
+      'Configure backup, language, relays and more. Don\'t forget to create a backup!';
+
+  @override
+  String get guideSettingsBackupTitle => 'Create a Backup!';
+
+  @override
+  String get guideSettingsBackupBody =>
+      'IMPORTANT: Create a backup to protect your account. Without it, your badges and profile are lost if you lose your device.';
+
+  @override
+  String get guideSettingsLanguageTitle => 'Language';
+
+  @override
+  String get guideSettingsLanguageBody =>
+      'Switch between German, English and Spanish.';
+
+  @override
+  String get guideSettingsRelaysTitle => 'Nostr Relays';
+
+  @override
+  String get guideSettingsRelaysBody =>
+      'Configure which Nostr relays your app connects to.';
+
+  @override
+  String get guideSettingsHapticTitle => 'Haptic Feedback';
+
+  @override
+  String get guideSettingsHapticBody => 'Enable or disable vibration feedback.';
+
+  @override
+  String get guideSettingsResetTitle => 'Reset App';
+
+  @override
+  String get guideSettingsResetBody =>
+      'This deletes your profile and all badges. Make sure you have a backup first!';
+
+  @override
+  String get guideEventsSearchTitle => 'Search Events';
+
+  @override
+  String get guideEventsSearchBody => 'Search for meetups by city or keyword.';
+
+  @override
+  String get guideEventsCalendarTitle => 'Calendar';
+
+  @override
+  String get guideEventsCalendarBody => 'Browse all upcoming meetup events.';
+
+  @override
+  String get guideEventsCardTitle => 'Event Details';
+
+  @override
+  String get guideEventsCardBody =>
+      'Tap an event to see details, location and links.';
+
+  @override
+  String get guideEventsCreateTitle => 'Create Event';
+
+  @override
+  String get guideEventsCreateBody =>
+      'As an organizer, you can create new meetup events here.';
+
+  @override
+  String get guidePortalShoutoutTitle => 'Send a Shoutout';
+
+  @override
+  String get guidePortalShoutoutBody =>
+      'Send a public shoutout to the community.';
+
+  @override
+  String get guidePortalPodcastTitle => 'Podcast';
+
+  @override
+  String get guidePortalPodcastBody =>
+      'Listen to the Einundzwanzig podcast directly in the app.';
+
+  @override
+  String get guidePortalSoundboardTitle => 'Soundboard';
+
+  @override
+  String get guidePortalSoundboardBody =>
+      'Play clips and sounds from the podcast.';
+
+  @override
+  String get guidePortalMerchTitle => 'Shop';
+
+  @override
+  String get guidePortalMerchBody => 'Browse merch and Bitcoin products.';
+
+  @override
+  String get guidePortalMembershipTitle => 'Become a Member';
+
+  @override
+  String get guidePortalMembershipBody =>
+      'Support the association by becoming a member.';
+
+  @override
+  String get guidePortalMapTitle => 'Meetup Map';
+
+  @override
+  String get guidePortalMapBody => 'Find meetups near you on the map.';
+
+  @override
+  String get guideWalletBadgesTitle => 'Your Badges';
+
+  @override
+  String get guideWalletBadgesBody =>
+      'All collected badges – cryptographically signed and stored only on your device.';
+
+  @override
+  String get guideWalletShareQrTitle => 'Share QR Code';
+
+  @override
+  String get guideWalletShareQrBody =>
+      'Show your reputation QR code for on-site scanning.';
+
+  @override
+  String get guideWalletExportTitle => 'Export as JSON';
+
+  @override
+  String get guideWalletExportBody =>
+      'Signed export with Schnorr proof for verification.';
+
+  @override
+  String get guideWalletShareTextTitle => 'Share as Text';
+
+  @override
+  String get guideWalletShareTextBody =>
+      'Share your reputation as readable text.';
+
+  @override
+  String get guideReputationScoreTitle => 'Your Score';
+
+  @override
+  String get guideReputationScoreBody =>
+      'Your trust score is calculated from badges, diversity and activity.';
+
+  @override
+  String get guideReputationLevelTitle => 'Your Level';
+
+  @override
+  String get guideReputationLevelBody =>
+      'From NEW to VETERAN – your level grows with your participation.';
+
+  @override
+  String get guideReputationStatsTitle => 'Statistics';
+
+  @override
+  String get guideReputationStatsBody =>
+      'Badges, meetups, signers and bound proofs at a glance.';
+
+  @override
+  String get guideReputationShareTitle => 'Share Reputation';
+
+  @override
+  String get guideReputationShareBody =>
+      'Share your verified reputation via QR code or text.';
+
+  @override
+  String get guideReputationUpdateTitle => 'Update on Relays';
+
+  @override
+  String get guideReputationUpdateBody =>
+      'Publish your latest reputation to the Nostr network.';
+
+  @override
+  String guideStepOf(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get guideStepDone => 'Done';
+
+  @override
+  String get guideHintNickname => 'Tap the field and enter your nickname.';
+
+  @override
+  String get guideHintOpenPicker => 'Tap the field to open the meetup picker.';
+
+  @override
+  String get guideHintSearchCity => 'Type the first letters of your city.';
+
+  @override
+  String get guideHintStarMeetup => 'Tap the star next to your meetup.';
+
+  @override
+  String get guideHintConfirmSelection =>
+      'Confirm your selection with the button below.';
+
+  @override
+  String get guideHintNostrKey => 'Create a new key or import an existing one.';
+
+  @override
+  String get guideHintSave => 'Tap SAVE PROFILE.';
+
+  @override
+  String get guideOnboardMeetupSearchTitle => 'Search for your city';
+
+  @override
+  String get guideOnboardMeetupSearchBody =>
+      'Type your city name — the list filters instantly.';
+
+  @override
+  String get guideOnboardMeetupPickTitle => 'Mark your meetup';
+
+  @override
+  String get guideOnboardMeetupPickBody =>
+      'Star your meetup. You can pick several favourites; the first one becomes your home meetup.';
+
+  @override
+  String get guideOnboardMeetupConfirmTitle => 'Confirm your selection';
+
+  @override
+  String get guideOnboardMeetupConfirmBody =>
+      'The button shows how many favourites you picked. Tap it to return to your profile.';
+
+  @override
+  String get guideOnboardPlatformsTitle => 'Link your platforms';
+
+  @override
+  String get guideOnboardPlatformsBody =>
+      'Connect accounts such as Telegram, X or classifieds to your Nostr identity. Every confirmed platform feeds into your trust score and shows others that a real person stands behind the profile.';
+
+  @override
+  String get guideHintPlatforms =>
+      'Optional — you can do this later from your profile.';
+
+  @override
+  String get guideOnboardHumanityTitle => 'Proof of humanity';
+
+  @override
+  String get guideOnboardHumanityBody =>
+      'A single lightning zap proves you operate a real wallet — the most effective guard against bot accounts in the web of trust. If you have zapped already, verify it here.';
+
+  @override
+  String get guideHintHumanity =>
+      'Optional — the app works without this proof too.';
+
+  @override
+  String get guideHomeEventsTitle => 'Events';
+
+  @override
+  String get guideHomeEventsBody =>
+      'This tile shows whether anything is happening today. It turns orange as soon as an event is scheduled for the day and takes you to the calendar of all upcoming meetups.';
+
+  @override
+  String get guideHomeShoutoutTitle => 'Shoutout';
+
+  @override
+  String get guideHomeShoutoutBody =>
+      'Send a message to the community — it lands on the Einundzwanzig shoutout page. The tile opens it in your browser.';
+
+  @override
+  String get guideHomePodcastTitle => 'Podcast';
+
+  @override
+  String get guideHomePodcastBody =>
+      'The Einundzwanzig podcast, straight from the app. The tile opens the episode list in your browser.';
+
+  @override
+  String get guideHomePortalConnectTitle => 'Portal connection';
+
+  @override
+  String get guideHomePortalConnectBody =>
+      'Green means connected, red means disconnected. Connecting to the Einundzwanzig portal gives you the events and courses maintained there. Tapping the tile toggles it.';
+
+  @override
+  String get guideHomeNewsTitle => 'News';
+
+  @override
+  String get guideHomeNewsBody =>
+      'The latest community headline sits right on the tile. Tap it for the full list.';
+
+  @override
+  String get guideHomeMyMeetupsTitle => 'My meetups';
+
+  @override
+  String get guideHomeMyMeetupsBody =>
+      'Here you manage your meetups\' events in the portal — create, change, cancel. Only useful if you organise yourself.';
+
+  @override
+  String get guideHomeMoreTitle => 'And there\'s more';
+
+  @override
+  String get guideHomeMoreBody =>
+      'Four more tiles are waiting on your dashboard: SatoshiDuell for quiz rounds over sats, PlebRap for community music, the portal area with meetups, events, courses and map, and the Nostr tile with the latest notes from your network. Each one can be hidden or shown again in the settings.';
+
+  @override
+  String get guideHomeNearbyTitle => 'Nearby';
+
+  @override
+  String get guideHomeNearbyBody =>
+      'Shows meetups around you — handy when travelling or when you are looking for a second group in the region. The screen opens on top of the app; back brings you here again.';
+
+  @override
+  String get guideHomeEventsTabTitle => 'Events area';
+
+  @override
+  String get guideHomeEventsTabBody =>
+      'The fourth button leads to the full calendar: every event, filterable by place and period, with reminders.';
+
+  @override
+  String get guideHomeSettingsBackupHint =>
+      'Head straight for the backup — without it your key is gone if you lose your phone.';
+
+  @override
+  String get guideHintBackup =>
+      'Create an encrypted backup now — it takes a minute.';
+
+  @override
+  String get guideEvBadgeSwitchTitle => 'Badge for your event';
+
+  @override
+  String get guideEvBadgeSwitchBody =>
+      'Flip the switch if attendees should be able to collect a badge on site. Without it, this is just a calendar entry.';
+
+  @override
+  String get guideEvBadgeSwitchHint => 'Flip the switch to continue.';
+
+  @override
+  String get guideEvBadgeImageTitle => 'The image';
+
+  @override
+  String get guideEvBadgeImageBody =>
+      'Pick an image from your gallery — it gets uploaded and appears on every badge from this event. Without one, the generated artwork carries the card alone.';
+
+  @override
+  String get guideEvBadgeLocationTitle => 'The location matters';
+
+  @override
+  String get guideEvBadgeLocationBody =>
+      'Place the marker where the event happens — not where you are right now. Badges can only be issued near it and only on the day of the event.';
+
+  @override
+  String get guideEvBadgeIssuersTitle => 'Your helpers';
+
+  @override
+  String get guideEvBadgeIssuersBody =>
+      'Add the npubs of everyone who should hand out badges on site. They need no organiser role — the permission lives in the event and applies to this event only. You are always allowed.';
 }

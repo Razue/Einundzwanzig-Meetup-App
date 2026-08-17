@@ -16,7 +16,11 @@ import '../services/calendar_event_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../services/blossom_upload_service.dart';
+import 'package:provider/provider.dart';
+
 import '../services/event_badge_auth_service.dart';
+import '../services/guide_service.dart';
+import '../tours/event_badge_tour.dart';
 import '../services/nostr_service.dart';
 import '../services/event_badge_session_service.dart';
 import '../services/rolling_qr_service.dart';
@@ -1083,7 +1087,24 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
 
   Future<void> _checkRight() async {
     final right = await EventBadgeAuthService.myRight();
-    if (mounted) setState(() => _right = right);
+    if (!mounted) return;
+    setState(() => _right = right);
+
+    // Tour nur fuer Leute, die Badges ueberhaupt vergeben duerfen — wer den
+    // Schalter nicht bedienen kann, braucht keine Erklaerung dazu. Und erst
+    // JETZT, weil der Abschnitt vorher noch "Berechtigung wird geprueft"
+    // anzeigt und die Ziele sich gleich noch aendern.
+    if (right == EventBadgeRight.none) return;
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.events)) return;
+    if (!mounted) return;
+
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
+    await guide.startTour(
+      GuideTour.events,
+      EventBadgeTour.steps(badgeOn: () => _badgeEnabled),
+    );
   }
 
   bool get _mayCreateBadge =>
@@ -1091,6 +1112,11 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
 
   @override
   void dispose() {
+    // Editor zu, Tour raus: Sonst suchte das Overlay Ziele in einem Blatt,
+    // das nicht mehr existiert.
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.events) guide.finishTour();
+
     _titleCtrl.dispose();
     _locationCtrl.dispose();
     _descCtrl.dispose();
@@ -1410,16 +1436,20 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
               ),
             ]),
           ),
-          Switch(
-            value: _badgeEnabled,
-            activeTrackColor: cOrange,
-            onChanged: may ? (v) => setState(() => _badgeEnabled = v) : null,
+          KeyedSubtree(
+            key: EventBadgeTour.switchKey,
+            child: Switch(
+              value: _badgeEnabled,
+              activeTrackColor: cOrange,
+              onChanged: may ? (v) => setState(() => _badgeEnabled = v) : null,
+            ),
           ),
         ]),
 
         if (_badgeEnabled) ...[
           const SizedBox(height: 18),
-          _label(t.evBadgeImage),
+          KeyedSubtree(
+              key: EventBadgeTour.imageKey, child: _label(t.evBadgeImage)),
           Row(children: [
             Expanded(child: _input(_imageCtrl, t.evBadgeImageHint)),
             const SizedBox(width: 10),
@@ -1465,7 +1495,9 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
           ],
 
           const SizedBox(height: 16),
-          _label(t.evBadgeLocation),
+          KeyedSubtree(
+              key: EventBadgeTour.locationKey,
+              child: _label(t.evBadgeLocation)),
           GestureDetector(
             onTap: _pickLocation,
             child: Container(
@@ -1511,7 +1543,9 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                   color: cTextTertiary, fontSize: 11, height: 1.4)),
 
           const SizedBox(height: 16),
-          _label(t.evBadgeIssuers),
+          KeyedSubtree(
+              key: EventBadgeTour.issuersKey,
+              child: _label(t.evBadgeIssuers)),
           for (int i = 0; i < _issuerCtrls.length; i++)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),

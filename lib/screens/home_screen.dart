@@ -78,6 +78,11 @@ import '../services/app_logger.dart';
 import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+
+import '../services/guide_service.dart';
+import '../tours/home_tour.dart';
+import '../tours/settings_tour.dart';
 import '../l10n/level_labels.dart';
 
 // ============================================================
@@ -1043,7 +1048,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   /// Huelle um jede Kachel: im Normalzustand nur ein Langdruck-Erkenner,
   /// im Bearbeiten-Modus Ziehen, Ablegen und Pinnadel.
+  /// Ordnet Kachel-Kennungen den Zielen der Dashboard-Tour zu.
+  ///
+  /// Bewusst EINE Tabelle statt eines Schluessels in jedem der dreizehn
+  /// Kachel-Bauer: Die Bauer geben teils ein _tile zurueck, teils einen
+  /// GestureDetector, teils einen ganzen Block — jeden einzeln zu umhuellen
+  /// waere dreizehnmal dieselbe Fehlerquelle. Hier haengt der Schluessel
+  /// dort, wo die Kachel ohnehin schon als Einheit vorliegt.
+  static final Map<String, GlobalKey> _tourKeys = {
+    'trust_score':   HomeTour.trustScoreKey,
+    'home_meetup':   HomeTour.homeMeetupKey,
+    'reputation':    HomeTour.reputationKey,
+    'trust_network': HomeTour.wotKey,
+    'community':     HomeTour.communityKey,
+    'events':        HomeTour.eventsKey,
+    'portal_connect':HomeTour.portalConnectKey,
+    'btc_dashboard': HomeTour.bitcoinKey,
+    'converter':     HomeTour.umrechnerKey,
+    'news':          HomeTour.newsKey,
+    'portal':        HomeTour.myMeetupsKey,
+    'shoutout':      HomeTour.shoutoutKey,
+    'podcast':       HomeTour.podcastKey,
+  };
+
   Widget _wrapEditable(_TileDef tile, Widget child) {
+    // Schluessel der Tour aussen anlegen, damit das Overlay die Kachel
+    // MITSAMT ihrer Umrandung misst.
+    final tourKey = _tourKeys[tile.id];
+    if (tourKey != null) child = KeyedSubtree(key: tourKey, child: child);
+
     final isEditing = _editTileId != null;
     final isSelected = _editTileId == tile.id;
     final isPinned = !_hiddenTiles.contains(tile.id);
@@ -1278,7 +1311,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     SvgPicture.asset('assets/images/einundzwanzig_logo.svg', height: 16),
     const Spacer(),
     _headerIcon(_refreshing ? Icons.hourglass_empty_rounded : Icons.refresh_rounded, _refreshing ? () {} : _refreshAll),
-    _headerIcon(Icons.settings_rounded, _showSettings),
+    KeyedSubtree(
+        key: HomeTour.settingsKey,
+        child: _headerIcon(Icons.settings_rounded, _showSettings)),
   ]);
 
   Widget _headerIcon(IconData icon, VoidCallback onTap) => GestureDetector(
@@ -2287,6 +2322,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _helpI(IconData i, Color c, String t, String d) => Padding(padding: const EdgeInsets.only(bottom: 18), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 20), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 4), Text(d, style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.5))]))]));
 
   void _showSettings() async {
+    // Guide VOR dem Sheet holen: Danach zeigt der Context auf eine andere
+    // Route.
+    final guide = context.read<GuideService>();
+
     final prefs = await SharedPreferences.getInstance();
     bool haptic = prefs.getBool('haptic_enabled') ?? true;
     if (!mounted) return;
@@ -2347,18 +2386,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     const SizedBox(height: 18),
                     // DATEN & SICHERHEIT
                     _sGroup(AppLocalizations.of(context).settingsSecData, [
-                      _sRow(Icons.cloud_upload_rounded, cCyan,
-                        AppLocalizations.of(context).settingsBackup,
-                        AppLocalizations.of(context).settingsBackupSub,
-                        () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+                      KeyedSubtree(
+                        key: SettingsTour.backupKey,
+                        child: _sRow(Icons.cloud_upload_rounded, cCyan,
+                          AppLocalizations.of(context).settingsBackup,
+                          AppLocalizations.of(context).settingsBackupSub,
+                          () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // NETZWERK
                     _sGroup(AppLocalizations.of(context).settingsSecNetwork, [
-                      _sRow(Icons.hub_rounded, cPurple,
-                        AppLocalizations.of(context).settingsRelays,
-                        AppLocalizations.of(context).settingsRelaysSub,
-                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                      KeyedSubtree(
+                        key: SettingsTour.relaysKey,
+                        child: _sRow(Icons.hub_rounded, cPurple,
+                          AppLocalizations.of(context).settingsRelays,
+                          AppLocalizations.of(context).settingsRelaysSub,
+                          () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                      ),
                       _sDivider(),
                       // Mempool-Datenquelle (Clearnet / Tor-Onion / eigene Instanz)
                       _sRow(Icons.dns_rounded, cOrange,
@@ -2370,7 +2415,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     // APP
                     _sGroup(AppLocalizations.of(context).settingsSecApp, [
                       // Sprache
-                      ValueListenableBuilder<Locale?>(
+                      KeyedSubtree(
+                        key: SettingsTour.languageKey,
+                        child: ValueListenableBuilder<Locale?>(
                         valueListenable: LocaleController.locale,
                         builder: (_, current, _) => _sRowCustom(
                           Icons.language_rounded, cGreen,
@@ -2380,14 +2427,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                           onTap: () => _showLanguagePopup(ctx),
                         ),
                       ),
+                      ),
                       _sDivider(),
                       // Haptik
-                      _sRowCustom(
+                      KeyedSubtree(
+                        key: SettingsTour.hapticKey,
+                        child: _sRowCustom(
                         Icons.vibration_rounded, cGreen,
                         AppLocalizations.of(context).settingsHaptic,
                         haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff,
                         trailing: Switch(value: haptic, activeThumbColor: cOrange,
                           onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
+                      ),
                       ),
                       _sDivider(),
                       // Diagnose-Log
@@ -2407,10 +2458,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     const SizedBox(height: 18),
                     // GEFAHRENZONE
                     _sGroup(AppLocalizations.of(context).settingsSecDanger, [
-                      _sRow(Icons.delete_forever_rounded, cRed,
-                        AppLocalizations.of(context).settingsReset,
-                        AppLocalizations.of(context).settingsResetSub,
-                        () { Navigator.pop(ctx); _resetApp(); }, danger: true),
+                      KeyedSubtree(
+                        key: SettingsTour.resetKey,
+                        child: _sRow(Icons.delete_forever_rounded, cRed,
+                          AppLocalizations.of(context).settingsReset,
+                          AppLocalizations.of(context).settingsResetSub,
+                          () { Navigator.pop(ctx); _resetApp(); }, danger: true),
+                      ),
                     ]),
                     const SizedBox(height: 20),
                     // Versionsanzeige (dezent, unten)
@@ -2428,7 +2482,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           ),
         ),
       ),
-    );
+    ).whenComplete(() {
+      // Sheet zu, Tour raus. Sonst suchte das Overlay Ziele, die es nicht
+      // mehr gibt, und arbeitete die Restschritte unsichtbar ab.
+      if (guide.activeTour == GuideTour.settings) guide.finishTour();
+    });
+
+    // Erst starten, wenn das Sheet oben steht — vorher sind die Ziele noch
+    // nicht im Baum.
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (!mounted) return;
+      guide.startTour(GuideTour.settings, SettingsTour.steps());
+    });
   }
 
   /// Eine Gruppe: Label + Karten-Container mit den Items.
