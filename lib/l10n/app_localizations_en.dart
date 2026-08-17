@@ -5413,4 +5413,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shareCardPromo =>
       'Been to an Einundzwanzig meetup? Collect your badge — cryptographic proof that you were there.';
+
+  @override
+  String get backupPwShow => 'Show password';
+
+  @override
+  String get backupPwHide => 'Hide password';
+
+  @override
+  String backupPwRuleLength(int min) {
+    return 'At least $min characters — a long passphrase beats a short, complicated password.';
+  }
+
+  @override
+  String get backupPwRuleMatch => 'Both entries match';
+
+  @override
+  String get idSetupOtherWaySub => 'nsec, ncryptsec, bunker or backup';
 }

@@ -112,95 +112,182 @@ class BackupService {
     return salt;
   }
 
-  /// Zeigt den Dialog zur Passwort-Eingabe (für Export und Import)
+  /// Mindestlaenge fuer das Backup-Passwort.
+  ///
+  /// Bewusst nur die Laenge und keine Zeichenklassen: Ein erzwungenes
+  /// Sonderzeichen macht Passwoerter erfahrungsgemaess nicht stark, sondern
+  /// nur schwer merkbar — und ein vergessenes Backup-Passwort bedeutet hier
+  /// den endgueltigen Verlust der Identitaet. Wer eine lange Passphrase
+  /// nimmt, faehrt besser.
+  static const int minPasswordLength = 8;
+
+  /// Zeigt den Dialog zur Passwort-Eingabe (für Export und Import).
+  ///
+  /// Die Bedingungen stehen SICHTBAR unter dem Feld und werden beim Tippen
+  /// mitgeprueft. Vorher erfuhr man von der Mindestlaenge erst, wenn man
+  /// sie unterschritten hatte und auf Speichern drueckte — man wurde also
+  /// fuer etwas getadelt, das nie jemand gesagt hatte.
   static Future<String?> _promptForPassword(BuildContext context, {required bool isExport}) async {
     String password = '';
     String passwordConfirm = '';
     String? errorText;
+    bool obscure = true;
+    bool obscureConfirm = true;
 
     return showDialog<String>(
       context: context,
       barrierDismissible: false,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1A1A1A),
-          title: Text(
-            isExport ? AppLocalizations.of(context).backupEncryptTitle : AppLocalizations.of(context).backupDecryptTitle,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                isExport
-                    ? AppLocalizations.of(context).backupExportDesc
-                    : AppLocalizations.of(context).backupImportDesc,
-                style: const TextStyle(color: Colors.grey, fontSize: 13),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                obscureText: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context).backupPassword,
-                  hintStyle: const TextStyle(color: Colors.white30),
-                  filled: true,
-                  fillColor: const Color(0xFF0A0A0A),
-                  border: const OutlineInputBorder(),
-                  errorText: errorText,
+        builder: (context, setDialogState) {
+          final t = AppLocalizations.of(context);
+
+          // --- Bedingungen, live ausgewertet ---
+          final longEnough = password.length >= minPasswordLength;
+          final matches = password.isNotEmpty && password == passwordConfirm;
+          // Beim IMPORT gibt es nichts zu pruefen: Ob das Passwort stimmt,
+          // zeigt sich erst beim Entschluesseln. Eine Laengenpruefung waere
+          // dort sogar falsch — alte Backups koennen kuerzere haben.
+          final allOk = !isExport || (longEnough && matches);
+
+          Color borderFor(bool ok, bool touched) {
+            if (!touched) return const Color(0xFF2A2A2A);
+            return ok ? Colors.green : Colors.red;
+          }
+
+          InputDecoration deco({
+            required String hint,
+            required bool obscured,
+            required VoidCallback onToggle,
+            required Color border,
+            String? error,
+          }) =>
+              InputDecoration(
+                hintText: hint,
+                hintStyle: const TextStyle(color: Colors.white30),
+                filled: true,
+                fillColor: const Color(0xFF0A0A0A),
+                errorText: error,
+                enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: border, width: 1.2)),
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: border, width: 1.6)),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                      obscured
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: Colors.white54,
+                      size: 20),
+                  tooltip: obscured ? t.backupPwShow : t.backupPwHide,
+                  onPressed: onToggle,
                 ),
-                onChanged: (val) {
-                  password = val;
-                  setDialogState(() => errorText = null);
-                },
-              ),
-              if (isExport) ...[
-                const SizedBox(height: 12),
-                TextField(
-                  obscureText: true,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context).backupPasswordConfirm,
-                    hintStyle: const TextStyle(color: Colors.white30),
-                    filled: true,
-                    fillColor: const Color(0xFF0A0A0A),
-                    border: const OutlineInputBorder(),
+              );
+
+          Widget rule(bool ok, String text) => Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Icon(ok ? Icons.check_circle : Icons.circle_outlined,
+                      size: 15, color: ok ? Colors.green : Colors.white38),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(text,
+                        style: TextStyle(
+                            color: ok ? Colors.green : Colors.white54,
+                            fontSize: 12,
+                            height: 1.35)),
                   ),
-                  onChanged: (val) => passwordConfirm = val,
-                ),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, null),
-              child: Text(AppLocalizations.of(context).dialogCancelMixed, style: const TextStyle(color: Colors.grey)),
+                ]),
+              );
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1A1A1A),
+            title: Text(
+              isExport ? t.backupEncryptTitle : t.backupDecryptTitle,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-              onPressed: () {
-                if (password.isEmpty) {
-                  setDialogState(() => errorText = AppLocalizations.of(context).backupPasswordEmpty);
-                  return;
-                }
-                if (isExport && password.length < 8) {
-                  setDialogState(() => errorText = AppLocalizations.of(context).backupPasswordMin);
-                  return;
-                }
-                if (isExport && password != passwordConfirm) {
-                  setDialogState(() => errorText = AppLocalizations.of(context).backupPasswordMismatch);
-                  return;
-                }
-                Navigator.pop(context, password);
-              },
-              child: Text(
-                isExport ? AppLocalizations.of(context).backupEncryptSave : AppLocalizations.of(context).backupDecryptLoad,
-                style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isExport ? t.backupExportDesc : t.backupImportDesc,
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    obscureText: obscure,
+                    autofocus: true,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: deco(
+                      hint: t.backupPassword,
+                      obscured: obscure,
+                      onToggle: () => setDialogState(() => obscure = !obscure),
+                      border: isExport
+                          ? borderFor(longEnough, password.isNotEmpty)
+                          : const Color(0xFF2A2A2A),
+                      error: errorText,
+                    ),
+                    onChanged: (val) => setDialogState(() {
+                      password = val;
+                      errorText = null;
+                    }),
+                  ),
+                  if (isExport) ...[
+                    const SizedBox(height: 12),
+                    TextField(
+                      obscureText: obscureConfirm,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: deco(
+                        hint: t.backupPasswordConfirm,
+                        obscured: obscureConfirm,
+                        onToggle: () => setDialogState(
+                            () => obscureConfirm = !obscureConfirm),
+                        border:
+                            borderFor(matches, passwordConfirm.isNotEmpty),
+                      ),
+                      onChanged: (val) =>
+                          setDialogState(() => passwordConfirm = val),
+                    ),
+                    const SizedBox(height: 14),
+                    rule(longEnough, t.backupPwRuleLength(minPasswordLength)),
+                    rule(matches, t.backupPwRuleMatch),
+                  ],
+                ],
               ),
             ),
-          ],
-        ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, null),
+                child: Text(t.dialogCancelMixed, style: const TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  disabledBackgroundColor: const Color(0xFF2A2A2A),
+                ),
+                // Gesperrt, solange die Bedingungen offen sind. Zusammen mit
+                // der Liste darunter ist damit jederzeit sichtbar, WARUM.
+                onPressed: !allOk
+                    ? null
+                    : () {
+                        if (password.isEmpty) {
+                          setDialogState(() => errorText = t.backupPasswordEmpty);
+                          return;
+                        }
+                        Navigator.pop(context, password);
+                      },
+                child: Text(
+                  isExport ? t.backupEncryptSave : t.backupDecryptLoad,
+                  style: TextStyle(
+                      color: allOk ? Colors.black : Colors.white38,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

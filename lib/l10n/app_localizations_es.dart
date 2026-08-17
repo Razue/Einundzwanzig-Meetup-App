@@ -5445,4 +5445,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get shareCardPromo =>
       '¿Has estado en un meetup de Einundzwanzig? Consigue tu insignia: prueba criptográfica de que estuviste allí.';
+
+  @override
+  String get backupPwShow => 'Mostrar contraseña';
+
+  @override
+  String get backupPwHide => 'Ocultar contraseña';
+
+  @override
+  String backupPwRuleLength(int min) {
+    return 'Al menos $min caracteres: una frase larga es mejor que una contraseña corta y complicada.';
+  }
+
+  @override
+  String get backupPwRuleMatch => 'Ambas entradas coinciden';
+
+  @override
+  String get idSetupOtherWaySub =>
+      'nsec, ncryptsec, bunker o copia de seguridad';
 }

@@ -35,6 +35,14 @@ enum _SetupStep {
   meetup,
 }
 
+/// Mindestlaenge fuer das Schluessel-Passwort.
+///
+/// Dieselbe Zahl wie BackupService.minPasswordLength, aber bewusst eigen:
+/// Es sind zwei UNABHAENGIGE Geheimnisse — dieses verpackt den privaten
+/// Schluessel (NIP-49 ncryptsec), jenes die Sicherungsdatei. Wer eines
+/// aendert, soll nicht versehentlich das andere mitaendern.
+const int kMinPasswordLength = 8;
+
 class IdentitySetupScreen extends StatefulWidget {
   const IdentitySetupScreen({super.key});
 
@@ -767,6 +775,15 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         ),
       ];
 
+  /// Dieselben Bedingungen wie beim Backup-Passwort, nur fuer ein anderes
+  /// Geheimnis: Hier wird der PRIVATE SCHLUESSEL verpackt (NIP-49
+  /// ncryptsec), beim Backup die ganze Sicherungsdatei. Zwei unabhaengige
+  /// Passwoerter — man darf dasselbe nehmen, muss aber nicht.
+  bool get _pwLongEnough => _passCtrl.text.length >= kMinPasswordLength;
+  bool get _pwMatches =>
+      _passCtrl.text.isNotEmpty && _passCtrl.text == _pass2Ctrl.text;
+  bool get _pwOk => _pwLongEnough && _pwMatches;
+
   List<Widget> _buildNeu(AppLocalizations t) => [
         Text(t.idSetupNewHint,
             style: const TextStyle(color: cTextSecondary, height: 1.4)),
@@ -774,10 +791,16 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         _field(_nameCtrl, t.idSetupNameLabel, Icons.badge_outlined),
         const SizedBox(height: 12),
         _field(_passCtrl, t.idSetupPasswordLabel, Icons.lock_outline,
-            obscure: true),
+            obscure: true,
+            borderColor:
+                _pwBorder(_pwLongEnough, _passCtrl.text.isNotEmpty)),
         const SizedBox(height: 12),
         _field(_pass2Ctrl, t.idSetupPasswordConfirmLabel, Icons.lock_outline,
-            obscure: true),
+            obscure: true,
+            borderColor: _pwBorder(_pwMatches, _pass2Ctrl.text.isNotEmpty)),
+        const SizedBox(height: 4),
+        _rule(_pwLongEnough, t.backupPwRuleLength(kMinPasswordLength)),
+        _rule(_pwMatches, t.backupPwRuleMatch),
         const SizedBox(height: 10),
         // Das Passwort ist keine App-Sperre, sondern der einzige Weg zurueck an
         // den Schluessel. Wer das erst beim Geraetewechsel erfaehrt, erfaehrt
@@ -796,7 +819,9 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupCreate, _register),
+        // Gesperrt, solange die Bedingungen offen sind — zusammen mit der
+        // Liste darueber ist damit sichtbar, WORAN es liegt.
+        _primaryButton(t.idSetupCreate, _pwOk ? _register : null),
       ];
 
   List<Widget> _buildResume(AppLocalizations t) => [
@@ -828,6 +853,9 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
             ),
           ],
         ] else ...[
+          // Kein Regelwerk: Hier wird ein BESTEHENDES Passwort eingegeben.
+          // Eine Laengenpruefung wuerde nur aussperren, wer sein altes
+          // Passwort kuerzer gewaehlt hat.
           _field(_resumePassCtrl, t.idSetupPasswordLabel, Icons.lock_outline,
               obscure: true),
           const SizedBox(height: 16),
@@ -874,14 +902,18 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         primary: true,
         onTap: _connectPrimary,
       ),
-      const SizedBox(height: 16),
-      TextButton(
-        onPressed: () => setState(() {
+      const SizedBox(height: 12),
+      // Frueher ein blosser Textknopf. Als Kachel wie auf der Startseite
+      // sieht man erstens, DASS es ein zweiter Weg ist, und zweitens
+      // wohin er fuehrt — "Anderer Weg" allein sagte beides nicht.
+      _card(
+        icon: Icons.alt_route_rounded,
+        title: t.idSetupOtherWay,
+        subtitle: t.idSetupOtherWaySub,
+        onTap: () => setState(() {
           _error = null;
           _step = _SetupStep.existingMore;
         }),
-        child: Text(t.idSetupOtherWay,
-            style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
       ),
     ];
   }
@@ -1038,43 +1070,94 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     );
   }
 
+  /// Welche Passwortfelder gerade offen liegen. Pro Feld, nicht global:
+  /// Beim Bestaetigen will man oft nur EINES von beiden sehen.
+  final Map<TextEditingController, bool> _revealed = {};
+
   Widget _field(
     TextEditingController ctrl,
     String label,
     IconData icon, {
     bool obscure = false,
     int maxLines = 1,
+    /// Rahmenfarbe. null = neutral. Damit faerbt sich das Feld waehrend des
+    /// Tippens rot oder gruen, statt erst beim Absenden zu meckern.
+    Color? borderColor,
   }) {
+    final revealed = _revealed[ctrl] ?? false;
+    final border = borderColor ?? cTileBorder;
+
     return TextField(
       controller: ctrl,
-      obscureText: obscure,
+      obscureText: obscure && !revealed,
       maxLines: obscure ? 1 : maxLines,
       style: const TextStyle(color: cText),
+      onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: cTextSecondary),
         prefixIcon: Icon(icon, color: cTextSecondary, size: 20),
+        suffixIcon: obscure
+            ? IconButton(
+                icon: Icon(
+                    revealed
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: cTextSecondary,
+                    size: 20),
+                onPressed: () =>
+                    setState(() => _revealed[ctrl] = !revealed),
+              )
+            : null,
         filled: true,
         fillColor: cCard,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: cTileBorder),
+          borderSide: BorderSide(
+              color: border, width: borderColor != null ? 1.3 : 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: cOrange),
+          borderSide: BorderSide(color: borderColor ?? cOrange, width: 1.6),
         ),
       ),
     );
   }
 
-  Widget _primaryButton(String label, VoidCallback onPressed) {
+  /// Eine Zeile der Bedingungsliste.
+  Widget _rule(bool ok, String text) => Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(ok ? Icons.check_circle : Icons.circle_outlined,
+              size: 15, color: ok ? cGreen : cTextTertiary),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Text(text,
+                style: TextStyle(
+                    color: ok ? cGreen : cTextSecondary,
+                    fontSize: 12,
+                    height: 1.35)),
+          ),
+        ]),
+      );
+
+  /// Rahmenfarbe fuer ein Passwortfeld: neutral solange leer, sonst rot
+  /// oder gruen.
+  Color? _pwBorder(bool ok, bool touched) =>
+      touched ? (ok ? cGreen : cRed) : null;
+
+  /// [onPressed] darf null sein — dann ist der Knopf gesperrt und der
+  /// Farbverlauf weicht einer stumpfen Flaeche. Ohne diesen Unterschied
+  /// saehe ein gesperrter Knopf aus wie ein bedienbarer, der nichts tut.
+  Widget _primaryButton(String label, VoidCallback? onPressed) {
+    final enabled = onPressed != null;
     return SizedBox(
       width: double.infinity,
       height: 52,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: gradientOrange,
+          gradient: enabled ? gradientOrange : null,
+          color: enabled ? null : cSurface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: ElevatedButton(
@@ -1088,8 +1171,10 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
             ),
           ),
           child: Text(label,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+              style: TextStyle(
+                  color: enabled ? Colors.black : cTextTertiary,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5)),
         ),
       ),
     );

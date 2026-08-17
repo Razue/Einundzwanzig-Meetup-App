@@ -2535,5 +2535,17 @@
   "shareCardBlock": "Block",
   "shareCardScanned": "Scanned",
   "shareCardChecksum": "Checksum",
-  "shareCardPromo": "Been to an Einundzwanzig meetup? Collect your badge — cryptographic proof that you were there."
+  "shareCardPromo": "Been to an Einundzwanzig meetup? Collect your badge — cryptographic proof that you were there.",
+  "backupPwShow": "Show password",
+  "backupPwHide": "Hide password",
+  "backupPwRuleLength": "At least {min} characters — a long passphrase beats a short, complicated password.",
+  "@backupPwRuleLength": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "backupPwRuleMatch": "Both entries match",
+  "idSetupOtherWaySub": "nsec, ncryptsec, bunker or backup"
 }

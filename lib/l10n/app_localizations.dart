@@ -9903,6 +9903,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst.'**
   String get shareCardPromo;
+
+  /// No description provided for @backupPwShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort anzeigen'**
+  String get backupPwShow;
+
+  /// No description provided for @backupPwHide.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort verbergen'**
+  String get backupPwHide;
+
+  /// No description provided for @backupPwRuleLength.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens {min} Zeichen — eine lange Passphrase ist besser als ein kurzes, kompliziertes Passwort.'**
+  String backupPwRuleLength(int min);
+
+  /// No description provided for @backupPwRuleMatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Beide Eingaben stimmen überein'**
+  String get backupPwRuleMatch;
+
+  /// No description provided for @idSetupOtherWaySub.
+  ///
+  /// In de, this message translates to:
+  /// **'nsec, ncryptsec, Bunker oder Backup'**
+  String get idSetupOtherWaySub;
 }
 
 class _AppLocalizationsDelegate

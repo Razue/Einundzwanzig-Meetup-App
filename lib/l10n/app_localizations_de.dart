@@ -5465,4 +5465,21 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get shareCardPromo =>
       'Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst.';
+
+  @override
+  String get backupPwShow => 'Passwort anzeigen';
+
+  @override
+  String get backupPwHide => 'Passwort verbergen';
+
+  @override
+  String backupPwRuleLength(int min) {
+    return 'Mindestens $min Zeichen — eine lange Passphrase ist besser als ein kurzes, kompliziertes Passwort.';
+  }
+
+  @override
+  String get backupPwRuleMatch => 'Beide Eingaben stimmen überein';
+
+  @override
+  String get idSetupOtherWaySub => 'nsec, ncryptsec, Bunker oder Backup';
 }

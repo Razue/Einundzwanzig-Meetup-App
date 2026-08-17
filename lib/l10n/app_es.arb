@@ -2535,5 +2535,17 @@
   "shareCardBlock": "Bloque",
   "shareCardScanned": "Escaneada",
   "shareCardChecksum": "Suma de verificación",
-  "shareCardPromo": "¿Has estado en un meetup de Einundzwanzig? Consigue tu insignia: prueba criptográfica de que estuviste allí."
+  "shareCardPromo": "¿Has estado en un meetup de Einundzwanzig? Consigue tu insignia: prueba criptográfica de que estuviste allí.",
+  "backupPwShow": "Mostrar contraseña",
+  "backupPwHide": "Ocultar contraseña",
+  "backupPwRuleLength": "Al menos {min} caracteres: una frase larga es mejor que una contraseña corta y complicada.",
+  "@backupPwRuleLength": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "backupPwRuleMatch": "Ambas entradas coinciden",
+  "idSetupOtherWaySub": "nsec, ncryptsec, bunker o copia de seguridad"
 }

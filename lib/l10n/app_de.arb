@@ -2557,5 +2557,17 @@
   "shareCardBlock": "Block",
   "shareCardScanned": "Gescannt",
   "shareCardChecksum": "Prüfsumme",
-  "shareCardPromo": "Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst."
+  "shareCardPromo": "Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst.",
+  "backupPwShow": "Passwort anzeigen",
+  "backupPwHide": "Passwort verbergen",
+  "backupPwRuleLength": "Mindestens {min} Zeichen — eine lange Passphrase ist besser als ein kurzes, kompliziertes Passwort.",
+  "@backupPwRuleLength": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "backupPwRuleMatch": "Beide Eingaben stimmen überein",
+  "idSetupOtherWaySub": "nsec, ncryptsec, Bunker oder Backup"
 }
