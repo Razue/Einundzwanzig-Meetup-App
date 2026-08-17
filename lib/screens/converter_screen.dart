@@ -153,30 +153,39 @@ class _ConverterScreenState extends State<ConverterScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: cDark,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const SizedBox(height: 12),
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).convSelectCurrency,
-              style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          ...MempoolService.supportedCurrencies.map((cur) {
-            final selected = cur == _currency;
-            return ListTile(
-              title: Text(cur, style: TextStyle(color: selected ? cOrange : cText, fontSize: 15, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
-              trailing: selected ? const Icon(Icons.check_rounded, color: cOrange, size: 20) : null,
-              onTap: () {
-                Navigator.pop(ctx);
-                setState(() => _currency = cur);
-                _recalculate();
-              },
-            );
-          }),
-          const SizedBox(height: 8),
-        ]),
-      ),
+      builder: (ctx) {
+        final maxHeight = MediaQuery.sizeOf(ctx).height * 0.8;
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                const SizedBox(height: 12),
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2))),
+                const SizedBox(height: 16),
+                Text(AppLocalizations.of(context).convSelectCurrency,
+                    style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 12),
+                ...MempoolService.supportedCurrencies.map((cur) {
+                  final selected = cur == _currency;
+                  return ListTile(
+                    title: Text(cur, style: TextStyle(color: selected ? cOrange : cText, fontSize: 15, fontWeight: selected ? FontWeight.w700 : FontWeight.w500)),
+                    trailing: selected ? const Icon(Icons.check_rounded, color: cOrange, size: 20) : null,
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      setState(() => _currency = cur);
+                      _recalculate();
+                    },
+                  );
+                }),
+              ]),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -262,9 +271,15 @@ class _ConverterScreenState extends State<ConverterScreen> {
         Row(children: [
           const Icon(Icons.trending_up_rounded, color: cOrange, size: 16),
           const SizedBox(width: 8),
-          Text(t.convPremiumTitle,
-              style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
-          const Spacer(),
+          Expanded(
+            child: Text(
+              t.convPremiumTitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 8),
           // Manuelle Eingabe (kompakt, rechts)
           SizedBox(
             width: 82,

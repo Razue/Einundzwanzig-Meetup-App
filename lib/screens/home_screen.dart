@@ -1155,6 +1155,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _buildAvailableSection() {
     final rows = _buildTileRows(excludeHomeMeetup: true, pinned: false);
     if (rows.isEmpty) return const SizedBox.shrink();
+    // Die Nostr-Kachel hat ein eigenes Icon-Layout und benoetigt etwas mehr
+    // Hoehe als die standardisierten Wert-Kacheln.
+    const double availableTileHeight = 124;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const SizedBox(height: kTileGap),
@@ -1169,7 +1172,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           if (i > 0) const SizedBox(height: kTileGap),
           // Leicht gedaempft. Die eigentliche Abgrenzung leistet inzwischen
           // der Anstrich (schlicht statt gold), deshalb reicht ein Hauch.
-          Opacity(opacity: 0.8, child: SizedBox(height: 118, child: rows[i])),
+          Opacity(opacity: 0.8, child: SizedBox(height: availableTileHeight, child: rows[i])),
         ],
     ]);
   }
