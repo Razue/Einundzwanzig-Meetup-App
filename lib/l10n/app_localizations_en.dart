@@ -6129,4 +6129,203 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get guideEvWhenWhereBody =>
       'A start is required, the end is optional. For an event with a badge the calendar day matters: badges can only be issued on that day, from midnight to midnight.';
+
+  @override
+  String get glCatApp => 'App & handling';
+
+  @override
+  String get glTilesTitle => 'Customising the dashboard';
+
+  @override
+  String get glTilesBody =>
+      'Press and hold a tile to move or hide it. Trust score and home meetup always stay; everything else can be unpinned. Hidden tiles go to the tile manager and can be brought back any time.';
+
+  @override
+  String get glLanguageTitle => 'Language';
+
+  @override
+  String get glLanguageBody =>
+      'The app is available in German, English and Spanish. Without an explicit choice it follows the system language. You can switch it in the settings; the change takes effect immediately, no restart needed.';
+
+  @override
+  String get glLogTitle => 'Diagnostics log';
+
+  @override
+  String get glLogBody =>
+      'A record of what the app does in the background — which relays answered, why a scan was rejected. When something goes wrong this is the first place to look. It stays on the device and is never uploaded.';
+
+  @override
+  String get glResetTitle => 'Resetting the app';
+
+  @override
+  String get glResetBody =>
+      'Deletes profile, keys and all badges from the device — permanently. Without a backup your identity is gone afterwards, even though the badges live on in the relays: without the matching key you can no longer claim them. Make a backup first.';
+
+  @override
+  String get glNicknameTitle => 'Your display name';
+
+  @override
+  String get glNicknameBody =>
+      'The name you appear under in the network. It is freely chosen, need not be your real one and can be changed any time — your identity hangs on the key, not on the name.';
+
+  @override
+  String get glFindMeetupTitle => 'Finding meetups';
+
+  @override
+  String get glFindMeetupBody =>
+      'The meetup search lists every registered group. Nearby instead shows what is around your current location — useful when travelling or when looking for a second group in the region.';
+
+  @override
+  String get glBlockHeightTitle => 'The block height';
+
+  @override
+  String get glBlockHeightBody =>
+      'Every badge carries the number of the Bitcoin block that was current at scan time. It acts as a timestamp nobody can move afterwards — unlike a phone clock, which can be set to anything.';
+
+  @override
+  String get glChecksumTitle => 'The checksum';
+
+  @override
+  String get glChecksumBody =>
+      'A short fingerprint over the whole badge content. Two people can compare badges from the same meetup: if the checksums match, both received the same data. It appears in the badge details and on the shared image.';
+
+  @override
+  String get glWorldMapTitle => 'The badge world map';
+
+  @override
+  String get glWorldMapBody =>
+      'Shows your collected badges where you received them. A list of names turns into a map of your meetup visits — handy for spotting where the blank areas still are.';
+
+  @override
+  String get glDuplicateTitle => 'Duplicate badges';
+
+  @override
+  String get glDuplicateBody =>
+      'There is exactly one badge per meetup and day. Scanning the same code twice does not give you a second one — by design: a badge stands for a visit, not for a scan.';
+
+  @override
+  String get glVerifyPersonTitle => 'Verifying someone';
+
+  @override
+  String get glVerifyPersonBody =>
+      'Have the other person show their reputation QR and scan it. The app verifies whether the claims match the signed badges and shows how you are connected in the network. Useful before trading with a stranger.';
+
+  @override
+  String get glRepCardTitle => 'The reputation card';
+
+  @override
+  String get glRepCardBody =>
+      'A shareable overview of your reputation as an image — level, number of meetups, time span. It contains no private key and can be posted without worry.';
+
+  @override
+  String get glPublishTitle => 'Publishing your reputation';
+
+  @override
+  String get glPublishBody =>
+      'For others to check your reputation it has to be on the relays. The app publishes it signed; without that step a counterpart only sees what you show them directly.';
+
+  @override
+  String get glTrustPathTitle => 'Trust path';
+
+  @override
+  String get glTrustPathBody =>
+      'Shows the chain connecting you to another person — who met whom and where. An abstract number becomes a statement you can follow: not just that you are connected, but through what.';
+
+  @override
+  String get glDistrustTitle => 'Reports and suspension';
+
+  @override
+  String get glDistrustBody =>
+      'Organisers can report abuse. If reports against someone pile up, they are marked as suspended in the network — their badges do not vanish but carry that warning. A report is signed too and thus attributable to its author.';
+
+  @override
+  String get glOrganizerTitle => 'Becoming an organiser';
+
+  @override
+  String get glOrganizerBody =>
+      'From a certain trust score you can run sessions yourself. On top of that you usually need vouches from existing organisers — the role is not granted, it grows out of the network.';
+
+  @override
+  String get glNcryptsecTitle => 'ncryptsec';
+
+  @override
+  String get glNcryptsecBody =>
+      'An nsec encrypted with a password (NIP-49). The string starts with ncryptsec1 and is worthless without the password — so it travels more safely than a bare nsec. This is also how your key sits on the device.';
+
+  @override
+  String get glPasskeyTitle => 'Passkey';
+
+  @override
+  String get glPasskeyBody =>
+      'Extra protection via fingerprint or face recognition. The passkey does not replace your password, it sits in front of it. Optional, and only on this device — on a new one you need the password or backup again.';
+
+  @override
+  String get glNip05Title => 'NIP-05 address';
+
+  @override
+  String get glNip05Body =>
+      'A readable address of the form name@domain pointing to your key — like a name tag for the network. It shows that somebody with access to that domain vouches for you, but replaces none of the other checks.';
+
+  @override
+  String get glImportTitle => 'Bringing your own key';
+
+  @override
+  String get glImportBody =>
+      'If you already have a Nostr identity you can use it here — as nsec, as ncryptsec or via a bunker. Your existing contacts and profile stay intact; the app only adds badges and reputation.';
+
+  @override
+  String get glRestoreTitle => 'Restoring a backup';
+
+  @override
+  String get glRestoreBody =>
+      'During setup you can load a backup instead of creating a new key. You need the file AND the password it was encrypted with — one alone is not enough. Afterwards the identity and its badges are back.';
+
+  @override
+  String get glCalendarSourcesTitle => 'Where events come from';
+
+  @override
+  String get glCalendarSourcesBody =>
+      'The calendar merges two sources: events from the Einundzwanzig portal and ones somebody entered via Nostr. Colour tells them apart — portal meetups orange, Nostr events cyan.';
+
+  @override
+  String get glPortalTitle => 'The portal connection';
+
+  @override
+  String get glPortalBody =>
+      'You can sign in to the Einundzwanzig portal with your Nostr key. You then see the events and courses maintained there and, as a leader, can create your own. Everything else keeps working without the connection.';
+
+  @override
+  String get glCreateEventTitle => 'Creating an event';
+
+  @override
+  String get glCreateEventBody =>
+      'Anyone can add an event — it is published signed on Nostr and appears in everyone\'s calendar. Only organisers and leaders, however, may attach a badge to it.';
+
+  @override
+  String get glNostrBasicsTitle => 'What Nostr is';
+
+  @override
+  String get glNostrBasicsBody =>
+      'An open protocol for messages signed by their own author. There is no company behind it and no account that could be suspended — only keys and relays. That is why the identity from this app also works in other Nostr applications.';
+
+  @override
+  String get glNewsTitle => 'The news section';
+
+  @override
+  String get glNewsBody =>
+      'The articles come from the Einundzwanzig magazine and exist as Nostr long-form posts. You can read them in the app, like them, share them and zap the authors sats — all with the same identity.';
+
+  @override
+  String get glConverterTitle => 'Converter and price';
+
+  @override
+  String get glConverterBody =>
+      'Converts euro to sats and back. Price and block height come from a mempool instance; which one is up to you in the settings — your own node, for example.';
+
+  @override
+  String get glCommunityTitle => 'Community section';
+
+  @override
+  String get glCommunityBody =>
+      'A hub for everything around Einundzwanzig that is not directly about badges: podcast, shoutouts, PlebRap, SatoshiDuell and the meetup map. Much of it opens in the browser.';
 }

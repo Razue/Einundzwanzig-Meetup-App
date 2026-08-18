@@ -6168,4 +6168,203 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get guideEvWhenWhereBody =>
       'El inicio es obligatorio; el final es opcional. En un evento con insignia cuenta el día natural: las insignias solo se pueden emitir ese día, de medianoche a medianoche.';
+
+  @override
+  String get glCatApp => 'App y manejo';
+
+  @override
+  String get glTilesTitle => 'Personalizar el panel';
+
+  @override
+  String get glTilesBody =>
+      'Mantén pulsado un panel para moverlo u ocultarlo. El trust score y el meetup principal siempre permanecen; el resto se puede desanclar. Los ocultos van al gestor y se pueden recuperar.';
+
+  @override
+  String get glLanguageTitle => 'Idioma';
+
+  @override
+  String get glLanguageBody =>
+      'La app está en alemán, inglés y español. Sin elección propia sigue el idioma del sistema. Puedes cambiarlo en los ajustes; el cambio surte efecto de inmediato, sin reiniciar.';
+
+  @override
+  String get glLogTitle => 'Registro de diagnóstico';
+
+  @override
+  String get glLogBody =>
+      'Un registro de lo que la app hace en segundo plano: qué relés respondieron, por qué se rechazó un escaneo. Cuando algo falla, es el primer sitio donde mirar. Se queda en el dispositivo y nunca se sube.';
+
+  @override
+  String get glResetTitle => 'Restablecer la app';
+
+  @override
+  String get glResetBody =>
+      'Borra el perfil, las claves y todas las insignias del dispositivo, de forma definitiva. Sin copia de seguridad pierdes tu identidad, aunque las insignias sigan en los relés: sin la clave no podrás reclamarlas. Haz una copia antes.';
+
+  @override
+  String get glNicknameTitle => 'Tu nombre visible';
+
+  @override
+  String get glNicknameBody =>
+      'El nombre con el que apareces en la red. Es libre, no tiene que ser el real y puedes cambiarlo cuando quieras: tu identidad depende de la clave, no del nombre.';
+
+  @override
+  String get glFindMeetupTitle => 'Encontrar meetups';
+
+  @override
+  String get glFindMeetupBody =>
+      'La búsqueda de meetups lista todos los grupos registrados. «Cerca» muestra lo que hay alrededor de tu ubicación actual: útil al viajar o si buscas un segundo grupo en la región.';
+
+  @override
+  String get glBlockHeightTitle => 'La altura de bloque';
+
+  @override
+  String get glBlockHeightBody =>
+      'Cada insignia lleva el número del bloque de Bitcoin vigente en el momento del escaneo. Funciona como una marca de tiempo que nadie puede mover después, al contrario que el reloj de un móvil.';
+
+  @override
+  String get glChecksumTitle => 'La suma de verificación';
+
+  @override
+  String get glChecksumBody =>
+      'Una huella corta de todo el contenido de la insignia. Dos personas pueden comparar sus insignias del mismo meetup: si coinciden las sumas, ambos recibieron los mismos datos.';
+
+  @override
+  String get glWorldMapTitle => 'El mapa mundial de insignias';
+
+  @override
+  String get glWorldMapBody =>
+      'Muestra tus insignias donde las conseguiste. Una lista de nombres se convierte en un mapa de tus visitas: útil para ver dónde quedan huecos.';
+
+  @override
+  String get glDuplicateTitle => 'Insignias duplicadas';
+
+  @override
+  String get glDuplicateBody =>
+      'Hay exactamente una insignia por meetup y día. Escanear el mismo código dos veces no da una segunda: una insignia representa una visita, no un escaneo.';
+
+  @override
+  String get glVerifyPersonTitle => 'Verificar a alguien';
+
+  @override
+  String get glVerifyPersonBody =>
+      'Pide a la otra persona su QR de reputación y escanéalo. La app comprueba si los datos coinciden con las insignias firmadas y muestra cómo estáis conectados. Útil antes de comerciar con desconocidos.';
+
+  @override
+  String get glRepCardTitle => 'La tarjeta de reputación';
+
+  @override
+  String get glRepCardBody =>
+      'Un resumen compartible de tu reputación como imagen: nivel, número de meetups, periodo. No contiene ninguna clave privada y se puede publicar sin problema.';
+
+  @override
+  String get glPublishTitle => 'Publicar tu reputación';
+
+  @override
+  String get glPublishBody =>
+      'Para que otros comprueben tu reputación, esta debe estar en los relés. La app la publica firmada; sin ese paso, tu interlocutor solo ve lo que le enseñas directamente.';
+
+  @override
+  String get glTrustPathTitle => 'Ruta de confianza';
+
+  @override
+  String get glTrustPathBody =>
+      'Muestra la cadena que te conecta con otra persona: quién conoció a quién y dónde. Un número abstracto se convierte en algo comprensible: no solo que estáis conectados, sino a través de qué.';
+
+  @override
+  String get glDistrustTitle => 'Denuncias y suspensión';
+
+  @override
+  String get glDistrustBody =>
+      'Los organizadores pueden denunciar abusos. Si se acumulan denuncias contra alguien, queda marcado como suspendido: sus insignias no desaparecen, pero llevan esa advertencia. La denuncia también va firmada.';
+
+  @override
+  String get glOrganizerTitle => 'Convertirse en organizador';
+
+  @override
+  String get glOrganizerBody =>
+      'A partir de cierto trust score puedes iniciar sesiones. Además suelen hacer falta avales de organizadores existentes: el rol no se concede, crece desde la red.';
+
+  @override
+  String get glNcryptsecTitle => 'ncryptsec';
+
+  @override
+  String get glNcryptsecBody =>
+      'Un nsec cifrado con una contraseña (NIP-49). La cadena empieza por ncryptsec1 y no sirve de nada sin la contraseña, así que se transporta con menos riesgo que un nsec desnudo.';
+
+  @override
+  String get glPasskeyTitle => 'Passkey';
+
+  @override
+  String get glPasskeyBody =>
+      'Protección adicional por huella o reconocimiento facial. El passkey no sustituye a tu contraseña, se antepone a ella. Es opcional y solo en este dispositivo.';
+
+  @override
+  String get glNip05Title => 'Dirección NIP-05';
+
+  @override
+  String get glNip05Body =>
+      'Una dirección legible del tipo nombre@dominio que apunta a tu clave, como una etiqueta para la red. Demuestra que alguien con acceso a ese dominio responde por ti, pero no sustituye a las demás comprobaciones.';
+
+  @override
+  String get glImportTitle => 'Traer tu propia clave';
+
+  @override
+  String get glImportBody =>
+      'Si ya tienes una identidad Nostr puedes usarla aquí: como nsec, como ncryptsec o mediante un bunker. Tus contactos y tu perfil se mantienen; la app solo añade insignias y reputación.';
+
+  @override
+  String get glRestoreTitle => 'Restaurar una copia';
+
+  @override
+  String get glRestoreBody =>
+      'Durante la configuración puedes cargar una copia en lugar de crear una clave nueva. Necesitas el archivo Y la contraseña con la que se cifró: uno solo no basta.';
+
+  @override
+  String get glCalendarSourcesTitle => 'De dónde vienen los eventos';
+
+  @override
+  String get glCalendarSourcesBody =>
+      'El calendario reúne dos fuentes: eventos del portal de Einundzwanzig y otros introducidos vía Nostr. El color los distingue: meetups del portal en naranja, eventos Nostr en turquesa.';
+
+  @override
+  String get glPortalTitle => 'La conexión con el portal';
+
+  @override
+  String get glPortalBody =>
+      'Puedes iniciar sesión en el portal de Einundzwanzig con tu clave Nostr. Verás los eventos y cursos que allí se gestionan y, como líder, podrás crear los tuyos. Sin conexión, todo lo demás sigue funcionando.';
+
+  @override
+  String get glCreateEventTitle => 'Crear un evento';
+
+  @override
+  String get glCreateEventBody =>
+      'Cualquiera puede añadir un evento: se publica firmado en Nostr y aparece en el calendario de todos. Sin embargo, solo organizadores y líderes pueden asociarle una insignia.';
+
+  @override
+  String get glNostrBasicsTitle => 'Qué es Nostr';
+
+  @override
+  String get glNostrBasicsBody =>
+      'Un protocolo abierto para mensajes firmados por su propio autor. No hay empresa detrás ni cuenta que puedan bloquear: solo claves y relés. Por eso tu identidad de esta app también funciona en otras aplicaciones Nostr.';
+
+  @override
+  String get glNewsTitle => 'La sección de noticias';
+
+  @override
+  String get glNewsBody =>
+      'Los artículos vienen de la revista Einundzwanzig y existen como textos largos de Nostr. Puedes leerlos en la app, darles un me gusta, compartirlos y enviar sats a los autores.';
+
+  @override
+  String get glConverterTitle => 'Conversor y precio';
+
+  @override
+  String get glConverterBody =>
+      'Convierte euros a sats y viceversa. El precio y la altura de bloque vienen de una instancia de mempool; puedes cambiarla en los ajustes, por ejemplo a tu propio nodo.';
+
+  @override
+  String get glCommunityTitle => 'Sección de comunidad';
+
+  @override
+  String get glCommunityBody =>
+      'Un punto de reunión para todo lo de Einundzwanzig que no trata de insignias: pódcast, shoutouts, PlebRap, SatoshiDuell y el mapa de meetups. Gran parte se abre en el navegador.';
 }

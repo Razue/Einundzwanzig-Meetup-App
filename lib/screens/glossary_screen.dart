@@ -25,6 +25,7 @@ enum GlossaryCategory {
   identity,
   events,
   nostr,
+  app,
 }
 
 class GlossaryEntry {
@@ -59,41 +60,71 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         GlossaryEntry(GlossaryCategory.start, t.glWhatIsAppTitle, t.glWhatIsAppBody),
         GlossaryEntry(GlossaryCategory.start, t.glCollectTitle, t.glCollectBody),
         GlossaryEntry(GlossaryCategory.start, t.glHomeMeetupTitle, t.glHomeMeetupBody),
+        GlossaryEntry(GlossaryCategory.start, t.glNicknameTitle, t.glNicknameBody),
+        GlossaryEntry(GlossaryCategory.start, t.glFindMeetupTitle, t.glFindMeetupBody),
         GlossaryEntry(GlossaryCategory.start, t.glOfflineTitle, t.glOfflineBody),
 
         // --- Badges ---
         GlossaryEntry(GlossaryCategory.badges, t.glBadgeProofTitle, t.glBadgeProofBody),
         GlossaryEntry(GlossaryCategory.badges, t.glRollingQrTitle, t.glRollingQrBody),
         GlossaryEntry(GlossaryCategory.badges, t.glOnSiteTitle, t.glOnSiteBody),
+        GlossaryEntry(GlossaryCategory.badges, t.glBlockHeightTitle, t.glBlockHeightBody),
+        GlossaryEntry(GlossaryCategory.badges, t.glChecksumTitle, t.glChecksumBody),
+        GlossaryEntry(GlossaryCategory.badges, t.glDuplicateTitle, t.glDuplicateBody),
         GlossaryEntry(GlossaryCategory.badges, t.glBadgeShareTitle, t.glBadgeShareBody),
+        GlossaryEntry(GlossaryCategory.badges, t.glWorldMapTitle, t.glWorldMapBody),
 
         // --- Reputation ---
         GlossaryEntry(GlossaryCategory.reputation, t.glTrustScoreTitle, t.glTrustScoreBody),
         GlossaryEntry(GlossaryCategory.reputation, t.glLevelsTitle, t.glLevelsBody),
         GlossaryEntry(GlossaryCategory.reputation, t.glHumanityTitle, t.glHumanityBody),
         GlossaryEntry(GlossaryCategory.reputation, t.glPlatformsTitle, t.glPlatformsBody),
+        GlossaryEntry(GlossaryCategory.reputation, t.glPublishTitle, t.glPublishBody),
+        GlossaryEntry(GlossaryCategory.reputation, t.glVerifyPersonTitle, t.glVerifyPersonBody),
+        GlossaryEntry(GlossaryCategory.reputation, t.glRepCardTitle, t.glRepCardBody),
 
         // --- Vertrauensnetzwerk ---
         GlossaryEntry(GlossaryCategory.network, t.glEncounterTitle, t.glEncounterBody),
         GlossaryEntry(GlossaryCategory.network, t.glDegreesTitle, t.glDegreesBody),
         GlossaryEntry(GlossaryCategory.network, t.glVouchTitle, t.glVouchBody),
+        GlossaryEntry(GlossaryCategory.network, t.glTrustPathTitle, t.glTrustPathBody),
         GlossaryEntry(GlossaryCategory.network, t.glEventNetTitle, t.glEventNetBody),
+        GlossaryEntry(GlossaryCategory.network, t.glDistrustTitle, t.glDistrustBody),
+        GlossaryEntry(GlossaryCategory.network, t.glOrganizerTitle, t.glOrganizerBody),
 
         // --- Identitaet & Schluessel ---
         GlossaryEntry(GlossaryCategory.identity, t.glKeysTitle, t.glKeysBody),
         GlossaryEntry(GlossaryCategory.identity, t.glPasswordTitle, t.glPasswordBody),
         GlossaryEntry(GlossaryCategory.identity, t.glSignerTitle, t.glSignerBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glNcryptsecTitle, t.glNcryptsecBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glPasskeyTitle, t.glPasskeyBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glNip05Title, t.glNip05Body),
+        GlossaryEntry(GlossaryCategory.identity, t.glImportTitle, t.glImportBody),
         GlossaryEntry(GlossaryCategory.identity, t.glBackupTitle, t.glBackupBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glRestoreTitle, t.glRestoreBody),
 
         // --- Events ---
+        GlossaryEntry(GlossaryCategory.events, t.glCalendarSourcesTitle, t.glCalendarSourcesBody),
+        GlossaryEntry(GlossaryCategory.events, t.glCreateEventTitle, t.glCreateEventBody),
+        GlossaryEntry(GlossaryCategory.events, t.glPortalTitle, t.glPortalBody),
         GlossaryEntry(GlossaryCategory.events, t.glSpecialEventTitle, t.glSpecialEventBody),
         GlossaryEntry(GlossaryCategory.events, t.glEventHelperTitle, t.glEventHelperBody),
         GlossaryEntry(GlossaryCategory.events, t.glEventWindowTitle, t.glEventWindowBody),
 
         // --- Nostr ---
+        GlossaryEntry(GlossaryCategory.nostr, t.glNostrBasicsTitle, t.glNostrBasicsBody),
         GlossaryEntry(GlossaryCategory.nostr, t.glRelaysTitle, t.glRelaysBody),
         GlossaryEntry(GlossaryCategory.nostr, t.glPublicTitle, t.glPublicBody),
         GlossaryEntry(GlossaryCategory.nostr, t.glZapTitle, t.glZapBody),
+        GlossaryEntry(GlossaryCategory.nostr, t.glNewsTitle, t.glNewsBody),
+        GlossaryEntry(GlossaryCategory.nostr, t.glCommunityTitle, t.glCommunityBody),
+        GlossaryEntry(GlossaryCategory.nostr, t.glConverterTitle, t.glConverterBody),
+
+        // --- App & Bedienung ---
+        GlossaryEntry(GlossaryCategory.app, t.glTilesTitle, t.glTilesBody),
+        GlossaryEntry(GlossaryCategory.app, t.glLanguageTitle, t.glLanguageBody),
+        GlossaryEntry(GlossaryCategory.app, t.glLogTitle, t.glLogBody),
+        GlossaryEntry(GlossaryCategory.app, t.glResetTitle, t.glResetBody),
       ];
 
   String _categoryLabel(AppLocalizations t, GlossaryCategory c) => switch (c) {
@@ -104,6 +135,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         GlossaryCategory.identity => t.glCatIdentity,
         GlossaryCategory.events => t.glCatEvents,
         GlossaryCategory.nostr => t.glCatNostr,
+        GlossaryCategory.app => t.glCatApp,
       };
 
   IconData _categoryIcon(GlossaryCategory c) => switch (c) {
@@ -114,6 +146,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         GlossaryCategory.identity => Icons.key_rounded,
         GlossaryCategory.events => Icons.celebration_rounded,
         GlossaryCategory.nostr => Icons.bolt_rounded,
+        GlossaryCategory.app => Icons.tune_rounded,
       };
 
   @override

@@ -11151,6 +11151,348 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Start ist Pflicht, das Ende darfst du weglassen. Bei einem Event mit Badge zählt der Kalendertag: Badges lassen sich nur an diesem Tag ausgeben, von Mitternacht bis Mitternacht.'**
   String get guideEvWhenWhereBody;
+
+  /// No description provided for @glCatApp.
+  ///
+  /// In de, this message translates to:
+  /// **'App & Bedienung'**
+  String get glCatApp;
+
+  /// No description provided for @glTilesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dashboard anpassen'**
+  String get glTilesTitle;
+
+  /// No description provided for @glTilesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Halte eine Kachel lange gedrückt, um sie zu verschieben oder auszublenden. Trust Score und Home-Meetup bleiben immer sichtbar, alles andere kannst du loslösen. Ausgeblendete Kacheln landen in der Verwaltung und lassen sich jederzeit zurückholen.'**
+  String get glTilesBody;
+
+  /// No description provided for @glLanguageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get glLanguageTitle;
+
+  /// No description provided for @glLanguageBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App gibt es auf Deutsch, Englisch und Spanisch. Ohne eigene Wahl folgt sie der Systemsprache. Umstellen kannst du sie in den Einstellungen; die Änderung greift sofort, ein Neustart ist nicht nötig.'**
+  String get glLanguageBody;
+
+  /// No description provided for @glLogTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnose-Log'**
+  String get glLogTitle;
+
+  /// No description provided for @glLogBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Protokoll dessen, was die App im Hintergrund tut — welche Relays geantwortet haben, warum ein Scan abgelehnt wurde. Wenn etwas klemmt, ist das die erste Anlaufstelle. Es bleibt auf dem Gerät und wird nirgends hochgeladen.'**
+  String get glLogBody;
+
+  /// No description provided for @glResetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'App zurücksetzen'**
+  String get glResetTitle;
+
+  /// No description provided for @glResetBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Löscht Profil, Schlüssel und alle Badges vom Gerät — endgültig. Ohne Backup ist deine Identität danach weg, auch wenn die Badges auf den Relays weiterleben: Ohne den passenden Schlüssel kannst du sie niemandem mehr zuordnen. Mach vorher ein Backup.'**
+  String get glResetBody;
+
+  /// No description provided for @glNicknameTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Anzeigename'**
+  String get glNicknameTitle;
+
+  /// No description provided for @glNicknameBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Name, unter dem du im Netzwerk erscheinst. Er ist frei wählbar, muss nicht dein echter sein und lässt sich jederzeit ändern — deine Identität hängt am Schlüssel, nicht am Namen.'**
+  String get glNicknameBody;
+
+  /// No description provided for @glFindMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups finden'**
+  String get glFindMeetupTitle;
+
+  /// No description provided for @glFindMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Über die Meetup-Suche kommst du an alle eingetragenen Gruppen. In der Nähe zeigt dir stattdessen, was rund um deinen aktuellen Standort liegt — nützlich auf Reisen oder wenn du eine zweite Gruppe in der Region suchst.'**
+  String get glFindMeetupBody;
+
+  /// No description provided for @glBlockHeightTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Blockhöhe'**
+  String get glBlockHeightTitle;
+
+  /// No description provided for @glBlockHeightBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Jedes Badge trägt die Nummer des Bitcoin-Blocks, der beim Scan gerade aktuell war. Sie wirkt wie ein Zeitstempel, den niemand nachträglich verschieben kann — anders als die Uhr eines Handys, die sich beliebig stellen lässt.'**
+  String get glBlockHeightBody;
+
+  /// No description provided for @glChecksumTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Prüfsumme'**
+  String get glChecksumTitle;
+
+  /// No description provided for @glChecksumBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein kurzer Fingerabdruck über den gesamten Badge-Inhalt. Zwei Menschen können ihre Badges vom selben Meetup vergleichen: Stimmen die Prüfsummen überein, haben beide dieselben Daten erhalten. Sie steht in den Badge-Details und auf dem geteilten Bild.'**
+  String get glChecksumBody;
+
+  /// No description provided for @glWorldMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Badge-Weltkarte'**
+  String get glWorldMapTitle;
+
+  /// No description provided for @glWorldMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt deine gesammelten Badges dort, wo du sie bekommen hast. Aus einer Liste von Namen wird so eine Landkarte deiner Meetup-Besuche — praktisch, um zu sehen, wo noch weiße Flecken sind.'**
+  String get glWorldMapBody;
+
+  /// No description provided for @glDuplicateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Doppelte Badges'**
+  String get glDuplicateTitle;
+
+  /// No description provided for @glDuplicateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro Meetup und Tag gibt es genau ein Badge. Wer denselben Code zweimal scannt, bekommt kein zweites — das ist Absicht: Ein Badge steht für einen Besuch, nicht für einen Scan.'**
+  String get glDuplicateBody;
+
+  /// No description provided for @glVerifyPersonTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Jemanden prüfen'**
+  String get glVerifyPersonTitle;
+
+  /// No description provided for @glVerifyPersonBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Lass dir den Reputations-QR der anderen Person zeigen und scanne ihn. Die App rechnet nach, ob die Angaben zu den signierten Badges passen, und zeigt dir, wie ihr im Netzwerk verbunden seid. Nützlich vor einem Handel unter Fremden.'**
+  String get glVerifyPersonBody;
+
+  /// No description provided for @glRepCardTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Reputationskarte'**
+  String get glRepCardTitle;
+
+  /// No description provided for @glRepCardBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine teilbare Übersicht deiner Reputation als Bild — Stufe, Anzahl der Meetups, Zeitraum. Sie enthält keinen privaten Schlüssel und lässt sich bedenkenlos posten.'**
+  String get glRepCardBody;
+
+  /// No description provided for @glPublishTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation veröffentlichen'**
+  String get glPublishTitle;
+
+  /// No description provided for @glPublishBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Damit andere deine Reputation prüfen können, muss sie auf den Relays liegen. Die App veröffentlicht sie signiert; ohne diesen Schritt sieht ein Gegenüber nur, was du ihm direkt zeigst.'**
+  String get glPublishBody;
+
+  /// No description provided for @glTrustPathTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauenspfad'**
+  String get glTrustPathTitle;
+
+  /// No description provided for @glTrustPathBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt die Kette, über die du mit einer anderen Person verbunden bist — wer wen wo getroffen hat. Aus einer abstrakten Zahl wird damit eine nachvollziehbare Aussage: nicht nur dass ihr verbunden seid, sondern worüber.'**
+  String get glTrustPathBody;
+
+  /// No description provided for @glDistrustTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldungen und Suspendierung'**
+  String get glDistrustTitle;
+
+  /// No description provided for @glDistrustBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisatoren können Missbrauch melden. Häufen sich Meldungen gegen jemanden, wird er im Netzwerk als suspendiert markiert — seine Badges verschwinden nicht, aber sie tragen diese Warnung. Auch eine Meldung ist signiert und damit dem Melder zuzuordnen.'**
+  String get glDistrustBody;
+
+  /// No description provided for @glOrganizerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator werden'**
+  String get glOrganizerTitle;
+
+  /// No description provided for @glOrganizerBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ab einem bestimmten Trust Score kannst du selbst Sessions starten. Zusätzlich brauchst du in der Regel Bürgschaften bestehender Organisatoren — die Rolle wird nicht vergeben, sie wächst aus dem Netzwerk.'**
+  String get glOrganizerBody;
+
+  /// No description provided for @glNcryptsecTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'ncryptsec'**
+  String get glNcryptsecTitle;
+
+  /// No description provided for @glNcryptsecBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein nsec, der mit einem Passwort verschlüsselt ist (NIP-49). Die Zeichenfolge beginnt mit ncryptsec1 und ist ohne Passwort wertlos — sie lässt sich also gefahrloser transportieren als ein blanker nsec. Genau so liegt dein Schlüssel auch auf dem Gerät.'**
+  String get glNcryptsecBody;
+
+  /// No description provided for @glPasskeyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Passkey'**
+  String get glPasskeyTitle;
+
+  /// No description provided for @glPasskeyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusätzlicher Schutz per Fingerabdruck oder Gesichtserkennung. Der Passkey ersetzt dein Passwort nicht, er legt sich davor. Freiwillig, und nur auf diesem Gerät — auf einem neuen brauchst du wieder Passwort oder Backup.'**
+  String get glPasskeyBody;
+
+  /// No description provided for @glNip05Title.
+  ///
+  /// In de, this message translates to:
+  /// **'NIP-05-Adresse'**
+  String get glNip05Title;
+
+  /// No description provided for @glNip05Body.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine lesbare Adresse der Form name@domain, die auf deinen Schlüssel zeigt — wie ein Namensschild fürs Netzwerk. Sie beweist, dass jemand mit Zugriff auf diese Domain für dich bürgt, ersetzt aber keine der anderen Prüfungen.'**
+  String get glNip05Body;
+
+  /// No description provided for @glImportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel mitbringen'**
+  String get glImportTitle;
+
+  /// No description provided for @glImportBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer schon eine Nostr-Identität hat, kann sie hier einsetzen — als nsec, als ncryptsec oder über einen Bunker. Deine bestehenden Kontakte und dein Profil bleiben dabei erhalten; die App legt nur Badges und Reputation dazu.'**
+  String get glImportBody;
+
+  /// No description provided for @glRestoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup einspielen'**
+  String get glRestoreTitle;
+
+  /// No description provided for @glRestoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Einrichten kannst du statt eines neuen Schlüssels ein Backup laden. Du brauchst die Datei UND das Passwort, mit dem sie verschlüsselt wurde — eines allein genügt nicht. Danach ist die Identität samt Badges wieder da.'**
+  String get glRestoreBody;
+
+  /// No description provided for @glCalendarSourcesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Woher die Termine kommen'**
+  String get glCalendarSourcesTitle;
+
+  /// No description provided for @glCalendarSourcesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Kalender führt zwei Quellen zusammen: Termine aus dem Einundzwanzig-Portal und Veranstaltungen, die jemand über Nostr eingetragen hat. Die Farbe unterscheidet sie — Portal-Meetups orange, Nostr-Termine türkis.'**
+  String get glCalendarSourcesBody;
+
+  /// No description provided for @glPortalTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Portal-Verbindung'**
+  String get glPortalTitle;
+
+  /// No description provided for @glPortalBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit deinem Nostr-Schlüssel kannst du dich am Einundzwanzig-Portal anmelden. Danach siehst du dort gepflegte Termine und Kurse und kannst als Leader eigene Termine anlegen. Ohne Verbindung funktioniert alles andere weiterhin.'**
+  String get glPortalBody;
+
+  /// No description provided for @glCreateEventTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin anlegen'**
+  String get glCreateEventTitle;
+
+  /// No description provided for @glCreateEventBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Jeder kann einen Termin eintragen — er wird signiert auf Nostr veröffentlicht und erscheint bei allen im Kalender. Ein Badge dazu vergeben dürfen allerdings nur Organisatoren und Leader.'**
+  String get glCreateEventBody;
+
+  /// No description provided for @glNostrBasicsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was Nostr ist'**
+  String get glNostrBasicsTitle;
+
+  /// No description provided for @glNostrBasicsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein offenes Protokoll für Nachrichten, die ihr Absender selbst signiert. Es gibt kein Unternehmen dahinter und kein Konto, das gesperrt werden könnte — nur Schlüssel und Relays. Deine Identität aus dieser App funktioniert deshalb auch in anderen Nostr-Anwendungen.'**
+  String get glNostrBasicsBody;
+
+  /// No description provided for @glNewsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der News-Bereich'**
+  String get glNewsTitle;
+
+  /// No description provided for @glNewsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Artikel stammen aus dem Einundzwanzig-Magazin und liegen als Nostr-Langtexte vor. Du kannst sie in der App lesen, mit einem Herz versehen, teilen und den Autoren Sats zappen — alles über dieselbe Identität.'**
+  String get glNewsBody;
+
+  /// No description provided for @glConverterTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Umrechner und Kurs'**
+  String get glConverterTitle;
+
+  /// No description provided for @glConverterBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Rechnet Euro in Sats um und zurück. Der Kurs und die Blockhöhe kommen von einer Mempool-Instanz; welche das ist, kannst du in den Einstellungen ändern — etwa auf deine eigene Node.'**
+  String get glConverterBody;
+
+  /// No description provided for @glCommunityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Community-Bereich'**
+  String get glCommunityTitle;
+
+  /// No description provided for @glCommunityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sammelpunkt für alles rund um Einundzwanzig, was nicht direkt mit Badges zu tun hat: Podcast, Shoutouts, PlebRap, SatoshiDuell und die Meetup-Karte. Vieles davon öffnet sich im Browser.'**
+  String get glCommunityBody;
 }
 
 class _AppLocalizationsDelegate
