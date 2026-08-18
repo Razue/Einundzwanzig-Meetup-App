@@ -1090,11 +1090,10 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     if (!mounted) return;
     setState(() => _right = right);
 
-    // Tour nur fuer Leute, die Badges ueberhaupt vergeben duerfen — wer den
-    // Schalter nicht bedienen kann, braucht keine Erklaerung dazu. Und erst
-    // JETZT, weil der Abschnitt vorher noch "Berechtigung wird geprueft"
-    // anzeigt und die Ziele sich gleich noch aendern.
-    if (right == EventBadgeRight.none) return;
+    // Die Tour laeuft fuer JEDEN — Titel, Ort und Zeitraum betreffen alle.
+    // Nur der Badge-Teil haengt an der Berechtigung: Wer den Schalter nicht
+    // bedienen kann, bekommt die drei Schritte dazu gar nicht erst zu
+    // sehen. Deshalb wird erst hier gestartet, wenn die Pruefung durch ist.
     final guide = context.read<GuideService>();
     if (await guide.wasTourCompleted(GuideTour.events)) return;
     if (!mounted) return;
@@ -1103,7 +1102,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     if (!mounted) return;
     await guide.startTour(
       GuideTour.events,
-      EventBadgeTour.steps(badgeOn: () => _badgeEnabled),
+      EventBadgeTour.steps(mayCreateBadge: right != EventBadgeRight.none),
     );
   }
 
@@ -1323,11 +1322,18 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            _label(t.calFieldTitle),
-            _input(_titleCtrl, t.calFieldTitleHint),
-            const SizedBox(height: 16),
-            _label(t.calFieldLocation),
-            _input(_locationCtrl, t.calFieldLocationHint),
+            KeyedSubtree(
+              key: EventBadgeTour.basicsKey,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _label(t.calFieldTitle),
+                    _input(_titleCtrl, t.calFieldTitleHint),
+                    const SizedBox(height: 16),
+                    _label(t.calFieldLocation),
+                    _input(_locationCtrl, t.calFieldLocationHint),
+                  ]),
+            ),
             const SizedBox(height: 16),
             // Ganztägig-Schalter
             Container(
@@ -1349,11 +1355,18 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
               ]),
             ),
             const SizedBox(height: 16),
-            _label(t.calFieldStart),
-            _dateButton(_fmt(_start, t), _start != null, _pickStart),
-            const SizedBox(height: 16),
-            _label(t.calFieldEnd),
-            _dateButton(_fmt(_end, t), _end != null, _pickEnd),
+            KeyedSubtree(
+              key: EventBadgeTour.whenWhereKey,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _label(t.calFieldStart),
+                    _dateButton(_fmt(_start, t), _start != null, _pickStart),
+                    const SizedBox(height: 16),
+                    _label(t.calFieldEnd),
+                    _dateButton(_fmt(_end, t), _end != null, _pickEnd),
+                  ]),
+            ),
             if (_end != null)
               Align(
                 alignment: Alignment.centerRight,

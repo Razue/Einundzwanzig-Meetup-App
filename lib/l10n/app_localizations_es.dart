@@ -5911,7 +5911,8 @@ class AppLocalizationsEs extends AppLocalizations {
       'Activa el interruptor si los asistentes deben poder recoger una insignia en el lugar. Sin él, es solo una cita.';
 
   @override
-  String get guideEvBadgeSwitchHint => 'Activa el interruptor para continuar.';
+  String get guideEvBadgeSwitchHint =>
+      'Si no necesitas insignia para este evento, simplemente toca Continuar.';
 
   @override
   String get guideEvBadgeImageTitle => 'La imagen';
@@ -6043,4 +6044,128 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get guideHomeGlossaryBody =>
       'Aquí está todo explicado con calma, ordenado por temas y con búsqueda. Cuando termine esta visita y quede alguna duda, la respuesta está aquí.';
+
+  @override
+  String get glCatNetwork => 'Red de confianza';
+
+  @override
+  String get glCatIdentity => 'Identidad y claves';
+
+  @override
+  String get glCatEvents => 'Eventos';
+
+  @override
+  String get glCatNostr => 'Nostr';
+
+  @override
+  String get glEncounterTitle => 'Encuentros';
+
+  @override
+  String get glEncounterBody =>
+      'Quien escaneó con el mismo organizador el mismo día cuenta como encuentro. Así surge una red de personas que realmente compartieron una sala, no de gente que se sigue en internet.';
+
+  @override
+  String get glDegreesTitle => 'Grados';
+
+  @override
+  String get glDegreesBody =>
+      'Primer grado significa que estuvisteis con el mismo organizador. Segundo grado: alguien a quien conociste ha conocido a esa persona. Si un meetup tuvo dos organizadores, el hecho de que se escaneen mutuamente une ambos grupos.';
+
+  @override
+  String get glVouchTitle => 'Avales';
+
+  @override
+  String get glVouchBody =>
+      'Los organizadores pueden avalarse entre sí. Un aval es un voto público y firmado: tras publicarlo, toda la red ve por quién respondes. Se puede retirar en cualquier momento, pero la retirada es igual de visible.';
+
+  @override
+  String get glEventNetTitle => 'Red de eventos';
+
+  @override
+  String get glEventNetBody =>
+      'Los eventos especiales se cuentan aparte. En un meetup de quince personas conoces a todos; en un evento de quinientas, no. Mezclarlos devaluaría lo que dice la red, por eso tienen su propia categoría.';
+
+  @override
+  String get glKeysTitle => 'nsec y npub';
+
+  @override
+  String get glKeysBody =>
+      'Tu npub es tu dirección pública: compártela sin problema. El nsec es la clave privada y no pertenece a nadie más: quien la tenga, ES tú. No hay restablecimiento: si el nsec desaparece, la identidad y su reputación se pierden.';
+
+  @override
+  String get glPasswordTitle => 'Las dos contraseñas';
+
+  @override
+  String get glPasswordBody =>
+      'Durante la configuración estableces una contraseña que envuelve tu clave en el dispositivo. Para la copia de seguridad defines otra que cifra el archivo. Pueden coincidir, pero son independientes, y ninguna se puede restablecer.';
+
+  @override
+  String get glSignerTitle => 'Aplicaciones de firma';
+
+  @override
+  String get glSignerBody =>
+      'En lugar de guardar la clave en esta app, puedes confiarla a una aplicación de firma como Amber o conectarla mediante un bunker. Esta app pedirá allí cada firma y nunca verá la clave.';
+
+  @override
+  String get glBackupTitle => 'La copia de seguridad';
+
+  @override
+  String get glBackupBody =>
+      'Guarda claves, insignias y ajustes en un archivo cifrado. Sin ella, si pierdes el dispositivo lo pierdes todo. Créala pronto, no cuando la necesites, y guarda el archivo separado de la contraseña.';
+
+  @override
+  String get glSpecialEventTitle => 'Eventos especiales';
+
+  @override
+  String get glSpecialEventBody =>
+      'Además de los meetups habituales hay eventos únicos con insignias propias. Cuentan como insignia y para la variedad de emisores, pero no como meetup visitado.';
+
+  @override
+  String get glEventHelperTitle => 'Ayudantes en un evento';
+
+  @override
+  String get glEventHelperBody =>
+      'Quien crea un evento con insignia puede añadir cualquier npub como emisor. Esos ayudantes no necesitan rol de organizador: el permiso está en el evento y solo vale para ese.';
+
+  @override
+  String get glEventWindowTitle => 'Ubicación y ventana temporal';
+
+  @override
+  String get glEventWindowBody =>
+      'Una insignia de evento solo se puede emitir el día del evento y cerca de la ubicación registrada. Ambas condiciones impiden repartir insignias desde casa.';
+
+  @override
+  String get glRelaysTitle => 'Relés';
+
+  @override
+  String get glRelaysBody =>
+      'Los relés son los servidores por los que viajan los mensajes de Nostr. La app escribe en varios a la vez. Puedes añadir los tuyos en los ajustes: se comprueba su accesibilidad antes de guardarlos.';
+
+  @override
+  String get glPublicTitle => 'Qué es público';
+
+  @override
+  String get glPublicBody =>
+      'Las insignias, los registros de asistencia y los avales están abiertos en los relés: cualquiera puede leerlos y verificarlos. No son públicos tu clave privada, tu contraseña de copia ni tu ubicación exacta.';
+
+  @override
+  String get glZapTitle => 'Zaps';
+
+  @override
+  String get glZapBody =>
+      'Un zap es un pequeño pago Lightning con un recibo de Nostr. En las noticias puedes enviar algo directamente a los autores. Un zap único también sirve como prueba de humanidad.';
+
+  @override
+  String get guideEvBasicsTitle => 'Título y lugar';
+
+  @override
+  String get guideEvBasicsBody =>
+      'El título aparecerá luego en la lista de eventos y en la insignia, si emites alguna. El campo de ubicación es la dirección legible; las coordenadas para emitir insignias se fijan aparte en el mapa, más abajo.';
+
+  @override
+  String get guideEvWhenWhereTitle => 'Cuándo se celebra';
+
+  @override
+  String get guideEvWhenWhereBody =>
+      'El inicio es obligatorio; el final es opcional. En un evento con insignia cuenta el día natural: las insignias solo se pueden emitir ese día, de medianoche a medianoche.';
 }

@@ -10705,7 +10705,7 @@ abstract class AppLocalizations {
   /// No description provided for @guideEvBadgeSwitchHint.
   ///
   /// In de, this message translates to:
-  /// **'Schalter umlegen, um weiterzumachen.'**
+  /// **'Wenn du für dieses Event kein Badge brauchst, tippe einfach auf Weiter.'**
   String get guideEvBadgeSwitchHint;
 
   /// No description provided for @guideEvBadgeImageTitle.
@@ -10935,6 +10935,222 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Hier steht alles nochmal in Ruhe erklärt — nach Themen sortiert und durchsuchbar. Wenn diese Tour vorbei ist und eine Frage bleibt, findest du die Antwort hier.'**
   String get guideHomeGlossaryBody;
+
+  /// No description provided for @glCatNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauensnetzwerk'**
+  String get glCatNetwork;
+
+  /// No description provided for @glCatIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität & Schlüssel'**
+  String get glCatIdentity;
+
+  /// No description provided for @glCatEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Events'**
+  String get glCatEvents;
+
+  /// No description provided for @glCatNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr'**
+  String get glCatNostr;
+
+  /// No description provided for @glEncounterTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Begegnungen'**
+  String get glEncounterTitle;
+
+  /// No description provided for @glEncounterBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer beim selben Organisator am selben Tag gescannt hat, gilt als einander begegnet. Daraus entsteht ein Geflecht aus Menschen, die sich tatsächlich im selben Raum aufgehalten haben — nicht aus Leuten, die einander im Netz folgen.'**
+  String get glEncounterBody;
+
+  /// No description provided for @glDegreesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Grade'**
+  String get glDegreesTitle;
+
+  /// No description provided for @glDegreesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersten Grades heißt: Ihr wart beim selben Organisator. Zweiten Grades: Jemand, den du getroffen hast, hat diese Person getroffen. Waren auf einem Meetup zwei Organisatoren im Einsatz, verbindet ihr gegenseitiges Scannen beide Gruppen — dann seid ihr zweiten Grades verbunden statt ersten.'**
+  String get glDegreesBody;
+
+  /// No description provided for @glVouchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgschaften'**
+  String get glVouchTitle;
+
+  /// No description provided for @glVouchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisatoren können füreinander bürgen. Eine Bürgschaft ist ein öffentliches, signiertes Votum — nach dem Publizieren sieht das ganze Netzwerk, für wen du stehst. Sie lässt sich jederzeit widerrufen, aber der Widerruf ist ebenso sichtbar.'**
+  String get glVouchBody;
+
+  /// No description provided for @glEventNetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk aus Events'**
+  String get glEventNetTitle;
+
+  /// No description provided for @glEventNetBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sondereevents werden getrennt gezählt. Auf einem Meetup mit fünfzehn Leuten trifft man jeden — auf einem Event mit fünfhundert nicht. Beides im selben Topf würde die Aussage des Netzwerks entwerten, deshalb hat es eine eigene Kategorie.'**
+  String get glEventNetBody;
+
+  /// No description provided for @glKeysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'nsec und npub'**
+  String get glKeysTitle;
+
+  /// No description provided for @glKeysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein npub ist deine öffentliche Adresse — die darfst und sollst du teilen. Der nsec ist der private Schlüssel und gehört niemandem sonst: Wer ihn hat, IST du. Ein Zurücksetzen gibt es nicht. Ist der nsec weg, ist die Identität samt Reputation verloren.'**
+  String get glKeysBody;
+
+  /// No description provided for @glPasswordTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die beiden Passwörter'**
+  String get glPasswordTitle;
+
+  /// No description provided for @glPasswordBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Einrichten legst du ein Passwort fest, das deinen Schlüssel auf dem Gerät verpackt. Beim Backup vergibst du ein zweites, das die Sicherungsdatei verschlüsselt. Sie dürfen gleich sein, sind aber unabhängig voneinander — und für beide gibt es kein Zurücksetzen.'**
+  String get glPasswordBody;
+
+  /// No description provided for @glSignerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer-Apps'**
+  String get glSignerTitle;
+
+  /// No description provided for @glSignerBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Statt den Schlüssel in dieser App zu halten, kannst du ihn einer Signer-App wie Amber anvertrauen oder über einen Bunker anbinden. Diese App fragt dann bei jeder Signatur dort nach und sieht den Schlüssel selbst nie.'**
+  String get glSignerBody;
+
+  /// No description provided for @glBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Backup'**
+  String get glBackupTitle;
+
+  /// No description provided for @glBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichert Schlüssel, Badges und Einstellungen in eine verschlüsselte Datei. Ohne sie ist bei Geräteverlust alles weg — Handy weg heißt sonst Reputation weg. Leg sie früh an, nicht erst wenn du sie brauchst, und bewahre die Datei getrennt vom Passwort auf.'**
+  String get glBackupBody;
+
+  /// No description provided for @glSpecialEventTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sondereevents'**
+  String get glSpecialEventTitle;
+
+  /// No description provided for @glSpecialEventBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Neben den regelmäßigen Meetups gibt es einmalige Veranstaltungen, für die eigene Badges vergeben werden. Sie zählen als Badge und für die Vielfalt der Aussteller, aber nicht als besuchtes Meetup — drei Großevents ersetzen keine lokale Gemeinschaft.'**
+  String get glSpecialEventBody;
+
+  /// No description provided for @glEventHelperTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Helfer beim Event'**
+  String get glEventHelperTitle;
+
+  /// No description provided for @glEventHelperBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer ein Event mit Badge anlegt, kann beliebige npubs als Aussteller eintragen. Diese Helfer brauchen keine Organisatoren-Rolle — die Erlaubnis steht im Termin und gilt nur für dieses eine Event. Jeder Helfer zeigt dabei seinen eigenen QR-Code.'**
+  String get glEventHelperBody;
+
+  /// No description provided for @glEventWindowTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort und Zeitfenster'**
+  String get glEventWindowTitle;
+
+  /// No description provided for @glEventWindowBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Event-Badge lässt sich nur am Tag der Veranstaltung und nur in der Nähe des eingetragenen Orts ausgeben. Beides zusammen verhindert, dass jemand von zu Hause aus Badges für eine Veranstaltung verteilt, bei der er gar nicht ist.'**
+  String get glEventWindowBody;
+
+  /// No description provided for @glRelaysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Relays'**
+  String get glRelaysTitle;
+
+  /// No description provided for @glRelaysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Relays sind die Server, über die Nostr-Nachrichten laufen. Die App schreibt auf mehrere gleichzeitig, damit nichts verloren geht, wenn einer ausfällt. Du kannst in den Einstellungen eigene hinzufügen — sie werden vor dem Speichern auf Erreichbarkeit geprüft.'**
+  String get glRelaysBody;
+
+  /// No description provided for @glPublicTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was öffentlich ist'**
+  String get glPublicTitle;
+
+  /// No description provided for @glPublicBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges, Anwesenheiten und Bürgschaften liegen offen auf den Relays — jeder kann sie lesen und nachrechnen, das ist der Sinn der Sache. Nicht öffentlich sind dein privater Schlüssel, dein Backup-Passwort und dein genauer Standort.'**
+  String get glPublicBody;
+
+  /// No description provided for @glZapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zaps'**
+  String get glZapTitle;
+
+  /// No description provided for @glZapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Zap ist eine kleine Lightning-Zahlung mit einer Nostr-Quittung daran. In den News kannst du damit Autoren direkt etwas zukommen lassen; die Rechnung übergibt die App an deine Wallet. Ein einmaliger Zap dient außerdem als Proof of Humanity.'**
+  String get glZapBody;
+
+  /// No description provided for @guideEvBasicsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel und Ort'**
+  String get guideEvBasicsTitle;
+
+  /// No description provided for @guideEvBasicsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Titel steht später in der Terminliste und auf dem Badge, falls du eines vergibst. Der Ort ist die Anschrift zum Vorlesen — die Koordinaten für die Badge-Ausgabe setzt du weiter unten getrennt auf der Karte.'**
+  String get guideEvBasicsBody;
+
+  /// No description provided for @guideEvWhenWhereTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wann es stattfindet'**
+  String get guideEvWhenWhereTitle;
+
+  /// No description provided for @guideEvWhenWhereBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Start ist Pflicht, das Ende darfst du weglassen. Bei einem Event mit Badge zählt der Kalendertag: Badges lassen sich nur an diesem Tag ausgeben, von Mitternacht bis Mitternacht.'**
+  String get guideEvWhenWhereBody;
 }
 
 class _AppLocalizationsDelegate

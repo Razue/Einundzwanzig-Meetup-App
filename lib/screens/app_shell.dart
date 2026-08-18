@@ -67,7 +67,12 @@ class _AppShellState extends State<AppShell> {
       }
       if (!mounted) return;
 
-      const maxAttempts = 10;
+      // 20 x 500 ms = 10 Sekunden. Vorher waren es 5 — zu wenig direkt
+      // nach dem Anlegen eines Kontos: Da laedt das Dashboard noch Profil,
+      // Meetups und Termine, und die Kacheln stehen erst danach im Baum.
+      // Wer dann "Tour starten" tippte, sah gar nichts, weil die Tour
+      // stillschweigend aufgab.
+      const maxAttempts = 20;
       const waitPerAttempt = Duration(milliseconds: 500);
 
       for (var attempt = 1; attempt <= maxAttempts; attempt++) {

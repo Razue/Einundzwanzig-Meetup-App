@@ -22,35 +22,66 @@ class EventBadgeTour {
   static final locationKey = GlobalKey(debugLabel: 'guide_evb_location');
   static final issuersKey = GlobalKey(debugLabel: 'guide_evb_issuers');
 
-  /// [badgeOn] meldet, ob der Schalter bereits umgelegt ist. Die folgenden
-  /// Felder erscheinen erst dann im Baum — ohne diese Bedingung stuende die
-  /// Tour vor Zielen, die es noch gar nicht gibt.
-  static List<GuideStep> steps({ValueGetter<bool>? badgeOn}) => [
+  /// Ziele im oberen Teil des Editors — sie stehen IMMER im Baum, egal ob
+  /// jemand Badges vergeben darf.
+  static final basicsKey = GlobalKey(debugLabel: 'guide_evb_basics');
+  static final whenWhereKey = GlobalKey(debugLabel: 'guide_evb_whenwhere');
+
+  /// Die Schritte.
+  ///
+  /// [mayCreateBadge] entscheidet, ob der Badge-Teil ueberhaupt vorkommt.
+  /// Wer nicht berechtigt ist, kann den Schalter nicht bedienen — ihn dann
+  /// zu erklaeren oder gar dazu aufzufordern waere schlicht falsch.
+  ///
+  /// Und der Schalter-Schritt haelt NICHT mehr an, bis er umgelegt ist.
+  /// Diese Bedingung war ein Fehler: Wer einen gewoehnlichen Termin ohne
+  /// Badge anlegt, kam damit nicht weiter — die Tour verlangte etwas, das
+  /// er gar nicht wollte. Die Folgeschritte warten stattdessen kurz auf
+  /// ihre Ziele und werden uebersprungen, wenn der Schalter aus bleibt.
+  static List<GuideStep> steps({bool mayCreateBadge = false}) => [
         GuideStep(
-          targetKey: switchKey,
-          titleKey: 'guideEvBadgeSwitchTitle',
-          bodyKey: 'guideEvBadgeSwitchBody',
-          hintKey: 'guideEvBadgeSwitchHint',
-          completeWhen: badgeOn,
-          autoAdvance: true,
+          targetKey: basicsKey,
+          titleKey: 'guideEvBasicsTitle',
+          bodyKey: 'guideEvBasicsBody',
         ),
         GuideStep(
-          targetKey: imageKey,
-          titleKey: 'guideEvBadgeImageTitle',
-          bodyKey: 'guideEvBadgeImageBody',
-          waitForTarget: true,
+          targetKey: whenWhereKey,
+          titleKey: 'guideEvWhenWhereTitle',
+          bodyKey: 'guideEvWhenWhereBody',
         ),
-        GuideStep(
-          targetKey: locationKey,
-          titleKey: 'guideEvBadgeLocationTitle',
-          bodyKey: 'guideEvBadgeLocationBody',
-          waitForTarget: true,
-        ),
-        GuideStep(
-          targetKey: issuersKey,
-          titleKey: 'guideEvBadgeIssuersTitle',
-          bodyKey: 'guideEvBadgeIssuersBody',
-          waitForTarget: true,
-        ),
+        if (mayCreateBadge) ...[
+          GuideStep(
+            targetKey: switchKey,
+            titleKey: 'guideEvBadgeSwitchTitle',
+            bodyKey: 'guideEvBadgeSwitchBody',
+            hintKey: 'guideEvBadgeSwitchHint',
+          ),
+          // Kurze Wartezeit: Bleibt der Schalter aus, gibt es diese Ziele
+          // nicht — dann soll die Tour zuegig darueber hinweggehen statt
+          // sekundenlang auf etwas zu warten, das nie kommt.
+          GuideStep(
+            targetKey: imageKey,
+            titleKey: 'guideEvBadgeImageTitle',
+            bodyKey: 'guideEvBadgeImageBody',
+            waitForTarget: true,
+            waitTimeout: _optionalStep,
+          ),
+          GuideStep(
+            targetKey: locationKey,
+            titleKey: 'guideEvBadgeLocationTitle',
+            bodyKey: 'guideEvBadgeLocationBody',
+            waitForTarget: true,
+            waitTimeout: _optionalStep,
+          ),
+          GuideStep(
+            targetKey: issuersKey,
+            titleKey: 'guideEvBadgeIssuersTitle',
+            bodyKey: 'guideEvBadgeIssuersBody',
+            waitForTarget: true,
+            waitTimeout: _optionalStep,
+          ),
+        ],
       ];
+
+  static const Duration _optionalStep = Duration(milliseconds: 900);
 }

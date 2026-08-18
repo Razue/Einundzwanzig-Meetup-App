@@ -21,6 +21,10 @@ enum GlossaryCategory {
   start,
   badges,
   reputation,
+  network,
+  identity,
+  events,
+  nostr,
 }
 
 class GlossaryEntry {
@@ -68,18 +72,48 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         GlossaryEntry(GlossaryCategory.reputation, t.glLevelsTitle, t.glLevelsBody),
         GlossaryEntry(GlossaryCategory.reputation, t.glHumanityTitle, t.glHumanityBody),
         GlossaryEntry(GlossaryCategory.reputation, t.glPlatformsTitle, t.glPlatformsBody),
+
+        // --- Vertrauensnetzwerk ---
+        GlossaryEntry(GlossaryCategory.network, t.glEncounterTitle, t.glEncounterBody),
+        GlossaryEntry(GlossaryCategory.network, t.glDegreesTitle, t.glDegreesBody),
+        GlossaryEntry(GlossaryCategory.network, t.glVouchTitle, t.glVouchBody),
+        GlossaryEntry(GlossaryCategory.network, t.glEventNetTitle, t.glEventNetBody),
+
+        // --- Identitaet & Schluessel ---
+        GlossaryEntry(GlossaryCategory.identity, t.glKeysTitle, t.glKeysBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glPasswordTitle, t.glPasswordBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glSignerTitle, t.glSignerBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glBackupTitle, t.glBackupBody),
+
+        // --- Events ---
+        GlossaryEntry(GlossaryCategory.events, t.glSpecialEventTitle, t.glSpecialEventBody),
+        GlossaryEntry(GlossaryCategory.events, t.glEventHelperTitle, t.glEventHelperBody),
+        GlossaryEntry(GlossaryCategory.events, t.glEventWindowTitle, t.glEventWindowBody),
+
+        // --- Nostr ---
+        GlossaryEntry(GlossaryCategory.nostr, t.glRelaysTitle, t.glRelaysBody),
+        GlossaryEntry(GlossaryCategory.nostr, t.glPublicTitle, t.glPublicBody),
+        GlossaryEntry(GlossaryCategory.nostr, t.glZapTitle, t.glZapBody),
       ];
 
   String _categoryLabel(AppLocalizations t, GlossaryCategory c) => switch (c) {
         GlossaryCategory.start => t.glCatStart,
         GlossaryCategory.badges => t.glCatBadges,
         GlossaryCategory.reputation => t.glCatReputation,
+        GlossaryCategory.network => t.glCatNetwork,
+        GlossaryCategory.identity => t.glCatIdentity,
+        GlossaryCategory.events => t.glCatEvents,
+        GlossaryCategory.nostr => t.glCatNostr,
       };
 
   IconData _categoryIcon(GlossaryCategory c) => switch (c) {
         GlossaryCategory.start => Icons.flag_rounded,
         GlossaryCategory.badges => Icons.military_tech_rounded,
         GlossaryCategory.reputation => Icons.workspace_premium_rounded,
+        GlossaryCategory.network => Icons.hub_rounded,
+        GlossaryCategory.identity => Icons.key_rounded,
+        GlossaryCategory.events => Icons.celebration_rounded,
+        GlossaryCategory.nostr => Icons.bolt_rounded,
       };
 
   @override

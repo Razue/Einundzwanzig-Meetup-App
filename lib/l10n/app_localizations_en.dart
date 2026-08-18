@@ -5872,7 +5872,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Flip the switch if attendees should be able to collect a badge on site. Without it, this is just a calendar entry.';
 
   @override
-  String get guideEvBadgeSwitchHint => 'Flip the switch to continue.';
+  String get guideEvBadgeSwitchHint =>
+      'If you do not need a badge for this event, just tap Continue.';
 
   @override
   String get guideEvBadgeImageTitle => 'The image';
@@ -6004,4 +6005,128 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get guideHomeGlossaryBody =>
       'Everything is explained again here, calmly — sorted by topic and searchable. When this tour is over and a question remains, the answer is in here.';
+
+  @override
+  String get glCatNetwork => 'Web of trust';
+
+  @override
+  String get glCatIdentity => 'Identity & keys';
+
+  @override
+  String get glCatEvents => 'Events';
+
+  @override
+  String get glCatNostr => 'Nostr';
+
+  @override
+  String get glEncounterTitle => 'Encounters';
+
+  @override
+  String get glEncounterBody =>
+      'Anyone who scanned with the same organiser on the same day counts as having met. That forms a web of people who actually shared a room — not of people who follow each other online.';
+
+  @override
+  String get glDegreesTitle => 'Degrees';
+
+  @override
+  String get glDegreesBody =>
+      'First degree means you were with the same organiser. Second degree: someone you met has met that person. If a meetup had two organisers, their scanning each other bridges both groups — you are then connected at second degree instead of first.';
+
+  @override
+  String get glVouchTitle => 'Vouches';
+
+  @override
+  String get glVouchBody =>
+      'Organisers can vouch for each other. A vouch is a public, signed statement — once published the whole network sees who you stand for. It can be withdrawn at any time, but the withdrawal is just as visible.';
+
+  @override
+  String get glEventNetTitle => 'Event network';
+
+  @override
+  String get glEventNetBody =>
+      'Special events are counted separately. At a meetup with fifteen people you meet everyone — at an event with five hundred you do not. Mixing both would devalue what the network says, so events have their own category.';
+
+  @override
+  String get glKeysTitle => 'nsec and npub';
+
+  @override
+  String get glKeysBody =>
+      'Your npub is your public address — share it freely. The nsec is the private key and belongs to nobody else: whoever has it IS you. There is no reset. If the nsec is gone, the identity and its reputation are gone with it.';
+
+  @override
+  String get glPasswordTitle => 'The two passwords';
+
+  @override
+  String get glPasswordBody =>
+      'During setup you set a password that wraps your key on the device. For a backup you set a second one that encrypts the backup file. They may be identical but are independent — and neither can be reset.';
+
+  @override
+  String get glSignerTitle => 'Signer apps';
+
+  @override
+  String get glSignerBody =>
+      'Instead of keeping the key in this app you can entrust it to a signer app such as Amber or connect it through a bunker. This app then asks there for every signature and never sees the key itself.';
+
+  @override
+  String get glBackupTitle => 'The backup';
+
+  @override
+  String get glBackupBody =>
+      'Saves keys, badges and settings into an encrypted file. Without it everything is lost when the device is — no phone, no reputation. Create it early, not when you need it, and keep the file separate from the password.';
+
+  @override
+  String get glSpecialEventTitle => 'Special events';
+
+  @override
+  String get glSpecialEventBody =>
+      'Besides the regular meetups there are one-off events with their own badges. They count as a badge and towards the variety of issuers, but not as a meetup visited — three large events do not replace a local community.';
+
+  @override
+  String get glEventHelperTitle => 'Helpers at an event';
+
+  @override
+  String get glEventHelperBody =>
+      'Whoever creates an event with a badge can list any npubs as issuers. Those helpers need no organiser role — the permission lives in the event and applies to that one event only. Each helper shows their own QR code.';
+
+  @override
+  String get glEventWindowTitle => 'Location and time window';
+
+  @override
+  String get glEventWindowBody =>
+      'An event badge can only be issued on the day of the event and only near the registered location. Together this prevents somebody handing out badges from home for an event they are not attending.';
+
+  @override
+  String get glRelaysTitle => 'Relays';
+
+  @override
+  String get glRelaysBody =>
+      'Relays are the servers Nostr messages travel through. The app writes to several at once so nothing is lost when one fails. You can add your own in the settings — they are checked for reachability before being saved.';
+
+  @override
+  String get glPublicTitle => 'What is public';
+
+  @override
+  String get glPublicBody =>
+      'Badges, attendance records and vouches sit openly on the relays — anyone can read and verify them, which is the whole point. Not public are your private key, your backup password and your exact location.';
+
+  @override
+  String get glZapTitle => 'Zaps';
+
+  @override
+  String get glZapBody =>
+      'A zap is a small lightning payment with a Nostr receipt attached. In the news section you can send authors something directly; the app hands the invoice to your wallet. A single zap also serves as proof of humanity.';
+
+  @override
+  String get guideEvBasicsTitle => 'Title and place';
+
+  @override
+  String get guideEvBasicsBody =>
+      'The title appears in the event list later and on the badge, if you issue one. The location field is the address to read out — the coordinates for issuing badges are set separately on the map further down.';
+
+  @override
+  String get guideEvWhenWhereTitle => 'When it happens';
+
+  @override
+  String get guideEvWhenWhereBody =>
+      'A start is required, the end is optional. For an event with a badge the calendar day matters: badges can only be issued on that day, from midnight to midnight.';
 }
