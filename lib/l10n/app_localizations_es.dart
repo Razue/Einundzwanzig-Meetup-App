@@ -6520,16 +6520,29 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get idSetupSecureBackupBody =>
-      'Contiene todo: claves, insignias, reputación y ajustes. Con él, tu app vuelve exactamente igual en un dispositivo nuevo. Cifrado con su propia contraseña.';
+      'Contiene todo: claves, insignias, reputación y ajustes. Con él, tu app vuelve exactamente igual en un dispositivo nuevo. El archivo está cifrado con su propia contraseña.';
 
   @override
   String get idSetupSecureKeyTitle => 'Clave cifrada';
 
   @override
   String get idSetupSecureKeyBody =>
-      'Solo tu clave Nostr, envuelta con tu contraseña (ncryptsec). Va en un gestor de contraseñas. Salva tu identidad pero no las insignias; a cambio, nunca queda obsoleta.';
+      'Por último, tu clave Nostr sola, envuelta con tu contraseña (ncryptsec). Salva tu identidad pero no las insignias; a cambio nunca queda obsoleta.';
 
   @override
   String get idSetupSecureRepeat =>
       'Repite la copia de vez en cuando en Ajustes → Copia de seguridad. Un archivo de hoy no conoce las insignias de mañana.';
+
+  @override
+  String get idSetupSecureKeySave => 'Guardar como archivo';
+
+  @override
+  String get idSetupSecureKeySaved => 'Archivo de clave guardado.';
+
+  @override
+  String get idSetupSecureSkip => 'Omitir';
+
+  @override
+  String get idSetupSecureFileHeader =>
+      'Einundzwanzig Meetup App — clave Nostr cifrada (ncryptsec, NIP-49). Sin la contraseña correspondiente, este archivo no sirve de nada. Guárdalos por separado.';
 }

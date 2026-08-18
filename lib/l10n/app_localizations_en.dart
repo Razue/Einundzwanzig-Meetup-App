@@ -6480,16 +6480,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get idSetupSecureBackupBody =>
-      'Contains everything: keys, badges, reputation and settings. With it your app comes back exactly as it was on a new device. Encrypted with its own password.';
+      'Contains everything: keys, badges, reputation and settings. With it your app comes back exactly as it was on a new device. The file is encrypted with its own password.';
 
   @override
   String get idSetupSecureKeyTitle => 'Encrypted key';
 
   @override
   String get idSetupSecureKeyBody =>
-      'Just your Nostr key, wrapped with your password (ncryptsec). Belongs in a password manager. Saves your identity but no badges — in exchange it never goes stale.';
+      'Finally your Nostr key on its own, wrapped with your password (ncryptsec). It saves your identity but no badges — in exchange it never goes stale and fits into any password manager.';
 
   @override
   String get idSetupSecureRepeat =>
       'Repeat the backup now and then under Settings → Backup. A file from today does not know tomorrow\'s badges — anything added later would be lost if the device is.';
+
+  @override
+  String get idSetupSecureKeySave => 'Save as a file';
+
+  @override
+  String get idSetupSecureKeySaved => 'Key file saved.';
+
+  @override
+  String get idSetupSecureSkip => 'Skip';
+
+  @override
+  String get idSetupSecureFileHeader =>
+      'Einundzwanzig Meetup App — encrypted Nostr key (ncryptsec, NIP-49). Without the matching password this file is worthless. Keep the two apart.';
 }

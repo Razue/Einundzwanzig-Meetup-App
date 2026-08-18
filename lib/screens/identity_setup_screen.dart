@@ -2,7 +2,10 @@
 // IDENTITY SETUP — Erststart „Neu“ / „Schon dabei“
 // ============================================
 
+import 'dart:convert';
 import 'dart:ui' as ui;
+
+import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -335,20 +338,18 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     await _offerBackupThenHome();
   }
 
-  /// Nach dem Anlegen: Identitaet sichern.
+  /// Nach dem Anlegen: Identitaet sichern — in ZWEI Schritten.
   ///
-  /// Der Moment ist bewusst gewaehlt. Wer sich von der App einen Schluessel
-  /// erstellen laesst, bekommt ihn sonst NIE zu Gesicht — und erfaehrt auch
-  /// nicht, dass er im Profil liegt.
-  ///
-  /// Es sind ZWEI verschiedene Dinge, und das war vorher nicht erkennbar:
+  /// Warum nacheinander statt nebeneinander: Zwei gleichwertige Knoepfe
+  /// laden dazu ein, sich fuer einen zu entscheiden. Genau das soll man
+  /// hier nicht. Die beiden Sicherungen koennen Verschiedenes:
   ///
   ///   Backup-Datei  — Schluessel PLUS Badges, Reputation, Einstellungen.
   ///                   Veraltet mit der Zeit, muss also wiederholt werden.
   ///   ncryptsec     — nur der Schluessel, mit dem Passwort verpackt.
   ///                   Veraltet nie, rettet aber auch nur die Identitaet.
   ///
-  /// Wer nur das eine kennt, sichert das falsche.
+  /// Deshalb erst das eine, dann das andere, mit Fortschritt oben.
   Future<void> _offerBackupThenHome() async {
     if (!mounted) return;
     setState(() => _busy = false);
@@ -365,177 +366,200 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        builder: (ctx) {
-          final t = AppLocalizations.of(ctx);
-          return SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(children: [
-                      const Icon(Icons.verified_user_rounded,
-                          color: cOrange, size: 22),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(t.idSetupSecureTitle,
-                            style: const TextStyle(
-                                color: cText,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700)),
-                      ),
-                    ]),
-                    const SizedBox(height: 10),
-                    Text(t.idSetupSecureBody,
-                        style: const TextStyle(
-                            color: cTextSecondary,
-                            height: 1.45,
-                            fontSize: 13.5)),
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setSheet) {
+            final t = AppLocalizations.of(ctx);
+            final step2 = _secureStep == 2;
 
-                    const SizedBox(height: 20),
-                    _secureOption(
-                      icon: Icons.save_alt_rounded,
-                      title: t.idSetupSecureBackupTitle,
-                      body: t.idSetupSecureBackupBody,
-                      actionLabel: t.idSetupSecureBackup,
-                      primary: true,
-                      onAction: () async {
-                        final navigator = Navigator.of(ctx);
-                        await BackupService.createBackup(context);
-                        navigator.pop();
-                      },
-                    ),
-
-                    const SizedBox(height: 14),
-                    _secureOption(
-                      icon: Icons.key_rounded,
-                      title: t.idSetupSecureKeyTitle,
-                      body: t.idSetupSecureKeyBody,
-                      actionLabel: t.idSetupSecureCopy,
-                      primary: false,
-                      onAction: () {
-                        Clipboard.setData(ClipboardData(text: wrap));
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(t.keyExportCopied)),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-                    // Der wichtigste Satz fuer SPAETER: Ein Backup von heute
-                    // kennt die Badges von morgen nicht.
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: cOrange.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.update_rounded,
-                                color: cOrange, size: 16),
-                            const SizedBox(width: 9),
-                            Expanded(
-                              child: Text(t.idSetupSecureRepeat,
-                                  style: const TextStyle(
-                                      color: cTextSecondary,
-                                      fontSize: 12,
-                                      height: 1.45)),
-                            ),
-                          ]),
-                    ),
-
-                    const SizedBox(height: 10),
-                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Icon(Icons.info_outline_rounded,
-                          color: cTextTertiary, size: 15),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(t.idSetupSecureWhere,
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(children: [
+                        Icon(step2 ? Icons.key_rounded : Icons.save_alt_rounded,
+                            color: cOrange, size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                              step2
+                                  ? t.idSetupSecureKeyTitle
+                                  : t.idSetupSecureBackupTitle,
+                              style: const TextStyle(
+                                  color: cText,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                        Text(step2 ? '2/2' : '1/2',
                             style: const TextStyle(
                                 color: cTextTertiary,
-                                fontSize: 11.5,
-                                height: 1.4)),
-                      ),
-                    ]),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700)),
+                      ]),
+                      const SizedBox(height: 10),
+                      Text(
+                          step2
+                              ? t.idSetupSecureKeyBody
+                              : t.idSetupSecureBackupBody,
+                          style: const TextStyle(
+                              color: cTextSecondary,
+                              height: 1.45,
+                              fontSize: 13.5)),
 
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(t.idSetupBackupLater,
-                          style: const TextStyle(color: cTextSecondary)),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      // Der Merksatz gehoert zu Schritt 1: Ein Backup von
+                      // heute kennt die Badges von morgen nicht.
+                      if (!step2)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: cOrange.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.update_rounded,
+                                    color: cOrange, size: 16),
+                                const SizedBox(width: 9),
+                                Expanded(
+                                  child: Text(t.idSetupSecureRepeat,
+                                      style: const TextStyle(
+                                          color: cTextSecondary,
+                                          fontSize: 12,
+                                          height: 1.45)),
+                                ),
+                              ]),
+                        ),
+
+                      if (step2)
+                        Row(crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.info_outline_rounded,
+                                  color: cTextTertiary, size: 15),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(t.idSetupSecureWhere,
+                                    style: const TextStyle(
+                                        color: cTextTertiary,
+                                        fontSize: 11.5,
+                                        height: 1.4)),
+                              ),
+                            ]),
+
+                      const SizedBox(height: 18),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          if (step2) {
+                            await _saveKeyFile(wrap);
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          } else {
+                            await BackupService.createBackup(context);
+                            setSheet(() => _secureStep = 2);
+                          }
+                        },
+                        icon: const Icon(Icons.save_alt_rounded,
+                            color: Colors.black, size: 18),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cOrange,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        label: Text(
+                            step2
+                                ? t.idSetupSecureKeySave
+                                : t.idSetupSecureBackup,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w800)),
+                      ),
+
+                      if (step2) ...[
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: wrap));
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(t.keyExportCopied)),
+                            );
+                          },
+                          icon: const Icon(Icons.copy_rounded,
+                              color: cTextSecondary, size: 18),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: cTileBorder),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                          ),
+                          label: Text(t.idSetupSecureCopy,
+                              style: const TextStyle(color: cTextSecondary)),
+                        ),
+                      ],
+
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: () {
+                          // Ueberspringen fuehrt in Schritt 1 WEITER zu
+                          // Schritt 2 statt gleich hinaus: Wer die Datei
+                          // nicht will, soll wenigstens den Schluessel sehen.
+                          if (step2) {
+                            Navigator.pop(ctx);
+                          } else {
+                            setSheet(() => _secureStep = 2);
+                          }
+                        },
+                        child: Text(
+                            step2 ? t.idSetupBackupLater : t.idSetupSecureSkip,
+                            style: const TextStyle(color: cTextSecondary)),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       );
     }
     await _continueAfterIdentity();
   }
 
-  /// Eine der beiden Sicherungsarten: Symbol, Name, was sie kann, Knopf.
-  Widget _secureOption({
-    required IconData icon,
-    required String title,
-    required String body,
-    required String actionLabel,
-    required bool primary,
-    required VoidCallback onAction,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cSurface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: primary ? cOrange.withValues(alpha: 0.45) : cTileBorder,
-            width: primary ? 1 : 0.5),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Icon(icon, color: primary ? cOrange : cTextSecondary, size: 18),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Text(title,
-                style: const TextStyle(
-                    color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
-          ),
-        ]),
-        const SizedBox(height: 7),
-        Text(body,
-            style: const TextStyle(
-                color: cTextSecondary, fontSize: 12.5, height: 1.45)),
-        const SizedBox(height: 12),
-        if (primary)
-          ElevatedButton(
-            onPressed: onAction,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cOrange,
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            child: Text(actionLabel,
-                style: const TextStyle(fontWeight: FontWeight.w800)),
-          )
-        else
-          OutlinedButton(
-            onPressed: onAction,
-            style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: cTileBorder),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            child: Text(actionLabel,
-                style: const TextStyle(color: cTextSecondary)),
-          ),
-      ]),
-    );
+  /// Welcher der beiden Sicherungsschritte gerade offen ist.
+  int _secureStep = 1;
+
+  /// Schreibt den verschluesselten Schluessel als Datei.
+  ///
+  /// Die Zwischenablage bleibt als zweiter Weg bestehen, ist aber nicht mehr
+  /// der einzige: Sie wird von anderen Apps mitgelesen, und ein Wert, den
+  /// man Jahre aufheben soll, gehoert nicht dorthin.
+  Future<void> _saveKeyFile(String wrap) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final t = AppLocalizations.of(context);
+    final now = DateTime.now();
+    final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')}';
+    final fileName = 'Nostr-Schluessel_${dateStr}_21MeetupApp.txt';
+
+    // Klartext im Sinne von lesbar — verschluesselt ist der Inhalt selbst.
+    // Die Erklaerzeile steht mit drin, weil so eine Datei Jahre spaeter
+    // gefunden wird und dann niemand mehr weiss, was das ist.
+    final content = '${t.idSetupSecureFileHeader}\n\n$wrap\n';
+
+    try {
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: t.idSetupSecureKeySave,
+        fileName: fileName,
+        bytes: Uint8List.fromList(utf8.encode(content)),
+      );
+      if (path == null) return; // abgebrochen
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.idSetupSecureKeySaved), backgroundColor: cGreen));
+    } catch (e) {
+      // Kein Speicherdialog (etwa im Browser): dann bleibt die Zwischenablage.
+      await Clipboard.setData(ClipboardData(text: wrap));
+      messenger.showSnackBar(SnackBar(content: Text(t.keyExportCopied)));
+    }
   }
 
   Future<void> _connectPrimary() async {
@@ -834,7 +858,11 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                   ),
                   const SizedBox(height: 16),
                 ],
-                if (_busy || _bootstrapping)
+                // Nur noch beim ANFANGSLADEN ein Balken. Waehrend einer
+                // Aktion sitzt der Ladekringel jetzt IM Knopf — dort, wo
+                // gerade getippt wurde. Der Balken oben erschien weit weg
+                // vom Finger und wirkte dadurch verzoegert.
+                if (_bootstrapping)
                   const Padding(
                     padding: EdgeInsets.only(bottom: 16),
                     child: LinearProgressIndicator(

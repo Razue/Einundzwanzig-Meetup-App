@@ -11755,7 +11755,7 @@ abstract class AppLocalizations {
   /// No description provided for @idSetupSecureBackupBody.
   ///
   /// In de, this message translates to:
-  /// **'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Verschlüsselt mit einem eigenen Passwort.'**
+  /// **'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Die Datei ist mit einem eigenen Passwort verschlüsselt.'**
   String get idSetupSecureBackupBody;
 
   /// No description provided for @idSetupSecureKeyTitle.
@@ -11767,7 +11767,7 @@ abstract class AppLocalizations {
   /// No description provided for @idSetupSecureKeyBody.
   ///
   /// In de, this message translates to:
-  /// **'Nur dein Nostr-Schlüssel, mit deinem Passwort verpackt (ncryptsec). Gehört in einen Passwortmanager. Rettet deine Identität, aber keine Badges — dafür veraltet er nie.'**
+  /// **'Zum Schluss noch dein Nostr-Schlüssel allein, mit deinem Passwort verpackt (ncryptsec). Er rettet deine Identität, aber keine Badges — dafür veraltet er nie und passt in jeden Passwortmanager.'**
   String get idSetupSecureKeyBody;
 
   /// No description provided for @idSetupSecureRepeat.
@@ -11775,6 +11775,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Wiederhole das Backup ab und zu unter Einstellungen → Backup. Eine Datei von heute kennt die Badges von morgen nicht — was danach dazukommt, wäre bei einem Geräteverlust weg.'**
   String get idSetupSecureRepeat;
+
+  /// No description provided for @idSetupSecureKeySave.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Datei speichern'**
+  String get idSetupSecureKeySave;
+
+  /// No description provided for @idSetupSecureKeySaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüsseldatei gespeichert.'**
+  String get idSetupSecureKeySaved;
+
+  /// No description provided for @idSetupSecureSkip.
+  ///
+  /// In de, this message translates to:
+  /// **'Überspringen'**
+  String get idSetupSecureSkip;
+
+  /// No description provided for @idSetupSecureFileHeader.
+  ///
+  /// In de, this message translates to:
+  /// **'Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf.'**
+  String get idSetupSecureFileHeader;
 }
 
 class _AppLocalizationsDelegate

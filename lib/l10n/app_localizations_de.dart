@@ -6540,16 +6540,29 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get idSetupSecureBackupBody =>
-      'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Verschlüsselt mit einem eigenen Passwort.';
+      'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Die Datei ist mit einem eigenen Passwort verschlüsselt.';
 
   @override
   String get idSetupSecureKeyTitle => 'Verschlüsselter Schlüssel';
 
   @override
   String get idSetupSecureKeyBody =>
-      'Nur dein Nostr-Schlüssel, mit deinem Passwort verpackt (ncryptsec). Gehört in einen Passwortmanager. Rettet deine Identität, aber keine Badges — dafür veraltet er nie.';
+      'Zum Schluss noch dein Nostr-Schlüssel allein, mit deinem Passwort verpackt (ncryptsec). Er rettet deine Identität, aber keine Badges — dafür veraltet er nie und passt in jeden Passwortmanager.';
 
   @override
   String get idSetupSecureRepeat =>
       'Wiederhole das Backup ab und zu unter Einstellungen → Backup. Eine Datei von heute kennt die Badges von morgen nicht — was danach dazukommt, wäre bei einem Geräteverlust weg.';
+
+  @override
+  String get idSetupSecureKeySave => 'Als Datei speichern';
+
+  @override
+  String get idSetupSecureKeySaved => 'Schlüsseldatei gespeichert.';
+
+  @override
+  String get idSetupSecureSkip => 'Überspringen';
+
+  @override
+  String get idSetupSecureFileHeader =>
+      'Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf.';
 }
