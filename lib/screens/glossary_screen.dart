@@ -94,6 +94,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
 
         // --- Identitaet & Schluessel ---
         GlossaryEntry(GlossaryCategory.identity, t.glKeysTitle, t.glKeysBody),
+        GlossaryEntry(GlossaryCategory.identity, t.glFindKeysTitle, t.glFindKeysBody),
         GlossaryEntry(GlossaryCategory.identity, t.glPasswordTitle, t.glPasswordBody),
         GlossaryEntry(GlossaryCategory.identity, t.glSignerTitle, t.glSignerBody),
         GlossaryEntry(GlossaryCategory.identity, t.glNcryptsecTitle, t.glNcryptsecBody),

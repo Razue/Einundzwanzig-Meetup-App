@@ -11691,6 +11691,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste.'**
   String get guidePaMineBody;
+
+  /// No description provided for @guideSettingsProfileTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil und Schlüssel'**
+  String get guideSettingsProfileTitle;
+
+  /// No description provided for @guideSettingsProfileBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier änderst du deinen Namen und dein Home-Meetup — und hier liegen deine Nostr-Schlüssel. Ganz unten kannst du den npub kopieren und dir den nsec anzeigen lassen. Wenn die App dir einen Schlüssel erstellt hat, ist das der Ort, an dem du ihn findest.'**
+  String get guideSettingsProfileBody;
+
+  /// No description provided for @glFindKeysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wo finde ich meine Schlüssel?'**
+  String get glFindKeysTitle;
+
+  /// No description provided for @glFindKeysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen → Profil, ganz unten. Dort kopierst du den npub mit einem Tipp und lässt dir den nsec anzeigen — letzteres nur nach einer Warnung, denn wer den nsec sieht, hat deine Identität. Nutzt du Amber, eine Browsererweiterung oder einen Bunker, gibt es hier keinen nsec: Der liegt dann dort und nicht in dieser App.'**
+  String get glFindKeysBody;
+
+  /// No description provided for @idSetupSecureTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität erstellt — jetzt sichern'**
+  String get idSetupSecureTitle;
+
+  /// No description provided for @idSetupSecureBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Schlüssel gehört ab jetzt dir allein. Es gibt niemanden, der ihn zurücksetzen kann — geht er verloren, ist die Identität mitsamt aller Badges weg. Zwei Minuten jetzt ersparen dir das.'**
+  String get idSetupSecureBody;
+
+  /// No description provided for @idSetupSecureBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup erstellen'**
+  String get idSetupSecureBackup;
+
+  /// No description provided for @idSetupSecureCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel in die Zwischenablage'**
+  String get idSetupSecureCopy;
+
+  /// No description provided for @idSetupSecureWhere.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Schlüssel findest du jederzeit unter Einstellungen → Profil.'**
+  String get idSetupSecureWhere;
 }
 
 class _AppLocalizationsDelegate

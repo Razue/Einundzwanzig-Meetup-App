@@ -2376,10 +2376,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                   children: [
                     // ACCOUNT
                     _sGroup(AppLocalizations.of(context).settingsSecAccount, [
-                      _sRow(Icons.person_rounded, cOrange,
-                        AppLocalizations.of(context).settingsProfile,
-                        AppLocalizations.of(context).settingsProfileSub,
-                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+                      KeyedSubtree(
+                        key: SettingsTour.profileKey,
+                        child: _sRow(Icons.person_rounded, cOrange,
+                          AppLocalizations.of(context).settingsProfile,
+                          AppLocalizations.of(context).settingsProfileSub,
+                          () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // DATEN & SICHERHEIT

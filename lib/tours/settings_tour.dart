@@ -14,6 +14,7 @@ import '../services/guide_service.dart';
 class SettingsTour {
   SettingsTour._();
 
+  static final profileKey = GlobalKey(debugLabel: 'guide_set_profile');
   static final backupKey = GlobalKey(debugLabel: 'guide_set_backup');
   static final relaysKey = GlobalKey(debugLabel: 'guide_set_relays');
   static final languageKey = GlobalKey(debugLabel: 'guide_set_language');
@@ -23,7 +24,17 @@ class SettingsTour {
 
   /// Reihenfolge folgt dem Sheet von oben nach unten.
   static List<GuideStep> steps() => [
-        // 1 — Backup. Der Grund, warum es diese Tour gibt.
+        // 1 — Profil. Steht vor dem Backup, weil hier die SCHLUESSEL
+        //     liegen: Wer sich von der App einen erstellen liess, bekommt
+        //     ihn sonst nie zu Gesicht und weiss nicht, dass er ihn
+        //     ueberhaupt herausholen kann.
+        GuideStep(
+          targetKey: profileKey,
+          titleKey: 'guideSettingsProfileTitle',
+          bodyKey: 'guideSettingsProfileBody',
+        ),
+
+        // 2 — Backup. Der Grund, warum es diese Tour gibt.
         GuideStep(
           targetKey: backupKey,
           titleKey: 'guideSettingsBackupTitle',

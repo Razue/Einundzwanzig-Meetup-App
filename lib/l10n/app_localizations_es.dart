@@ -6483,4 +6483,35 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get guidePaMineBody =>
       'Solo interesa a los organizadores: aquí gestionas las fechas de los meetups en los que estás registrado. Si no llevas ninguno, verás una lista vacía.';
+
+  @override
+  String get guideSettingsProfileTitle => 'Perfil y claves';
+
+  @override
+  String get guideSettingsProfileBody =>
+      'Aquí cambias tu nombre y tu meetup principal, y aquí están tus claves Nostr. Abajo puedes copiar el npub y mostrar el nsec. Si la app creó una clave para ti, aquí la encuentras.';
+
+  @override
+  String get glFindKeysTitle => '¿Dónde están mis claves?';
+
+  @override
+  String get glFindKeysBody =>
+      'Ajustes → Perfil, al final. Allí copias el npub con un toque y muestras el nsec, esto último solo tras una advertencia: quien ve el nsec tiene tu identidad. Si usas Amber, una extensión o un bunker, aquí no hay nsec: está allí, no en esta app.';
+
+  @override
+  String get idSetupSecureTitle => 'Identidad creada: asegúrala ahora';
+
+  @override
+  String get idSetupSecureBody =>
+      'Tu clave ahora es solo tuya. Nadie puede restablecerla: si se pierde, la identidad y todas sus insignias se pierden con ella. Dos minutos ahora te evitan eso.';
+
+  @override
+  String get idSetupSecureBackup => 'Crear copia de seguridad';
+
+  @override
+  String get idSetupSecureCopy => 'Copiar la clave al portapapeles';
+
+  @override
+  String get idSetupSecureWhere =>
+      'Puedes encontrar tus claves en cualquier momento en Ajustes → Perfil.';
 }

@@ -335,6 +335,17 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     await _offerBackupThenHome();
   }
 
+  /// Nach dem Anlegen: Identitaet sichern.
+  ///
+  /// Der Moment ist bewusst gewaehlt. Wer sich von der App einen Schluessel
+  /// erstellen laesst, bekommt ihn sonst NIE zu Gesicht — und erfaehrt auch
+  /// nicht, dass er im Profil liegt. Bei einem Geheimnis ohne Zuruecksetzen
+  /// ist das der falsche Zeitpunkt zum Schweigen.
+  ///
+  /// Zwei Wege, bewusst in dieser Reihenfolge: Die Backup-DATEI ist der
+  /// sichere Weg — sie enthaelt Schluessel, Badges und Einstellungen und
+  /// laesst sich verwahren. Der kopierte Schluessel ist der schnelle Weg
+  /// fuer den Passwortmanager, geht aber ueber die Zwischenablage.
   Future<void> _offerBackupThenHome() async {
     if (!mounted) return;
     setState(() => _busy = false);
@@ -343,6 +354,10 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
       await showModalBottomSheet<void>(
         context: context,
         backgroundColor: cCard,
+        // Nicht wegwischbar: Dieses eine Blatt soll man lesen. Der
+        // "Spaeter"-Knopf bleibt der Ausweg.
+        isDismissible: false,
+        enableDrag: false,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
@@ -354,16 +369,41 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(t.idSetupBackupTitle,
+                Row(children: [
+                  const Icon(Icons.verified_user_rounded,
+                      color: cOrange, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(t.idSetupSecureTitle,
+                        style: const TextStyle(
+                            color: cText,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ]),
+                const SizedBox(height: 10),
+                Text(t.idSetupSecureBody,
                     style: const TextStyle(
-                        color: cText,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700)),
+                        color: cTextSecondary, height: 1.45, fontSize: 13.5)),
+                const SizedBox(height: 18),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final navigator = Navigator.of(ctx);
+                    await BackupService.createBackup(context);
+                    navigator.pop();
+                  },
+                  icon: const Icon(Icons.save_alt_rounded,
+                      color: Colors.black, size: 18),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cOrange,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  label: Text(t.idSetupSecureBackup,
+                      style: const TextStyle(fontWeight: FontWeight.w800)),
+                ),
                 const SizedBox(height: 8),
-                Text(t.idSetupBackupBody,
-                    style: const TextStyle(color: cTextSecondary, height: 1.4)),
-                const SizedBox(height: 16),
-                ElevatedButton(
+                OutlinedButton.icon(
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: wrap));
                     Navigator.pop(ctx);
@@ -371,12 +411,31 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                       SnackBar(content: Text(t.keyExportCopied)),
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cOrange,
-                    foregroundColor: Colors.black,
+                  icon: const Icon(Icons.copy_rounded,
+                      color: cTextSecondary, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: cTileBorder),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text(t.idSetupBackupCopy),
+                  label: Text(t.idSetupSecureCopy,
+                      style: const TextStyle(color: cTextSecondary)),
                 ),
+                const SizedBox(height: 14),
+                // Der Satz, der bisher fehlte: WO die Schluessel spaeter
+                // liegen. Ohne ihn sucht spaeter niemand im Profil.
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Icon(Icons.info_outline_rounded,
+                      color: cTextTertiary, size: 15),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(t.idSetupSecureWhere,
+                        style: const TextStyle(
+                            color: cTextTertiary,
+                            fontSize: 11.5,
+                            height: 1.4)),
+                  ),
+                ]),
+                const SizedBox(height: 6),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
                   child: Text(t.idSetupBackupLater,

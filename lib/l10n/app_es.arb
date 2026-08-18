@@ -2850,5 +2850,14 @@
   "guidePaMapTitle": "El mapa",
   "guidePaMapBody": "Muestra los meetups de tu entorno en un mapa. Útil al viajar o para saber qué más hay en la región además de tu meetup principal.",
   "guidePaMineTitle": "Mis meetups",
-  "guidePaMineBody": "Solo interesa a los organizadores: aquí gestionas las fechas de los meetups en los que estás registrado. Si no llevas ninguno, verás una lista vacía."
+  "guidePaMineBody": "Solo interesa a los organizadores: aquí gestionas las fechas de los meetups en los que estás registrado. Si no llevas ninguno, verás una lista vacía.",
+  "guideSettingsProfileTitle": "Perfil y claves",
+  "guideSettingsProfileBody": "Aquí cambias tu nombre y tu meetup principal, y aquí están tus claves Nostr. Abajo puedes copiar el npub y mostrar el nsec. Si la app creó una clave para ti, aquí la encuentras.",
+  "glFindKeysTitle": "¿Dónde están mis claves?",
+  "glFindKeysBody": "Ajustes → Perfil, al final. Allí copias el npub con un toque y muestras el nsec, esto último solo tras una advertencia: quien ve el nsec tiene tu identidad. Si usas Amber, una extensión o un bunker, aquí no hay nsec: está allí, no en esta app.",
+  "idSetupSecureTitle": "Identidad creada: asegúrala ahora",
+  "idSetupSecureBody": "Tu clave ahora es solo tuya. Nadie puede restablecerla: si se pierde, la identidad y todas sus insignias se pierden con ella. Dos minutos ahora te evitan eso.",
+  "idSetupSecureBackup": "Crear copia de seguridad",
+  "idSetupSecureCopy": "Copiar la clave al portapapeles",
+  "idSetupSecureWhere": "Puedes encontrar tus claves en cualquier momento en Ajustes → Perfil."
 }

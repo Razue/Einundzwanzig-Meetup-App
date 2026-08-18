@@ -2872,5 +2872,14 @@
   "guidePaMapTitle": "Die Karte",
   "guidePaMapBody": "Zeigt Meetups in deiner Umgebung auf einer Landkarte. Praktisch auf Reisen — oder wenn du wissen willst, was es außer deinem Home-Meetup noch in der Region gibt.",
   "guidePaMineTitle": "Meine Meetups",
-  "guidePaMineBody": "Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste."
+  "guidePaMineBody": "Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste.",
+  "guideSettingsProfileTitle": "Profil und Schlüssel",
+  "guideSettingsProfileBody": "Hier änderst du deinen Namen und dein Home-Meetup — und hier liegen deine Nostr-Schlüssel. Ganz unten kannst du den npub kopieren und dir den nsec anzeigen lassen. Wenn die App dir einen Schlüssel erstellt hat, ist das der Ort, an dem du ihn findest.",
+  "glFindKeysTitle": "Wo finde ich meine Schlüssel?",
+  "glFindKeysBody": "Einstellungen → Profil, ganz unten. Dort kopierst du den npub mit einem Tipp und lässt dir den nsec anzeigen — letzteres nur nach einer Warnung, denn wer den nsec sieht, hat deine Identität. Nutzt du Amber, eine Browsererweiterung oder einen Bunker, gibt es hier keinen nsec: Der liegt dann dort und nicht in dieser App.",
+  "idSetupSecureTitle": "Identität erstellt — jetzt sichern",
+  "idSetupSecureBody": "Dein Schlüssel gehört ab jetzt dir allein. Es gibt niemanden, der ihn zurücksetzen kann — geht er verloren, ist die Identität mitsamt aller Badges weg. Zwei Minuten jetzt ersparen dir das.",
+  "idSetupSecureBackup": "Backup erstellen",
+  "idSetupSecureCopy": "Schlüssel in die Zwischenablage",
+  "idSetupSecureWhere": "Deine Schlüssel findest du jederzeit unter Einstellungen → Profil."
 }

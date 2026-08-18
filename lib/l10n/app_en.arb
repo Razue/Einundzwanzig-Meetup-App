@@ -2850,5 +2850,14 @@
   "guidePaMapTitle": "The map",
   "guidePaMapBody": "Shows meetups around you on a map. Handy when travelling — or when you want to know what else exists in the region besides your home meetup.",
   "guidePaMineTitle": "My meetups",
-  "guidePaMineBody": "Only of interest to organisers: here you maintain the events of the meetups you are registered for in the portal. If you run none, you will find an empty list."
+  "guidePaMineBody": "Only of interest to organisers: here you maintain the events of the meetups you are registered for in the portal. If you run none, you will find an empty list.",
+  "guideSettingsProfileTitle": "Profile and keys",
+  "guideSettingsProfileBody": "Here you change your name and home meetup — and here your Nostr keys live. At the bottom you can copy the npub and reveal the nsec. If the app created a key for you, this is where you find it.",
+  "glFindKeysTitle": "Where are my keys?",
+  "glFindKeysBody": "Settings → Profile, at the very bottom. There you copy the npub with one tap and reveal the nsec — the latter only after a warning, because whoever sees the nsec has your identity. If you use Amber, a browser extension or a bunker there is no nsec here: it lives there, not in this app.",
+  "idSetupSecureTitle": "Identity created — secure it now",
+  "idSetupSecureBody": "Your key now belongs to you alone. Nobody can reset it — if it is lost, the identity and all its badges go with it. Two minutes now save you from that.",
+  "idSetupSecureBackup": "Create a backup",
+  "idSetupSecureCopy": "Copy key to clipboard",
+  "idSetupSecureWhere": "You can find your keys any time under Settings → Profile."
 }

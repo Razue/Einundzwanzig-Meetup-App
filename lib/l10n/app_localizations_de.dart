@@ -6503,4 +6503,35 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get guidePaMineBody =>
       'Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste.';
+
+  @override
+  String get guideSettingsProfileTitle => 'Profil und Schlüssel';
+
+  @override
+  String get guideSettingsProfileBody =>
+      'Hier änderst du deinen Namen und dein Home-Meetup — und hier liegen deine Nostr-Schlüssel. Ganz unten kannst du den npub kopieren und dir den nsec anzeigen lassen. Wenn die App dir einen Schlüssel erstellt hat, ist das der Ort, an dem du ihn findest.';
+
+  @override
+  String get glFindKeysTitle => 'Wo finde ich meine Schlüssel?';
+
+  @override
+  String get glFindKeysBody =>
+      'Einstellungen → Profil, ganz unten. Dort kopierst du den npub mit einem Tipp und lässt dir den nsec anzeigen — letzteres nur nach einer Warnung, denn wer den nsec sieht, hat deine Identität. Nutzt du Amber, eine Browsererweiterung oder einen Bunker, gibt es hier keinen nsec: Der liegt dann dort und nicht in dieser App.';
+
+  @override
+  String get idSetupSecureTitle => 'Identität erstellt — jetzt sichern';
+
+  @override
+  String get idSetupSecureBody =>
+      'Dein Schlüssel gehört ab jetzt dir allein. Es gibt niemanden, der ihn zurücksetzen kann — geht er verloren, ist die Identität mitsamt aller Badges weg. Zwei Minuten jetzt ersparen dir das.';
+
+  @override
+  String get idSetupSecureBackup => 'Backup erstellen';
+
+  @override
+  String get idSetupSecureCopy => 'Schlüssel in die Zwischenablage';
+
+  @override
+  String get idSetupSecureWhere =>
+      'Deine Schlüssel findest du jederzeit unter Einstellungen → Profil.';
 }
