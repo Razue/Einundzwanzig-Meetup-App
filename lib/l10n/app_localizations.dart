@@ -11493,6 +11493,144 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Sammelpunkt für alles rund um Einundzwanzig, was nicht direkt mit Badges zu tun hat: Podcast, Shoutouts, PlebRap, SatoshiDuell und die Meetup-Karte. Vieles davon öffnet sich im Browser.'**
   String get glCommunityBody;
+
+  /// No description provided for @settingsRestartGuide.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour wiederholen'**
+  String get settingsRestartGuide;
+
+  /// No description provided for @settingsRestartGuideSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Spotlight-Touren erneut anzeigen'**
+  String get settingsRestartGuideSub;
+
+  /// No description provided for @settingsGuideReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Touren zurückgesetzt — sie starten beim nächsten Öffnen der Bereiche.'**
+  String get settingsGuideReset;
+
+  /// No description provided for @guideSettingsRestartTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour wiederholen'**
+  String get guideSettingsRestartTitle;
+
+  /// No description provided for @guideSettingsRestartBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Setzt alle Spotlight-Touren zurück. Sie starten dann wieder, sobald du den jeweiligen Bereich das nächste Mal öffnest — nützlich, wenn du etwas noch einmal sehen willst.'**
+  String get guideSettingsRestartBody;
+
+  /// No description provided for @guideWalletMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Weltkarte'**
+  String get guideWalletMapTitle;
+
+  /// No description provided for @guideWalletMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt deine Badges dort, wo du sie eingesammelt hast. Aus einer Liste wird eine Landkarte deiner Meetup-Besuche.'**
+  String get guideWalletMapBody;
+
+  /// No description provided for @guideWalletViewTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ansicht wechseln'**
+  String get guideWalletViewTitle;
+
+  /// No description provided for @guideWalletViewBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Umschalten zwischen großen Karten und einer kompakten Übersicht. Bei vielen Badges ist die kompakte Ansicht schneller zu überblicken.'**
+  String get guideWalletViewBody;
+
+  /// No description provided for @guideCommunityPortalTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Portal'**
+  String get guideCommunityPortalTitle;
+
+  /// No description provided for @guideCommunityPortalBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Zugang zu Meetups, Terminen, Kursen und der Karte auf einundzwanzig.space. Vieles davon öffnet sich im Browser.'**
+  String get guideCommunityPortalBody;
+
+  /// No description provided for @guideCommunityNewsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'News und Nostr'**
+  String get guideCommunityNewsTitle;
+
+  /// No description provided for @guideCommunityNewsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel aus dem Einundzwanzig-Magazin und die neuesten Notizen aus deinem Nostr-Netzwerk — beides direkt in der App lesbar.'**
+  String get guideCommunityNewsBody;
+
+  /// No description provided for @guideCommunityFunTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Mitmachen'**
+  String get guideCommunityFunTitle;
+
+  /// No description provided for @guideCommunityFunBody.
+  ///
+  /// In de, this message translates to:
+  /// **'SatoshiDuell für Quizrunden um Sats und PlebRap für Musik aus der Community. Beides braucht nichts weiter als deine Identität.'**
+  String get guideCommunityFunBody;
+
+  /// No description provided for @guideMyMeetupsListTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Meetups'**
+  String get guideMyMeetupsListTitle;
+
+  /// No description provided for @guideMyMeetupsListBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Meetups, für die du im Portal eingetragen bist. Tippe eines an, um seine Termine zu sehen und zu pflegen — dort legst du mit dem Knopf unten auch neue an.'**
+  String get guideMyMeetupsListBody;
+
+  /// No description provided for @guideMyMeetupsCreateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin anlegen'**
+  String get guideMyMeetupsCreateTitle;
+
+  /// No description provided for @guideMyMeetupsCreateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Trägt einen neuen Termin im Portal ein. Er erscheint danach im Kalender aller, die dieses Meetup als Favorit haben.'**
+  String get guideMyMeetupsCreateBody;
+
+  /// No description provided for @guideWotTabsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die drei Ansichten'**
+  String get guideWotTabsTitle;
+
+  /// No description provided for @guideWotTabsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk zeigt, wer mit wem verbunden ist. Bürgen zeigt, für wen du stehst und wer für dich. Meldungen sammelt die Warnungen aus dem Netzwerk.'**
+  String get guideWotTabsBody;
+
+  /// No description provided for @guideWotRefreshTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu laden'**
+  String get guideWotRefreshTitle;
+
+  /// No description provided for @guideWotRefreshBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Holt den aktuellen Stand von den Relays. Das Netzwerk wächst mit jedem Meetup — ohne Nachladen siehst du den Stand vom letzten Öffnen.'**
+  String get guideWotRefreshBody;
 }
 
 class _AppLocalizationsDelegate

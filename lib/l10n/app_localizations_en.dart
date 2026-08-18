@@ -6328,4 +6328,84 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get glCommunityBody =>
       'A hub for everything around Einundzwanzig that is not directly about badges: podcast, shoutouts, PlebRap, SatoshiDuell and the meetup map. Much of it opens in the browser.';
+
+  @override
+  String get settingsRestartGuide => 'Repeat the tour';
+
+  @override
+  String get settingsRestartGuideSub => 'Show all spotlight tours again';
+
+  @override
+  String get settingsGuideReset =>
+      'Tours reset — they will start again when you next open those areas.';
+
+  @override
+  String get guideSettingsRestartTitle => 'Repeat the tour';
+
+  @override
+  String get guideSettingsRestartBody =>
+      'Resets all spotlight tours. They start again the next time you open the relevant area — handy when you want to see something once more.';
+
+  @override
+  String get guideWalletMapTitle => 'World map';
+
+  @override
+  String get guideWalletMapBody =>
+      'Shows your badges where you collected them. A list turns into a map of your meetup visits.';
+
+  @override
+  String get guideWalletViewTitle => 'Switch the view';
+
+  @override
+  String get guideWalletViewBody =>
+      'Switch between large cards and a compact overview. With many badges the compact view is quicker to scan.';
+
+  @override
+  String get guideCommunityPortalTitle => 'The portal';
+
+  @override
+  String get guideCommunityPortalBody =>
+      'Access to meetups, events, courses and the map on einundzwanzig.space. Much of it opens in the browser.';
+
+  @override
+  String get guideCommunityNewsTitle => 'News and Nostr';
+
+  @override
+  String get guideCommunityNewsBody =>
+      'Articles from the Einundzwanzig magazine and the latest notes from your Nostr network — both readable right in the app.';
+
+  @override
+  String get guideCommunityFunTitle => 'Join in';
+
+  @override
+  String get guideCommunityFunBody =>
+      'SatoshiDuell for quiz rounds over sats and PlebRap for community music. Both need nothing but your identity.';
+
+  @override
+  String get guideMyMeetupsListTitle => 'Your meetups';
+
+  @override
+  String get guideMyMeetupsListBody =>
+      'The meetups you are registered for in the portal. Tap one to see and maintain its events — the button down there also creates new ones.';
+
+  @override
+  String get guideMyMeetupsCreateTitle => 'Create an event';
+
+  @override
+  String get guideMyMeetupsCreateBody =>
+      'Adds a new event in the portal. It then appears in the calendar of everyone who has this meetup as a favourite.';
+
+  @override
+  String get guideWotTabsTitle => 'The three views';
+
+  @override
+  String get guideWotTabsBody =>
+      'Network shows who is connected to whom. Vouches shows who you stand for and who stands for you. Reports collects the warnings from the network.';
+
+  @override
+  String get guideWotRefreshTitle => 'Refresh';
+
+  @override
+  String get guideWotRefreshBody =>
+      'Fetches the current state from the relays. The network grows with every meetup — without refreshing you see the state from your last visit.';
 }

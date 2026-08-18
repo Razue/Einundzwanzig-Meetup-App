@@ -8,7 +8,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/npub_chip.dart';
 import '../services/meetup_calendar_service.dart';
+import 'package:provider/provider.dart';
+
+import '../services/guide_service.dart';
 import '../theme.dart';
+import '../tours/more_tours.dart';
 import '../l10n/app_localizations.dart';
 import '../services/portal_api_service.dart';
 
@@ -30,6 +34,23 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
   void initState() {
     super.initState();
     _init();
+    _startTour();
+  }
+
+  Future<void> _startTour() async {
+    await Future.delayed(const Duration(milliseconds: 700));
+    if (!mounted) return;
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.myMeetups)) return;
+    if (!mounted) return;
+    await guide.startTour(GuideTour.myMeetups, MyMeetupsTour.steps());
+  }
+
+  @override
+  void dispose() {
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.myMeetups) guide.finishTour();
+    super.dispose();
   }
 
   Future<void> _init() async {
@@ -148,6 +169,7 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
       color: cOrange, backgroundColor: cCard,
       onRefresh: _loadMeetups,
       child: ListView(
+        key: MyMeetupsTour.listKey,
         padding: const EdgeInsets.all(16),
         children: [
           if (_meetups.isEmpty)

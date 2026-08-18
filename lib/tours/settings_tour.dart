@@ -19,6 +19,7 @@ class SettingsTour {
   static final languageKey = GlobalKey(debugLabel: 'guide_set_language');
   static final hapticKey = GlobalKey(debugLabel: 'guide_set_haptic');
   static final resetKey = GlobalKey(debugLabel: 'guide_set_reset');
+  static final restartKey = GlobalKey(debugLabel: 'guide_set_restart');
 
   /// Reihenfolge folgt dem Sheet von oben nach unten.
   static List<GuideStep> steps() => [
@@ -53,6 +54,13 @@ class SettingsTour {
         ),
 
         // 5 — Tour wiederholen
+        GuideStep(
+          targetKey: restartKey,
+          titleKey: 'guideSettingsRestartTitle',
+          bodyKey: 'guideSettingsRestartBody',
+        ),
+
+        // 6 — App zuruecksetzen
         GuideStep(
           targetKey: resetKey,
           titleKey: 'guideSettingsResetTitle',

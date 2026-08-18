@@ -6,10 +6,11 @@ enum GuideTour {
   home,
   settings,
   events,
-  portal,
-  wallet,
-  reputation,
+  portal,     // Community-Bereich
+  wallet,     // Badge-Wallet
+  reputation, // Vertrauensnetzwerk
   scan,
+  myMeetups,  // Portal-Termine des eigenen Meetups
 }
 
 /// Ein einzelner Schritt der Spotlight-Tour.

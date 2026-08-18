@@ -8,7 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
+import 'package:provider/provider.dart';
+
 import '../l10n/app_localizations.dart';
+import '../services/guide_service.dart';
+import '../tours/more_tours.dart';
 import '../models/badge.dart';
 import 'badge_world_map_screen.dart';
 import '../models/user.dart';
@@ -149,6 +153,24 @@ class BadgeWalletScreen extends StatefulWidget {
 }
 
 class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _startTour();
+  }
+
+  /// Tour beim ersten Oeffnen. Die kurze Verzoegerung gibt dem Bildschirm
+  /// Zeit, sich mit Daten zu zeichnen — vorher gaebe es die Badge-Karten
+  /// noch nicht, auf die der erste Schritt zeigt.
+  Future<void> _startTour() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.wallet)) return;
+    if (!mounted) return;
+    await guide.startTour(GuideTour.wallet, WalletTour.steps());
+  }
+
   bool _compactView = false;
 
   // ============================================================
@@ -167,6 +189,11 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen> {
 
   @override
   void dispose() {
+    // Bildschirm zu, Tour raus — sonst suchte das Overlay Ziele, die es
+    // nicht mehr gibt.
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.wallet) guide.finishTour();
+
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -359,6 +386,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           // Weltkarte — immer erreichbar, sobald Badges existieren
           if (myBadges.isNotEmpty)
             IconButton(
+              key: WalletTour.mapKey,
               icon: const Icon(Icons.public_rounded),
               tooltip: AppLocalizations.of(context).mapButton,
               onPressed: () => Navigator.push(context,
@@ -367,6 +395,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
           // Toggle erst ab 7+ Badges anzeigen
           if (myBadges.length > 6)
             IconButton(
+              key: WalletTour.viewKey,
               icon: Icon(_compactView ? Icons.grid_view : Icons.view_comfy),
               tooltip: _compactView ? 'Normal' : 'Kompakt',
               onPressed: () => setState(() => _compactView = !_compactView),
@@ -380,6 +409,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             ),
           if (myBadges.isNotEmpty)
             IconButton(
+              key: WalletTour.shareKey,
               icon: const Icon(Icons.share),
               tooltip: AppLocalizations.of(context).walletShareTitle,
               onPressed: _showShareOptions,
@@ -625,7 +655,12 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
       itemBuilder: (context, gi) {
         final entry = groups[gi];
         final isCollapsed = _collapsed.contains(entry.key);
-        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        return Column(
+            // Nur die ERSTE Gruppe traegt den Tour-Schluessel. Ein GlobalKey
+            // darf im Baum nur einmal vorkommen — an jede Gruppe gehaengt
+            // waere er ein Laufzeitfehler.
+            key: gi == 0 ? WalletTour.firstBadgeKey : null,
+            crossAxisAlignment: CrossAxisAlignment.start, children: [
           // --- Abschnitts-Kopf ---
           GestureDetector(
             onTap: () => setState(() {

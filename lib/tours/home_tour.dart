@@ -51,11 +51,15 @@ class HomeTour {
           scrollIntoView: false,
         ),
 
-        // 1 — Trust Score
+        // 1 — Trust Score. Die Kachel ist seit der Kopfzeilen-Umstellung bei
+        //     den meisten ausgeblendet, deshalb die kurze Wartezeit: Ist sie
+        //     nicht da, geht die Tour zuegig weiter statt sekundenlang zu
+        //     warten.
         GuideStep(
           targetKey: trustScoreKey,
           titleKey: 'guideHomeTrustScoreTitle',
           bodyKey: 'guideHomeTrustScoreBody',
+          waitTimeout: _optionalTile,
         ),
 
         // 2 — Home-Meetup

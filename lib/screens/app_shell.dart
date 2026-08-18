@@ -79,8 +79,13 @@ class _AppShellState extends State<AppShell> {
         await Future.delayed(waitPerAttempt);
         if (!mounted) return;
 
-        final ready = HomeTour.homeMeetupKey.currentContext != null &&
-            HomeTour.trustScoreKey.currentContext != null;
+        // Geprueft wird das Ziel des ERSTEN Schritts plus die Home-Meetup-
+        // Kachel. Frueher stand hier zusaetzlich die Trust-Score-Kachel —
+        // die ist seit der Migration "Score sitzt in der Kopfzeile"
+        // standardmaessig ausgeblendet und existiert bei den meisten Leuten
+        // gar nicht. Die Pruefung konnte damit nie erfuellt werden.
+        final ready = HomeTour.glossaryKey.currentContext != null &&
+            HomeTour.homeMeetupKey.currentContext != null;
         AppLogger.debug('Guide',
             'Dashboard-Tour, Versuch $attempt/$maxAttempts — Ziele bereit: $ready');
         if (ready) {

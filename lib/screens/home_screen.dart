@@ -986,7 +986,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         if (_deviceCompromised && !_dismissedIntegrityWarning) ...[_buildDeviceWarning(), const SizedBox(height: kTileGap)],
         if (_activeSession != null) ...[_buildActiveSessionTile(), const SizedBox(height: kTileGap)],
         // Fixe Home-Meetup-Kachel (immer gleiche Größe)
-        _buildHomeMeetupTile(),
+        //
+        // Der Tour-Schluessel haengt HIER und nicht in der _tourKeys-Tabelle:
+        // Diese Kachel wird als einzige nicht ueber _wrapEditable gezeichnet,
+        // also griff die Tabelle bei ihr nie. Die Dashboard-Tour wartete
+        // dadurch auf ein Ziel, das nie erschien, und startete nicht.
+        KeyedSubtree(
+            key: HomeTour.homeMeetupKey, child: _buildHomeMeetupTile()),
         const SizedBox(height: kTileGap),
         // Restlicher Raum: Der angeheftete Block fuellt weiterhin den
         // sichtbaren Bereich; die graue Reserve haengt darunter und wird
@@ -2435,6 +2441,26 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         AppLocalizations.of(context).settingsLogTitle,
                         AppLocalizations.of(context).settingsLogSub,
                         () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const LogScreen())); }),
+                      _sDivider(),
+                      // Tour wiederholen — der einzige Weg, die Spotlights
+                      // ein zweites Mal zu sehen. Ohne ihn liesse sich der
+                      // Guide nur durch Zuruecksetzen der App testen.
+                      KeyedSubtree(
+                        key: SettingsTour.restartKey,
+                        child: _sRow(Icons.replay_rounded, cOrange,
+                          AppLocalizations.of(context).settingsRestartGuide,
+                          AppLocalizations.of(context).settingsRestartGuideSub,
+                          () async {
+                            // Text und Messenger vor dem await greifen — nach
+                            // Navigator.pop ist der Sheet-Context weg.
+                            final messenger = ScaffoldMessenger.of(context);
+                            final msg = AppLocalizations.of(context).settingsGuideReset;
+                            Navigator.pop(ctx);
+                            await guide.resetAllTours();
+                            messenger.showSnackBar(SnackBar(
+                                content: Text(msg), backgroundColor: cOrange));
+                          }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // UNTERSTÜTZEN (V4V)

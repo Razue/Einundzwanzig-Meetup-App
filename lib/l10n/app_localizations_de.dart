@@ -6388,4 +6388,84 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get glCommunityBody =>
       'Sammelpunkt für alles rund um Einundzwanzig, was nicht direkt mit Badges zu tun hat: Podcast, Shoutouts, PlebRap, SatoshiDuell und die Meetup-Karte. Vieles davon öffnet sich im Browser.';
+
+  @override
+  String get settingsRestartGuide => 'Tour wiederholen';
+
+  @override
+  String get settingsRestartGuideSub => 'Alle Spotlight-Touren erneut anzeigen';
+
+  @override
+  String get settingsGuideReset =>
+      'Touren zurückgesetzt — sie starten beim nächsten Öffnen der Bereiche.';
+
+  @override
+  String get guideSettingsRestartTitle => 'Tour wiederholen';
+
+  @override
+  String get guideSettingsRestartBody =>
+      'Setzt alle Spotlight-Touren zurück. Sie starten dann wieder, sobald du den jeweiligen Bereich das nächste Mal öffnest — nützlich, wenn du etwas noch einmal sehen willst.';
+
+  @override
+  String get guideWalletMapTitle => 'Weltkarte';
+
+  @override
+  String get guideWalletMapBody =>
+      'Zeigt deine Badges dort, wo du sie eingesammelt hast. Aus einer Liste wird eine Landkarte deiner Meetup-Besuche.';
+
+  @override
+  String get guideWalletViewTitle => 'Ansicht wechseln';
+
+  @override
+  String get guideWalletViewBody =>
+      'Umschalten zwischen großen Karten und einer kompakten Übersicht. Bei vielen Badges ist die kompakte Ansicht schneller zu überblicken.';
+
+  @override
+  String get guideCommunityPortalTitle => 'Das Portal';
+
+  @override
+  String get guideCommunityPortalBody =>
+      'Der Zugang zu Meetups, Terminen, Kursen und der Karte auf einundzwanzig.space. Vieles davon öffnet sich im Browser.';
+
+  @override
+  String get guideCommunityNewsTitle => 'News und Nostr';
+
+  @override
+  String get guideCommunityNewsBody =>
+      'Artikel aus dem Einundzwanzig-Magazin und die neuesten Notizen aus deinem Nostr-Netzwerk — beides direkt in der App lesbar.';
+
+  @override
+  String get guideCommunityFunTitle => 'Zum Mitmachen';
+
+  @override
+  String get guideCommunityFunBody =>
+      'SatoshiDuell für Quizrunden um Sats und PlebRap für Musik aus der Community. Beides braucht nichts weiter als deine Identität.';
+
+  @override
+  String get guideMyMeetupsListTitle => 'Deine Meetups';
+
+  @override
+  String get guideMyMeetupsListBody =>
+      'Die Meetups, für die du im Portal eingetragen bist. Tippe eines an, um seine Termine zu sehen und zu pflegen — dort legst du mit dem Knopf unten auch neue an.';
+
+  @override
+  String get guideMyMeetupsCreateTitle => 'Termin anlegen';
+
+  @override
+  String get guideMyMeetupsCreateBody =>
+      'Trägt einen neuen Termin im Portal ein. Er erscheint danach im Kalender aller, die dieses Meetup als Favorit haben.';
+
+  @override
+  String get guideWotTabsTitle => 'Die drei Ansichten';
+
+  @override
+  String get guideWotTabsBody =>
+      'Netzwerk zeigt, wer mit wem verbunden ist. Bürgen zeigt, für wen du stehst und wer für dich. Meldungen sammelt die Warnungen aus dem Netzwerk.';
+
+  @override
+  String get guideWotRefreshTitle => 'Neu laden';
+
+  @override
+  String get guideWotRefreshBody =>
+      'Holt den aktuellen Stand von den Relays. Das Netzwerk wächst mit jedem Meetup — ohne Nachladen siehst du den Stand vom letzten Öffnen.';
 }

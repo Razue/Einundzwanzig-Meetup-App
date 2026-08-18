@@ -6367,4 +6367,85 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get glCommunityBody =>
       'Un punto de reunión para todo lo de Einundzwanzig que no trata de insignias: pódcast, shoutouts, PlebRap, SatoshiDuell y el mapa de meetups. Gran parte se abre en el navegador.';
+
+  @override
+  String get settingsRestartGuide => 'Repetir la visita';
+
+  @override
+  String get settingsRestartGuideSub =>
+      'Volver a mostrar todas las visitas guiadas';
+
+  @override
+  String get settingsGuideReset =>
+      'Visitas restablecidas: volverán a iniciarse al abrir esas secciones.';
+
+  @override
+  String get guideSettingsRestartTitle => 'Repetir la visita';
+
+  @override
+  String get guideSettingsRestartBody =>
+      'Restablece todas las visitas guiadas. Volverán a iniciarse la próxima vez que abras cada sección.';
+
+  @override
+  String get guideWalletMapTitle => 'Mapa mundial';
+
+  @override
+  String get guideWalletMapBody =>
+      'Muestra tus insignias donde las conseguiste. Una lista se convierte en un mapa de tus visitas.';
+
+  @override
+  String get guideWalletViewTitle => 'Cambiar la vista';
+
+  @override
+  String get guideWalletViewBody =>
+      'Alterna entre tarjetas grandes y una vista compacta. Con muchas insignias, la compacta se revisa más rápido.';
+
+  @override
+  String get guideCommunityPortalTitle => 'El portal';
+
+  @override
+  String get guideCommunityPortalBody =>
+      'Acceso a meetups, eventos, cursos y el mapa en einundzwanzig.space. Gran parte se abre en el navegador.';
+
+  @override
+  String get guideCommunityNewsTitle => 'Noticias y Nostr';
+
+  @override
+  String get guideCommunityNewsBody =>
+      'Artículos de la revista Einundzwanzig y las últimas notas de tu red Nostr, ambos legibles en la app.';
+
+  @override
+  String get guideCommunityFunTitle => 'Para participar';
+
+  @override
+  String get guideCommunityFunBody =>
+      'SatoshiDuell para partidas de preguntas por sats y PlebRap para música de la comunidad. Ambos solo necesitan tu identidad.';
+
+  @override
+  String get guideMyMeetupsListTitle => 'Tus meetups';
+
+  @override
+  String get guideMyMeetupsListBody =>
+      'Los meetups en los que estás registrado en el portal. Toca uno para ver y gestionar sus fechas; el botón de abajo también crea nuevas.';
+
+  @override
+  String get guideMyMeetupsCreateTitle => 'Crear una fecha';
+
+  @override
+  String get guideMyMeetupsCreateBody =>
+      'Añade una nueva fecha en el portal. Aparecerá en el calendario de todos los que tengan este meetup como favorito.';
+
+  @override
+  String get guideWotTabsTitle => 'Las tres vistas';
+
+  @override
+  String get guideWotTabsBody =>
+      'Red muestra quién está conectado con quién. Avales muestra por quién respondes y quién responde por ti. Denuncias reúne las advertencias de la red.';
+
+  @override
+  String get guideWotRefreshTitle => 'Recargar';
+
+  @override
+  String get guideWotRefreshBody =>
+      'Obtiene el estado actual de los relés. La red crece con cada meetup; sin recargar ves el estado de tu última visita.';
 }
