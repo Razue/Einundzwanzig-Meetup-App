@@ -22,9 +22,11 @@ import '../services/event_badge_auth_service.dart';
 import '../services/guide_service.dart';
 import '../tours/event_badge_tour.dart';
 import '../services/nostr_service.dart';
+import '../services/chat_service.dart';
 import '../services/event_badge_session_service.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/signing_service.dart';
+import 'chat_screen.dart';
 import 'rolling_qr_screen.dart';
 import 'location_picker_screen.dart';
 import '../services/meetup_calendar_service.dart';
@@ -239,6 +241,44 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
         ),
       ]),
     );
+  }
+
+  /// Laeuft gerade eine Raumsuche? Sperrt den Knopf.
+  bool _openingChat = false;
+
+  /// Oeffnet den Chat zu einem Termin — und legt den Raum an, falls es noch
+  /// keinen gibt.
+  ///
+  /// Anlegen darf hier jeder, der den Termin sieht. Das ist Absicht: Ein
+  /// Termin ohne Chat waere fuer alle nutzlos, und der erste, der ihn
+  /// braucht, soll ihn eroeffnen koennen. Lehnt das Relay das Anlegen ab,
+  /// sagt die Meldung das.
+  Future<void> _openEventChat(_CalItem e) async {
+    final event = e.nostr;
+    if (event == null) return;
+
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() => _openingChat = true);
+
+    final room = await ChatService.ensureEventRoom(
+      eventAddress: event.address,
+      title: event.title,
+      about: event.location,
+      picture: event.badgeImageUrl,
+    );
+
+    if (!mounted) return;
+    setState(() => _openingChat = false);
+
+    if (room == null) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.chatEventFailed), backgroundColor: cRed));
+      return;
+    }
+    navigator.pop();
+    navigator.push(MaterialPageRoute(builder: (_) => ChatScreen(room: room)));
   }
 
   /// Badge-Session fuer ein Event starten.
@@ -965,6 +1005,32 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             if (e.hasBadge) ...[
               const SizedBox(height: 16),
               _badgeNotice(t, e),
+            ],
+            // Chat zum Termin. Nur fuer Nostr-Termine: Portal-Meetups haben
+            // ihren eigenen Meetup-Raum, ein zweiter Raum daneben wuerde die
+            // Unterhaltung nur aufteilen.
+            if (e.nostr != null) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _openingChat ? null : () => _openEventChat(e),
+                  icon: _openingChat
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: cNostr))
+                      : const Icon(Icons.forum_rounded,
+                          color: cNostr, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: cNostr.withValues(alpha: 0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                  ),
+                  label: Text(t.chatEventOpen,
+                      style: const TextStyle(color: cNostr, fontSize: 13)),
+                ),
+              ),
             ],
             if (links.isNotEmpty) ...[
               const SizedBox(height: 16),

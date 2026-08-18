@@ -6545,4 +6545,52 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get idSetupSecureFileHeader =>
       'Einundzwanzig Meetup App — clave Nostr cifrada (ncryptsec, NIP-49). Sin la contraseña correspondiente, este archivo no sirve de nada. Guárdalos por separado.';
+
+  @override
+  String get chatRelayHint => 'Relé de grupos de Einundzwanzig';
+
+  @override
+  String get chatEmpty =>
+      'Aún no hay mensajes. Escribe el primero: la sala está abierta en el relé y también es accesible desde otras apps de Nostr.';
+
+  @override
+  String get chatPlaceholder => 'Escribe un mensaje …';
+
+  @override
+  String get chatJoin => 'Unirse a la sala';
+
+  @override
+  String get chatJoinHint =>
+      'Para escribir aquí debes unirte a la sala. El relé mantiene la lista de miembros; leer funciona sin unirse.';
+
+  @override
+  String chatJoinFailed(String msg) {
+    return 'Unión rechazada: $msg';
+  }
+
+  @override
+  String chatSendFailed(String msg) {
+    return 'Mensaje no entregado: $msg';
+  }
+
+  @override
+  String get chatSearching => 'Buscando la sala de chat …';
+
+  @override
+  String chatNoRoom(String city) {
+    return 'Todavía no hay sala de chat para $city en el relé de grupos.';
+  }
+
+  @override
+  String get chatEventOpen => 'Chat sobre esta fecha';
+
+  @override
+  String get chatEventFailed =>
+      'No se pudo abrir la sala de chat. Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String get btnChat => 'Chat';
+
+  @override
+  String get btnInfo => 'Info';
 }

@@ -2868,5 +2868,39 @@
   "idSetupSecureKeySave": "Save as a file",
   "idSetupSecureKeySaved": "Key file saved.",
   "idSetupSecureSkip": "Skip",
-  "idSetupSecureFileHeader": "Einundzwanzig Meetup App — encrypted Nostr key (ncryptsec, NIP-49). Without the matching password this file is worthless. Keep the two apart."
+  "idSetupSecureFileHeader": "Einundzwanzig Meetup App — encrypted Nostr key (ncryptsec, NIP-49). Without the matching password this file is worthless. Keep the two apart.",
+  "chatRelayHint": "Einundzwanzig group relay",
+  "chatEmpty": "No messages yet. Write the first one — the room sits openly on the relay and is reachable from other Nostr apps too.",
+  "chatPlaceholder": "Write a message …",
+  "chatJoin": "Join the room",
+  "chatJoinHint": "To write here you have to join the room. The relay keeps the member list — reading works without joining.",
+  "chatJoinFailed": "Join rejected: {msg}",
+  "@chatJoinFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSendFailed": "Message not delivered: {msg}",
+  "@chatSendFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSearching": "Looking for the chat room …",
+  "chatNoRoom": "There is no chat room for {city} on the group relay yet.",
+  "@chatNoRoom": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "chatEventOpen": "Chat about this event",
+  "chatEventFailed": "The chat room could not be opened. Details are in the diagnostics log.",
+  "btnChat": "Chat",
+  "btnInfo": "Info"
 }

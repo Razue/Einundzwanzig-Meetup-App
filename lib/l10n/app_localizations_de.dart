@@ -6565,4 +6565,52 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get idSetupSecureFileHeader =>
       'Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf.';
+
+  @override
+  String get chatRelayHint => 'Gruppen-Relay von Einundzwanzig';
+
+  @override
+  String get chatEmpty =>
+      'Noch keine Nachrichten. Schreib die erste — der Raum liegt offen auf dem Relay und ist auch aus anderen Nostr-Apps erreichbar.';
+
+  @override
+  String get chatPlaceholder => 'Nachricht schreiben …';
+
+  @override
+  String get chatJoin => 'Dem Raum beitreten';
+
+  @override
+  String get chatJoinHint =>
+      'Um mitzuschreiben, musst du dem Raum beitreten. Das Relay führt die Mitgliederliste — mitlesen kannst du auch ohne.';
+
+  @override
+  String chatJoinFailed(String msg) {
+    return 'Beitritt abgelehnt: $msg';
+  }
+
+  @override
+  String chatSendFailed(String msg) {
+    return 'Nachricht nicht angekommen: $msg';
+  }
+
+  @override
+  String get chatSearching => 'Chatraum wird gesucht …';
+
+  @override
+  String chatNoRoom(String city) {
+    return 'Für $city gibt es noch keinen Chatraum auf dem Gruppen-Relay.';
+  }
+
+  @override
+  String get chatEventOpen => 'Chat zum Termin';
+
+  @override
+  String get chatEventFailed =>
+      'Der Chatraum konnte nicht geöffnet werden. Einzelheiten stehen im Diagnose-Log.';
+
+  @override
+  String get btnChat => 'Chat';
+
+  @override
+  String get btnInfo => 'Info';
 }

@@ -6505,4 +6505,52 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get idSetupSecureFileHeader =>
       'Einundzwanzig Meetup App — encrypted Nostr key (ncryptsec, NIP-49). Without the matching password this file is worthless. Keep the two apart.';
+
+  @override
+  String get chatRelayHint => 'Einundzwanzig group relay';
+
+  @override
+  String get chatEmpty =>
+      'No messages yet. Write the first one — the room sits openly on the relay and is reachable from other Nostr apps too.';
+
+  @override
+  String get chatPlaceholder => 'Write a message …';
+
+  @override
+  String get chatJoin => 'Join the room';
+
+  @override
+  String get chatJoinHint =>
+      'To write here you have to join the room. The relay keeps the member list — reading works without joining.';
+
+  @override
+  String chatJoinFailed(String msg) {
+    return 'Join rejected: $msg';
+  }
+
+  @override
+  String chatSendFailed(String msg) {
+    return 'Message not delivered: $msg';
+  }
+
+  @override
+  String get chatSearching => 'Looking for the chat room …';
+
+  @override
+  String chatNoRoom(String city) {
+    return 'There is no chat room for $city on the group relay yet.';
+  }
+
+  @override
+  String get chatEventOpen => 'Chat about this event';
+
+  @override
+  String get chatEventFailed =>
+      'The chat room could not be opened. Details are in the diagnostics log.';
+
+  @override
+  String get btnChat => 'Chat';
+
+  @override
+  String get btnInfo => 'Info';
 }

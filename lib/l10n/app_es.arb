@@ -2868,5 +2868,39 @@
   "idSetupSecureKeySave": "Guardar como archivo",
   "idSetupSecureKeySaved": "Archivo de clave guardado.",
   "idSetupSecureSkip": "Omitir",
-  "idSetupSecureFileHeader": "Einundzwanzig Meetup App — clave Nostr cifrada (ncryptsec, NIP-49). Sin la contraseña correspondiente, este archivo no sirve de nada. Guárdalos por separado."
+  "idSetupSecureFileHeader": "Einundzwanzig Meetup App — clave Nostr cifrada (ncryptsec, NIP-49). Sin la contraseña correspondiente, este archivo no sirve de nada. Guárdalos por separado.",
+  "chatRelayHint": "Relé de grupos de Einundzwanzig",
+  "chatEmpty": "Aún no hay mensajes. Escribe el primero: la sala está abierta en el relé y también es accesible desde otras apps de Nostr.",
+  "chatPlaceholder": "Escribe un mensaje …",
+  "chatJoin": "Unirse a la sala",
+  "chatJoinHint": "Para escribir aquí debes unirte a la sala. El relé mantiene la lista de miembros; leer funciona sin unirse.",
+  "chatJoinFailed": "Unión rechazada: {msg}",
+  "@chatJoinFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSendFailed": "Mensaje no entregado: {msg}",
+  "@chatSendFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSearching": "Buscando la sala de chat …",
+  "chatNoRoom": "Todavía no hay sala de chat para {city} en el relé de grupos.",
+  "@chatNoRoom": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "chatEventOpen": "Chat sobre esta fecha",
+  "chatEventFailed": "No se pudo abrir la sala de chat. Los detalles están en el registro de diagnóstico.",
+  "btnChat": "Chat",
+  "btnInfo": "Info"
 }

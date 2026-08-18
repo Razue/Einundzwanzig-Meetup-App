@@ -2890,5 +2890,39 @@
   "idSetupSecureKeySave": "Als Datei speichern",
   "idSetupSecureKeySaved": "Schlüsseldatei gespeichert.",
   "idSetupSecureSkip": "Überspringen",
-  "idSetupSecureFileHeader": "Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf."
+  "idSetupSecureFileHeader": "Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf.",
+  "chatRelayHint": "Gruppen-Relay von Einundzwanzig",
+  "chatEmpty": "Noch keine Nachrichten. Schreib die erste — der Raum liegt offen auf dem Relay und ist auch aus anderen Nostr-Apps erreichbar.",
+  "chatPlaceholder": "Nachricht schreiben …",
+  "chatJoin": "Dem Raum beitreten",
+  "chatJoinHint": "Um mitzuschreiben, musst du dem Raum beitreten. Das Relay führt die Mitgliederliste — mitlesen kannst du auch ohne.",
+  "chatJoinFailed": "Beitritt abgelehnt: {msg}",
+  "@chatJoinFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSendFailed": "Nachricht nicht angekommen: {msg}",
+  "@chatSendFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "chatSearching": "Chatraum wird gesucht …",
+  "chatNoRoom": "Für {city} gibt es noch keinen Chatraum auf dem Gruppen-Relay.",
+  "@chatNoRoom": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "chatEventOpen": "Chat zum Termin",
+  "chatEventFailed": "Der Chatraum konnte nicht geöffnet werden. Einzelheiten stehen im Diagnose-Log.",
+  "btnChat": "Chat",
+  "btnInfo": "Info"
 }

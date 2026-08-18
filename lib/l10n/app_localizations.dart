@@ -11799,6 +11799,84 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf.'**
   String get idSetupSecureFileHeader;
+
+  /// No description provided for @chatRelayHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppen-Relay von Einundzwanzig'**
+  String get chatRelayHint;
+
+  /// No description provided for @chatEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Nachrichten. Schreib die erste — der Raum liegt offen auf dem Relay und ist auch aus anderen Nostr-Apps erreichbar.'**
+  String get chatEmpty;
+
+  /// No description provided for @chatPlaceholder.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht schreiben …'**
+  String get chatPlaceholder;
+
+  /// No description provided for @chatJoin.
+  ///
+  /// In de, this message translates to:
+  /// **'Dem Raum beitreten'**
+  String get chatJoin;
+
+  /// No description provided for @chatJoinHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Um mitzuschreiben, musst du dem Raum beitreten. Das Relay führt die Mitgliederliste — mitlesen kannst du auch ohne.'**
+  String get chatJoinHint;
+
+  /// No description provided for @chatJoinFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Beitritt abgelehnt: {msg}'**
+  String chatJoinFailed(String msg);
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht nicht angekommen: {msg}'**
+  String chatSendFailed(String msg);
+
+  /// No description provided for @chatSearching.
+  ///
+  /// In de, this message translates to:
+  /// **'Chatraum wird gesucht …'**
+  String get chatSearching;
+
+  /// No description provided for @chatNoRoom.
+  ///
+  /// In de, this message translates to:
+  /// **'Für {city} gibt es noch keinen Chatraum auf dem Gruppen-Relay.'**
+  String chatNoRoom(String city);
+
+  /// No description provided for @chatEventOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Chat zum Termin'**
+  String get chatEventOpen;
+
+  /// No description provided for @chatEventFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Chatraum konnte nicht geöffnet werden. Einzelheiten stehen im Diagnose-Log.'**
+  String get chatEventFailed;
+
+  /// No description provided for @btnChat.
+  ///
+  /// In de, this message translates to:
+  /// **'Chat'**
+  String get btnChat;
+
+  /// No description provided for @btnInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Info'**
+  String get btnInfo;
 }
 
 class _AppLocalizationsDelegate

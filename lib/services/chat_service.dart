@@ -1,0 +1,507 @@
+// GRUPPEN-CHAT (NIP-29)
+// ============================================
+// Gegenstelle ist EIN Relay: wss://group.einundzwanzig.space. Es ist kein
+// Webdienst mit Chat daran, sondern ein Nostr-Relay — Bens Weboberflaeche ist
+// nur ein Client dafuer. Diese App wird ein zweiter, gleichberechtigter.
+//
+// Das Format stammt aus Bens Quelltext (einundzwanzig-group-package/js):
+//
+//   Raum          kind 39000, RELAY-signiert. Kennung = d-Tag, hier "h".
+//   Meetup-Raum   zusaetzlich ["t","meetup"] und ["meetup_slug","<slug>"]
+//   Nachricht     kind 9 mit ["h","<raum>"]
+//   Beitreten     kind 9021 mit ["h","<raum>"]  -> Relay pflegt die Mitglieder
+//   Mitglieder    kind 39002, d = h, p = Mitglieder (relay-autoritativ)
+//   Raum anlegen  kind 9007, danach kind 9002 fuer Name/Beschreibung
+//
+// Wichtig zum Verstaendnis: Die Mitgliedschaft fuehrt das RELAY, nicht der
+// Client. Wir fragen sie ab, wir behaupten sie nicht.
+// ============================================
+
+import 'dart:async';
+import 'dart:convert';
+
+import 'app_logger.dart';
+import 'relay_socket.dart';
+import 'signing_service.dart';
+
+const String _tag = 'Chat';
+
+/// Das Space-Relay. Eine Konstante, weil die Raum-Kennungen nur hier gelten:
+/// Dasselbe `h` auf einem anderen Relay ist ein anderer Raum.
+const String kGroupRelay = 'wss://group.einundzwanzig.space';
+
+// --- Ereignisarten nach NIP-29 ---
+const int _kMessage = 9;
+const int _kJoin = 9021;
+const int _kLeave = 9022;
+const int _kRoomCreate = 9007;
+const int _kRoomEdit = 9002;
+const int _kRoomMeta = 39000;
+const int _kRoomMembers = 39002;
+
+/// Ein Raum, so wie ihn das Relay beschreibt.
+class ChatRoom {
+  /// Raum-Kennung (`h`). Nur zusammen mit dem Relay eindeutig.
+  final String h;
+  final String name;
+  final String about;
+  final String picture;
+
+  /// Slug des Meetups, falls es ein Meetup-Raum ist.
+  final String meetupSlug;
+
+  /// Verweis auf ein Kalender-Event (`<kind>:<pubkey>:<d>`), falls es ein
+  /// Event-Raum ist.
+  final String eventAddress;
+
+  const ChatRoom({
+    required this.h,
+    this.name = '',
+    this.about = '',
+    this.picture = '',
+    this.meetupSlug = '',
+    this.eventAddress = '',
+  });
+
+  bool get isMeetup => meetupSlug.isNotEmpty;
+  bool get isEvent => eventAddress.isNotEmpty;
+
+  static ChatRoom? fromEvent(Map<String, dynamic> event) {
+    final tags = (event['tags'] as List?)?.cast<List>() ?? const [];
+    String val(String key) {
+      for (final t in tags) {
+        if (t.isNotEmpty && t[0] == key && t.length > 1) return t[1].toString();
+      }
+      return '';
+    }
+
+    final h = val('d');
+    if (h.isEmpty) return null;
+
+    // Bindungs-Tag: ["i","meetup:<id>"] oder ["i","event:<adresse>"].
+    var eventAddress = '';
+    for (final t in tags) {
+      if (t.isNotEmpty && t[0] == 'i' && t.length > 1) {
+        final v = t[1].toString();
+        if (v.startsWith('event:')) eventAddress = v.substring(6);
+      }
+    }
+
+    return ChatRoom(
+      h: h,
+      name: val('name'),
+      about: val('about'),
+      picture: val('picture'),
+      meetupSlug: val('meetup_slug'),
+      eventAddress: eventAddress,
+    );
+  }
+}
+
+/// Eine Nachricht im Raum.
+class ChatMessage {
+  final String id;
+  final String pubkey;
+  final String content;
+  final DateTime createdAt;
+
+  const ChatMessage({
+    required this.id,
+    required this.pubkey,
+    required this.content,
+    required this.createdAt,
+  });
+
+  static ChatMessage? fromEvent(Map<String, dynamic> event) {
+    final id = (event['id'] ?? '').toString();
+    final pubkey = (event['pubkey'] ?? '').toString();
+    final content = (event['content'] ?? '').toString();
+    final ts = event['created_at'];
+    if (id.isEmpty || pubkey.isEmpty || ts is! int) return null;
+    return ChatMessage(
+      id: id,
+      pubkey: pubkey,
+      content: content,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(ts * 1000),
+    );
+  }
+}
+
+class ChatService {
+  ChatService._();
+
+  static const Duration _timeout = Duration(seconds: 8);
+
+  /// Fuehrt EINE Abfrage aus und sammelt die Ereignisse bis EOSE.
+  ///
+  /// Bewusst kein Dauer-Abo: Der Chat-Bildschirm haelt seine eigene offene
+  /// Verbindung (siehe [subscribe]); alles Uebrige — Raumliste, Mitglieder —
+  /// ist eine Momentaufnahme und soll die Verbindung nicht offen halten.
+  static Future<List<Map<String, dynamic>>> _query(
+    Map<String, dynamic> filter, {
+    Duration timeout = _timeout,
+  }) async {
+    final out = <Map<String, dynamic>>[];
+    RelaySocket? ws;
+    try {
+      ws = await RelaySocket.connect(kGroupRelay)
+          .timeout(const Duration(seconds: 5));
+      final done = Completer<void>();
+      ws.listen((data) {
+        try {
+          final msg = jsonDecode(data as String) as List<dynamic>;
+          if (msg.length >= 3 && msg[0] == 'EVENT') {
+            out.add(msg[2] as Map<String, dynamic>);
+          } else if (msg.isNotEmpty && msg[0] == 'EOSE') {
+            if (!done.isCompleted) done.complete();
+          }
+        } catch (_) {}
+      }, onError: (_) {
+        if (!done.isCompleted) done.complete();
+      }, onDone: () {
+        if (!done.isCompleted) done.complete();
+      });
+      ws.add(jsonEncode(['REQ', 'q', filter]));
+      await done.future.timeout(timeout, onTimeout: () {});
+    } catch (e) {
+      AppLogger.warn(_tag, 'Abfrage fehlgeschlagen', e);
+    } finally {
+      try {
+        ws?.close();
+      } catch (_) {}
+    }
+    return out;
+  }
+
+  /// Sendet ein signiertes Ereignis und wartet auf die OK-Antwort.
+  static Future<String?> _publish(SignedEvent signed) async {
+    RelaySocket? ws;
+    try {
+      ws = await RelaySocket.connect(kGroupRelay)
+          .timeout(const Duration(seconds: 5));
+      final done = Completer<String?>();
+      ws.listen((data) {
+        try {
+          final msg = jsonDecode(data as String) as List<dynamic>;
+          // ["OK", <id>, <true|false>, <grund>]
+          if (msg.length >= 3 && msg[0] == 'OK' && msg[1] == signed.id) {
+            final ok = msg[2] == true;
+            final reason = msg.length >= 4 ? msg[3].toString() : '';
+            if (!done.isCompleted) done.complete(ok ? null : reason);
+          }
+        } catch (_) {}
+      }, onError: (_) {
+        if (!done.isCompleted) done.complete('Verbindungsfehler');
+      }, onDone: () {
+        if (!done.isCompleted) done.complete('Verbindung beendet');
+      });
+      ws.add(signed.toEventMessage());
+      return await done.future.timeout(_timeout, onTimeout: () => 'Zeitüberschreitung');
+    } catch (e) {
+      AppLogger.warn(_tag, 'Senden fehlgeschlagen', e);
+      return e.toString();
+    } finally {
+      try {
+        ws?.close();
+      } catch (_) {}
+    }
+  }
+
+  // ── Räume finden ───────────────────────────────────────────────────────
+
+  /// Alle Meetup-Räume des Relays.
+  static Future<List<ChatRoom>> loadMeetupRooms() async {
+    final events = await _query({
+      'kinds': [_kRoomMeta],
+      '#t': ['meetup'],
+      'limit': 500,
+    });
+    final rooms = <String, ChatRoom>{};
+    for (final e in events) {
+      final room = ChatRoom.fromEvent(e);
+      // Ersetzbare Ereignisse: Bei Doppeltem gewinnt das jüngste. Das Relay
+      // liefert meist schon nur das aktuelle, verlassen darf man sich nicht.
+      if (room != null) rooms[room.h] = room;
+    }
+    AppLogger.debug(_tag, '${rooms.length} Meetup-Räume geladen.');
+    return rooms.values.toList();
+  }
+
+  /// Der Raum zu einem Meetup-Slug, sonst null.
+  ///
+  /// Der Slug ist der Schlüssel, weil das Portal die Quelle der Wahrheit ist:
+  /// Der Raum trägt ihn, alles Weitere (Logo, Termine) kommt aus der
+  /// Portal-Liste, die diese App ohnehin schon lädt.
+  static Future<ChatRoom?> findMeetupRoom(String slug) async {
+    if (slug.isEmpty) return null;
+    final rooms = await loadMeetupRooms();
+    for (final r in rooms) {
+      if (r.meetupSlug.toLowerCase() == slug.toLowerCase()) return r;
+    }
+    AppLogger.debug(_tag, 'Kein Raum für Meetup-Slug "$slug".');
+    return null;
+  }
+
+  /// Der Raum zu einem Meetup, gesucht ueber den STADTNAMEN.
+  ///
+  /// Noetig, weil diese App Meetups ueber die Stadt kennt (`homeMeetupId`),
+  /// Bens Raeume aber einen Portal-Slug tragen ("einundzwanzig-saarbruecken").
+  /// Statt eine zweite Zuordnungstabelle zu pflegen, wird verglichen: Der
+  /// Slug endet praktisch immer auf die normalisierte Stadt.
+  ///
+  /// Umlaute werden dabei umgeschrieben — im Slug steht "saarbruecken", in
+  /// der Stadt "Saarbrücken". Ohne diese Ersetzung faende man kein einziges
+  /// deutsches Meetup.
+  static Future<ChatRoom?> findRoomForCity(String city) async {
+    final needle = _slugify(city);
+    if (needle.isEmpty) return null;
+
+    final rooms = await loadMeetupRooms();
+    for (final r in rooms) {
+      final slug = r.meetupSlug.toLowerCase();
+      if (slug == needle || slug.endsWith('-$needle')) return r;
+    }
+    // Zweiter Versuch ueber den Anzeigenamen — manche Raeume haben einen
+    // Slug, der nicht auf die Stadt endet.
+    for (final r in rooms) {
+      if (_slugify(r.name) == needle) return r;
+    }
+    AppLogger.debug(_tag, 'Kein Raum fuer Stadt "$city" (gesucht: $needle).');
+    return null;
+  }
+
+  static String _slugify(String input) => input
+      .toLowerCase()
+      .replaceAll('ä', 'ae')
+      .replaceAll('ö', 'oe')
+      .replaceAll('ü', 'ue')
+      .replaceAll('ß', 'ss')
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-+|-+$'), '');
+
+  /// Der Raum zu einem Kalender-Event, sonst null.
+  static Future<ChatRoom?> findEventRoom(String eventAddress) async {
+    if (eventAddress.isEmpty) return null;
+    final events = await _query({
+      'kinds': [_kRoomMeta],
+      '#i': ['event:$eventAddress'],
+      'limit': 10,
+    });
+    for (final e in events) {
+      final room = ChatRoom.fromEvent(e);
+      if (room != null) return room;
+    }
+    return null;
+  }
+
+  // ── Mitgliedschaft ─────────────────────────────────────────────────────
+
+  /// Bin ich Mitglied dieses Raums?
+  ///
+  /// Gefragt wird das RELAY (kind 39002). Die Liste dort ist die einzige
+  /// verbindliche Auskunft — ein lokal gemerkter Beitritt sagt nichts
+  /// darüber, ob das Relay ihn angenommen hat.
+  static Future<bool> isMember(String h) async {
+    final me = await SigningService.pubkeyHex();
+    if (me == null) return false;
+    final events = await _query({
+      'kinds': [_kRoomMembers],
+      '#d': [h],
+      'limit': 5,
+    });
+    for (final e in events) {
+      final tags = (e['tags'] as List?)?.cast<List>() ?? const [];
+      for (final t in tags) {
+        if (t.isNotEmpty && t[0] == 'p' && t.length > 1 && t[1] == me) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /// Tritt einem Raum bei. Gibt null zurück bei Erfolg, sonst den Grund.
+  static Future<String?> join(String h) async {
+    try {
+      final signed = await SigningService.signEvent(
+        kind: _kJoin,
+        content: '',
+        tags: [
+          ['h', h]
+        ],
+      );
+      final err = await _publish(signed);
+      AppLogger.debug(_tag, 'Beitritt zu $h: ${err ?? "angenommen"}');
+      return err;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  static Future<String?> leave(String h) async {
+    try {
+      final signed = await SigningService.signEvent(
+        kind: _kLeave,
+        content: '',
+        tags: [
+          ['h', h]
+        ],
+      );
+      return await _publish(signed);
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  // ── Nachrichten ────────────────────────────────────────────────────────
+
+  /// Holt die jüngsten Nachrichten eines Raums, älteste zuerst.
+  static Future<List<ChatMessage>> loadMessages(String h,
+      {int limit = 100}) async {
+    final events = await _query({
+      'kinds': [_kMessage],
+      '#h': [h],
+      'limit': limit,
+    });
+    final msgs = <ChatMessage>[];
+    for (final e in events) {
+      final m = ChatMessage.fromEvent(e);
+      if (m != null) msgs.add(m);
+    }
+    msgs.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return msgs;
+  }
+
+  /// Offenes Abo für neue Nachrichten.
+  ///
+  /// Gibt eine Funktion zum Beenden zurück. Der Aufrufer MUSS sie aufrufen —
+  /// sonst bleibt die Verbindung nach dem Verlassen des Bildschirms offen.
+  static Future<void Function()> subscribe(
+    String h,
+    void Function(ChatMessage) onMessage, {
+    DateTime? since,
+  }) async {
+    final ws = await RelaySocket.connect(kGroupRelay)
+        .timeout(const Duration(seconds: 5));
+    ws.listen((data) {
+      try {
+        final msg = jsonDecode(data as String) as List<dynamic>;
+        if (msg.length >= 3 && msg[0] == 'EVENT') {
+          final m = ChatMessage.fromEvent(msg[2] as Map<String, dynamic>);
+          if (m != null) onMessage(m);
+        }
+      } catch (_) {}
+    }, onError: (_) {}, onDone: () {});
+
+    ws.add(jsonEncode([
+      'REQ',
+      'live',
+      {
+        'kinds': [_kMessage],
+        '#h': [h],
+        if (since != null) 'since': since.millisecondsSinceEpoch ~/ 1000,
+      }
+    ]));
+
+    return () {
+      try {
+        ws.close();
+      } catch (_) {}
+    };
+  }
+
+  /// Schreibt eine Nachricht in den Raum.
+  static Future<String?> send(String h, String text) async {
+    final body = text.trim();
+    if (body.isEmpty) return null;
+    try {
+      final signed = await SigningService.signEvent(
+        kind: _kMessage,
+        content: body,
+        tags: [
+          ['h', h]
+        ],
+      );
+      return await _publish(signed);
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  // ── Raum für ein Event anlegen ─────────────────────────────────────────
+
+  /// Legt einen Raum für ein Kalender-Event an, falls es noch keinen gibt.
+  ///
+  /// Der Ablauf folgt Bens Client: erst 9007 (anlegen), dann 9002 (Name und
+  /// Beschreibung), dann 9021 (der Ersteller tritt selbst bei). Die Kennung
+  /// wird aus der Event-Adresse abgeleitet, damit jeder Client denselben Raum
+  /// findet, ohne ihn suchen zu müssen.
+  ///
+  /// Ob das Relay 9007 von beliebigen Leuten annimmt, ist offen — falls nicht,
+  /// kommt der Grund als Rückgabewert und die Oberfläche kann es sagen,
+  /// statt still zu scheitern.
+  static Future<ChatRoom?> ensureEventRoom({
+    required String eventAddress,
+    required String title,
+    required String about,
+    String picture = '',
+  }) async {
+    final existing = await findEventRoom(eventAddress);
+    if (existing != null) return existing;
+
+    final h = _eventRoomId(eventAddress);
+    try {
+      final create = await SigningService.signEvent(
+        kind: _kRoomCreate,
+        content: '',
+        tags: [
+          ['h', h]
+        ],
+      );
+      final createErr = await _publish(create);
+      // "already exists" ist kein Fehler — dann gehört der Raum schon jemandem
+      // und wir wollen ohnehin nur hinein.
+      if (createErr != null && !createErr.toLowerCase().contains('already')) {
+        AppLogger.warn(_tag, 'Raum anlegen abgelehnt: $createErr');
+        return null;
+      }
+
+      final meta = await SigningService.signEvent(
+        kind: _kRoomEdit,
+        content: '',
+        tags: [
+          ['h', h],
+          ['name', title],
+          if (about.isNotEmpty) ['about', about],
+          if (picture.isNotEmpty) ['picture', picture],
+          // Bindung an das Kalender-Event — daran findet ihn findEventRoom.
+          ['i', 'event:$eventAddress'],
+          ['t', 'event'],
+        ],
+      );
+      await _publish(meta);
+      await join(h);
+
+      return ChatRoom(h: h, name: title, about: about, eventAddress: eventAddress);
+    } catch (e) {
+      AppLogger.warn(_tag, 'Event-Raum konnte nicht angelegt werden', e);
+      return null;
+    }
+  }
+
+  /// Kennung eines Event-Raums.
+  ///
+  /// Aus der Event-Adresse abgeleitet statt zufällig: So kommt jeder Client
+  /// auf dieselbe Kennung, und ein zweiter Versuch legt keinen zweiten Raum
+  /// an. Nur Kleinbuchstaben, Ziffern und Bindestriche — NIP-29 lässt für `h`
+  /// keine Doppelpunkte zu.
+  static String _eventRoomId(String eventAddress) {
+    final parts = eventAddress.split(':');
+    if (parts.length < 3) return 'evt-${eventAddress.hashCode.abs()}';
+    final author = parts[1];
+    final d = parts.sublist(2).join('-');
+    final shortAuthor = author.length >= 8 ? author.substring(0, 8) : author;
+    final clean = d.toLowerCase().replaceAll(RegExp(r'[^a-z0-9-]'), '-');
+    return 'evt-$shortAuthor-$clean';
+  }
+}

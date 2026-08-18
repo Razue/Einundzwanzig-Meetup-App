@@ -76,6 +76,8 @@ import '../services/app_logger.dart';
 import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
+import '../services/chat_service.dart';
+import 'chat_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../services/guide_service.dart';
@@ -1620,6 +1622,32 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     );
   }
 
+  /// Oeffnet den Chat-Raum eines Meetups.
+  ///
+  /// Die Suche laeuft ueber das Relay und dauert einen Moment — deshalb ein
+  /// Ladehinweis, sonst wirkt der Knopf tot.
+  Future<void> _openMeetupChat(String city) async {
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    messenger.showSnackBar(SnackBar(
+        content: Text(t.chatSearching),
+        duration: const Duration(seconds: 4),
+        backgroundColor: cCard));
+
+    final room = await ChatService.findRoomForCity(city);
+    if (!mounted) return;
+    messenger.hideCurrentSnackBar();
+
+    if (room == null) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.chatNoRoom(city)), backgroundColor: cCard));
+      return;
+    }
+    navigator.push(MaterialPageRoute(builder: (_) => ChatScreen(room: room)));
+  }
+
   Widget _buildHomeMeetupTile() {
     final hasHome = _user.homeMeetupId.isNotEmpty || _user.favoriteMeetupIds.isNotEmpty;
 
@@ -1698,6 +1726,19 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// EINE Favoriten-Karte: CoverFlow-Wappen, Stadt, Countdown, Events/Info.
   /// Bekommt ihre Daten als [card] — kein Zugriff mehr auf _homeMeetup/
   /// _nextHomeMeetup, damit jede Seite ihr eigenes Meetup zeigt.
+  /// Die Favoriten-Kachel.
+  ///
+  /// Aufbau (Entwurf A): Kopfbereich mit Wappen, Ort und naechstem Termin,
+  /// darunter eine Aktionsleiste aus drei gleich breiten Feldern.
+  ///
+  /// Vorher lagen die Handlungen in einer 88 Punkte schmalen Spalte rechts —
+  /// ein beschrifteter Knopf und darunter zwei winzige Symbolknoepfe. Drei
+  /// Handlungen in drei verschiedenen Formaten auf engstem Raum; mit dem
+  /// Chat als drittem kippte es. Jetzt haben alle drei dieselbe Form, gleiche
+  /// Breite und rund dreimal so grosse Trefferflaechen.
+  ///
+  /// Der naechste Termin ist nach OBEN gewandert: Er beschreibt das Meetup,
+  /// er ist keine Handlung — unten stehen nur noch Handlungen.
   Widget _favCardContent(_FavCard card) {
     final cityName = card.city;
     final event = card.event;
@@ -1705,7 +1746,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     final meetup = _meetupForCity(cityName);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(kTileRadius),
         gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
@@ -1715,99 +1756,184 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 5))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          _crestCoverFlow(cityName, meetup, size: 68),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
-                child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
-              const SizedBox(width: 8),
-              Text(meetup?.country ?? 'DE',
-                style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
-            ]),
-            const SizedBox(height: 6),
-            // Der Ortsname wird NICHT mehr abgeschnitten: Bei laengeren
-            // Namen schrumpft die Schrift und darf auf zwei Zeilen umbrechen
-            // ("3 Länder Eck Hessen BaWü Baye"). Die Staffelung ist bewusst
-            // grob — feinere Abstufungen bringen optisch nichts.
-            Text(cityName.toUpperCase(),
-              maxLines: 2,
-              softWrap: true,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  color: cText,
-                  // Feiner gestaffelt als zuvor: Bei ~188 px nutzbarer Breite
-                  // passen in 22 pt nur rund zehn Grossbuchstaben. "ASCHAFFENBURG"
-                  // (13) brach deshalb trotz Staffelung noch um.
-                  fontSize: cityName.length > 20
-                      ? 13
-                      : cityName.length > 15
-                          ? 15
-                          : cityName.length > 10
-                              ? 17
-                              : 22,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                  height: 1.05)),
-          ])),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 88,
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: cityName))),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 9),
-                  decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(9),
-                    boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.22), blurRadius: 8, offset: const Offset(0, 2))]),
-                  child: Center(child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.6)))),
-              ),
-              if (meetup != null) ...[
-                const SizedBox(height: 7),
-                GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: meetup))),
-                  child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(9)),
-                    child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 16)),
-                ),
-              ],
-            ]),
-          ),
-        ]),
-
-        const SizedBox(height: 12),
-
-        // Naechster Termin dieser Stadt
-        if (_countdownLoading)
-          const SizedBox(height: 16, child: LinearProgressIndicator(color: cOrange, backgroundColor: Colors.transparent))
-        else if (event != null) Builder(builder: (_) {
-          final days = _daysUntil(event.startTime);
-          return Row(children: [
-            const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 15),
-            const SizedBox(width: 7),
-            Text(
-              days <= 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
-              style: TextStyle(
-                color: days <= 0 ? cOrange : days <= 3 ? cOrange.withValues(alpha: 0.8) : cTextSecondary,
-                fontSize: 14, fontWeight: FontWeight.w800)),
-            const SizedBox(width: 5),
-            Expanded(child: Text(
-              '· ${event.startTime.day}.${event.startTime.month}.${event.startTime.year}',
-              style: const TextStyle(color: cTextTertiary, fontSize: 13))),
-          ]);
-        })
-        else
-          Row(children: [
-            const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 15),
-            const SizedBox(width: 7),
-            Text(AppLocalizations.of(context).homeMeetupNoDate, style: const TextStyle(color: cTextTertiary, fontSize: 13)),
+        Expanded(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            _crestCoverFlow(cityName, meetup, size: 60),
+            const SizedBox(width: 14),
+            Expanded(child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
+                    child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
+                  const SizedBox(width: 8),
+                  Text(meetup?.country ?? 'DE',
+                    style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+                ]),
+                const SizedBox(height: 5),
+                // Der Ortsname wird NICHT abgeschnitten: Bei laengeren Namen
+                // schrumpft die Schrift und darf auf zwei Zeilen umbrechen.
+                // Die Staffelung ist bewusst grob — feinere Abstufungen
+                // bringen optisch nichts.
+                Text(cityName.toUpperCase(),
+                  maxLines: 2,
+                  softWrap: true,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: cText,
+                      fontSize: cityName.length > 20
+                          ? 13
+                          : cityName.length > 15
+                              ? 15
+                              : cityName.length > 10
+                                  ? 17
+                                  : 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      height: 1.05)),
+                const SizedBox(height: 5),
+                _favNextEvent(event),
+              ])),
           ]),
+        ),
+        _favActions(cityName, meetup),
       ]),
     );
+  }
 
+  /// Zeile mit dem naechsten Termin — kompakt, damit sie in den Kopfbereich
+  /// passt.
+  Widget _favNextEvent(CalendarEvent? event) {
+    if (_countdownLoading) {
+      return const SizedBox(
+          height: 14,
+          width: 90,
+          child: LinearProgressIndicator(
+              color: cOrange, backgroundColor: Colors.transparent));
+    }
+    if (event == null) {
+      return Row(children: [
+        const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 13),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(AppLocalizations.of(context).homeMeetupNoDate,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+        ),
+      ]);
+    }
+
+    final days = _daysUntil(event.startTime);
+    final label = days <= 0
+        ? AppLocalizations.of(context).homeMeetupToday
+        : days == 1
+            ? AppLocalizations.of(context).homeMeetupTomorrow
+            : AppLocalizations.of(context).homeMeetupInDays(days);
+
+    return Row(children: [
+      const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 13),
+      const SizedBox(width: 6),
+      Text(label,
+          style: TextStyle(
+              color: days <= 0
+                  ? cOrange
+                  : days <= 3
+                      ? cOrange.withValues(alpha: 0.8)
+                      : cTextSecondary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800)),
+      const SizedBox(width: 5),
+      Expanded(
+        child: Text(
+            '· ${event.startTime.day}.${event.startTime.month}.${event.startTime.year}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+      ),
+    ]);
+  }
+
+  /// Die Aktionsleiste: Termine, Chat, Info — drei gleich breite Felder,
+  /// getrennt durch Haarlinien.
+  ///
+  /// Gleiche Breite ist Absicht: Keine der drei Handlungen ist wichtiger als
+  /// die anderen, und gleiche Felder lassen sich blind treffen.
+  Widget _favActions(String cityName, Meetup? meetup) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: cTileBorder, width: 0.5)),
+      ),
+      child: Row(children: [
+        Expanded(
+          child: _favAction(
+            icon: Icons.event_rounded,
+            label: AppLocalizations.of(context).btnEvents,
+            accent: cOrange,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: cityName))),
+          ),
+        ),
+        Container(width: 0.5, height: 26, color: cTileBorder),
+        Expanded(
+          child: _favAction(
+            icon: Icons.forum_rounded,
+            label: AppLocalizations.of(context).btnChat,
+            accent: cNostr,
+            onTap: () => _openMeetupChat(cityName),
+          ),
+        ),
+        Container(width: 0.5, height: 26, color: cTileBorder),
+        Expanded(
+          child: _favAction(
+            icon: Icons.info_outline_rounded,
+            label: AppLocalizations.of(context).btnInfo,
+            accent: cTextSecondary,
+            // Ohne Meetup-Datensatz gibt es nichts zu zeigen — dann bleibt
+            // das Feld sichtbar, aber blass und ohne Wirkung. So bleibt die
+            // Leiste bei allen Favoriten gleich breit.
+            onTap: meetup == null
+                ? null
+                : () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: meetup))),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  Widget _favAction({
+    required IconData icon,
+    required String label,
+    required Color accent,
+    VoidCallback? onTap,
+  }) {
+    final enabled = onTap != null;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(icon,
+              color: enabled ? accent : cTextTertiary.withValues(alpha: 0.5),
+              size: 15),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: enabled ? accent : cTextTertiary.withValues(alpha: 0.5),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2)),
+          ),
+        ]),
+      ),
+    );
   }
 
   /// WERT-KACHEL: kleines Etikett oben, grosser Wert darunter, Zusatz klein.
