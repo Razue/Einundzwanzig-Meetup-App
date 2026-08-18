@@ -484,6 +484,16 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
     double? bottom;
     double maxHeight = size.height * 0.7;
 
+    /// Fuellt das Loch fast den ganzen Bildschirm, bleibt weder darueber
+    /// noch darunter Platz. Dann liegt die Karte MITTIG DARUEBER statt in
+    /// einem Spalt, in dem sie abgeschnitten wuerde.
+    ///
+    /// Aufgefallen bei "Meine Meetups": Dort ist das Ziel die ganze Liste.
+    /// Der Tooltip quetschte sich in die Zeile ueber der Kopfleiste und war
+    /// zur Haelfte abgeschnitten — der Spotlight verdeckte die Erklaerung,
+    /// die er erklaeren sollte.
+    var overlayOnHole = false;
+
     if (hole != null) {
       // viewInsets statt padding: bei offener Tastatur ist der Platz
       // unterhalb des Lochs deutlich kleiner, sonst landet der Tooltip
@@ -493,7 +503,14 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
       final above = hole.top - media.padding.top - gap;
       final below = size.height - hole.bottom - blockedBottom - gap;
 
-      if (below >= 240 || below >= above) {
+      // 200 Punkte sind die Untergrenze, unter der eine Karte mit Titel,
+      // Fortschritt, Text und Knopfreihe nicht mehr vollstaendig passt.
+      const minRoom = 200.0;
+
+      if (above < minRoom && below < minRoom) {
+        overlayOnHole = true;
+        maxHeight = size.height * 0.7;
+      } else if (below >= 240 || below >= above) {
         top = hole.bottom + gap;
         maxHeight = below - 8;
       } else {
@@ -505,9 +522,8 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
 
     final card = _buildCard(context, guide, l10n);
 
-    // Ohne Loch (reiner Erklaer-Dialog) mittig — sonst haengt die Karte
-    // an der Stack-Ausrichtung und klebt oben links.
-    if (hole == null) {
+    // Ohne Loch (reiner Erklaer-Dialog) oder ohne Platz daneben: mittig.
+    if (hole == null || overlayOnHole) {
       return Positioned.fill(
         child: Center(
           child: ConstrainedBox(

@@ -138,6 +138,7 @@ class MyMeetupsTour {
           targetKey: listKey,
           titleKey: 'guideMyMeetupsListTitle',
           bodyKey: 'guideMyMeetupsListBody',
+          scrollIntoView: false,
           waitTimeout: _optional,
         ),
       ];

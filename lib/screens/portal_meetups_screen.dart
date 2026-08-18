@@ -100,7 +100,10 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
       appBar: AppBar(
         backgroundColor: cDark,
         elevation: 0,
-        title: Text(t.portalTitle, style: const TextStyle(color: cText, fontWeight: FontWeight.w700)),
+        title: KeyedSubtree(
+            key: MyMeetupsTour.listKey,
+            child: Text(t.portalTitle,
+                style: const TextStyle(color: cText, fontWeight: FontWeight.w700))),
         actions: [
           if (_connected)
             IconButton(
@@ -169,7 +172,10 @@ class _PortalMeetupsScreenState extends State<PortalMeetupsScreen> {
       color: cOrange, backgroundColor: cCard,
       onRefresh: _loadMeetups,
       child: ListView(
-        key: MyMeetupsTour.listKey,
+        // Kein Tour-Schluessel mehr an der ganzen Liste: Sie fuellt den
+        // Bildschirm, und ein bildschirmfuellendes Loch ist kein Spotlight
+        // mehr — es ist nur ein Rahmen um alles. Der Schluessel sitzt jetzt
+        // an der Kopfleiste, das Loch bleibt klein und der Text lesbar.
         padding: const EdgeInsets.all(16),
         children: [
           if (_meetups.isEmpty)
