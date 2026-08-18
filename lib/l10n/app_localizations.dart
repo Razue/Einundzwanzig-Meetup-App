@@ -11725,7 +11725,7 @@ abstract class AppLocalizations {
   /// No description provided for @idSetupSecureBody.
   ///
   /// In de, this message translates to:
-  /// **'Dein Schlüssel gehört ab jetzt dir allein. Es gibt niemanden, der ihn zurücksetzen kann — geht er verloren, ist die Identität mitsamt aller Badges weg. Zwei Minuten jetzt ersparen dir das.'**
+  /// **'Es gibt zwei Arten zu sichern — sie können unterschiedliche Dinge. Am besten machst du beides.'**
   String get idSetupSecureBody;
 
   /// No description provided for @idSetupSecureBackup.
@@ -11745,6 +11745,36 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Deine Schlüssel findest du jederzeit unter Einstellungen → Profil.'**
   String get idSetupSecureWhere;
+
+  /// No description provided for @idSetupSecureBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup-Datei'**
+  String get idSetupSecureBackupTitle;
+
+  /// No description provided for @idSetupSecureBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Verschlüsselt mit einem eigenen Passwort.'**
+  String get idSetupSecureBackupBody;
+
+  /// No description provided for @idSetupSecureKeyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschlüsselter Schlüssel'**
+  String get idSetupSecureKeyTitle;
+
+  /// No description provided for @idSetupSecureKeyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur dein Nostr-Schlüssel, mit deinem Passwort verpackt (ncryptsec). Gehört in einen Passwortmanager. Rettet deine Identität, aber keine Badges — dafür veraltet er nie.'**
+  String get idSetupSecureKeyBody;
+
+  /// No description provided for @idSetupSecureRepeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederhole das Backup ab und zu unter Einstellungen → Backup. Eine Datei von heute kennt die Badges von morgen nicht — was danach dazukommt, wäre bei einem Geräteverlust weg.'**
+  String get idSetupSecureRepeat;
 }
 
 class _AppLocalizationsDelegate

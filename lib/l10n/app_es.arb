@@ -2856,8 +2856,13 @@
   "glFindKeysTitle": "¿Dónde están mis claves?",
   "glFindKeysBody": "Ajustes → Perfil, al final. Allí copias el npub con un toque y muestras el nsec, esto último solo tras una advertencia: quien ve el nsec tiene tu identidad. Si usas Amber, una extensión o un bunker, aquí no hay nsec: está allí, no en esta app.",
   "idSetupSecureTitle": "Identidad creada: asegúrala ahora",
-  "idSetupSecureBody": "Tu clave ahora es solo tuya. Nadie puede restablecerla: si se pierde, la identidad y todas sus insignias se pierden con ella. Dos minutos ahora te evitan eso.",
+  "idSetupSecureBody": "Hay dos maneras de asegurarlo y hacen cosas distintas. Lo mejor es hacer ambas.",
   "idSetupSecureBackup": "Crear copia de seguridad",
   "idSetupSecureCopy": "Copiar la clave al portapapeles",
-  "idSetupSecureWhere": "Puedes encontrar tus claves en cualquier momento en Ajustes → Perfil."
+  "idSetupSecureWhere": "Puedes encontrar tus claves en cualquier momento en Ajustes → Perfil.",
+  "idSetupSecureBackupTitle": "Archivo de copia",
+  "idSetupSecureBackupBody": "Contiene todo: claves, insignias, reputación y ajustes. Con él, tu app vuelve exactamente igual en un dispositivo nuevo. Cifrado con su propia contraseña.",
+  "idSetupSecureKeyTitle": "Clave cifrada",
+  "idSetupSecureKeyBody": "Solo tu clave Nostr, envuelta con tu contraseña (ncryptsec). Va en un gestor de contraseñas. Salva tu identidad pero no las insignias; a cambio, nunca queda obsoleta.",
+  "idSetupSecureRepeat": "Repite la copia de vez en cuando en Ajustes → Copia de seguridad. Un archivo de hoy no conoce las insignias de mañana."
 }

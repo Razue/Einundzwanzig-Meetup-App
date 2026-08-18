@@ -2856,8 +2856,13 @@
   "glFindKeysTitle": "Where are my keys?",
   "glFindKeysBody": "Settings → Profile, at the very bottom. There you copy the npub with one tap and reveal the nsec — the latter only after a warning, because whoever sees the nsec has your identity. If you use Amber, a browser extension or a bunker there is no nsec here: it lives there, not in this app.",
   "idSetupSecureTitle": "Identity created — secure it now",
-  "idSetupSecureBody": "Your key now belongs to you alone. Nobody can reset it — if it is lost, the identity and all its badges go with it. Two minutes now save you from that.",
+  "idSetupSecureBody": "There are two ways to secure this — they do different things. Best to do both.",
   "idSetupSecureBackup": "Create a backup",
   "idSetupSecureCopy": "Copy key to clipboard",
-  "idSetupSecureWhere": "You can find your keys any time under Settings → Profile."
+  "idSetupSecureWhere": "You can find your keys any time under Settings → Profile.",
+  "idSetupSecureBackupTitle": "Backup file",
+  "idSetupSecureBackupBody": "Contains everything: keys, badges, reputation and settings. With it your app comes back exactly as it was on a new device. Encrypted with its own password.",
+  "idSetupSecureKeyTitle": "Encrypted key",
+  "idSetupSecureKeyBody": "Just your Nostr key, wrapped with your password (ncryptsec). Belongs in a password manager. Saves your identity but no badges — in exchange it never goes stale.",
+  "idSetupSecureRepeat": "Repeat the backup now and then under Settings → Backup. A file from today does not know tomorrow's badges — anything added later would be lost if the device is."
 }

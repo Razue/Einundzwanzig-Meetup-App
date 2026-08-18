@@ -6523,7 +6523,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get idSetupSecureBody =>
-      'Dein Schlüssel gehört ab jetzt dir allein. Es gibt niemanden, der ihn zurücksetzen kann — geht er verloren, ist die Identität mitsamt aller Badges weg. Zwei Minuten jetzt ersparen dir das.';
+      'Es gibt zwei Arten zu sichern — sie können unterschiedliche Dinge. Am besten machst du beides.';
 
   @override
   String get idSetupSecureBackup => 'Backup erstellen';
@@ -6534,4 +6534,22 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get idSetupSecureWhere =>
       'Deine Schlüssel findest du jederzeit unter Einstellungen → Profil.';
+
+  @override
+  String get idSetupSecureBackupTitle => 'Backup-Datei';
+
+  @override
+  String get idSetupSecureBackupBody =>
+      'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Verschlüsselt mit einem eigenen Passwort.';
+
+  @override
+  String get idSetupSecureKeyTitle => 'Verschlüsselter Schlüssel';
+
+  @override
+  String get idSetupSecureKeyBody =>
+      'Nur dein Nostr-Schlüssel, mit deinem Passwort verpackt (ncryptsec). Gehört in einen Passwortmanager. Rettet deine Identität, aber keine Badges — dafür veraltet er nie.';
+
+  @override
+  String get idSetupSecureRepeat =>
+      'Wiederhole das Backup ab und zu unter Einstellungen → Backup. Eine Datei von heute kennt die Badges von morgen nicht — was danach dazukommt, wäre bei einem Geräteverlust weg.';
 }

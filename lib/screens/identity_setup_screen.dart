@@ -339,13 +339,16 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
   ///
   /// Der Moment ist bewusst gewaehlt. Wer sich von der App einen Schluessel
   /// erstellen laesst, bekommt ihn sonst NIE zu Gesicht — und erfaehrt auch
-  /// nicht, dass er im Profil liegt. Bei einem Geheimnis ohne Zuruecksetzen
-  /// ist das der falsche Zeitpunkt zum Schweigen.
+  /// nicht, dass er im Profil liegt.
   ///
-  /// Zwei Wege, bewusst in dieser Reihenfolge: Die Backup-DATEI ist der
-  /// sichere Weg — sie enthaelt Schluessel, Badges und Einstellungen und
-  /// laesst sich verwahren. Der kopierte Schluessel ist der schnelle Weg
-  /// fuer den Passwortmanager, geht aber ueber die Zwischenablage.
+  /// Es sind ZWEI verschiedene Dinge, und das war vorher nicht erkennbar:
+  ///
+  ///   Backup-Datei  — Schluessel PLUS Badges, Reputation, Einstellungen.
+  ///                   Veraltet mit der Zeit, muss also wiederholt werden.
+  ///   ncryptsec     — nur der Schluessel, mit dem Passwort verpackt.
+  ///                   Veraltet nie, rettet aber auch nur die Identitaet.
+  ///
+  /// Wer nur das eine kennt, sichert das falsche.
   Future<void> _offerBackupThenHome() async {
     if (!mounted) return;
     setState(() => _busy = false);
@@ -354,6 +357,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
       await showModalBottomSheet<void>(
         context: context,
         backgroundColor: cCard,
+        isScrollControlled: true,
         // Nicht wegwischbar: Dieses eine Blatt soll man lesen. Der
         // "Spaeter"-Knopf bleibt der Ausweg.
         isDismissible: false,
@@ -363,91 +367,175 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         ),
         builder: (ctx) {
           final t = AppLocalizations.of(ctx);
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(children: [
-                  const Icon(Icons.verified_user_rounded,
-                      color: cOrange, size: 22),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(t.idSetupSecureTitle,
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(children: [
+                      const Icon(Icons.verified_user_rounded,
+                          color: cOrange, size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(t.idSetupSecureTitle,
+                            style: const TextStyle(
+                                color: cText,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                    ]),
+                    const SizedBox(height: 10),
+                    Text(t.idSetupSecureBody,
                         style: const TextStyle(
-                            color: cText,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                ]),
-                const SizedBox(height: 10),
-                Text(t.idSetupSecureBody,
-                    style: const TextStyle(
-                        color: cTextSecondary, height: 1.45, fontSize: 13.5)),
-                const SizedBox(height: 18),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    final navigator = Navigator.of(ctx);
-                    await BackupService.createBackup(context);
-                    navigator.pop();
-                  },
-                  icon: const Icon(Icons.save_alt_rounded,
-                      color: Colors.black, size: 18),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cOrange,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  label: Text(t.idSetupSecureBackup,
-                      style: const TextStyle(fontWeight: FontWeight.w800)),
+                            color: cTextSecondary,
+                            height: 1.45,
+                            fontSize: 13.5)),
+
+                    const SizedBox(height: 20),
+                    _secureOption(
+                      icon: Icons.save_alt_rounded,
+                      title: t.idSetupSecureBackupTitle,
+                      body: t.idSetupSecureBackupBody,
+                      actionLabel: t.idSetupSecureBackup,
+                      primary: true,
+                      onAction: () async {
+                        final navigator = Navigator.of(ctx);
+                        await BackupService.createBackup(context);
+                        navigator.pop();
+                      },
+                    ),
+
+                    const SizedBox(height: 14),
+                    _secureOption(
+                      icon: Icons.key_rounded,
+                      title: t.idSetupSecureKeyTitle,
+                      body: t.idSetupSecureKeyBody,
+                      actionLabel: t.idSetupSecureCopy,
+                      primary: false,
+                      onAction: () {
+                        Clipboard.setData(ClipboardData(text: wrap));
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(t.keyExportCopied)),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+                    // Der wichtigste Satz fuer SPAETER: Ein Backup von heute
+                    // kennt die Badges von morgen nicht.
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: cOrange.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.update_rounded,
+                                color: cOrange, size: 16),
+                            const SizedBox(width: 9),
+                            Expanded(
+                              child: Text(t.idSetupSecureRepeat,
+                                  style: const TextStyle(
+                                      color: cTextSecondary,
+                                      fontSize: 12,
+                                      height: 1.45)),
+                            ),
+                          ]),
+                    ),
+
+                    const SizedBox(height: 10),
+                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Icon(Icons.info_outline_rounded,
+                          color: cTextTertiary, size: 15),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(t.idSetupSecureWhere,
+                            style: const TextStyle(
+                                color: cTextTertiary,
+                                fontSize: 11.5,
+                                height: 1.4)),
+                      ),
+                    ]),
+
+                    const SizedBox(height: 4),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(t.idSetupBackupLater,
+                          style: const TextStyle(color: cTextSecondary)),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: wrap));
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(t.keyExportCopied)),
-                    );
-                  },
-                  icon: const Icon(Icons.copy_rounded,
-                      color: cTextSecondary, size: 18),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: cTileBorder),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                  label: Text(t.idSetupSecureCopy,
-                      style: const TextStyle(color: cTextSecondary)),
-                ),
-                const SizedBox(height: 14),
-                // Der Satz, der bisher fehlte: WO die Schluessel spaeter
-                // liegen. Ohne ihn sucht spaeter niemand im Profil.
-                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Icon(Icons.info_outline_rounded,
-                      color: cTextTertiary, size: 15),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(t.idSetupSecureWhere,
-                        style: const TextStyle(
-                            color: cTextTertiary,
-                            fontSize: 11.5,
-                            height: 1.4)),
-                  ),
-                ]),
-                const SizedBox(height: 6),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text(t.idSetupBackupLater,
-                      style: const TextStyle(color: cTextSecondary)),
-                ),
-              ],
+              ),
             ),
           );
         },
       );
     }
     await _continueAfterIdentity();
+  }
+
+  /// Eine der beiden Sicherungsarten: Symbol, Name, was sie kann, Knopf.
+  Widget _secureOption({
+    required IconData icon,
+    required String title,
+    required String body,
+    required String actionLabel,
+    required bool primary,
+    required VoidCallback onAction,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: primary ? cOrange.withValues(alpha: 0.45) : cTileBorder,
+            width: primary ? 1 : 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          Icon(icon, color: primary ? cOrange : cTextSecondary, size: 18),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Text(title,
+                style: const TextStyle(
+                    color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+          ),
+        ]),
+        const SizedBox(height: 7),
+        Text(body,
+            style: const TextStyle(
+                color: cTextSecondary, fontSize: 12.5, height: 1.45)),
+        const SizedBox(height: 12),
+        if (primary)
+          ElevatedButton(
+            onPressed: onAction,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: cOrange,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Text(actionLabel,
+                style: const TextStyle(fontWeight: FontWeight.w800)),
+          )
+        else
+          OutlinedButton(
+            onPressed: onAction,
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: cTileBorder),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Text(actionLabel,
+                style: const TextStyle(color: cTextSecondary)),
+          ),
+      ]),
+    );
   }
 
   Future<void> _connectPrimary() async {
@@ -880,7 +968,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         const SizedBox(height: 24),
         // Gesperrt, solange die Bedingungen offen sind — zusammen mit der
         // Liste darueber ist damit sichtbar, WORAN es liegt.
-        _primaryButton(t.idSetupCreate, _pwOk ? _register : null),
+        _primaryButton(t.idSetupCreate, _pwOk ? _register : null, busy: _busy),
       ];
 
   List<Widget> _buildResume(AppLocalizations t) => [
@@ -894,7 +982,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         ),
         const SizedBox(height: 24),
         if (_hasLocalKey)
-          _primaryButton(t.idSetupResumeContinue, () => _resume())
+          _primaryButton(t.idSetupResumeContinue, () => _resume(), busy: _busy)
         else if (_hasPasskeyWrap && !_resumeUsePassword) ...[
           _primaryButton(
               t.idSetupResumePasskey, () => _resume(usePasskey: true)),
@@ -918,7 +1006,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
           _field(_resumePassCtrl, t.idSetupPasswordLabel, Icons.lock_outline,
               obscure: true),
           const SizedBox(height: 16),
-          _primaryButton(t.idSetupResumeContinue, () => _resume()),
+          _primaryButton(t.idSetupResumeContinue, () => _resume(), busy: _busy),
         ],
       ];
 
@@ -926,7 +1014,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         Text(t.idSetupPasskeyBody,
             style: const TextStyle(color: cTextSecondary, height: 1.4)),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupPasskeyAction, _addPasskey),
+        _primaryButton(t.idSetupPasskeyAction, _addPasskey, busy: _busy),
         const SizedBox(height: 8),
         TextButton(
           onPressed: _skipPasskey,
@@ -987,7 +1075,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         _field(_importPassCtrl, t.idSetupImportPasswordLabel, Icons.lock_outline,
             obscure: true),
         const SizedBox(height: 16),
-        _primaryButton(t.idSetupImportAction, _importKey),
+        _primaryButton(t.idSetupImportAction, _importKey, busy: _busy),
         const SizedBox(height: 20),
         if (_path != RecommendedExistingPath.bunker) ...[
           _card(
@@ -1042,7 +1130,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         const SizedBox(height: 20),
         _field(_nameCtrl, t.idSetupNameLabel, Icons.badge_outlined),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupContinue, _saveNameOnly),
+        _primaryButton(t.idSetupContinue, _saveNameOnly, busy: _busy),
       ];
 
   List<Widget> _buildMeetup(AppLocalizations t) => [
@@ -1070,7 +1158,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
           ),
           const SizedBox(height: 24),
           if (_selectedMeetupCities.isNotEmpty)
-            _primaryButton(t.idSetupMeetupContinue, _saveMeetupAndHome),
+            _primaryButton(t.idSetupMeetupContinue, _saveMeetupAndHome, busy: _busy),
           TextButton(
             onPressed: _goHome,
             child: Text(t.idSetupMeetupLater,
@@ -1208,8 +1296,13 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
   /// [onPressed] darf null sein — dann ist der Knopf gesperrt und der
   /// Farbverlauf weicht einer stumpfen Flaeche. Ohne diesen Unterschied
   /// saehe ein gesperrter Knopf aus wie ein bedienbarer, der nichts tut.
-  Widget _primaryButton(String label, VoidCallback? onPressed) {
-    final enabled = onPressed != null;
+  /// [busy] zeigt einen Ladekringel STATT der Beschriftung und sperrt den
+  /// Knopf. Ohne das sah "Loslegen" beim Anlegen des Schluessels tot aus:
+  /// Die Ableitung dauert spuerbar, und wer keine Rueckmeldung bekommt,
+  /// tippt ein zweites und drittes Mal.
+  Widget _primaryButton(String label, VoidCallback? onPressed,
+      {bool busy = false}) {
+    final enabled = onPressed != null && !busy;
     return SizedBox(
       width: double.infinity,
       height: 52,
@@ -1229,11 +1322,17 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: Text(label,
-              style: TextStyle(
-                  color: enabled ? Colors.black : cTextTertiary,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5)),
+          child: busy
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2.4, color: Colors.black))
+              : Text(label,
+                  style: TextStyle(
+                      color: enabled ? Colors.black : cTextTertiary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5)),
         ),
       ),
     );

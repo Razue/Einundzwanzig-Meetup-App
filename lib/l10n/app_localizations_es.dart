@@ -6503,7 +6503,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get idSetupSecureBody =>
-      'Tu clave ahora es solo tuya. Nadie puede restablecerla: si se pierde, la identidad y todas sus insignias se pierden con ella. Dos minutos ahora te evitan eso.';
+      'Hay dos maneras de asegurarlo y hacen cosas distintas. Lo mejor es hacer ambas.';
 
   @override
   String get idSetupSecureBackup => 'Crear copia de seguridad';
@@ -6514,4 +6514,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get idSetupSecureWhere =>
       'Puedes encontrar tus claves en cualquier momento en Ajustes → Perfil.';
+
+  @override
+  String get idSetupSecureBackupTitle => 'Archivo de copia';
+
+  @override
+  String get idSetupSecureBackupBody =>
+      'Contiene todo: claves, insignias, reputación y ajustes. Con él, tu app vuelve exactamente igual en un dispositivo nuevo. Cifrado con su propia contraseña.';
+
+  @override
+  String get idSetupSecureKeyTitle => 'Clave cifrada';
+
+  @override
+  String get idSetupSecureKeyBody =>
+      'Solo tu clave Nostr, envuelta con tu contraseña (ncryptsec). Va en un gestor de contraseñas. Salva tu identidad pero no las insignias; a cambio, nunca queda obsoleta.';
+
+  @override
+  String get idSetupSecureRepeat =>
+      'Repite la copia de vez en cuando en Ajustes → Copia de seguridad. Un archivo de hoy no conoce las insignias de mañana.';
 }
