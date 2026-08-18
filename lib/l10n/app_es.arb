@@ -2840,5 +2840,15 @@
   "guideWotTabsTitle": "Las tres vistas",
   "guideWotTabsBody": "Red muestra quién está conectado con quién. Avales muestra por quién respondes y quién responde por ti. Denuncias reúne las advertencias de la red.",
   "guideWotRefreshTitle": "Recargar",
-  "guideWotRefreshBody": "Obtiene el estado actual de los relés. La red crece con cada meetup; sin recargar ves el estado de tu última visita."
+  "guideWotRefreshBody": "Obtiene el estado actual de los relés. La red crece con cada meetup; sin recargar ves el estado de tu última visita.",
+  "guideHomeCustomizeTitle": "Tu panel",
+  "guideHomeCustomizeBody": "Bajo este encabezado están los paneles que no has anclado: no han desaparecido, solo están apartados. Mantén pulsado un panel para anclarlo, soltarlo o moverlo.",
+  "guidePaMeetupsTitle": "Meetups y fechas",
+  "guidePaMeetupsBody": "Ambos llevan al calendario: uno a los grupos, el otro a las próximas fechas. Lo que ves depende de tus favoritos.",
+  "guidePaCoursesTitle": "Cursos",
+  "guidePaCoursesBody": "La oferta formativa de Einundzwanzig con sus docentes, desde una noche para principiantes hasta una serie de varias partes.",
+  "guidePaMapTitle": "El mapa",
+  "guidePaMapBody": "Muestra los meetups de tu entorno en un mapa. Útil al viajar o para saber qué más hay en la región además de tu meetup principal.",
+  "guidePaMineTitle": "Mis meetups",
+  "guidePaMineBody": "Solo interesa a los organizadores: aquí gestionas las fechas de los meetups en los que estás registrado. Si no llevas ninguno, verás una lista vacía."
 }

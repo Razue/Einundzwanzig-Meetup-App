@@ -2840,5 +2840,15 @@
   "guideWotTabsTitle": "The three views",
   "guideWotTabsBody": "Network shows who is connected to whom. Vouches shows who you stand for and who stands for you. Reports collects the warnings from the network.",
   "guideWotRefreshTitle": "Refresh",
-  "guideWotRefreshBody": "Fetches the current state from the relays. The network grows with every meetup — without refreshing you see the state from your last visit."
+  "guideWotRefreshBody": "Fetches the current state from the relays. The network grows with every meetup — without refreshing you see the state from your last visit.",
+  "guideHomeCustomizeTitle": "Your dashboard",
+  "guideHomeCustomizeBody": "Under this heading sit the tiles you have not pinned — they are not gone, just set aside. Press and hold a tile to pin, unpin or move it. That way the top holds exactly what you actually use.",
+  "guidePaMeetupsTitle": "Meetups and events",
+  "guidePaMeetupsBody": "Both lead into the calendar: one to the groups, the other to the upcoming events. What you see there depends on your favourites — more favourites, fuller list.",
+  "guidePaCoursesTitle": "Courses",
+  "guidePaCoursesBody": "The Einundzwanzig educational offerings along with their lecturers — from a beginners' evening to a multi-part series. Tap a course for content, dates and who teaches it.",
+  "guidePaMapTitle": "The map",
+  "guidePaMapBody": "Shows meetups around you on a map. Handy when travelling — or when you want to know what else exists in the region besides your home meetup.",
+  "guidePaMineTitle": "My meetups",
+  "guidePaMineBody": "Only of interest to organisers: here you maintain the events of the meetups you are registered for in the portal. If you run none, you will find an empty list."
 }

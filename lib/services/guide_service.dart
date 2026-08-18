@@ -11,6 +11,7 @@ enum GuideTour {
   reputation, // Vertrauensnetzwerk
   scan,
   myMeetups,  // Portal-Termine des eigenen Meetups
+  portalArea, // Portal-Bereich: Meetups, Events, Kurse, Karte
 }
 
 /// Ein einzelner Schritt der Spotlight-Tour.

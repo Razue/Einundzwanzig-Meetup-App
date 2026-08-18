@@ -11631,6 +11631,66 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Holt den aktuellen Stand von den Relays. Das Netzwerk wächst mit jedem Meetup — ohne Nachladen siehst du den Stand vom letzten Öffnen.'**
   String get guideWotRefreshBody;
+
+  /// No description provided for @guideHomeCustomizeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Dashboard'**
+  String get guideHomeCustomizeTitle;
+
+  /// No description provided for @guideHomeCustomizeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Unter dieser Überschrift liegen die Kacheln, die du gerade nicht angeheftet hast — sie sind nicht weg, nur zurückgestellt. Halte eine Kachel lange gedrückt, um sie anzuheften, zu lösen oder zu verschieben. So bekommst du oben genau das, was du wirklich benutzt.'**
+  String get guideHomeCustomizeBody;
+
+  /// No description provided for @guidePaMeetupsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups und Termine'**
+  String get guidePaMeetupsTitle;
+
+  /// No description provided for @guidePaMeetupsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beide führen in den Kalender: das eine zu den Gruppen, das andere zu den nächsten Terminen. Was du dort siehst, hängt an deinen Favoriten — mit mehr Favoriten wird die Liste voller.'**
+  String get guidePaMeetupsBody;
+
+  /// No description provided for @guidePaCoursesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurse'**
+  String get guidePaCoursesTitle;
+
+  /// No description provided for @guidePaCoursesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Bildungsangebote von Einundzwanzig samt Dozenten — vom Einsteigerabend bis zur mehrteiligen Reihe. Ein Tipp auf einen Kurs zeigt Inhalt, Termine und wer ihn hält.'**
+  String get guidePaCoursesBody;
+
+  /// No description provided for @guidePaMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Karte'**
+  String get guidePaMapTitle;
+
+  /// No description provided for @guidePaMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt Meetups in deiner Umgebung auf einer Landkarte. Praktisch auf Reisen — oder wenn du wissen willst, was es außer deinem Home-Meetup noch in der Region gibt.'**
+  String get guidePaMapBody;
+
+  /// No description provided for @guidePaMineTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get guidePaMineTitle;
+
+  /// No description provided for @guidePaMineBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste.'**
+  String get guidePaMineBody;
 }
 
 class _AppLocalizationsDelegate

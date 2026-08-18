@@ -1201,11 +1201,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const SizedBox(height: kTileGap),
-      _sectionHeader(
-        AppLocalizations.of(context).tilesAvailable,
-        count: rows.length,
-        collapsed: _availableCollapsed,
-        onTap: () => setState(() => _availableCollapsed = !_availableCollapsed),
+      KeyedSubtree(
+        key: HomeTour.customizeKey,
+        child: _sectionHeader(
+          AppLocalizations.of(context).tilesAvailable,
+          count: rows.length,
+          collapsed: _availableCollapsed,
+          onTap: () => setState(() => _availableCollapsed = !_availableCollapsed),
+        ),
       ),
       if (!_availableCollapsed || _editTileId != null)
         for (int i = 0; i < rows.length; i++) ...[

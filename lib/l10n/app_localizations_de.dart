@@ -6468,4 +6468,39 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get guideWotRefreshBody =>
       'Holt den aktuellen Stand von den Relays. Das Netzwerk wächst mit jedem Meetup — ohne Nachladen siehst du den Stand vom letzten Öffnen.';
+
+  @override
+  String get guideHomeCustomizeTitle => 'Dein Dashboard';
+
+  @override
+  String get guideHomeCustomizeBody =>
+      'Unter dieser Überschrift liegen die Kacheln, die du gerade nicht angeheftet hast — sie sind nicht weg, nur zurückgestellt. Halte eine Kachel lange gedrückt, um sie anzuheften, zu lösen oder zu verschieben. So bekommst du oben genau das, was du wirklich benutzt.';
+
+  @override
+  String get guidePaMeetupsTitle => 'Meetups und Termine';
+
+  @override
+  String get guidePaMeetupsBody =>
+      'Beide führen in den Kalender: das eine zu den Gruppen, das andere zu den nächsten Terminen. Was du dort siehst, hängt an deinen Favoriten — mit mehr Favoriten wird die Liste voller.';
+
+  @override
+  String get guidePaCoursesTitle => 'Kurse';
+
+  @override
+  String get guidePaCoursesBody =>
+      'Die Bildungsangebote von Einundzwanzig samt Dozenten — vom Einsteigerabend bis zur mehrteiligen Reihe. Ein Tipp auf einen Kurs zeigt Inhalt, Termine und wer ihn hält.';
+
+  @override
+  String get guidePaMapTitle => 'Die Karte';
+
+  @override
+  String get guidePaMapBody =>
+      'Zeigt Meetups in deiner Umgebung auf einer Landkarte. Praktisch auf Reisen — oder wenn du wissen willst, was es außer deinem Home-Meetup noch in der Region gibt.';
+
+  @override
+  String get guidePaMineTitle => 'Meine Meetups';
+
+  @override
+  String get guidePaMineBody =>
+      'Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste.';
 }

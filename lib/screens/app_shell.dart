@@ -295,6 +295,10 @@ class _AppShellState extends State<AppShell> {
   Widget _navAction(IconData a, IconData ia, String l, VoidCallback onTap,
       {Key? navKey}) {
     return GestureDetector(
+      // Der Schluessel gehoert AN das Widget, nicht nur in die Signatur.
+      // Ohne diese Zeile fand die Tour "In der Nähe" nie und uebersprang
+      // den Schritt — die Pause davor war die Wartezeit.
+      key: navKey,
       behavior: HitTestBehavior.opaque, onTap: onTap,
       child: SizedBox(width: 60, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(ia, color: cTextTertiary, size: 24),

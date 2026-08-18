@@ -6448,4 +6448,39 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get guideWotRefreshBody =>
       'Obtiene el estado actual de los relés. La red crece con cada meetup; sin recargar ves el estado de tu última visita.';
+
+  @override
+  String get guideHomeCustomizeTitle => 'Tu panel';
+
+  @override
+  String get guideHomeCustomizeBody =>
+      'Bajo este encabezado están los paneles que no has anclado: no han desaparecido, solo están apartados. Mantén pulsado un panel para anclarlo, soltarlo o moverlo.';
+
+  @override
+  String get guidePaMeetupsTitle => 'Meetups y fechas';
+
+  @override
+  String get guidePaMeetupsBody =>
+      'Ambos llevan al calendario: uno a los grupos, el otro a las próximas fechas. Lo que ves depende de tus favoritos.';
+
+  @override
+  String get guidePaCoursesTitle => 'Cursos';
+
+  @override
+  String get guidePaCoursesBody =>
+      'La oferta formativa de Einundzwanzig con sus docentes, desde una noche para principiantes hasta una serie de varias partes.';
+
+  @override
+  String get guidePaMapTitle => 'El mapa';
+
+  @override
+  String get guidePaMapBody =>
+      'Muestra los meetups de tu entorno en un mapa. Útil al viajar o para saber qué más hay en la región además de tu meetup principal.';
+
+  @override
+  String get guidePaMineTitle => 'Mis meetups';
+
+  @override
+  String get guidePaMineBody =>
+      'Solo interesa a los organizadores: aquí gestionas las fechas de los meetups en los que estás registrado. Si no llevas ninguno, verás una lista vacía.';
 }

@@ -7,7 +7,11 @@ class HomeTour {
   /// Kacheln, die sich in den Einstellungen ausblenden lassen, bekommen
   /// eine kurze Wartezeit: Ist die Kachel weg, ueberspringt das Overlay
   /// den Schritt nach 1,2 Sekunden, statt sechs Sekunden zu warten.
-  static const _optionalTile = Duration(milliseconds: 500);
+  /// 220 ms statt 500. Bei mehreren ausgeblendeten Kacheln hintereinander
+  /// summierte sich das frueher zu Pausen von ueber einer Sekunde, in denen
+  /// der Bildschirm einfach nur dunkel war. So kurz wie moeglich, aber nicht
+  /// null: Ein Ziel braucht einen Frame, um im Baum zu erscheinen.
+  static const _optionalTile = Duration(milliseconds: 220);
 
   // --- Untere Leiste ---
   static final homeTabKey = GlobalKey(debugLabel: 'guide_home_tab');
@@ -35,6 +39,7 @@ class HomeTour {
   static final newsKey = GlobalKey(debugLabel: 'guide_news');
   static final myMeetupsKey = GlobalKey(debugLabel: 'guide_my_meetups');
   static final settingsKey = GlobalKey(debugLabel: 'guide_settings');
+  static final customizeKey = GlobalKey(debugLabel: 'guide_customize');
   static final glossaryKey = GlobalKey(debugLabel: 'guide_glossary');
 
   /// Reihenfolge folgt der Kachel-Definition im HomeScreen, damit die
@@ -169,6 +174,17 @@ class HomeTour {
 
         // --- Untere Leiste. Kein ensureVisible noetig: Die Knoepfe
         //     haengen in keiner Scrollflaeche.
+        // 14b — Dashboard anpassen. Steht direkt nach den Kacheln und vor
+        //       der unteren Leiste: Wer gerade neunzehn Kacheln gesehen hat,
+        //       ist genau jetzt bereit fuer "das musst du dir nicht alles
+        //       antun".
+        GuideStep(
+          targetKey: customizeKey,
+          titleKey: 'guideHomeCustomizeTitle',
+          bodyKey: 'guideHomeCustomizeBody',
+          waitTimeout: _optionalTile,
+        ),
+
         // 15 — Badge-Wallet
         GuideStep(
           targetKey: badgeTabKey,

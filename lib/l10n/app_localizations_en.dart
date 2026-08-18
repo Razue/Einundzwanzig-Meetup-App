@@ -6408,4 +6408,39 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get guideWotRefreshBody =>
       'Fetches the current state from the relays. The network grows with every meetup — without refreshing you see the state from your last visit.';
+
+  @override
+  String get guideHomeCustomizeTitle => 'Your dashboard';
+
+  @override
+  String get guideHomeCustomizeBody =>
+      'Under this heading sit the tiles you have not pinned — they are not gone, just set aside. Press and hold a tile to pin, unpin or move it. That way the top holds exactly what you actually use.';
+
+  @override
+  String get guidePaMeetupsTitle => 'Meetups and events';
+
+  @override
+  String get guidePaMeetupsBody =>
+      'Both lead into the calendar: one to the groups, the other to the upcoming events. What you see there depends on your favourites — more favourites, fuller list.';
+
+  @override
+  String get guidePaCoursesTitle => 'Courses';
+
+  @override
+  String get guidePaCoursesBody =>
+      'The Einundzwanzig educational offerings along with their lecturers — from a beginners\' evening to a multi-part series. Tap a course for content, dates and who teaches it.';
+
+  @override
+  String get guidePaMapTitle => 'The map';
+
+  @override
+  String get guidePaMapBody =>
+      'Shows meetups around you on a map. Handy when travelling — or when you want to know what else exists in the region besides your home meetup.';
+
+  @override
+  String get guidePaMineTitle => 'My meetups';
+
+  @override
+  String get guidePaMineBody =>
+      'Only of interest to organisers: here you maintain the events of the meetups you are registered for in the portal. If you run none, you will find an empty list.';
 }

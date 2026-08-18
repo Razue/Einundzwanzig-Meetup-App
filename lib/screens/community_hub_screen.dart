@@ -340,8 +340,37 @@ class _CommunityHubScreenState extends State<CommunityHubScreen> {
 // ============================================
 //  PORTAL-BEREICH (Ebene 2)
 // ============================================
-class PortalAreaScreen extends StatelessWidget {
+/// Wie der Community-Hub aus StatelessWidget geworden: Die Tour braucht
+/// einen Lebenszyklus, damit sie einmal startet statt bei jedem Neuzeichnen.
+class PortalAreaScreen extends StatefulWidget {
   const PortalAreaScreen({super.key});
+
+  @override
+  State<PortalAreaScreen> createState() => _PortalAreaScreenState();
+}
+
+class _PortalAreaScreenState extends State<PortalAreaScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _startTour();
+  }
+
+  Future<void> _startTour() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.portalArea)) return;
+    if (!mounted) return;
+    await guide.startTour(GuideTour.portalArea, PortalAreaTour.steps());
+  }
+
+  @override
+  void dispose() {
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.portalArea) guide.finishTour();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -357,15 +386,19 @@ class PortalAreaScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             _row(context, Icons.groups_rounded, cOrange, t.paMeetups, t.paMeetupsSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())),
+                rowKey: PortalAreaTour.meetupsKey),
             _row(context, Icons.event_available_rounded, cGreen, t.paEvents, t.paEventsSub,
                 () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()))),
             _row(context, Icons.school_rounded, cNostr, t.paCourses, t.paCoursesSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesScreen())),
+                rowKey: PortalAreaTour.coursesKey),
             _row(context, Icons.map_rounded, cCyan, t.paMap, t.paMapSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyMeetupsScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyMeetupsScreen())),
+                rowKey: PortalAreaTour.mapKey),
             _row(context, Icons.edit_calendar_rounded, cOrange, t.paMine, t.paMineSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())),
+                rowKey: PortalAreaTour.mineKey),
             _row(context, Icons.language_rounded, cTextSecondary, t.paWeb, t.paWebSub,
                 () => Navigator.push(context, MaterialPageRoute(builder: (_) => const legacy.CommunityPortalScreen()))),
           ],
@@ -374,7 +407,10 @@ class PortalAreaScreen extends StatelessWidget {
     );
   }
 
-  Widget _row(BuildContext context, IconData icon, Color color, String title, String sub, VoidCallback onTap) => GestureDetector(
+  Widget _row(BuildContext context, IconData icon, Color color, String title, String sub, VoidCallback onTap,
+          {Key? rowKey}) =>
+      GestureDetector(
+    key: rowKey,
     onTap: onTap,
     child: Container(
       margin: const EdgeInsets.only(bottom: 12),

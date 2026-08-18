@@ -88,6 +88,39 @@ class CommunityTour {
       ];
 }
 
+/// PORTAL-BEREICH
+class PortalAreaTour {
+  PortalAreaTour._();
+
+  static final meetupsKey = GlobalKey(debugLabel: 'guide_pa_meetups');
+  static final coursesKey = GlobalKey(debugLabel: 'guide_pa_courses');
+  static final mapKey = GlobalKey(debugLabel: 'guide_pa_map');
+  static final mineKey = GlobalKey(debugLabel: 'guide_pa_mine');
+
+  static List<GuideStep> steps() => [
+        GuideStep(
+          targetKey: meetupsKey,
+          titleKey: 'guidePaMeetupsTitle',
+          bodyKey: 'guidePaMeetupsBody',
+        ),
+        GuideStep(
+          targetKey: coursesKey,
+          titleKey: 'guidePaCoursesTitle',
+          bodyKey: 'guidePaCoursesBody',
+        ),
+        GuideStep(
+          targetKey: mapKey,
+          titleKey: 'guidePaMapTitle',
+          bodyKey: 'guidePaMapBody',
+        ),
+        GuideStep(
+          targetKey: mineKey,
+          titleKey: 'guidePaMineTitle',
+          bodyKey: 'guidePaMineBody',
+        ),
+      ];
+}
+
 /// MEINE MEETUPS (Portal-Termine)
 class MyMeetupsTour {
   MyMeetupsTour._();

@@ -60,11 +60,16 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
     with SingleTickerProviderStateMixin {
   /// Nachmessung. 60 ms ist fein genug, dass das Loch beim Scrollen
   /// mitlaeuft, und grob genug, dass wir nicht jeden Frame neu bauen.
-  static const _pollInterval = Duration(milliseconds: 60);
+  static const _pollInterval = Duration(milliseconds: 40);
 
   /// Kurze Anzeige des "Erledigt"-Hakens, bevor automatisch weiter-
   /// geschaltet wird — sonst springt die Tour ohne Rueckmeldung.
   static const _autoAdvanceDelay = Duration(milliseconds: 700);
+
+  /// Erste Messung nicht erst nach dem Poll-Takt, sondern sofort nach dem
+  /// ersten Frame. Bei uebersprungenen Schritten sparte das frueher
+  /// verschenkte Millisekunden: Jeder Wechsel kostete den vollen
+  /// Poll-Abstand, bevor ueberhaupt nachgesehen wurde, ob das Ziel da ist.
 
   Timer? _poll;
   Timer? _advance;
@@ -690,6 +695,7 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
       'guideHomeScanTitle': l10n.guideHomeScanTitle,
       'guideHomeSettingsTitle': l10n.guideHomeSettingsTitle,
       'guideHomeGlossaryTitle': l10n.guideHomeGlossaryTitle,
+      'guideHomeCustomizeTitle': l10n.guideHomeCustomizeTitle,
       'guideSettingsBackupTitle': l10n.guideSettingsBackupTitle,
       'guideSettingsLanguageTitle': l10n.guideSettingsLanguageTitle,
       'guideSettingsRelaysTitle': l10n.guideSettingsRelaysTitle,
@@ -707,6 +713,10 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
       'guideEvBadgeLocationTitle': l10n.guideEvBadgeLocationTitle,
       'guideEvBadgeIssuersTitle': l10n.guideEvBadgeIssuersTitle,
       'guidePortalShoutoutTitle': l10n.guidePortalShoutoutTitle,
+      'guidePaMeetupsTitle': l10n.guidePaMeetupsTitle,
+      'guidePaCoursesTitle': l10n.guidePaCoursesTitle,
+      'guidePaMapTitle': l10n.guidePaMapTitle,
+      'guidePaMineTitle': l10n.guidePaMineTitle,
       'guidePortalPodcastTitle': l10n.guidePortalPodcastTitle,
       'guidePortalSoundboardTitle': l10n.guidePortalSoundboardTitle,
       'guidePortalMerchTitle': l10n.guidePortalMerchTitle,
@@ -766,6 +776,7 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
       'guideHomeScanBody': l10n.guideHomeScanBody,
       'guideHomeSettingsBody': l10n.guideHomeSettingsBody,
       'guideHomeGlossaryBody': l10n.guideHomeGlossaryBody,
+      'guideHomeCustomizeBody': l10n.guideHomeCustomizeBody,
       'guideSettingsBackupBody': l10n.guideSettingsBackupBody,
       'guideSettingsLanguageBody': l10n.guideSettingsLanguageBody,
       'guideSettingsRelaysBody': l10n.guideSettingsRelaysBody,
@@ -783,6 +794,10 @@ class _GuideSpotlightState extends State<_GuideSpotlight>
       'guideEvBadgeLocationBody': l10n.guideEvBadgeLocationBody,
       'guideEvBadgeIssuersBody': l10n.guideEvBadgeIssuersBody,
       'guidePortalShoutoutBody': l10n.guidePortalShoutoutBody,
+      'guidePaMeetupsBody': l10n.guidePaMeetupsBody,
+      'guidePaCoursesBody': l10n.guidePaCoursesBody,
+      'guidePaMapBody': l10n.guidePaMapBody,
+      'guidePaMineBody': l10n.guidePaMineBody,
       'guidePortalPodcastBody': l10n.guidePortalPodcastBody,
       'guidePortalSoundboardBody': l10n.guidePortalSoundboardBody,
       'guidePortalMerchBody': l10n.guidePortalMerchBody,
