@@ -5482,4 +5482,1087 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get idSetupOtherWaySub => 'nsec, ncryptsec, Bunker oder Backup';
+
+  @override
+  String get guideWelcomeTitle => 'Willkommen!';
+
+  @override
+  String get guideWelcomeBody =>
+      'Möchtest du eine kurze Tour durch die App? Wir zeigen dir die wichtigsten Funktionen.';
+
+  @override
+  String get guideStart => 'Tour starten';
+
+  @override
+  String get guideNoThanks => 'Nein, danke';
+
+  @override
+  String get guideSkip => 'ÜBERSPRINGEN';
+
+  @override
+  String get guideFinishTour => 'Tour beenden';
+
+  @override
+  String get guideBack => 'Zurück';
+
+  @override
+  String get guideOnboardWelcomeTitle => 'Lass uns dein Profil einrichten';
+
+  @override
+  String get guideOnboardWelcomeBody =>
+      'Wir führen dich Schritt für Schritt durch die Einrichtung. Es dauert nur eine Minute.';
+
+  @override
+  String get guideOnboardNicknameTitle => 'Wähle einen Nickname';
+
+  @override
+  String get guideOnboardNicknameBody =>
+      'So werden dich andere Community-Mitglieder sehen. Wähle etwas Einprägsames!';
+
+  @override
+  String get guideOnboardMeetupTitle => 'Wähle dein Home-Meetup';
+
+  @override
+  String get guideOnboardMeetupBody =>
+      'Dein Home-Meetup bestimmt, welche Badges du sammeln kannst und welche Events du zuerst siehst.';
+
+  @override
+  String get guideOnboardNostrTitle => 'Dein Nostr-Schlüssel';
+
+  @override
+  String get guideOnboardNostrBody =>
+      'Dieser kryptografische Schlüssel signiert deine Badges und verifiziert deine Reputation. Er wird nur auf deinem Gerät gespeichert.';
+
+  @override
+  String get guideOnboardSaveTitle => 'Profil speichern';
+
+  @override
+  String get guideOnboardSaveBody =>
+      'Tippe hier, wenn du fertig bist. Du kannst diese Einstellungen später jederzeit ändern.';
+
+  @override
+  String get guideHomeMeetupTitle => 'Dein Home Meetup';
+
+  @override
+  String get guideHomeMeetupBody =>
+      'Deine Favoriten-Meetups und das nächste anstehende Event – direkt auf einen Blick.';
+
+  @override
+  String get guideHomeTrustScoreTitle => 'Dein Trust Score';
+
+  @override
+  String get guideHomeTrustScoreBody =>
+      'Hier siehst du deinen aktuellen Stand. Tippe darauf für die Aufschlüsselung nach Vielfalt, Aktivität & Qualität.';
+
+  @override
+  String get guideHomeReputationTitle => 'Reputation';
+
+  @override
+  String get guideHomeReputationBody =>
+      'Prüfe deine Reputation oder verifiziere den Trust Score einer anderen Person.';
+
+  @override
+  String get guideHomeWotTitle => 'Vertrauensnetzwerk';
+
+  @override
+  String get guideHomeWotBody =>
+      'Sieh, wie du mit anderen im Web of Trust verbunden bist.';
+
+  @override
+  String get guideHomeCommunityTitle => 'Community Portal';
+
+  @override
+  String get guideHomeCommunityBody =>
+      'Zugriff auf Podcast, Shoutouts, Merch und mehr.';
+
+  @override
+  String get guideHomeUmrechnerTitle => 'Umrechner';
+
+  @override
+  String get guideHomeUmrechnerBody =>
+      'Schnell zwischen EUR und Sats umrechnen.';
+
+  @override
+  String get guideHomeBitcoinTitle => 'Bitcoin Kurs';
+
+  @override
+  String get guideHomeBitcoinBody =>
+      'Aktueller Preis, Netzwerk-Stats und Blockhöhe.';
+
+  @override
+  String get guideHomeBadgeWalletTitle => 'Badge Wallet';
+
+  @override
+  String get guideHomeBadgeWalletBody =>
+      'Alle gesammelten Badges – kryptographisch signiert und nur auf deinem Gerät gespeichert.';
+
+  @override
+  String get guideHomeScanTitle => 'Badge einfordern';
+
+  @override
+  String get guideHomeScanBody =>
+      'Tippe hier, um beim Meetup den QR-Code des Organisators zu scannen oder dein Gerät per NFC anzuhalten.';
+
+  @override
+  String get guideHomeSettingsTitle => 'Einstellungen';
+
+  @override
+  String get guideHomeSettingsBody =>
+      'Konfiguriere Backup, Sprache, Relays und mehr. Vergiss nicht, ein Backup zu erstellen!';
+
+  @override
+  String get guideSettingsBackupTitle => 'Erstelle ein Backup!';
+
+  @override
+  String get guideSettingsBackupBody =>
+      'WICHTIG: Erstelle ein Backup, um deinen Account zu schützen. Ohne Backup sind deine Badges und dein Profil verloren, wenn du dein Gerät verlierst.';
+
+  @override
+  String get guideSettingsLanguageTitle => 'Sprache';
+
+  @override
+  String get guideSettingsLanguageBody =>
+      'Wechsle zwischen Deutsch, Englisch und Spanisch.';
+
+  @override
+  String get guideSettingsRelaysTitle => 'Nostr Relays';
+
+  @override
+  String get guideSettingsRelaysBody =>
+      'Konfiguriere, mit welchen Nostr-Relays sich deine App verbindet.';
+
+  @override
+  String get guideSettingsHapticTitle => 'Haptisches Feedback';
+
+  @override
+  String get guideSettingsHapticBody =>
+      'Aktiviere oder deaktiviere Vibrationsfeedback.';
+
+  @override
+  String get guideSettingsResetTitle => 'App zurücksetzen';
+
+  @override
+  String get guideSettingsResetBody =>
+      'Dies löscht dein Profil und alle Badges. Stelle sicher, dass du zuerst ein Backup hast!';
+
+  @override
+  String get guideEventsSearchTitle => 'Events suchen';
+
+  @override
+  String get guideEventsSearchBody =>
+      'Suche nach Meetups nach Stadt oder Stichwort.';
+
+  @override
+  String get guideEventsCalendarTitle => 'Kalender';
+
+  @override
+  String get guideEventsCalendarBody =>
+      'Durchsuche alle kommenden Meetup-Events.';
+
+  @override
+  String get guideEventsCardTitle => 'Event Details';
+
+  @override
+  String get guideEventsCardBody =>
+      'Tippe auf ein Event, um Details, Ort und Links zu sehen.';
+
+  @override
+  String get guideEventsCreateTitle => 'Event erstellen';
+
+  @override
+  String get guideEventsCreateBody =>
+      'Als Organisator kannst du hier neue Meetup-Events erstellen.';
+
+  @override
+  String get guidePortalShoutoutTitle => 'Shoutout senden';
+
+  @override
+  String get guidePortalShoutoutBody =>
+      'Sende einen öffentlichen Shoutout an die Community.';
+
+  @override
+  String get guidePortalPodcastTitle => 'Podcast';
+
+  @override
+  String get guidePortalPodcastBody =>
+      'Höre den Einundzwanzig Podcast direkt in der App.';
+
+  @override
+  String get guidePortalSoundboardTitle => 'Soundboard';
+
+  @override
+  String get guidePortalSoundboardBody =>
+      'Spiele Clips und Sounds aus dem Podcast ab.';
+
+  @override
+  String get guidePortalMerchTitle => 'Shop';
+
+  @override
+  String get guidePortalMerchBody => 'Durchsuche Merch und Bitcoin-Produkte.';
+
+  @override
+  String get guidePortalMembershipTitle => 'Mitglied werden';
+
+  @override
+  String get guidePortalMembershipBody =>
+      'Unterstütze den Verein, indem du Mitglied wirst.';
+
+  @override
+  String get guidePortalMapTitle => 'Meetup Karte';
+
+  @override
+  String get guidePortalMapBody =>
+      'Finde Meetups in deiner Nähe auf der Karte.';
+
+  @override
+  String get guideWalletBadgesTitle => 'Deine Badges';
+
+  @override
+  String get guideWalletBadgesBody =>
+      'Alle gesammelten Badges – kryptographisch signiert und nur auf deinem Gerät gespeichert.';
+
+  @override
+  String get guideWalletShareQrTitle => 'QR-Code teilen';
+
+  @override
+  String get guideWalletShareQrBody =>
+      'Zeige deinen Reputations-QR-Code zum Scannen vor Ort.';
+
+  @override
+  String get guideWalletExportTitle => 'Als JSON exportieren';
+
+  @override
+  String get guideWalletExportBody =>
+      'Signierter Export mit Schnorr-Beweis zur Verifizierung.';
+
+  @override
+  String get guideWalletShareTextTitle => 'Als Text teilen';
+
+  @override
+  String get guideWalletShareTextBody =>
+      'Teile deine Reputation als lesbaren Text.';
+
+  @override
+  String get guideReputationScoreTitle => 'Dein Score';
+
+  @override
+  String get guideReputationScoreBody =>
+      'Dein Trust Score wird aus Badges, Vielfalt und Aktivität berechnet.';
+
+  @override
+  String get guideReputationLevelTitle => 'Dein Level';
+
+  @override
+  String get guideReputationLevelBody =>
+      'Von NEU bis VETERAN – dein Level wächst mit deiner Teilnahme.';
+
+  @override
+  String get guideReputationStatsTitle => 'Statistiken';
+
+  @override
+  String get guideReputationStatsBody =>
+      'Badges, Meetups, Signer und gebundene Beweise auf einen Blick.';
+
+  @override
+  String get guideReputationShareTitle => 'Reputation teilen';
+
+  @override
+  String get guideReputationShareBody =>
+      'Teile deine verifizierte Reputation per QR-Code oder Text.';
+
+  @override
+  String get guideReputationUpdateTitle => 'Auf Relays aktualisieren';
+
+  @override
+  String get guideReputationUpdateBody =>
+      'Veröffentliche deine neueste Reputation im Nostr-Netzwerk.';
+
+  @override
+  String guideStepOf(int current, int total) {
+    return 'Schritt $current von $total';
+  }
+
+  @override
+  String get guideStepDone => 'Erledigt';
+
+  @override
+  String get guideHintNickname => 'Tippe ins Feld und gib deinen Nickname ein.';
+
+  @override
+  String get guideHintOpenPicker =>
+      'Tippe auf das Feld, um die Meetup-Auswahl zu öffnen.';
+
+  @override
+  String get guideHintSearchCity =>
+      'Tippe die ersten Buchstaben deiner Stadt ein.';
+
+  @override
+  String get guideHintStarMeetup => 'Tippe auf den Stern neben deinem Meetup.';
+
+  @override
+  String get guideHintConfirmSelection =>
+      'Bestätige deine Auswahl mit dem Knopf unten.';
+
+  @override
+  String get guideHintNostrKey =>
+      'Erstelle einen neuen Schlüssel oder importiere einen bestehenden.';
+
+  @override
+  String get guideHintSave => 'Tippe auf PROFIL SPEICHERN.';
+
+  @override
+  String get guideOnboardMeetupSearchTitle => 'Stadt suchen';
+
+  @override
+  String get guideOnboardMeetupSearchBody =>
+      'Tippe den Namen deiner Stadt ein — die Liste filtert sich sofort.';
+
+  @override
+  String get guideOnboardMeetupPickTitle => 'Meetup markieren';
+
+  @override
+  String get guideOnboardMeetupPickBody =>
+      'Setze den Stern bei deinem Meetup. Du kannst mehrere Favoriten wählen; der erste wird dein Home-Meetup.';
+
+  @override
+  String get guideOnboardMeetupConfirmTitle => 'Auswahl bestätigen';
+
+  @override
+  String get guideOnboardMeetupConfirmBody =>
+      'Der Knopf zeigt, wie viele Favoriten du gewählt hast. Tippe darauf, um zurück zum Profil zu kommen.';
+
+  @override
+  String get guideOnboardPlatformsTitle => 'Plattformen verknüpfen';
+
+  @override
+  String get guideOnboardPlatformsBody =>
+      'Hier verbindest du Konten wie Telegram, X oder Kleinanzeigen mit deiner Nostr-Identität. Jede bestätigte Plattform zahlt auf deinen Trust Score ein und zeigt anderen, dass hinter dem Profil ein gewachsener Mensch steckt.';
+
+  @override
+  String get guideHintPlatforms =>
+      'Freiwillig — du kannst das jederzeit im Profil nachholen.';
+
+  @override
+  String get guideOnboardHumanityTitle => 'Proof of Humanity';
+
+  @override
+  String get guideOnboardHumanityBody =>
+      'Ein einmaliger Lightning-Zap belegt, dass du eine echte Wallet bedienst — der wirksamste Schutz gegen Bot-Konten im Vertrauensnetzwerk. Hast du schon gezappt, prüfst du es hier nach.';
+
+  @override
+  String get guideHintHumanity =>
+      'Freiwillig — die App funktioniert auch ohne diesen Nachweis.';
+
+  @override
+  String get guideHomeEventsTitle => 'Events';
+
+  @override
+  String get guideHomeEventsBody =>
+      'Diese Kachel zeigt, ob heute etwas ansteht. Sie färbt sich orange, sobald ein Termin für den Tag eingetragen ist, und führt dich in den Kalender mit allen kommenden Treffen.';
+
+  @override
+  String get guideHomeShoutoutTitle => 'Shoutout';
+
+  @override
+  String get guideHomeShoutoutBody =>
+      'Schick eine Nachricht an die Community — sie landet auf der Shoutout-Seite von Einundzwanzig. Die Kachel öffnet die Seite im Browser.';
+
+  @override
+  String get guideHomePodcastTitle => 'Podcast';
+
+  @override
+  String get guideHomePodcastBody =>
+      'Der Einundzwanzig-Podcast, direkt aus der App heraus. Die Kachel öffnet die Folgenübersicht im Browser.';
+
+  @override
+  String get guideHomePortalConnectTitle => 'Portal-Verbindung';
+
+  @override
+  String get guideHomePortalConnectBody =>
+      'Grün heißt verbunden, rot heißt getrennt. Mit der Verbindung zum Einundzwanzig-Portal siehst du Termine und Kurse, die dort gepflegt werden. Ein Tipp auf die Kachel schaltet um.';
+
+  @override
+  String get guideHomeNewsTitle => 'News';
+
+  @override
+  String get guideHomeNewsBody =>
+      'Die jüngste Meldung aus der Community steht direkt auf der Kachel. Ein Tipp öffnet die vollständige Übersicht.';
+
+  @override
+  String get guideHomeMyMeetupsTitle => 'Meine Meetups';
+
+  @override
+  String get guideHomeMyMeetupsBody =>
+      'Hier verwaltest du die Termine deiner Meetups im Portal — anlegen, ändern, absagen. Nur sinnvoll, wenn du selbst organisierst.';
+
+  @override
+  String get guideHomeMoreTitle => 'Und noch mehr';
+
+  @override
+  String get guideHomeMoreBody =>
+      'Vier weitere Kacheln warten auf dem Dashboard: SatoshiDuell für Quizrunden um Sats, PlebRap für Musik aus der Community, der Portal-Bereich mit Meetups, Events, Kursen und Karte, sowie die Nostr-Kachel mit den neuesten Notizen aus deinem Netzwerk. Jede lässt sich in den Einstellungen aus- oder wieder einblenden.';
+
+  @override
+  String get guideHomeNearbyTitle => 'In der Nähe';
+
+  @override
+  String get guideHomeNearbyBody =>
+      'Zeigt Meetups in deiner Umgebung — praktisch auf Reisen oder wenn du ein zweites Treffen in der Region suchst. Der Bildschirm legt sich über die App, ein Zurück bringt dich hierher.';
+
+  @override
+  String get guideHomeEventsTabTitle => 'Event-Bereich';
+
+  @override
+  String get guideHomeEventsTabBody =>
+      'Der vierte Knopf führt in den vollständigen Kalender: alle Termine, filterbar nach Ort und Zeitraum, mit Erinnerungsfunktion.';
+
+  @override
+  String get guideHomeSettingsBackupHint =>
+      'Geh gleich als Erstes ins Backup — ohne das ist dein Schlüssel bei Handyverlust weg.';
+
+  @override
+  String get guideHintBackup =>
+      'Leg jetzt ein verschlüsseltes Backup an — es dauert eine Minute.';
+
+  @override
+  String get guideEvBadgeSwitchTitle => 'Badge für dein Event';
+
+  @override
+  String get guideEvBadgeSwitchBody =>
+      'Leg den Schalter um, wenn Teilnehmer sich vor Ort ein Badge abholen können sollen. Ohne ihn bleibt es ein reiner Termin.';
+
+  @override
+  String get guideEvBadgeSwitchHint =>
+      'Wenn du für dieses Event kein Badge brauchst, tippe einfach auf Weiter.';
+
+  @override
+  String get guideEvBadgeImageTitle => 'Das Bild';
+
+  @override
+  String get guideEvBadgeImageBody =>
+      'Wähle ein Bild aus deiner Galerie — es wird hochgeladen und erscheint später auf jedem Badge dieses Events. Ohne Bild trägt die generative Grafik die Karte allein.';
+
+  @override
+  String get guideEvBadgeLocationTitle => 'Der Ort zählt';
+
+  @override
+  String get guideEvBadgeLocationBody =>
+      'Setze den Punkt dort, wo das Event stattfindet — nicht dort, wo du gerade bist. Badges lassen sich nur in seiner Nähe und nur am Tag des Events ausgeben.';
+
+  @override
+  String get guideEvBadgeIssuersTitle => 'Deine Helfer';
+
+  @override
+  String get guideEvBadgeIssuersBody =>
+      'Trage die npubs aller ein, die vor Ort Badges verteilen sollen. Sie brauchen keine Organisatoren-Rolle — die Erlaubnis steht im Termin und gilt nur für dieses Event. Du selbst darfst immer.';
+
+  @override
+  String get glTitle => 'Nachschlagen';
+
+  @override
+  String get glSearchHint => 'Suchen — z. B. Badge, Trust Score, Backup';
+
+  @override
+  String get glNoResults =>
+      'Dazu findet sich nichts. Versuch ein anderes Wort — gesucht wird auch im Text der Einträge.';
+
+  @override
+  String get glCatStart => 'Erste Schritte';
+
+  @override
+  String get glCatBadges => 'Badges';
+
+  @override
+  String get glCatReputation => 'Reputation';
+
+  @override
+  String get glWhatIsAppTitle => 'Was diese App tut';
+
+  @override
+  String get glWhatIsAppBody =>
+      'Sie belegt, dass du bei einem Bitcoin-Meetup wirklich vor Ort warst. Aus vielen solcher Belege entsteht mit der Zeit eine Reputation, die dir gehört und die niemand entziehen kann — sie liegt nicht auf einem Server von Einundzwanzig, sondern signiert im Nostr-Netzwerk.';
+
+  @override
+  String get glCollectTitle => 'Wie du ein Badge sammelst';
+
+  @override
+  String get glCollectBody =>
+      'Geh zum Meetup und lass dir vom Organisator den QR-Code zeigen. Unten in der Leiste auf den runden Scan-Knopf tippen, Code erfassen — fertig. Das Badge liegt danach in deiner Badge-Wallet.';
+
+  @override
+  String get glHomeMeetupTitle => 'Dein Home-Meetup';
+
+  @override
+  String get glHomeMeetupBody =>
+      'Das Meetup, zu dem du regelmäßig gehst. Es bestimmt, welche Termine du zuerst siehst und welches Wappen auf deinen Badges erscheint. Du kannst mehrere Favoriten wählen — der erste gilt als Home-Meetup. Ändern lässt sich das jederzeit im Profil.';
+
+  @override
+  String get glOfflineTitle => 'Was ohne Internet geht';
+
+  @override
+  String get glOfflineBody =>
+      'Scannen und Badge erhalten funktioniert offline — die Prüfung der Signatur rechnet dein Gerät selbst. Ohne Netz fehlen nur die Dinge, die von außen kommen: Blockhöhe, Kurs, Termine und die Prüfung, ob der Organisator eingetragen ist.';
+
+  @override
+  String get glBadgeProofTitle => 'Was ein Badge beweist';
+
+  @override
+  String get glBadgeProofBody =>
+      'Dass du zu einer bestimmten Zeit an einem bestimmten Ort warst — bestätigt von jemandem, der dort ebenfalls war. Die Bestätigung ist eine Schnorr-Signatur nach BIP-340. Fälschen kann sie niemand, auch die Entwickler nicht, weil dafür der private Schlüssel des Organisators nötig wäre.';
+
+  @override
+  String get glRollingQrTitle => 'Der Rolling QR';
+
+  @override
+  String get glRollingQrBody =>
+      'Der Code des Organisators wechselt alle paar Sekunden. Ein Foto davon ist damit Minuten später wertlos — nur wer wirklich davorsteht, kann ihn erfassen. Genau deshalb lässt sich ein Badge nicht per Chat weiterreichen.';
+
+  @override
+  String get glOnSiteTitle => 'Warum nur vor Ort';
+
+  @override
+  String get glOnSiteBody =>
+      'Neben dem wechselnden Code prüft die App auch die Entfernung: Wer zu weit vom Meetup entfernt ist, bekommt kein Badge. Bei Meetups sind die Grenzen weit gefasst, weil manche Gruppen ganze Regionen abdecken; bei Sondereevents ist der Ort genau gesetzt und die Grenze eng.';
+
+  @override
+  String get glBadgeShareTitle => 'Badge teilen';
+
+  @override
+  String get glBadgeShareBody =>
+      'Öffne ein Badge und tippe oben rechts auf Teilen. Die App erzeugt daraus ein Bild mit Ort, Datum, Blockhöhe und Prüfsumme. Wer es sieht, kann die Angaben nachvollziehen — dein privater Schlüssel steckt nicht darin.';
+
+  @override
+  String get glTrustScoreTitle => 'Der Trust Score';
+
+  @override
+  String get glTrustScoreBody =>
+      'Eine Zahl, die zusammenfasst, wie belastbar deine Anwesenheitsbelege sind. Es zählt nicht nur die Menge: Verschiedene Meetups, verschiedene Organisatoren und Regelmäßigkeit über die Zeit wiegen schwerer als zwanzig Besuche am selben Ort in derselben Woche.';
+
+  @override
+  String get glLevelsTitle => 'Die Stufen';
+
+  @override
+  String get glLevelsBody =>
+      'Mit steigendem Trust Score erreichst du höhere Stufen. Ab einer bestimmten Stufe kannst du selbst Sessions starten und Badges ausgeben — das ist keine Auszeichnung, sondern eine Verantwortung: Deine Signatur steht dann unter den Badges anderer Leute.';
+
+  @override
+  String get glHumanityTitle => 'Proof of Humanity';
+
+  @override
+  String get glHumanityBody =>
+      'Ein einmaliger Lightning-Zap belegt, dass hinter dem Profil jemand mit einer echten Wallet steht. Das ist der wirksamste Schutz gegen automatisch angelegte Konten im Vertrauensnetzwerk. Freiwillig — die App funktioniert auch ohne.';
+
+  @override
+  String get glPlatformsTitle => 'Plattform-Nachweise';
+
+  @override
+  String get glPlatformsBody =>
+      'Du kannst Konten wie Telegram oder X mit deiner Nostr-Identität verknüpfen. Jede bestätigte Plattform zahlt auf den Trust Score ein und zeigt anderen, dass hinter dem Profil eine gewachsene Person steht. Ebenfalls freiwillig.';
+
+  @override
+  String get guideHomeGlossaryTitle => 'Zum Nachschlagen';
+
+  @override
+  String get guideHomeGlossaryBody =>
+      'Hier steht alles nochmal in Ruhe erklärt — nach Themen sortiert und durchsuchbar. Wenn diese Tour vorbei ist und eine Frage bleibt, findest du die Antwort hier.';
+
+  @override
+  String get glCatNetwork => 'Vertrauensnetzwerk';
+
+  @override
+  String get glCatIdentity => 'Identität & Schlüssel';
+
+  @override
+  String get glCatEvents => 'Events';
+
+  @override
+  String get glCatNostr => 'Nostr';
+
+  @override
+  String get glEncounterTitle => 'Begegnungen';
+
+  @override
+  String get glEncounterBody =>
+      'Wer beim selben Organisator am selben Tag gescannt hat, gilt als einander begegnet. Daraus entsteht ein Geflecht aus Menschen, die sich tatsächlich im selben Raum aufgehalten haben — nicht aus Leuten, die einander im Netz folgen.';
+
+  @override
+  String get glDegreesTitle => 'Grade';
+
+  @override
+  String get glDegreesBody =>
+      'Ersten Grades heißt: Ihr wart beim selben Organisator. Zweiten Grades: Jemand, den du getroffen hast, hat diese Person getroffen. Waren auf einem Meetup zwei Organisatoren im Einsatz, verbindet ihr gegenseitiges Scannen beide Gruppen — dann seid ihr zweiten Grades verbunden statt ersten.';
+
+  @override
+  String get glVouchTitle => 'Bürgschaften';
+
+  @override
+  String get glVouchBody =>
+      'Organisatoren können füreinander bürgen. Eine Bürgschaft ist ein öffentliches, signiertes Votum — nach dem Publizieren sieht das ganze Netzwerk, für wen du stehst. Sie lässt sich jederzeit widerrufen, aber der Widerruf ist ebenso sichtbar.';
+
+  @override
+  String get glEventNetTitle => 'Netzwerk aus Events';
+
+  @override
+  String get glEventNetBody =>
+      'Sondereevents werden getrennt gezählt. Auf einem Meetup mit fünfzehn Leuten trifft man jeden — auf einem Event mit fünfhundert nicht. Beides im selben Topf würde die Aussage des Netzwerks entwerten, deshalb hat es eine eigene Kategorie.';
+
+  @override
+  String get glKeysTitle => 'nsec und npub';
+
+  @override
+  String get glKeysBody =>
+      'Dein npub ist deine öffentliche Adresse — die darfst und sollst du teilen. Der nsec ist der private Schlüssel und gehört niemandem sonst: Wer ihn hat, IST du. Ein Zurücksetzen gibt es nicht. Ist der nsec weg, ist die Identität samt Reputation verloren.';
+
+  @override
+  String get glPasswordTitle => 'Die beiden Passwörter';
+
+  @override
+  String get glPasswordBody =>
+      'Beim Einrichten legst du ein Passwort fest, das deinen Schlüssel auf dem Gerät verpackt. Beim Backup vergibst du ein zweites, das die Sicherungsdatei verschlüsselt. Sie dürfen gleich sein, sind aber unabhängig voneinander — und für beide gibt es kein Zurücksetzen.';
+
+  @override
+  String get glSignerTitle => 'Signer-Apps';
+
+  @override
+  String get glSignerBody =>
+      'Statt den Schlüssel in dieser App zu halten, kannst du ihn einer Signer-App wie Amber anvertrauen oder über einen Bunker anbinden. Diese App fragt dann bei jeder Signatur dort nach und sieht den Schlüssel selbst nie.';
+
+  @override
+  String get glBackupTitle => 'Das Backup';
+
+  @override
+  String get glBackupBody =>
+      'Sichert Schlüssel, Badges und Einstellungen in eine verschlüsselte Datei. Ohne sie ist bei Geräteverlust alles weg — Handy weg heißt sonst Reputation weg. Leg sie früh an, nicht erst wenn du sie brauchst, und bewahre die Datei getrennt vom Passwort auf.';
+
+  @override
+  String get glSpecialEventTitle => 'Sondereevents';
+
+  @override
+  String get glSpecialEventBody =>
+      'Neben den regelmäßigen Meetups gibt es einmalige Veranstaltungen, für die eigene Badges vergeben werden. Sie zählen als Badge und für die Vielfalt der Aussteller, aber nicht als besuchtes Meetup — drei Großevents ersetzen keine lokale Gemeinschaft.';
+
+  @override
+  String get glEventHelperTitle => 'Helfer beim Event';
+
+  @override
+  String get glEventHelperBody =>
+      'Wer ein Event mit Badge anlegt, kann beliebige npubs als Aussteller eintragen. Diese Helfer brauchen keine Organisatoren-Rolle — die Erlaubnis steht im Termin und gilt nur für dieses eine Event. Jeder Helfer zeigt dabei seinen eigenen QR-Code.';
+
+  @override
+  String get glEventWindowTitle => 'Ort und Zeitfenster';
+
+  @override
+  String get glEventWindowBody =>
+      'Ein Event-Badge lässt sich nur am Tag der Veranstaltung und nur in der Nähe des eingetragenen Orts ausgeben. Beides zusammen verhindert, dass jemand von zu Hause aus Badges für eine Veranstaltung verteilt, bei der er gar nicht ist.';
+
+  @override
+  String get glRelaysTitle => 'Relays';
+
+  @override
+  String get glRelaysBody =>
+      'Relays sind die Server, über die Nostr-Nachrichten laufen. Die App schreibt auf mehrere gleichzeitig, damit nichts verloren geht, wenn einer ausfällt. Du kannst in den Einstellungen eigene hinzufügen — sie werden vor dem Speichern auf Erreichbarkeit geprüft.';
+
+  @override
+  String get glPublicTitle => 'Was öffentlich ist';
+
+  @override
+  String get glPublicBody =>
+      'Badges, Anwesenheiten und Bürgschaften liegen offen auf den Relays — jeder kann sie lesen und nachrechnen, das ist der Sinn der Sache. Nicht öffentlich sind dein privater Schlüssel, dein Backup-Passwort und dein genauer Standort.';
+
+  @override
+  String get glZapTitle => 'Zaps';
+
+  @override
+  String get glZapBody =>
+      'Ein Zap ist eine kleine Lightning-Zahlung mit einer Nostr-Quittung daran. In den News kannst du damit Autoren direkt etwas zukommen lassen; die Rechnung übergibt die App an deine Wallet. Ein einmaliger Zap dient außerdem als Proof of Humanity.';
+
+  @override
+  String get guideEvBasicsTitle => 'Titel und Ort';
+
+  @override
+  String get guideEvBasicsBody =>
+      'Der Titel steht später in der Terminliste und auf dem Badge, falls du eines vergibst. Der Ort ist die Anschrift zum Vorlesen — die Koordinaten für die Badge-Ausgabe setzt du weiter unten getrennt auf der Karte.';
+
+  @override
+  String get guideEvWhenWhereTitle => 'Wann es stattfindet';
+
+  @override
+  String get guideEvWhenWhereBody =>
+      'Start ist Pflicht, das Ende darfst du weglassen. Bei einem Event mit Badge zählt der Kalendertag: Badges lassen sich nur an diesem Tag ausgeben, von Mitternacht bis Mitternacht.';
+
+  @override
+  String get glCatApp => 'App & Bedienung';
+
+  @override
+  String get glTilesTitle => 'Dashboard anpassen';
+
+  @override
+  String get glTilesBody =>
+      'Halte eine Kachel lange gedrückt, um sie zu verschieben oder auszublenden. Trust Score und Home-Meetup bleiben immer sichtbar, alles andere kannst du loslösen. Ausgeblendete Kacheln landen in der Verwaltung und lassen sich jederzeit zurückholen.';
+
+  @override
+  String get glLanguageTitle => 'Sprache';
+
+  @override
+  String get glLanguageBody =>
+      'Die App gibt es auf Deutsch, Englisch und Spanisch. Ohne eigene Wahl folgt sie der Systemsprache. Umstellen kannst du sie in den Einstellungen; die Änderung greift sofort, ein Neustart ist nicht nötig.';
+
+  @override
+  String get glLogTitle => 'Diagnose-Log';
+
+  @override
+  String get glLogBody =>
+      'Ein Protokoll dessen, was die App im Hintergrund tut — welche Relays geantwortet haben, warum ein Scan abgelehnt wurde. Wenn etwas klemmt, ist das die erste Anlaufstelle. Es bleibt auf dem Gerät und wird nirgends hochgeladen.';
+
+  @override
+  String get glResetTitle => 'App zurücksetzen';
+
+  @override
+  String get glResetBody =>
+      'Löscht Profil, Schlüssel und alle Badges vom Gerät — endgültig. Ohne Backup ist deine Identität danach weg, auch wenn die Badges auf den Relays weiterleben: Ohne den passenden Schlüssel kannst du sie niemandem mehr zuordnen. Mach vorher ein Backup.';
+
+  @override
+  String get glNicknameTitle => 'Dein Anzeigename';
+
+  @override
+  String get glNicknameBody =>
+      'Der Name, unter dem du im Netzwerk erscheinst. Er ist frei wählbar, muss nicht dein echter sein und lässt sich jederzeit ändern — deine Identität hängt am Schlüssel, nicht am Namen.';
+
+  @override
+  String get glFindMeetupTitle => 'Meetups finden';
+
+  @override
+  String get glFindMeetupBody =>
+      'Über die Meetup-Suche kommst du an alle eingetragenen Gruppen. In der Nähe zeigt dir stattdessen, was rund um deinen aktuellen Standort liegt — nützlich auf Reisen oder wenn du eine zweite Gruppe in der Region suchst.';
+
+  @override
+  String get glBlockHeightTitle => 'Die Blockhöhe';
+
+  @override
+  String get glBlockHeightBody =>
+      'Jedes Badge trägt die Nummer des Bitcoin-Blocks, der beim Scan gerade aktuell war. Sie wirkt wie ein Zeitstempel, den niemand nachträglich verschieben kann — anders als die Uhr eines Handys, die sich beliebig stellen lässt.';
+
+  @override
+  String get glChecksumTitle => 'Die Prüfsumme';
+
+  @override
+  String get glChecksumBody =>
+      'Ein kurzer Fingerabdruck über den gesamten Badge-Inhalt. Zwei Menschen können ihre Badges vom selben Meetup vergleichen: Stimmen die Prüfsummen überein, haben beide dieselben Daten erhalten. Sie steht in den Badge-Details und auf dem geteilten Bild.';
+
+  @override
+  String get glWorldMapTitle => 'Die Badge-Weltkarte';
+
+  @override
+  String get glWorldMapBody =>
+      'Zeigt deine gesammelten Badges dort, wo du sie bekommen hast. Aus einer Liste von Namen wird so eine Landkarte deiner Meetup-Besuche — praktisch, um zu sehen, wo noch weiße Flecken sind.';
+
+  @override
+  String get glDuplicateTitle => 'Doppelte Badges';
+
+  @override
+  String get glDuplicateBody =>
+      'Pro Meetup und Tag gibt es genau ein Badge. Wer denselben Code zweimal scannt, bekommt kein zweites — das ist Absicht: Ein Badge steht für einen Besuch, nicht für einen Scan.';
+
+  @override
+  String get glVerifyPersonTitle => 'Jemanden prüfen';
+
+  @override
+  String get glVerifyPersonBody =>
+      'Lass dir den Reputations-QR der anderen Person zeigen und scanne ihn. Die App rechnet nach, ob die Angaben zu den signierten Badges passen, und zeigt dir, wie ihr im Netzwerk verbunden seid. Nützlich vor einem Handel unter Fremden.';
+
+  @override
+  String get glRepCardTitle => 'Die Reputationskarte';
+
+  @override
+  String get glRepCardBody =>
+      'Eine teilbare Übersicht deiner Reputation als Bild — Stufe, Anzahl der Meetups, Zeitraum. Sie enthält keinen privaten Schlüssel und lässt sich bedenkenlos posten.';
+
+  @override
+  String get glPublishTitle => 'Reputation veröffentlichen';
+
+  @override
+  String get glPublishBody =>
+      'Damit andere deine Reputation prüfen können, muss sie auf den Relays liegen. Die App veröffentlicht sie signiert; ohne diesen Schritt sieht ein Gegenüber nur, was du ihm direkt zeigst.';
+
+  @override
+  String get glTrustPathTitle => 'Vertrauenspfad';
+
+  @override
+  String get glTrustPathBody =>
+      'Zeigt die Kette, über die du mit einer anderen Person verbunden bist — wer wen wo getroffen hat. Aus einer abstrakten Zahl wird damit eine nachvollziehbare Aussage: nicht nur dass ihr verbunden seid, sondern worüber.';
+
+  @override
+  String get glDistrustTitle => 'Meldungen und Suspendierung';
+
+  @override
+  String get glDistrustBody =>
+      'Organisatoren können Missbrauch melden. Häufen sich Meldungen gegen jemanden, wird er im Netzwerk als suspendiert markiert — seine Badges verschwinden nicht, aber sie tragen diese Warnung. Auch eine Meldung ist signiert und damit dem Melder zuzuordnen.';
+
+  @override
+  String get glOrganizerTitle => 'Organisator werden';
+
+  @override
+  String get glOrganizerBody =>
+      'Ab einem bestimmten Trust Score kannst du selbst Sessions starten. Zusätzlich brauchst du in der Regel Bürgschaften bestehender Organisatoren — die Rolle wird nicht vergeben, sie wächst aus dem Netzwerk.';
+
+  @override
+  String get glNcryptsecTitle => 'ncryptsec';
+
+  @override
+  String get glNcryptsecBody =>
+      'Ein nsec, der mit einem Passwort verschlüsselt ist (NIP-49). Die Zeichenfolge beginnt mit ncryptsec1 und ist ohne Passwort wertlos — sie lässt sich also gefahrloser transportieren als ein blanker nsec. Genau so liegt dein Schlüssel auch auf dem Gerät.';
+
+  @override
+  String get glPasskeyTitle => 'Passkey';
+
+  @override
+  String get glPasskeyBody =>
+      'Zusätzlicher Schutz per Fingerabdruck oder Gesichtserkennung. Der Passkey ersetzt dein Passwort nicht, er legt sich davor. Freiwillig, und nur auf diesem Gerät — auf einem neuen brauchst du wieder Passwort oder Backup.';
+
+  @override
+  String get glNip05Title => 'NIP-05-Adresse';
+
+  @override
+  String get glNip05Body =>
+      'Eine lesbare Adresse der Form name@domain, die auf deinen Schlüssel zeigt — wie ein Namensschild fürs Netzwerk. Sie beweist, dass jemand mit Zugriff auf diese Domain für dich bürgt, ersetzt aber keine der anderen Prüfungen.';
+
+  @override
+  String get glImportTitle => 'Schlüssel mitbringen';
+
+  @override
+  String get glImportBody =>
+      'Wer schon eine Nostr-Identität hat, kann sie hier einsetzen — als nsec, als ncryptsec oder über einen Bunker. Deine bestehenden Kontakte und dein Profil bleiben dabei erhalten; die App legt nur Badges und Reputation dazu.';
+
+  @override
+  String get glRestoreTitle => 'Backup einspielen';
+
+  @override
+  String get glRestoreBody =>
+      'Beim Einrichten kannst du statt eines neuen Schlüssels ein Backup laden. Du brauchst die Datei UND das Passwort, mit dem sie verschlüsselt wurde — eines allein genügt nicht. Danach ist die Identität samt Badges wieder da.';
+
+  @override
+  String get glCalendarSourcesTitle => 'Woher die Termine kommen';
+
+  @override
+  String get glCalendarSourcesBody =>
+      'Der Kalender führt zwei Quellen zusammen: Termine aus dem Einundzwanzig-Portal und Veranstaltungen, die jemand über Nostr eingetragen hat. Die Farbe unterscheidet sie — Portal-Meetups orange, Nostr-Termine türkis.';
+
+  @override
+  String get glPortalTitle => 'Die Portal-Verbindung';
+
+  @override
+  String get glPortalBody =>
+      'Mit deinem Nostr-Schlüssel kannst du dich am Einundzwanzig-Portal anmelden. Danach siehst du dort gepflegte Termine und Kurse und kannst als Leader eigene Termine anlegen. Ohne Verbindung funktioniert alles andere weiterhin.';
+
+  @override
+  String get glCreateEventTitle => 'Termin anlegen';
+
+  @override
+  String get glCreateEventBody =>
+      'Jeder kann einen Termin eintragen — er wird signiert auf Nostr veröffentlicht und erscheint bei allen im Kalender. Ein Badge dazu vergeben dürfen allerdings nur Organisatoren und Leader.';
+
+  @override
+  String get glNostrBasicsTitle => 'Was Nostr ist';
+
+  @override
+  String get glNostrBasicsBody =>
+      'Ein offenes Protokoll für Nachrichten, die ihr Absender selbst signiert. Es gibt kein Unternehmen dahinter und kein Konto, das gesperrt werden könnte — nur Schlüssel und Relays. Deine Identität aus dieser App funktioniert deshalb auch in anderen Nostr-Anwendungen.';
+
+  @override
+  String get glNewsTitle => 'Der News-Bereich';
+
+  @override
+  String get glNewsBody =>
+      'Die Artikel stammen aus dem Einundzwanzig-Magazin und liegen als Nostr-Langtexte vor. Du kannst sie in der App lesen, mit einem Herz versehen, teilen und den Autoren Sats zappen — alles über dieselbe Identität.';
+
+  @override
+  String get glConverterTitle => 'Umrechner und Kurs';
+
+  @override
+  String get glConverterBody =>
+      'Rechnet Euro in Sats um und zurück. Der Kurs und die Blockhöhe kommen von einer Mempool-Instanz; welche das ist, kannst du in den Einstellungen ändern — etwa auf deine eigene Node.';
+
+  @override
+  String get glCommunityTitle => 'Community-Bereich';
+
+  @override
+  String get glCommunityBody =>
+      'Sammelpunkt für alles rund um Einundzwanzig, was nicht direkt mit Badges zu tun hat: Podcast, Shoutouts, PlebRap, SatoshiDuell und die Meetup-Karte. Vieles davon öffnet sich im Browser.';
+
+  @override
+  String get settingsRestartGuide => 'Tour wiederholen';
+
+  @override
+  String get settingsRestartGuideSub => 'Alle Spotlight-Touren erneut anzeigen';
+
+  @override
+  String get settingsGuideReset =>
+      'Touren zurückgesetzt — sie starten beim nächsten Öffnen der Bereiche.';
+
+  @override
+  String get guideSettingsRestartTitle => 'Tour wiederholen';
+
+  @override
+  String get guideSettingsRestartBody =>
+      'Setzt alle Spotlight-Touren zurück. Sie starten dann wieder, sobald du den jeweiligen Bereich das nächste Mal öffnest — nützlich, wenn du etwas noch einmal sehen willst.';
+
+  @override
+  String get guideWalletMapTitle => 'Weltkarte';
+
+  @override
+  String get guideWalletMapBody =>
+      'Zeigt deine Badges dort, wo du sie eingesammelt hast. Aus einer Liste wird eine Landkarte deiner Meetup-Besuche.';
+
+  @override
+  String get guideWalletViewTitle => 'Ansicht wechseln';
+
+  @override
+  String get guideWalletViewBody =>
+      'Umschalten zwischen großen Karten und einer kompakten Übersicht. Bei vielen Badges ist die kompakte Ansicht schneller zu überblicken.';
+
+  @override
+  String get guideCommunityPortalTitle => 'Das Portal';
+
+  @override
+  String get guideCommunityPortalBody =>
+      'Der Zugang zu Meetups, Terminen, Kursen und der Karte auf einundzwanzig.space. Vieles davon öffnet sich im Browser.';
+
+  @override
+  String get guideCommunityNewsTitle => 'News und Nostr';
+
+  @override
+  String get guideCommunityNewsBody =>
+      'Artikel aus dem Einundzwanzig-Magazin und die neuesten Notizen aus deinem Nostr-Netzwerk — beides direkt in der App lesbar.';
+
+  @override
+  String get guideCommunityFunTitle => 'Zum Mitmachen';
+
+  @override
+  String get guideCommunityFunBody =>
+      'SatoshiDuell für Quizrunden um Sats und PlebRap für Musik aus der Community. Beides braucht nichts weiter als deine Identität.';
+
+  @override
+  String get guideMyMeetupsListTitle => 'Deine Meetups';
+
+  @override
+  String get guideMyMeetupsListBody =>
+      'Die Meetups, für die du im Portal eingetragen bist. Tippe eines an, um seine Termine zu sehen und zu pflegen — dort legst du mit dem Knopf unten auch neue an.';
+
+  @override
+  String get guideMyMeetupsCreateTitle => 'Termin anlegen';
+
+  @override
+  String get guideMyMeetupsCreateBody =>
+      'Trägt einen neuen Termin im Portal ein. Er erscheint danach im Kalender aller, die dieses Meetup als Favorit haben.';
+
+  @override
+  String get guideWotTabsTitle => 'Die drei Ansichten';
+
+  @override
+  String get guideWotTabsBody =>
+      'Netzwerk zeigt, wer mit wem verbunden ist. Bürgen zeigt, für wen du stehst und wer für dich. Meldungen sammelt die Warnungen aus dem Netzwerk.';
+
+  @override
+  String get guideWotRefreshTitle => 'Neu laden';
+
+  @override
+  String get guideWotRefreshBody =>
+      'Holt den aktuellen Stand von den Relays. Das Netzwerk wächst mit jedem Meetup — ohne Nachladen siehst du den Stand vom letzten Öffnen.';
+
+  @override
+  String get guideHomeCustomizeTitle => 'Dein Dashboard';
+
+  @override
+  String get guideHomeCustomizeBody =>
+      'Unter dieser Überschrift liegen die Kacheln, die du gerade nicht angeheftet hast — sie sind nicht weg, nur zurückgestellt. Halte eine Kachel lange gedrückt, um sie anzuheften, zu lösen oder zu verschieben. So bekommst du oben genau das, was du wirklich benutzt.';
+
+  @override
+  String get guidePaMeetupsTitle => 'Meetups und Termine';
+
+  @override
+  String get guidePaMeetupsBody =>
+      'Beide führen in den Kalender: das eine zu den Gruppen, das andere zu den nächsten Terminen. Was du dort siehst, hängt an deinen Favoriten — mit mehr Favoriten wird die Liste voller.';
+
+  @override
+  String get guidePaCoursesTitle => 'Kurse';
+
+  @override
+  String get guidePaCoursesBody =>
+      'Die Bildungsangebote von Einundzwanzig samt Dozenten — vom Einsteigerabend bis zur mehrteiligen Reihe. Ein Tipp auf einen Kurs zeigt Inhalt, Termine und wer ihn hält.';
+
+  @override
+  String get guidePaMapTitle => 'Die Karte';
+
+  @override
+  String get guidePaMapBody =>
+      'Zeigt Meetups in deiner Umgebung auf einer Landkarte. Praktisch auf Reisen — oder wenn du wissen willst, was es außer deinem Home-Meetup noch in der Region gibt.';
+
+  @override
+  String get guidePaMineTitle => 'Meine Meetups';
+
+  @override
+  String get guidePaMineBody =>
+      'Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste.';
+
+  @override
+  String get guideSettingsProfileTitle => 'Profil und Schlüssel';
+
+  @override
+  String get guideSettingsProfileBody =>
+      'Hier änderst du deinen Namen und dein Home-Meetup — und hier liegen deine Nostr-Schlüssel. Ganz unten kannst du den npub kopieren und dir den nsec anzeigen lassen. Wenn die App dir einen Schlüssel erstellt hat, ist das der Ort, an dem du ihn findest.';
+
+  @override
+  String get glFindKeysTitle => 'Wo finde ich meine Schlüssel?';
+
+  @override
+  String get glFindKeysBody =>
+      'Einstellungen → Profil, ganz unten. Dort kopierst du den npub mit einem Tipp und lässt dir den nsec anzeigen — letzteres nur nach einer Warnung, denn wer den nsec sieht, hat deine Identität. Nutzt du Amber, eine Browsererweiterung oder einen Bunker, gibt es hier keinen nsec: Der liegt dann dort und nicht in dieser App.';
+
+  @override
+  String get idSetupSecureTitle => 'Identität erstellt — jetzt sichern';
+
+  @override
+  String get idSetupSecureBody =>
+      'Es gibt zwei Arten zu sichern — sie können unterschiedliche Dinge. Am besten machst du beides.';
+
+  @override
+  String get idSetupSecureBackup => 'Backup erstellen';
+
+  @override
+  String get idSetupSecureCopy => 'Schlüssel in die Zwischenablage';
+
+  @override
+  String get idSetupSecureWhere =>
+      'Deine Schlüssel findest du jederzeit unter Einstellungen → Profil.';
+
+  @override
+  String get idSetupSecureBackupTitle => 'Backup-Datei';
+
+  @override
+  String get idSetupSecureBackupBody =>
+      'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Die Datei ist mit einem eigenen Passwort verschlüsselt.';
+
+  @override
+  String get idSetupSecureKeyTitle => 'Verschlüsselter Schlüssel';
+
+  @override
+  String get idSetupSecureKeyBody =>
+      'Zum Schluss noch dein Nostr-Schlüssel allein, mit deinem Passwort verpackt (ncryptsec). Er rettet deine Identität, aber keine Badges — dafür veraltet er nie und passt in jeden Passwortmanager.';
+
+  @override
+  String get idSetupSecureRepeat =>
+      'Wiederhole das Backup ab und zu unter Einstellungen → Backup. Eine Datei von heute kennt die Badges von morgen nicht — was danach dazukommt, wäre bei einem Geräteverlust weg.';
+
+  @override
+  String get idSetupSecureKeySave => 'Als Datei speichern';
+
+  @override
+  String get idSetupSecureKeySaved => 'Schlüsseldatei gespeichert.';
+
+  @override
+  String get idSetupSecureSkip => 'Überspringen';
+
+  @override
+  String get idSetupSecureFileHeader =>
+      'Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf.';
 }

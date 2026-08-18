@@ -2,7 +2,10 @@
 // IDENTITY SETUP — Erststart „Neu“ / „Schon dabei“
 // ============================================
 
+import 'dart:convert';
 import 'dart:ui' as ui;
+
+import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -335,6 +338,18 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     await _offerBackupThenHome();
   }
 
+  /// Nach dem Anlegen: Identitaet sichern — in ZWEI Schritten.
+  ///
+  /// Warum nacheinander statt nebeneinander: Zwei gleichwertige Knoepfe
+  /// laden dazu ein, sich fuer einen zu entscheiden. Genau das soll man
+  /// hier nicht. Die beiden Sicherungen koennen Verschiedenes:
+  ///
+  ///   Backup-Datei  — Schluessel PLUS Badges, Reputation, Einstellungen.
+  ///                   Veraltet mit der Zeit, muss also wiederholt werden.
+  ///   ncryptsec     — nur der Schluessel, mit dem Passwort verpackt.
+  ///                   Veraltet nie, rettet aber auch nur die Identitaet.
+  ///
+  /// Deshalb erst das eine, dann das andere, mit Fortschritt oben.
   Future<void> _offerBackupThenHome() async {
     if (!mounted) return;
     setState(() => _busy = false);
@@ -343,52 +358,208 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
       await showModalBottomSheet<void>(
         context: context,
         backgroundColor: cCard,
+        isScrollControlled: true,
+        // Nicht wegwischbar: Dieses eine Blatt soll man lesen. Der
+        // "Spaeter"-Knopf bleibt der Ausweg.
+        isDismissible: false,
+        enableDrag: false,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        builder: (ctx) {
-          final t = AppLocalizations.of(ctx);
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(t.idSetupBackupTitle,
-                    style: const TextStyle(
-                        color: cText,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Text(t.idSetupBackupBody,
-                    style: const TextStyle(color: cTextSecondary, height: 1.4)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: wrap));
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(t.keyExportCopied)),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cOrange,
-                    foregroundColor: Colors.black,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setSheet) {
+            final t = AppLocalizations.of(ctx);
+            final step2 = _secureStep == 2;
+
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(children: [
+                        Icon(step2 ? Icons.key_rounded : Icons.save_alt_rounded,
+                            color: cOrange, size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                              step2
+                                  ? t.idSetupSecureKeyTitle
+                                  : t.idSetupSecureBackupTitle,
+                              style: const TextStyle(
+                                  color: cText,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                        Text(step2 ? '2/2' : '1/2',
+                            style: const TextStyle(
+                                color: cTextTertiary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700)),
+                      ]),
+                      const SizedBox(height: 10),
+                      Text(
+                          step2
+                              ? t.idSetupSecureKeyBody
+                              : t.idSetupSecureBackupBody,
+                          style: const TextStyle(
+                              color: cTextSecondary,
+                              height: 1.45,
+                              fontSize: 13.5)),
+
+                      const SizedBox(height: 16),
+                      // Der Merksatz gehoert zu Schritt 1: Ein Backup von
+                      // heute kennt die Badges von morgen nicht.
+                      if (!step2)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: cOrange.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.update_rounded,
+                                    color: cOrange, size: 16),
+                                const SizedBox(width: 9),
+                                Expanded(
+                                  child: Text(t.idSetupSecureRepeat,
+                                      style: const TextStyle(
+                                          color: cTextSecondary,
+                                          fontSize: 12,
+                                          height: 1.45)),
+                                ),
+                              ]),
+                        ),
+
+                      if (step2)
+                        Row(crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.info_outline_rounded,
+                                  color: cTextTertiary, size: 15),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(t.idSetupSecureWhere,
+                                    style: const TextStyle(
+                                        color: cTextTertiary,
+                                        fontSize: 11.5,
+                                        height: 1.4)),
+                              ),
+                            ]),
+
+                      const SizedBox(height: 18),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          if (step2) {
+                            await _saveKeyFile(wrap);
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          } else {
+                            await BackupService.createBackup(context);
+                            setSheet(() => _secureStep = 2);
+                          }
+                        },
+                        icon: const Icon(Icons.save_alt_rounded,
+                            color: Colors.black, size: 18),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cOrange,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        label: Text(
+                            step2
+                                ? t.idSetupSecureKeySave
+                                : t.idSetupSecureBackup,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w800)),
+                      ),
+
+                      if (step2) ...[
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: wrap));
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(t.keyExportCopied)),
+                            );
+                          },
+                          icon: const Icon(Icons.copy_rounded,
+                              color: cTextSecondary, size: 18),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: cTileBorder),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                          ),
+                          label: Text(t.idSetupSecureCopy,
+                              style: const TextStyle(color: cTextSecondary)),
+                        ),
+                      ],
+
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: () {
+                          // Ueberspringen fuehrt in Schritt 1 WEITER zu
+                          // Schritt 2 statt gleich hinaus: Wer die Datei
+                          // nicht will, soll wenigstens den Schluessel sehen.
+                          if (step2) {
+                            Navigator.pop(ctx);
+                          } else {
+                            setSheet(() => _secureStep = 2);
+                          }
+                        },
+                        child: Text(
+                            step2 ? t.idSetupBackupLater : t.idSetupSecureSkip,
+                            style: const TextStyle(color: cTextSecondary)),
+                      ),
+                    ],
                   ),
-                  child: Text(t.idSetupBackupCopy),
                 ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text(t.idSetupBackupLater,
-                      style: const TextStyle(color: cTextSecondary)),
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       );
     }
     await _continueAfterIdentity();
+  }
+
+  /// Welcher der beiden Sicherungsschritte gerade offen ist.
+  int _secureStep = 1;
+
+  /// Schreibt den verschluesselten Schluessel als Datei.
+  ///
+  /// Die Zwischenablage bleibt als zweiter Weg bestehen, ist aber nicht mehr
+  /// der einzige: Sie wird von anderen Apps mitgelesen, und ein Wert, den
+  /// man Jahre aufheben soll, gehoert nicht dorthin.
+  Future<void> _saveKeyFile(String wrap) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final t = AppLocalizations.of(context);
+    final now = DateTime.now();
+    final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')}';
+    final fileName = 'Nostr-Schluessel_${dateStr}_21MeetupApp.txt';
+
+    // Klartext im Sinne von lesbar — verschluesselt ist der Inhalt selbst.
+    // Die Erklaerzeile steht mit drin, weil so eine Datei Jahre spaeter
+    // gefunden wird und dann niemand mehr weiss, was das ist.
+    final content = '${t.idSetupSecureFileHeader}\n\n$wrap\n';
+
+    try {
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: t.idSetupSecureKeySave,
+        fileName: fileName,
+        bytes: Uint8List.fromList(utf8.encode(content)),
+      );
+      if (path == null) return; // abgebrochen
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.idSetupSecureKeySaved), backgroundColor: cGreen));
+    } catch (e) {
+      // Kein Speicherdialog (etwa im Browser): dann bleibt die Zwischenablage.
+      await Clipboard.setData(ClipboardData(text: wrap));
+      messenger.showSnackBar(SnackBar(content: Text(t.keyExportCopied)));
+    }
   }
 
   Future<void> _connectPrimary() async {
@@ -687,7 +858,11 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                   ),
                   const SizedBox(height: 16),
                 ],
-                if (_busy || _bootstrapping)
+                // Nur noch beim ANFANGSLADEN ein Balken. Waehrend einer
+                // Aktion sitzt der Ladekringel jetzt IM Knopf — dort, wo
+                // gerade getippt wurde. Der Balken oben erschien weit weg
+                // vom Finger und wirkte dadurch verzoegert.
+                if (_bootstrapping)
                   const Padding(
                     padding: EdgeInsets.only(bottom: 16),
                     child: LinearProgressIndicator(
@@ -821,7 +996,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         const SizedBox(height: 24),
         // Gesperrt, solange die Bedingungen offen sind — zusammen mit der
         // Liste darueber ist damit sichtbar, WORAN es liegt.
-        _primaryButton(t.idSetupCreate, _pwOk ? _register : null),
+        _primaryButton(t.idSetupCreate, _pwOk ? _register : null, busy: _busy),
       ];
 
   List<Widget> _buildResume(AppLocalizations t) => [
@@ -835,7 +1010,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         ),
         const SizedBox(height: 24),
         if (_hasLocalKey)
-          _primaryButton(t.idSetupResumeContinue, () => _resume())
+          _primaryButton(t.idSetupResumeContinue, () => _resume(), busy: _busy)
         else if (_hasPasskeyWrap && !_resumeUsePassword) ...[
           _primaryButton(
               t.idSetupResumePasskey, () => _resume(usePasskey: true)),
@@ -859,7 +1034,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
           _field(_resumePassCtrl, t.idSetupPasswordLabel, Icons.lock_outline,
               obscure: true),
           const SizedBox(height: 16),
-          _primaryButton(t.idSetupResumeContinue, () => _resume()),
+          _primaryButton(t.idSetupResumeContinue, () => _resume(), busy: _busy),
         ],
       ];
 
@@ -867,7 +1042,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         Text(t.idSetupPasskeyBody,
             style: const TextStyle(color: cTextSecondary, height: 1.4)),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupPasskeyAction, _addPasskey),
+        _primaryButton(t.idSetupPasskeyAction, _addPasskey, busy: _busy),
         const SizedBox(height: 8),
         TextButton(
           onPressed: _skipPasskey,
@@ -928,7 +1103,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         _field(_importPassCtrl, t.idSetupImportPasswordLabel, Icons.lock_outline,
             obscure: true),
         const SizedBox(height: 16),
-        _primaryButton(t.idSetupImportAction, _importKey),
+        _primaryButton(t.idSetupImportAction, _importKey, busy: _busy),
         const SizedBox(height: 20),
         if (_path != RecommendedExistingPath.bunker) ...[
           _card(
@@ -983,7 +1158,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         const SizedBox(height: 20),
         _field(_nameCtrl, t.idSetupNameLabel, Icons.badge_outlined),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupContinue, _saveNameOnly),
+        _primaryButton(t.idSetupContinue, _saveNameOnly, busy: _busy),
       ];
 
   List<Widget> _buildMeetup(AppLocalizations t) => [
@@ -1011,7 +1186,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
           ),
           const SizedBox(height: 24),
           if (_selectedMeetupCities.isNotEmpty)
-            _primaryButton(t.idSetupMeetupContinue, _saveMeetupAndHome),
+            _primaryButton(t.idSetupMeetupContinue, _saveMeetupAndHome, busy: _busy),
           TextButton(
             onPressed: _goHome,
             child: Text(t.idSetupMeetupLater,
@@ -1149,8 +1324,13 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
   /// [onPressed] darf null sein — dann ist der Knopf gesperrt und der
   /// Farbverlauf weicht einer stumpfen Flaeche. Ohne diesen Unterschied
   /// saehe ein gesperrter Knopf aus wie ein bedienbarer, der nichts tut.
-  Widget _primaryButton(String label, VoidCallback? onPressed) {
-    final enabled = onPressed != null;
+  /// [busy] zeigt einen Ladekringel STATT der Beschriftung und sperrt den
+  /// Knopf. Ohne das sah "Loslegen" beim Anlegen des Schluessels tot aus:
+  /// Die Ableitung dauert spuerbar, und wer keine Rueckmeldung bekommt,
+  /// tippt ein zweites und drittes Mal.
+  Widget _primaryButton(String label, VoidCallback? onPressed,
+      {bool busy = false}) {
+    final enabled = onPressed != null && !busy;
     return SizedBox(
       width: double.infinity,
       height: 52,
@@ -1170,11 +1350,17 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: Text(label,
-              style: TextStyle(
-                  color: enabled ? Colors.black : cTextTertiary,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5)),
+          child: busy
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2.4, color: Colors.black))
+              : Text(label,
+                  style: TextStyle(
+                      color: enabled ? Colors.black : cTextTertiary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5)),
         ),
       ),
     );

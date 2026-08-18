@@ -16,7 +16,11 @@ import '../widgets/npub_chip.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'dart:convert';
 import '../theme.dart';
+import 'package:provider/provider.dart';
+
 import '../l10n/app_localizations.dart';
+import '../services/guide_service.dart';
+import '../tours/more_tours.dart';
 import '../services/app_logger.dart';
 import '../services/vouching_service.dart';
 import '../services/admin_registry.dart';
@@ -58,10 +62,24 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
       if (mounted) setState(() {});
     });
     _loadAll();
+    _startTour();
+  }
+
+  Future<void> _startTour() async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.reputation)) return;
+    if (!mounted) return;
+    await guide.startTour(GuideTour.reputation, WotTour.steps());
   }
 
   @override
   void dispose() {
+    // Bildschirm zu, Tour raus.
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.reputation) guide.finishTour();
+
     _tabController.dispose();
     super.dispose();
   }
@@ -262,6 +280,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
         title: Text(AppLocalizations.of(context).wotTitle),
         actions: [
           IconButton(
+            key: WotTour.refreshKey,
             icon: _isRefreshing
                 ? const SizedBox(
                     width: 20, height: 20,
@@ -272,6 +291,7 @@ class _WotDashboardScreenState extends State<WotDashboardScreen>
           ),
         ],
         bottom: TabBar(
+          key: WotTour.tabsKey,
           controller: _tabController,
           indicatorColor: cOrange,
           labelColor: cOrange,

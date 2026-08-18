@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'services/guide_service.dart';
+import 'widgets/guide_overlay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
@@ -183,7 +187,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Locale?>(
+    // GuideService liegt UEBER der MaterialApp: Die Spotlight-Tour muss
+    // ueber jeder Route liegen koennen, auch ueber Dialogen und Sheets.
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GuideService()),
+      ],
+      child: ValueListenableBuilder<Locale?>(
       valueListenable: LocaleController.locale,
       builder: (context, locale, _) {
         return MaterialApp(
@@ -197,21 +207,24 @@ class MyApp extends StatelessWidget {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) {
-            return Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 420),
-                decoration: BoxDecoration(
-                  border: Border.symmetric(
-                    vertical: BorderSide(color: cBorder, width: 0.5),
+            return GuideOverlay(
+              child: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  decoration: BoxDecoration(
+                    border: Border.symmetric(
+                      vertical: BorderSide(color: cBorder, width: 0.5),
+                    ),
                   ),
+                  child: child,
                 ),
-                child: child,
               ),
             );
           },
           home: const SplashScreen(),
         );
       },
+      ),
     );
   }
 }

@@ -5,6 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+
+import '../services/app_logger.dart';
+import '../services/guide_service.dart';
+import '../tours/home_tour.dart';
 import 'home_screen.dart';
 import 'badge_wallet.dart';
 import 'events_hub_screen.dart';
@@ -22,6 +27,123 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
   final _homeKey = GlobalKey<HomeScreenState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkHomeTour();
+  }
+
+  /// Startet die Dashboard-Tour beim ersten Mal.
+  ///
+  /// Warum das Warten: Der HomeScreen laedt Nutzer, Badges und Termine
+  /// asynchron. Die GlobalKeys der Kacheln existieren erst, wenn er MIT
+  /// Daten gezeichnet wurde — startete die Tour vorher, faende sie kein
+  /// einziges Ziel und arbeitete sich unsichtbar durch alle Schritte.
+  ///
+  /// Geprueft werden die beiden Pflicht-Kacheln: Trust Score und
+  /// Home-Meetup lassen sich nicht ausblenden, sie sind also immer da,
+  /// sobald der Bildschirm steht.
+  Future<void> _checkHomeTour() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      final guide = context.read<GuideService>();
+      if (await guide.wasTourCompleted(GuideTour.home)) return;
+      if (!mounted) return;
+
+      // ERST FRAGEN, dann fuehren.
+      //
+      // Die Einrichtung der Identitaet leitet inzwischen selbst Schritt fuer
+      // Schritt an — eine zweite Fuehrung gleich hinterher, ungefragt und
+      // ueber neunzehn Kacheln, waere zu viel. Wer ablehnt, wird nicht
+      // wieder gefragt; ueber "Tour wiederholen" in den Einstellungen
+      // kommt man jederzeit zurueck.
+      if (await guide.shouldAskForOnboarding()) {
+        await guide.markOnboardingAsked();
+        if (!mounted) return;
+        final wants = await _askForTour();
+        if (wants != true) return;
+      }
+      if (!mounted) return;
+
+      // 20 x 500 ms = 10 Sekunden. Vorher waren es 5 — zu wenig direkt
+      // nach dem Anlegen eines Kontos: Da laedt das Dashboard noch Profil,
+      // Meetups und Termine, und die Kacheln stehen erst danach im Baum.
+      // Wer dann "Tour starten" tippte, sah gar nichts, weil die Tour
+      // stillschweigend aufgab.
+      const maxAttempts = 20;
+      const waitPerAttempt = Duration(milliseconds: 500);
+
+      for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+        await Future.delayed(waitPerAttempt);
+        if (!mounted) return;
+
+        // Geprueft wird das Ziel des ERSTEN Schritts plus die Home-Meetup-
+        // Kachel. Frueher stand hier zusaetzlich die Trust-Score-Kachel —
+        // die ist seit der Migration "Score sitzt in der Kopfzeile"
+        // standardmaessig ausgeblendet und existiert bei den meisten Leuten
+        // gar nicht. Die Pruefung konnte damit nie erfuellt werden.
+        final ready = HomeTour.glossaryKey.currentContext != null &&
+            HomeTour.homeMeetupKey.currentContext != null;
+        AppLogger.debug('Guide',
+            'Dashboard-Tour, Versuch $attempt/$maxAttempts — Ziele bereit: $ready');
+        if (ready) {
+          await guide.startTour(GuideTour.home, HomeTour.steps());
+          return;
+        }
+      }
+
+      AppLogger.warn('Guide',
+          'Ziel-Widgets nach ${maxAttempts * waitPerAttempt.inMilliseconds} ms nicht gefunden — Dashboard-Tour startet nicht.');
+    });
+  }
+
+  /// Fragt, ob die Tour laufen soll. null oder false = nein.
+  Future<bool?> _askForTour() {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: cOrange, width: 1.5),
+        ),
+        title: Row(children: [
+          const Icon(Icons.lightbulb_outline, color: cOrange, size: 26),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(l10n.guideWelcomeTitle,
+                style: const TextStyle(
+                    color: cText, fontSize: 19, fontWeight: FontWeight.bold)),
+          ),
+        ]),
+        content: Text(l10n.guideWelcomeBody,
+            style: const TextStyle(
+                color: cTextSecondary, fontSize: 15, height: 1.4)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.guideNoThanks,
+                style: const TextStyle(color: cTextSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: cOrange,
+              foregroundColor: Colors.black,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.guideStart,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> _doHaptic() async {
     final prefs = await SharedPreferences.getInstance();
@@ -116,11 +238,15 @@ class _AppShellState extends State<AppShell> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _navItem(0, Icons.home_rounded, Icons.home_outlined, AppLocalizations.of(context).navHome),
-                        _navItem(1, Icons.style_rounded, Icons.style_outlined, AppLocalizations.of(context).navWalletTab),
+                        _navItem(0, Icons.home_rounded, Icons.home_outlined, AppLocalizations.of(context).navHome,
+                            navKey: HomeTour.homeTabKey),
+                        _navItem(1, Icons.style_rounded, Icons.style_outlined, AppLocalizations.of(context).navWalletTab,
+                            navKey: HomeTour.badgeTabKey),
                         const SizedBox(width: 60),
-                        _navItem(3, Icons.event_rounded, Icons.event_outlined, AppLocalizations.of(context).navEvents),
-                        _navAction(Icons.near_me_rounded, Icons.near_me_outlined, AppLocalizations.of(context).navNearby, _openNearby),
+                        _navItem(3, Icons.event_rounded, Icons.event_outlined, AppLocalizations.of(context).navEvents,
+                            navKey: HomeTour.eventsTabKey),
+                        _navAction(Icons.near_me_rounded, Icons.near_me_outlined, AppLocalizations.of(context).navNearby, _openNearby,
+                            navKey: HomeTour.nearbyTabKey),
                       ],
                     ),
                   ),
@@ -132,6 +258,7 @@ class _AppShellState extends State<AppShell> {
               left: 0, right: 0,
               child: Center(
                 child: GestureDetector(
+                  key: HomeTour.scanFabKey,
                   onTap: _openScanner,
                   child: Container(
                     width: 62, height: 62,
@@ -152,9 +279,10 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  Widget _navItem(int i, IconData a, IconData ia, String l) {
+  Widget _navItem(int i, IconData a, IconData ia, String l, {Key? navKey}) {
     final active = _currentIndex == i;
     return GestureDetector(
+      key: navKey,
       behavior: HitTestBehavior.opaque, onTap: () => _onTabTap(i),
       child: SizedBox(width: 60, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(active ? a : ia, color: active ? cText : cTextTertiary, size: 24),
@@ -164,8 +292,13 @@ class _AppShellState extends State<AppShell> {
   }
 
   // Leisten-Eintrag, der eine Route öffnet (kein Tab-State)
-  Widget _navAction(IconData a, IconData ia, String l, VoidCallback onTap) {
+  Widget _navAction(IconData a, IconData ia, String l, VoidCallback onTap,
+      {Key? navKey}) {
     return GestureDetector(
+      // Der Schluessel gehoert AN das Widget, nicht nur in die Signatur.
+      // Ohne diese Zeile fand die Tour "In der Nähe" nie und uebersprang
+      // den Schritt — die Pause davor war die Wartezeit.
+      key: navKey,
       behavior: HitTestBehavior.opaque, onTap: onTap,
       child: SizedBox(width: 60, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(ia, color: cTextTertiary, size: 24),

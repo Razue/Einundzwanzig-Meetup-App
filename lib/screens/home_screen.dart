@@ -71,13 +71,17 @@ import '../services/backup_service.dart';
 import '../services/promotion_claim_service.dart';
 import '../services/secure_key_store.dart';
 import '../services/local_key_vault.dart';
-import '../services/platform_proof_service.dart';
 import '../services/humanity_proof_service.dart';
-import '../services/nip05_service.dart';
 import '../services/app_logger.dart';
 import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+
+import '../services/guide_service.dart';
+import '../tours/home_tour.dart';
+import 'glossary_screen.dart';
+import '../tours/settings_tour.dart';
 import '../l10n/level_labels.dart';
 
 // ============================================================
@@ -106,10 +110,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   UserProfile _user = UserProfile();
   Meetup? _homeMeetup;
   TrustScore? _trustScore;
-  int _platformProofCount = 0;
-  bool _humanityVerified = false;
-  bool _nip05Verified = false;
-  List<String> _platformNames = [];
   MeetupSession? _activeSession;
   Timer? _sessionTimer;
   Timer? _midnightTimer; // Wechsel Heute/Morgen exakt um 0 Uhr
@@ -632,18 +632,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     } catch (_) { if (mounted) setState(() => _countdownLoading = false); }
   }
 
+  /// Haelt den Proof of Humanity aktuell.
+  ///
+  /// Frueher sammelte diese Methode zusaetzlich Plattform-Nachweise und
+  /// prueefte NIP-05 — beides nur, um vier Felder zu fuellen, die
+  /// ausschliesslich das Trust-Score-Sheet las. Mit dessen Wegfall waren die
+  /// Abfragen Arbeit ohne Wirkung: Relay-Verbindungen und eine
+  /// NIP-05-Aufloesung bei jedem Start, deren Ergebnis niemand ansah.
+  ///
+  /// Die Neupruefung bleibt, weil sie eine echte NEBENWIRKUNG hat: Sie
+  /// schreibt den bestaetigten Zustand in die Einstellungen zurueck. Wer sie
+  /// mitentfernt haette, haette einen abgelaufenen Nachweis nie wieder
+  /// aufgefrischt.
   void _loadIdentityData() async {
     try {
-      final proofs = await PlatformProofService.getSavedProofs();
-      var humanity = await HumanityProofService.getStatus();
-      if (humanity.needsReverification) { final r = await HumanityProofService.reverifyIfNeeded(); if (r) humanity = await HumanityProofService.getStatus(); }
-      bool nip05 = false;
-      if (_user.hasNostrKey && _user.nostrNpub.isNotEmpty) {
-        try { final relays = ['wss://relay.damus.io', 'wss://nos.lol']; final pk = Nip19.decodePubkey(_user.nostrNpub);
-          final n = await Nip05Service.fetchNip05FromProfile(pk, relays).timeout(const Duration(seconds: 8), onTimeout: () => null);
-          if (n != null && n.isNotEmpty) { final r = await Nip05Service.verify(n, pk); nip05 = r.valid; } } catch (_) {}
+      final humanity = await HumanityProofService.getStatus();
+      if (humanity.needsReverification) {
+        await HumanityProofService.reverifyIfNeeded();
       }
-      if (mounted) setState(() { _platformProofCount = proofs.length; _platformNames = proofs.map((p) => p.platform).toList(); _humanityVerified = humanity.verified; _nip05Verified = nip05; });
     } catch (_) {}
   }
 
@@ -980,7 +986,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         if (_deviceCompromised && !_dismissedIntegrityWarning) ...[_buildDeviceWarning(), const SizedBox(height: kTileGap)],
         if (_activeSession != null) ...[_buildActiveSessionTile(), const SizedBox(height: kTileGap)],
         // Fixe Home-Meetup-Kachel (immer gleiche Größe)
-        _buildHomeMeetupTile(),
+        //
+        // Der Tour-Schluessel haengt HIER und nicht in der _tourKeys-Tabelle:
+        // Diese Kachel wird als einzige nicht ueber _wrapEditable gezeichnet,
+        // also griff die Tabelle bei ihr nie. Die Dashboard-Tour wartete
+        // dadurch auf ein Ziel, das nie erschien, und startete nicht.
+        KeyedSubtree(
+            key: HomeTour.homeMeetupKey, child: _buildHomeMeetupTile()),
         const SizedBox(height: kTileGap),
         // Restlicher Raum: Der angeheftete Block fuellt weiterhin den
         // sichtbaren Bereich; die graue Reserve haengt darunter und wird
@@ -1043,7 +1055,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   /// Huelle um jede Kachel: im Normalzustand nur ein Langdruck-Erkenner,
   /// im Bearbeiten-Modus Ziehen, Ablegen und Pinnadel.
+  /// Ordnet Kachel-Kennungen den Zielen der Dashboard-Tour zu.
+  ///
+  /// Bewusst EINE Tabelle statt eines Schluessels in jedem der dreizehn
+  /// Kachel-Bauer: Die Bauer geben teils ein _tile zurueck, teils einen
+  /// GestureDetector, teils einen ganzen Block — jeden einzeln zu umhuellen
+  /// waere dreizehnmal dieselbe Fehlerquelle. Hier haengt der Schluessel
+  /// dort, wo die Kachel ohnehin schon als Einheit vorliegt.
+  static final Map<String, GlobalKey> _tourKeys = {
+    'trust_score':   HomeTour.trustScoreKey,
+    'home_meetup':   HomeTour.homeMeetupKey,
+    'reputation':    HomeTour.reputationKey,
+    'trust_network': HomeTour.wotKey,
+    'community':     HomeTour.communityKey,
+    'events':        HomeTour.eventsKey,
+    'portal_connect':HomeTour.portalConnectKey,
+    'btc_dashboard': HomeTour.bitcoinKey,
+    'converter':     HomeTour.umrechnerKey,
+    'news':          HomeTour.newsKey,
+    'portal':        HomeTour.myMeetupsKey,
+    'shoutout':      HomeTour.shoutoutKey,
+    'podcast':       HomeTour.podcastKey,
+  };
+
   Widget _wrapEditable(_TileDef tile, Widget child) {
+    // Schluessel der Tour aussen anlegen, damit das Overlay die Kachel
+    // MITSAMT ihrer Umrandung misst.
+    final tourKey = _tourKeys[tile.id];
+    if (tourKey != null) child = KeyedSubtree(key: tourKey, child: child);
+
     final isEditing = _editTileId != null;
     final isSelected = _editTileId == tile.id;
     final isPinned = !_hiddenTiles.contains(tile.id);
@@ -1161,11 +1201,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const SizedBox(height: kTileGap),
-      _sectionHeader(
-        AppLocalizations.of(context).tilesAvailable,
-        count: rows.length,
-        collapsed: _availableCollapsed,
-        onTap: () => setState(() => _availableCollapsed = !_availableCollapsed),
+      KeyedSubtree(
+        key: HomeTour.customizeKey,
+        child: _sectionHeader(
+          AppLocalizations.of(context).tilesAvailable,
+          count: rows.length,
+          collapsed: _availableCollapsed,
+          onTap: () => setState(() => _availableCollapsed = !_availableCollapsed),
+        ),
       ),
       if (!_availableCollapsed || _editTileId != null)
         for (int i = 0; i < rows.length; i++) ...[
@@ -1278,7 +1321,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     SvgPicture.asset('assets/images/einundzwanzig_logo.svg', height: 16),
     const Spacer(),
     _headerIcon(_refreshing ? Icons.hourglass_empty_rounded : Icons.refresh_rounded, _refreshing ? () {} : _refreshAll),
-    _headerIcon(Icons.settings_rounded, _showSettings),
+    // Nachschlagen steht LINKS vom Zahnrad: Wer nicht weiterweiss, sucht
+    // eher Hilfe als Einstellungen — und trifft sie so zuerst.
+    KeyedSubtree(
+        key: HomeTour.glossaryKey,
+        child: _headerIcon(
+            Icons.help_outline_rounded,
+            () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const GlossaryScreen())))),
+    KeyedSubtree(
+        key: HomeTour.settingsKey,
+        child: _headerIcon(Icons.settings_rounded, _showSettings)),
   ]);
 
   Widget _headerIcon(IconData icon, VoidCallback onTap) => GestureDetector(
@@ -2264,29 +2317,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     child: Row(children: [const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 18), const SizedBox(width: 10), Expanded(child: Text(DeviceIntegrityService.warningMessage, style: TextStyle(color: Colors.orange.shade200, fontSize: 11))),
       GestureDetector(onTap: () => setState(() => _dismissedIntegrityWarning = true), child: Icon(Icons.close_rounded, color: Colors.orange.shade300, size: 16))]));
 
-  // ============================================================
-  // BOTTOM SHEETS (Help, Settings, Score Info) — wie in v4.2
-  // Hier nur gekürzt, identische Logik
-  // ============================================================
-  // Erklaer-Sheet ohne Einstiegspunkt; Inhalt bleibt erhalten, bis wieder
-  // ein Knopf darauf zeigt.
-  // ignore: unused_element
-  void _showHelpSheet() { showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))), builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.5, expand: false, builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
-    const Text("SO FUNKTIONIERT'S", style: TextStyle(color: cOrange, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 20),
-    _helpI(Icons.military_tech, cOrange, "BADGES SAMMELN", "Geh zu einem Meetup und scanne den NFC-Tag oder Rolling-QR-Code. Jeder Besuch = ein kryptographisch signiertes Badge."),
-    _helpI(Icons.workspace_premium, Colors.amber, "REPUTATION AUFBAUEN", "Dein Trust Score steigt mit jedem Badge. Verschiedene Meetups, Organisatoren und Regelmäßigkeit zählen."),
-    _helpI(Icons.admin_panel_settings, Colors.green, "ORGANISATOR WERDEN", "Ab genügend Trust Score wirst du automatisch befördert und kannst eigene NFC-Tags und QR-Codes erstellen."),
-    _helpI(Icons.verified_user, cCyan, "KRYPTOGRAPHISCHE SICHERHEIT", "BIP-340 Schnorr-Signaturen. Niemand kann Badges fälschen — auch wir nicht."),
-    _helpI(Icons.qr_code_scanner, cPurple, "REPUTATION PRÜFEN", "Teile deinen QR-Code. Andere sehen dein Trust Level — kryptographisch verifiziert."),
-    _helpI(Icons.upload, Colors.blue, "BACKUP", "Sichere deinen Account über die Einstellungen. Enthält Nostr-Key und alle Badges."),
-    const Divider(color: cBorder), const SizedBox(height: 8),
-    Row(children: [const Icon(Icons.lock_outline_rounded, color: cTextTertiary, size: 14), const SizedBox(width: 8), Expanded(child: Text("Alle Daten auf deinem Gerät. Kein Server, kein Tracking.", style: TextStyle(color: cTextTertiary, fontSize: 10)))]),
-  ])))); }
 
-  Widget _helpI(IconData i, Color c, String t, String d) => Padding(padding: const EdgeInsets.only(bottom: 18), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 20), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 4), Text(d, style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.5))]))]));
 
   void _showSettings() async {
+    // Guide VOR dem Sheet holen: Danach zeigt der Context auf eine andere
+    // Route.
+    final guide = context.read<GuideService>();
+
     final prefs = await SharedPreferences.getInstance();
     bool haptic = prefs.getBool('haptic_enabled') ?? true;
     if (!mounted) return;
@@ -2339,26 +2376,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                   children: [
                     // ACCOUNT
                     _sGroup(AppLocalizations.of(context).settingsSecAccount, [
-                      _sRow(Icons.person_rounded, cOrange,
-                        AppLocalizations.of(context).settingsProfile,
-                        AppLocalizations.of(context).settingsProfileSub,
-                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+                      KeyedSubtree(
+                        key: SettingsTour.profileKey,
+                        child: _sRow(Icons.person_rounded, cOrange,
+                          AppLocalizations.of(context).settingsProfile,
+                          AppLocalizations.of(context).settingsProfileSub,
+                          () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // DATEN & SICHERHEIT
                     _sGroup(AppLocalizations.of(context).settingsSecData, [
-                      _sRow(Icons.cloud_upload_rounded, cCyan,
-                        AppLocalizations.of(context).settingsBackup,
-                        AppLocalizations.of(context).settingsBackupSub,
-                        () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+                      KeyedSubtree(
+                        key: SettingsTour.backupKey,
+                        child: _sRow(Icons.cloud_upload_rounded, cCyan,
+                          AppLocalizations.of(context).settingsBackup,
+                          AppLocalizations.of(context).settingsBackupSub,
+                          () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // NETZWERK
                     _sGroup(AppLocalizations.of(context).settingsSecNetwork, [
-                      _sRow(Icons.hub_rounded, cPurple,
-                        AppLocalizations.of(context).settingsRelays,
-                        AppLocalizations.of(context).settingsRelaysSub,
-                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                      KeyedSubtree(
+                        key: SettingsTour.relaysKey,
+                        child: _sRow(Icons.hub_rounded, cPurple,
+                          AppLocalizations.of(context).settingsRelays,
+                          AppLocalizations.of(context).settingsRelaysSub,
+                          () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                      ),
                       _sDivider(),
                       // Mempool-Datenquelle (Clearnet / Tor-Onion / eigene Instanz)
                       _sRow(Icons.dns_rounded, cOrange,
@@ -2370,7 +2416,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     // APP
                     _sGroup(AppLocalizations.of(context).settingsSecApp, [
                       // Sprache
-                      ValueListenableBuilder<Locale?>(
+                      KeyedSubtree(
+                        key: SettingsTour.languageKey,
+                        child: ValueListenableBuilder<Locale?>(
                         valueListenable: LocaleController.locale,
                         builder: (_, current, _) => _sRowCustom(
                           Icons.language_rounded, cGreen,
@@ -2380,14 +2428,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                           onTap: () => _showLanguagePopup(ctx),
                         ),
                       ),
+                      ),
                       _sDivider(),
                       // Haptik
-                      _sRowCustom(
+                      KeyedSubtree(
+                        key: SettingsTour.hapticKey,
+                        child: _sRowCustom(
                         Icons.vibration_rounded, cGreen,
                         AppLocalizations.of(context).settingsHaptic,
                         haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff,
                         trailing: Switch(value: haptic, activeThumbColor: cOrange,
                           onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
+                      ),
                       ),
                       _sDivider(),
                       // Diagnose-Log
@@ -2395,6 +2447,26 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         AppLocalizations.of(context).settingsLogTitle,
                         AppLocalizations.of(context).settingsLogSub,
                         () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const LogScreen())); }),
+                      _sDivider(),
+                      // Tour wiederholen — der einzige Weg, die Spotlights
+                      // ein zweites Mal zu sehen. Ohne ihn liesse sich der
+                      // Guide nur durch Zuruecksetzen der App testen.
+                      KeyedSubtree(
+                        key: SettingsTour.restartKey,
+                        child: _sRow(Icons.replay_rounded, cOrange,
+                          AppLocalizations.of(context).settingsRestartGuide,
+                          AppLocalizations.of(context).settingsRestartGuideSub,
+                          () async {
+                            // Text und Messenger vor dem await greifen — nach
+                            // Navigator.pop ist der Sheet-Context weg.
+                            final messenger = ScaffoldMessenger.of(context);
+                            final msg = AppLocalizations.of(context).settingsGuideReset;
+                            Navigator.pop(ctx);
+                            await guide.resetAllTours();
+                            messenger.showSnackBar(SnackBar(
+                                content: Text(msg), backgroundColor: cOrange));
+                          }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // UNTERSTÜTZEN (V4V)
@@ -2407,10 +2479,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     const SizedBox(height: 18),
                     // GEFAHRENZONE
                     _sGroup(AppLocalizations.of(context).settingsSecDanger, [
-                      _sRow(Icons.delete_forever_rounded, cRed,
-                        AppLocalizations.of(context).settingsReset,
-                        AppLocalizations.of(context).settingsResetSub,
-                        () { Navigator.pop(ctx); _resetApp(); }, danger: true),
+                      KeyedSubtree(
+                        key: SettingsTour.resetKey,
+                        child: _sRow(Icons.delete_forever_rounded, cRed,
+                          AppLocalizations.of(context).settingsReset,
+                          AppLocalizations.of(context).settingsResetSub,
+                          () { Navigator.pop(ctx); _resetApp(); }, danger: true),
+                      ),
                     ]),
                     const SizedBox(height: 20),
                     // Versionsanzeige (dezent, unten)
@@ -2428,7 +2503,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           ),
         ),
       ),
-    );
+    ).whenComplete(() {
+      // Sheet zu, Tour raus. Sonst suchte das Overlay Ziele, die es nicht
+      // mehr gibt, und arbeitete die Restschritte unsichtbar ab.
+      if (guide.activeTour == GuideTour.settings) guide.finishTour();
+    });
+
+    // Erst starten, wenn das Sheet oben steht — vorher sind die Ziele noch
+    // nicht im Baum.
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (!mounted) return;
+      guide.startTour(GuideTour.settings, SettingsTour.steps());
+    });
   }
 
   /// Eine Gruppe: Label + Karten-Container mit den Items.
@@ -2552,65 +2638,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
 
-  // Erklaerung des Trust Score, derzeit ohne Einstiegspunkt.
-  // Siehe _showHelpSheet.
-  // ignore: unused_element
-  void _showScoreInfoSheet() {
-    final score = _trustScore; final idCount = _platformProofCount + (_humanityVerified ? 1 : 0) + (_nip05Verified ? 1 : 0);
-    showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.4, expand: false,
-        builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 20),
-          Text(AppLocalizations.of(context).siTitle, style: const TextStyle(color: cOrange, fontSize: 17, fontWeight: FontWeight.w800)), const SizedBox(height: 6),
-          Text(AppLocalizations.of(context).siIntro, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)),
-          // IDENTITY LAYER
-          const SizedBox(height: 24), Text(AppLocalizations.of(context).siIdentityLayer, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
-          Text(AppLocalizations.of(context).siLinksActive(idCount), style: const TextStyle(color: cTextTertiary, fontSize: 11)), const SizedBox(height: 12),
-          _idR(Icons.bolt_rounded, "Proof of Humanity", AppLocalizations.of(context).siHumanitySub, _humanityVerified, Colors.amber),
-          _idR(Icons.alternate_email, "NIP-05", AppLocalizations.of(context).siNip05Sub, _nip05Verified, cCyan),
-          ..._platformNames.map((n) => _idR(Icons.link_rounded, {'telegram': 'Telegram', 'twitter': 'X / Twitter', 'kleinanzeigen': 'Kleinanzeigen'}[n.toLowerCase()] ?? n, AppLocalizations.of(context).siPlatformActive, true, Colors.green)),
-          if (_platformProofCount == 0) _idR(Icons.link_off_rounded, AppLocalizations.of(context).siPlatforms, AppLocalizations.of(context).siNoneLinked, false, cTextTertiary),
-          // TRUST LEVEL
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siTrustLevel, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _lvl(Icons.fiber_new, localizedLevel(context, 'NEU'), "< 3", Colors.grey, AppLocalizations.of(context).siLvlNew, score?.level == 'NEU'),
-          _lvl(Icons.eco, localizedLevel(context, 'STARTER'), "3–9", cOrange, AppLocalizations.of(context).siLvlStarter, score?.level == 'STARTER'),
-          _lvl(Icons.local_fire_department, localizedLevel(context, 'AKTIV'), "10–19", cCyan, AppLocalizations.of(context).siLvlActive, score?.level == 'AKTIV'),
-          _lvl(Icons.shield, localizedLevel(context, 'ETABLIERT'), "20–39", Colors.green, AppLocalizations.of(context).siLvlEstablished, score?.level == 'ETABLIERT'),
-          _lvl(Icons.bolt, localizedLevel(context, 'VETERAN'), "40+", Colors.amber, AppLocalizations.of(context).siLvlVeteran, score?.level == 'VETERAN'),
-          // BERECHNUNG
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siCalculation, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _fac(Icons.military_tech, cOrange, AppLocalizations.of(context).siFacBadges, AppLocalizations.of(context).siFacBadgesDesc),
-          _fac(Icons.location_on, cCyan, AppLocalizations.of(context).siFacDiversity, AppLocalizations.of(context).siFacDiversityDesc),
-          _fac(Icons.people_outline, cPurple, AppLocalizations.of(context).siFacSigners, AppLocalizations.of(context).siFacSignersDesc),
-          _fac(Icons.schedule, Colors.green, AppLocalizations.of(context).siFacMaturity, AppLocalizations.of(context).siFacMaturityDesc),
-          _fac(Icons.speed, cRed, AppLocalizations.of(context).siFacFrequency, AppLocalizations.of(context).siFacFrequencyDesc),
-          // ORGANISATOR
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siBecomeOrganizer, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
-          Text(AppLocalizations.of(context).siBecomeOrgDesc, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)), const SizedBox(height: 14),
-          if (score != null && !score.meetsPromotionThreshold)
-            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withValues(alpha: 0.2))),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).siProgressLabel(score.activeThresholds.name), style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w800)), const SizedBox(height: 10), ...score.progress.entries.map((e) => _pRow(e.value))]))
-          else if (score != null)
-            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: Colors.green.withValues(alpha: 0.2))),
-              child: Row(children: [const Icon(Icons.verified, color: Colors.green, size: 20), const SizedBox(width: 10), Expanded(child: Text(AppLocalizations.of(context).siAlreadyOrganizer, style: TextStyle(color: Colors.green.shade300, fontSize: 12)))])),
-          // TIPPS
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siIncreaseScore, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _tip(Icons.event, AppLocalizations.of(context).siTip1), _tip(Icons.explore, AppLocalizations.of(context).siTip2),
-          _tip(Icons.group_add, AppLocalizations.of(context).siTip3), _tip(Icons.bolt, AppLocalizations.of(context).siTip4),
-          _tip(Icons.alternate_email, AppLocalizations.of(context).siTip5), _tip(Icons.link, AppLocalizations.of(context).siTip6),
-          const SizedBox(height: 20),
-        ]))));
-  }
 
-  Widget _idR(IconData i, String l, String d, bool a, Color c) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Row(children: [Icon(i, color: a ? c : cTextTertiary.withValues(alpha: 0.5), size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(l, style: TextStyle(color: a ? cText : cTextTertiary, fontSize: 12, fontWeight: FontWeight.w600)), Text(d, style: TextStyle(color: a ? cTextSecondary : cTextTertiary.withValues(alpha: 0.5), fontSize: 10))])), Icon(a ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: a ? c : cTextTertiary.withValues(alpha: 0.3), size: 18)]));
-  Widget _lvl(IconData i, String n, String r, Color c, String d, bool a) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: a ? c.withValues(alpha: 0.06) : Colors.transparent, borderRadius: BorderRadius.circular(10), border: a ? Border.all(color: c.withValues(alpha: 0.2)) : null), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: 32, height: 32, decoration: BoxDecoration(color: c.withValues(alpha: a ? 0.15 : 0.06), shape: BoxShape.circle), child: Icon(i, color: a ? c : c.withValues(alpha: 0.3), size: 16)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(n, style: TextStyle(color: a ? c : cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)), const SizedBox(width: 8), Text(r, style: const TextStyle(color: cTextTertiary, fontSize: 10)), if (a) ...[const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: c.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: Text('DU', style: TextStyle(color: c, fontSize: 8, fontWeight: FontWeight.w800)))]]), const SizedBox(height: 3), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 10, height: 1.3))]))]));
-  Widget _fac(IconData i, Color c, String t, String d) => Padding(padding: const EdgeInsets.only(bottom: 12), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)), const SizedBox(height: 2), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4))]))]));
-  Widget _tip(IconData i, String t) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: cOrange.withValues(alpha: 0.6), size: 16), const SizedBox(width: 10), Expanded(child: Text(t, style: const TextStyle(color: cTextSecondary, fontSize: 11, height: 1.4)))]));
-  Widget _pRow(PromotionProgress p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [Icon(p.met ? Icons.check_circle : Icons.radio_button_unchecked, color: p.met ? Colors.green : cTextTertiary, size: 16), const SizedBox(width: 8), Expanded(child: Text(AppLocalizations.of(context).siProgressRow(p.label, p.current, p.required), style: TextStyle(color: p.met ? Colors.green.shade300 : cTextSecondary, fontSize: 11, fontWeight: p.met ? FontWeight.w600 : FontWeight.normal))), SizedBox(width: 40, height: 4, child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(value: p.percentage, backgroundColor: cSurface, valueColor: AlwaysStoppedAnimation(p.met ? Colors.green : cOrange))))]));
 }
 
 // ============================================================

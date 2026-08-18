@@ -549,6 +549,30 @@ class BackupService {
 
       closeLoading();
 
+      // ERST der Speicherdialog des Systems, dann als Rueckfall das Teilen.
+      //
+      // Warum ueberhaupt zwei Wege: Ueber das Teilen-Blatt landet die Datei
+      // in irgendeiner App — Mail, Messenger, Cloud. Wer sie schlicht auf
+      // dem Geraet ablegen will, musste hoffen, dass unter den Zielen ein
+      // Dateimanager auftaucht. saveFile oeffnet stattdessen direkt die
+      // Ordnerauswahl des Systems.
+      try {
+        final savedPath = await FilePicker.platform.saveFile(
+          dialogTitle: shareTitle,
+          fileName: fileName,
+          bytes: bytes,
+        );
+        if (savedPath != null) {
+          AppLogger.info('App', 'Backup gespeichert: $savedPath');
+          return true;
+        }
+        // null heisst abgebrochen — dann NICHT still aufgeben, sondern das
+        // Teilen anbieten. Auf Plattformen ohne Speicherdialog kommt man
+        // ohnehin nur so weiter.
+      } catch (e) {
+        AppLogger.debug('App', 'Speicherdialog nicht verfuegbar: $e');
+      }
+
       final shareResult = await Share.shareXFiles(
         [XFile.fromData(bytes, mimeType: 'application/octet-stream', name: fileName)],
         fileNameOverrides: [fileName],
