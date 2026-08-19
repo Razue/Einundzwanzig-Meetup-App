@@ -6607,4 +6607,40 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatMemberLink => 'Sobre la membresía';
+
+  @override
+  String walletSince(String month) {
+    return 'desde $month';
+  }
+
+  @override
+  String walletLastVisit(String ago) {
+    return 'última vez $ago';
+  }
+
+  @override
+  String get walletAgoToday => 'hoy';
+
+  @override
+  String get walletAgoYesterday => 'ayer';
+
+  @override
+  String walletAgoDays(int days) {
+    return 'hace $days días';
+  }
+
+  @override
+  String walletAgoMonths(int months) {
+    return 'hace $months meses';
+  }
+
+  @override
+  String walletAgoYears(int years) {
+    return 'hace $years años';
+  }
+
+  @override
+  String walletCollectionCount(int count) {
+    return '$count insignias';
+  }
 }

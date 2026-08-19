@@ -26,6 +26,76 @@ import '../services/app_logger.dart';
 // Erzeugt ein einzigartiges Muster pro Badge basierend auf
 // dem Meetup-Namen und der Blockhöhe (wie ein Fingerabdruck)
 // ============================================================
+/// Alle Badges EINES Meetups.
+///
+/// Eigener Bildschirm statt eines aufklappbaren Abschnitts: Wer hierher
+/// kommt, sucht ein bestimmtes Badge — und will dann die ganze Flaeche dafuer,
+/// nicht einen Ausschnitt zwischen anderen Sammlungen.
+class _CollectionScreen extends StatelessWidget {
+  final String title;
+  final List<MeetupBadge> badges;
+
+  /// Die Gesamtsammlung — nur fuer die Nummerierung. "#3" soll ueberall
+  /// dasselbe Badge meinen.
+  final List<MeetupBadge> allBadges;
+
+  const _CollectionScreen({
+    required this.title,
+    required this.badges,
+    required this.allBadges,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: cDark,
+      appBar: AppBar(
+        backgroundColor: cDark,
+        elevation: 0,
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(title.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: cText, fontSize: 15, fontWeight: FontWeight.w800)),
+          Text(
+              AppLocalizations.of(context).walletCollectionCount(badges.length),
+              style: const TextStyle(color: cTextTertiary, fontSize: 10.5)),
+        ]),
+      ),
+      body: GridView.builder(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.80,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+        ),
+        itemCount: badges.length,
+        itemBuilder: (context, i) {
+          final badge = badges[i];
+          return _BadgeCardTile(
+              badge: badge, index: allBadges.indexOf(badge));
+        },
+      ),
+    );
+  }
+}
+
+/// Duenne Huelle, damit die Karten-Darstellung des Wallet-States auch
+/// ausserhalb davon nutzbar ist.
+class _BadgeCardTile extends StatelessWidget {
+  final MeetupBadge badge;
+  final int index;
+
+  const _BadgeCardTile({required this.badge, required this.index});
+
+  @override
+  Widget build(BuildContext context) {
+    return _BadgeWalletScreenState.buildCard(context, badge, index);
+  }
+}
+
 class BadgeArtPainter extends CustomPainter {
   final String seed;
   late final List<int> _hashBytes;
@@ -364,7 +434,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   }
 
   // Blockhöhe leserlich formatieren: 850000 → 850.000
-  String _formatBlock(int height) {
+  static String _formatBlock(int height) {
     if (height <= 0) return "---";
     final str = height.toString();
     final buf = StringBuffer();
@@ -649,6 +719,30 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
       );
     }
 
+    // SAMMLUNGEN statt Einzelstuecke.
+    //
+    // Vorher standen unter "ASCHAFFENBURG (20)" zwanzig fast gleiche Karten
+    // untereinander — gleiches Wappen, gleicher Name, unterscheidbar nur am
+    // Datum. Das ist keine Sammlung, sondern ein Kontoauszug.
+    //
+    // Bei Gruppierung nach MEETUP zeigt die Liste deshalb je Ort EINE Karte
+    // mit Anzahl und Zeitraum; ein Tipp oeffnet die Einzelstuecke. Nach JAHR
+    // gruppiert bleibt es bei der flachen Liste — dort ist jedes Badge ein
+    // eigener Eintrag und die Zusammenfassung waere sinnlos.
+    if (_groupByMeetup) {
+      return ListView.builder(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+        itemCount: groups.length,
+        itemBuilder: (context, gi) {
+          final entry = groups[gi];
+          return KeyedSubtree(
+            key: gi == 0 ? WalletTour.firstBadgeKey : null,
+            child: _buildCollectionCard(context, entry.key, entry.value),
+          );
+        },
+      );
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
       itemCount: groups.length,
@@ -661,80 +755,238 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
             // waere er ein Laufzeitfehler.
             key: gi == 0 ? WalletTour.firstBadgeKey : null,
             crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // --- Abschnitts-Kopf ---
-          GestureDetector(
-            onTap: () => setState(() {
-              if (isCollapsed) {
-                _collapsed.remove(entry.key);
-              } else {
-                _collapsed.add(entry.key);
-              }
-            }),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(2, 14, 2, 8),
-              child: Row(children: [
-                Icon(
-                    entry.key == _organizerGroupKey
-                        ? Icons.shield_outlined
-                        : (_groupByMeetup ? Icons.place_rounded : Icons.event_rounded),
-                    color: entry.key == _organizerGroupKey ? cTextSecondary : cOrange,
-                    size: 15),
-                const SizedBox(width: 7),
-                Expanded(
-                  child: Text(
-                      entry.key == _organizerGroupKey
-                          ? AppLocalizations.of(context).walletOrganizerSection.toUpperCase()
-                          : entry.key.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: entry.key == _organizerGroupKey ? cTextSecondary : cOrange,
-                          fontSize: 11.5,
-                          letterSpacing: 1.2,
-                          fontWeight: FontWeight.w700)),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                      color: cOrange.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Text('${entry.value.length}',
-                      style: const TextStyle(
-                          color: cOrange, fontSize: 11, fontWeight: FontWeight.w800)),
-                ),
-                const SizedBox(width: 4),
-                Icon(isCollapsed ? Icons.expand_more_rounded : Icons.expand_less_rounded,
-                    color: cTextTertiary, size: 20),
-              ]),
-            ),
-          ),
-          // --- Karten des Abschnitts ---
-          if (!isCollapsed)
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: _compactView ? 3 : 2,
-                childAspectRatio: _compactView ? 0.75 : 0.80,
-                crossAxisSpacing: _compactView ? 8 : 12,
-                mainAxisSpacing: _compactView ? 8 : 12,
-              ),
-              itemCount: entry.value.length,
-              itemBuilder: (context, i) {
-                final badge = entry.value[i];
-                // Nummer bleibt die Position in der GESAMTsammlung, damit
-                // "#3" ueberall dasselbe Badge meint — unabhaengig von
-                // Filter und Gruppierung.
-                final globalIndex = myBadges.indexOf(badge);
-                return _compactView
-                    ? _buildCompactCard(context, badge, globalIndex)
-                    : _buildBadgeCard(context, badge, globalIndex);
-              },
-            ),
+          _sectionHeader(context, entry.key, entry.value.length, isCollapsed),
+          if (!isCollapsed) _badgeGrid(context, entry.value),
         ]);
       },
+    );
+  }
+
+  /// Kopfzeile eines Abschnitts (Jahres-Ansicht).
+  Widget _sectionHeader(
+      BuildContext context, String key, int count, bool isCollapsed) {
+    return GestureDetector(
+      onTap: () => setState(() {
+        if (isCollapsed) {
+          _collapsed.remove(key);
+        } else {
+          _collapsed.add(key);
+        }
+      }),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(2, 14, 2, 8),
+        child: Row(children: [
+          Icon(
+              key == _organizerGroupKey
+                  ? Icons.shield_outlined
+                  : Icons.event_rounded,
+              color: key == _organizerGroupKey ? cTextSecondary : cOrange,
+              size: 15),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Text(
+                key == _organizerGroupKey
+                    ? AppLocalizations.of(context)
+                        .walletOrganizerSection
+                        .toUpperCase()
+                    : key.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: key == _organizerGroupKey ? cTextSecondary : cOrange,
+                    fontSize: 11.5,
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+                color: cOrange.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(8)),
+            child: Text('$count',
+                style: const TextStyle(
+                    color: cOrange, fontSize: 11, fontWeight: FontWeight.w800)),
+          ),
+          const SizedBox(width: 4),
+          Icon(isCollapsed ? Icons.expand_more_rounded : Icons.expand_less_rounded,
+              color: cTextTertiary, size: 20),
+        ]),
+      ),
+    );
+  }
+
+  /// Raster der Einzel-Badges.
+  Widget _badgeGrid(BuildContext context, List<MeetupBadge> badges) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _compactView ? 3 : 2,
+        childAspectRatio: _compactView ? 0.75 : 0.80,
+        crossAxisSpacing: _compactView ? 8 : 12,
+        mainAxisSpacing: _compactView ? 8 : 12,
+      ),
+      itemCount: badges.length,
+      itemBuilder: (context, i) {
+        final badge = badges[i];
+        // Nummer bleibt die Position in der GESAMTsammlung, damit "#3"
+        // ueberall dasselbe Badge meint — unabhaengig von Filter und
+        // Gruppierung.
+        final globalIndex = myBadges.indexOf(badge);
+        return _compactView
+            ? _buildCompactCard(context, badge, globalIndex)
+            : buildCard(context, badge, globalIndex);
+      },
+    );
+  }
+
+  /// Eine Sammlung: alle Badges EINES Meetups auf einer Karte.
+  ///
+  /// Zeigt, was zwanzig Einzelkarten nicht zeigen: seit wann man dabei ist
+  /// und wie lange der letzte Besuch her ist. Aus "seit Februar, zuletzt vor
+  /// sechs Tagen" liest man Treue heraus — aus zwanzig Daten untereinander
+  /// nicht.
+  Widget _buildCollectionCard(
+      BuildContext context, String key, List<MeetupBadge> badges) {
+    final t = AppLocalizations.of(context);
+    final isOrganizer = key == _organizerGroupKey;
+
+    // Nach Datum sortieren — aeltestes und neuestes tragen die Zeitspanne.
+    final sorted = [...badges]..sort((a, b) => a.date.compareTo(b.date));
+    final first = sorted.first;
+    final last = sorted.last;
+    final cover = badges.firstWhere((b) => b.coverUrl.isNotEmpty,
+        orElse: () => badges.first);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => _CollectionScreen(
+              title: isOrganizer
+                  ? t.walletOrganizerSection
+                  : (key.isEmpty ? '?' : key),
+              badges: sorted.reversed.toList(),
+              allBadges: myBadges,
+            ),
+          ),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: cCard,
+            borderRadius: BorderRadius.circular(kTileRadius),
+            border: Border.all(
+                color: isOrganizer
+                    ? cTileBorder
+                    : cOrange.withValues(alpha: 0.3),
+                width: 0.5),
+          ),
+          child: Row(children: [
+            SizedBox(
+              width: 52,
+              height: 52,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: MeetupCrestWatermark(
+                  meetupName: key,
+                  imageUrl: cover.coverUrl.isNotEmpty ? cover.coverUrl : null,
+                  opacity: 1.0,
+                  widthFactor: 1.0,
+                ),
+              ),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Expanded(
+                        child: Text(
+                            isOrganizer
+                                ? t.walletOrganizerSection.toUpperCase()
+                                : key.toUpperCase(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                color: isOrganizer ? cTextSecondary : cText,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.3)),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('×${badges.length}',
+                          style: const TextStyle(
+                              color: cOrange,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900)),
+                    ]),
+                    const SizedBox(height: 4),
+                    Text(_collectionSubtitle(t, first, last, badges.length),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: cTextTertiary, fontSize: 11.5)),
+                    const SizedBox(height: 8),
+                    _countDots(badges.length),
+                  ]),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.chevron_right_rounded,
+                color: cTextTertiary, size: 20),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  /// "seit Feb 2026 · zuletzt vor 6 Tagen"
+  String _collectionSubtitle(
+      AppLocalizations t, MeetupBadge first, MeetupBadge last, int count) {
+    final since = t.walletSince(_monthYear(first.date));
+    if (count == 1) return since;
+    return '$since · ${t.walletLastVisit(_agoLabel(t, last.date))}';
+  }
+
+  String _monthYear(DateTime d) {
+    const months = [
+      'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'
+    ];
+    return '${months[d.month - 1]} ${d.year}';
+  }
+
+  String _agoLabel(AppLocalizations t, DateTime d) {
+    final days = DateTime.now().difference(d).inDays;
+    if (days <= 0) return t.walletAgoToday;
+    if (days == 1) return t.walletAgoYesterday;
+    if (days < 30) return t.walletAgoDays(days);
+    final months = (days / 30).floor();
+    if (months < 12) return t.walletAgoMonths(months);
+    return t.walletAgoYears((days / 365).floor());
+  }
+
+  /// Anzahl als Punktreihe. Ab 25 waere die Reihe laenger als die Karte —
+  /// dann sagt die Zahl daneben ohnehin mehr.
+  Widget _countDots(int count) {
+    if (count > 24) return const SizedBox.shrink();
+    return Wrap(
+      spacing: 3,
+      runSpacing: 3,
+      children: List.generate(
+        count,
+        (_) => Container(
+          width: 5,
+          height: 5,
+          decoration: BoxDecoration(
+              color: cOrange.withValues(alpha: 0.65), shape: BoxShape.circle),
+        ),
+      ),
     );
   }
 
@@ -755,7 +1007,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
     );
   }
 
-  Widget _buildBadgeCard(BuildContext context, MeetupBadge badge, int index) {
+  /// Statisch, weil die Karte an keinem Zustand haengt — nur an Badge und
+  /// Nummer. So kann der Sammlungs-Bildschirm dieselbe Darstellung nutzen,
+  /// statt sie ein zweites Mal zu bauen.
+  static Widget buildCard(
+      BuildContext context, MeetupBadge badge, int index) {
     final seed = "${badge.meetupName}:${badge.blockHeight}";
 
     return GestureDetector(

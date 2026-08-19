@@ -2906,5 +2906,55 @@
   "chatEventHint": "Comments on this event · public on Nostr",
   "chatEventEmpty": "Nothing written yet. Share information about this event here — meeting point, changes, questions. The comments hang on the event itself and are visible from any Nostr app.",
   "chatMemberHint": "Joining requires membership in the Einundzwanzig association. Without it the relay rejects the request — you stay a silent reader.",
-  "chatMemberLink": "About membership"
+  "chatMemberLink": "About membership",
+  "walletSince": "since {month}",
+  "@walletSince": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "walletLastVisit": "last {ago}",
+  "@walletLastVisit": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "walletAgoToday": "today",
+  "walletAgoYesterday": "yesterday",
+  "walletAgoDays": "{days} days ago",
+  "@walletAgoDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "walletAgoMonths": "{months} months ago",
+  "@walletAgoMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "walletAgoYears": "{years} years ago",
+  "@walletAgoYears": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "walletCollectionCount": "{count} badges",
+  "@walletCollectionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

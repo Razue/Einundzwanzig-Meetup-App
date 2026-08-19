@@ -11901,6 +11901,54 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zum Verein'**
   String get chatMemberLink;
+
+  /// No description provided for @walletSince.
+  ///
+  /// In de, this message translates to:
+  /// **'seit {month}'**
+  String walletSince(String month);
+
+  /// No description provided for @walletLastVisit.
+  ///
+  /// In de, this message translates to:
+  /// **'zuletzt {ago}'**
+  String walletLastVisit(String ago);
+
+  /// No description provided for @walletAgoToday.
+  ///
+  /// In de, this message translates to:
+  /// **'heute'**
+  String get walletAgoToday;
+
+  /// No description provided for @walletAgoYesterday.
+  ///
+  /// In de, this message translates to:
+  /// **'gestern'**
+  String get walletAgoYesterday;
+
+  /// No description provided for @walletAgoDays.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {days} Tagen'**
+  String walletAgoDays(int days);
+
+  /// No description provided for @walletAgoMonths.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {months} Monaten'**
+  String walletAgoMonths(int months);
+
+  /// No description provided for @walletAgoYears.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {years} Jahren'**
+  String walletAgoYears(int years);
+
+  /// No description provided for @walletCollectionCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badges'**
+  String walletCollectionCount(int count);
 }
 
 class _AppLocalizationsDelegate

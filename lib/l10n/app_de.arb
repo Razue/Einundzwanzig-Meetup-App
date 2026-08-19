@@ -2928,5 +2928,55 @@
   "chatEventHint": "Beiträge zum Termin · öffentlich auf Nostr",
   "chatEventEmpty": "Noch nichts geschrieben. Teile hier Infos zum Termin — Treffpunkt, Änderungen, Fragen. Die Beiträge hängen am Termin selbst und sind aus jeder Nostr-App zu sehen.",
   "chatMemberHint": "Der Beitritt setzt eine Mitgliedschaft im Einundzwanzig-Verein voraus. Ohne sie lehnt das Relay den Beitritt ab — du bleibst dann stiller Mitleser.",
-  "chatMemberLink": "Zum Verein"
+  "chatMemberLink": "Zum Verein",
+  "walletSince": "seit {month}",
+  "@walletSince": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "walletLastVisit": "zuletzt {ago}",
+  "@walletLastVisit": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "walletAgoToday": "heute",
+  "walletAgoYesterday": "gestern",
+  "walletAgoDays": "vor {days} Tagen",
+  "@walletAgoDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "walletAgoMonths": "vor {months} Monaten",
+  "@walletAgoMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "walletAgoYears": "vor {years} Jahren",
+  "@walletAgoYears": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "walletCollectionCount": "{count} Badges",
+  "@walletCollectionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

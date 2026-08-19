@@ -2906,5 +2906,55 @@
   "chatEventHint": "Comentarios sobre la fecha · públicos en Nostr",
   "chatEventEmpty": "Aún no hay nada escrito. Comparte información sobre la fecha: punto de encuentro, cambios, preguntas. Los comentarios cuelgan del propio evento.",
   "chatMemberHint": "Unirse requiere ser miembro de la asociación Einundzwanzig. Sin ello, el relé rechaza la solicitud y sigues como lector silencioso.",
-  "chatMemberLink": "Sobre la membresía"
+  "chatMemberLink": "Sobre la membresía",
+  "walletSince": "desde {month}",
+  "@walletSince": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "walletLastVisit": "última vez {ago}",
+  "@walletLastVisit": {
+    "placeholders": {
+      "ago": {
+        "type": "String"
+      }
+    }
+  },
+  "walletAgoToday": "hoy",
+  "walletAgoYesterday": "ayer",
+  "walletAgoDays": "hace {days} días",
+  "@walletAgoDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "walletAgoMonths": "hace {months} meses",
+  "@walletAgoMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "walletAgoYears": "hace {years} años",
+  "@walletAgoYears": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "walletCollectionCount": "{count} insignias",
+  "@walletCollectionCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
