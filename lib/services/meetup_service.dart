@@ -42,10 +42,19 @@ class MeetupService {
     for (final m in _cache) {
       if (m.id == stored) return m;
     }
-    for (final m in _cache) {
-      if (m.city.toLowerCase() == stored.toLowerCase()) return m;
+    // Rueckfall auf den Stadtnamen — nur fuer Favoriten aus aelteren
+    // Fassungen. Gibt es in der Stadt MEHRERE Meetups, ist die Antwort
+    // geraten; das gehoert ins Log, damit man den Ursprung eines falschen
+    // Wappens oder Termins wiederfindet.
+    final sameCity = _cache
+        .where((m) => m.city.toLowerCase() == stored.toLowerCase())
+        .toList();
+    if (sameCity.isEmpty) return null;
+    if (sameCity.length > 1) {
+      AppLogger.debug('Meetups',
+          'Favorit "$stored" ist mehrdeutig (${sameCity.length} Meetups) — genommen: ${sameCity.first.name}');
     }
-    return null;
+    return sameCity.first;
   }
 
   /// Anzeigename eines gespeicherten Favoriten.

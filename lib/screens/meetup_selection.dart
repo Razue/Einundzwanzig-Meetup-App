@@ -56,12 +56,43 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
     final user = await UserProfile.load();
     final list = await MeetupService.fetchMeetups();
     if (!mounted) return;
+    // Alte Favoriten von der Stadt auf die Portal-ID umstellen.
+    //
+    // Frueher stand hier "Würzburg". Solange dieser Wert in der Auswahl
+    // liegt, gelten BEIDE Würzburger Meetups als angehakt — die Stadt passt
+    // ja auf beide. Deshalb wird sie jetzt beim Laden aufgeloest:
+    //
+    //   eindeutig  -> durch die ID ersetzt, der Nutzer merkt nichts
+    //   mehrdeutig -> entfernt, damit man bewusst waehlt WELCHES gemeint ist
+    //
+    // Das Entfernen ist unangenehm, aber ehrlich: Die App kann nicht wissen,
+    // ob "Würzburg" den Walk oder das Meetup meinte, und eine geratene
+    // Antwort waere schlechter als eine Frage.
+    final migrated = <String>{};
+    for (final stored in user.favoriteMeetupIds) {
+      if (list.any((m) => m.id == stored)) {
+        migrated.add(stored);
+        continue;
+      }
+      final sameCity = list
+          .where((m) => m.city.toLowerCase() == stored.toLowerCase())
+          .toList();
+      if (sameCity.length == 1) {
+        migrated.add(sameCity.first.id);
+        AppLogger.debug('App',
+            'Favorit "$stored" auf Portal-ID ${sameCity.first.id} umgestellt.');
+      } else if (sameCity.length > 1) {
+        AppLogger.warn('App',
+            'Favorit "$stored" ist mehrdeutig (${sameCity.length} Meetups) — bitte neu waehlen.');
+      }
+    }
+
     setState(() {
       _meetups = list;
       _filteredMeetups = list;
       _selected
         ..clear()
-        ..addAll(user.favoriteMeetupIds);
+        ..addAll(migrated);
       _isLoading = false;
     });
   }
@@ -146,8 +177,10 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                     //
                     // Alte Favoriten, die noch eine Stadt enthalten, gelten
                     // weiterhin: resolveFavorite() faellt darauf zurueck.
-                    final active = _selected.contains(meetup.id) ||
-                        _selected.contains(meetup.city);
+                    // NUR die ID. Ein Rueckfall auf die Stadt haette bei
+                    // zwei Meetups derselben Stadt beide markiert — genau
+                    // der Fehler, den die Umstellung oben behebt.
+                    final active = _selected.contains(meetup.id);
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
@@ -163,7 +196,6 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                             setState(() {
                               if (active) {
                                 _selected.remove(meetup.id);
-                                _selected.remove(meetup.city); // Altbestand
                               } else {
                                 _selected.add(meetup.id);
                               }
