@@ -114,6 +114,10 @@ class MeetupCalendarService {
           location: (e['location'] ?? '').toString(),
           startTime: start,
           url: link.isNotEmpty ? link : mv('portalLink'),
+          // Die Portal-ID kommt ueber denselben flachen Schluessel wie Name
+          // und Logo. Damit laesst sich ein Termin eindeutig einem Meetup
+          // zuordnen, statt ueber Namensvergleiche zu raten.
+          meetupId: mv('id'),
         ));
       }
       if (events.isNotEmpty) {

@@ -597,14 +597,29 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Aufschrift der Gruppenname, falls die Stadt mehrere Meetups hat.
         final cityName = MeetupService.cityFor(favKey);
         final label = MeetupService.labelFor(favKey);
+        final meetup = MeetupService.resolveFavorite(favKey);
 
-        final upcoming = events
-            .where((e) => !e.startTime.isBefore(todayStart) && matchesCity(e, cityName))
+        // ZUERST ueber die Portal-ID zuordnen: Termine aus dem Portal tragen
+        // sie, und sie trifft genau EIN Meetup. Der Namensvergleich darunter
+        // ist der Rueckfall fuer Termine ohne ID (ICS, Nostr) — er kann bei
+        // mehreren Meetups einer Stadt nicht unterscheiden und wuerde
+        // BitcoinWalk Würzburg und Würzburg Meetup dieselben Termine geben.
+        final byId = meetup == null
+            ? const <CalendarEvent>[]
+            : events
+                .where((e) =>
+                    e.meetupId.isNotEmpty && e.meetupId == meetup.id)
+                .toList();
+
+        final upcoming = (byId.isNotEmpty
+                ? byId
+                : events.where((e) => matchesCity(e, cityName)))
+            .where((e) => !e.startTime.isBefore(todayStart))
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
         final chosen = upcoming.isNotEmpty ? upcoming.first : null;
         AppLogger.diag('HomeMeetup',
-            'Favorit "$label" ($favKey): ${upcoming.length} Termine, naechster = '
+            'Favorit "$label" ($favKey, ${byId.isNotEmpty ? "per ID" : "per Name"}): ${upcoming.length} Termine, naechster = '
             '${chosen == null ? "keiner" : "\"${chosen.title}\" am ${chosen.startTime.day}.${chosen.startTime.month}. (${_daysUntil(chosen.startTime)} Tage)"}');
         cards.add(_FavCard(
             key: favKey, label: label, city: cityName, event: chosen));
@@ -1595,14 +1610,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// CoverFlow-Wappen fuer EINE Stadt (parametrisiert, damit jede
   /// Favoriten-Karte ihr eigenes Wappen zeigt).
   Widget _crestCoverFlow(String city, Meetup? meetup, {double size = 56}) {
-    String url = MeetupCalendarService.logoFor(city);
-    if (url.isEmpty && meetup != null) {
-      // Fallback: Wappen aus /api/meetups — Pfade dort koennen RELATIV
-      // sein, deshalb normalisieren (sonst laedt Image.network still nichts
-      // und das Wappen fehlt, z.B. Darmstadt/Wiesbaden ohne Termin-Logo).
+    // Das EIGENE Wappen des Meetups hat Vorrang.
+    //
+    // MeetupCalendarService.logoFor() sucht ueber den Namen und liefert bei
+    // zwei Meetups derselben Stadt beiden dasselbe Bild. Liegt das Meetup-
+    // Objekt vor — seit der Umstellung auf die Portal-ID ist das der
+    // Normalfall —, nehmen wir dessen Logo.
+    String url = '';
+    if (meetup != null) {
       url = MeetupCalendarService.absoluteImageUrl(
           meetup.logoUrl.isNotEmpty ? meetup.logoUrl : meetup.coverImagePath);
     }
+    // Rueckfall: das ueber den Namen gefundene Termin-Logo. Greift bei
+    // Favoriten aus aelteren Fassungen, zu denen kein Meetup-Objekt
+    // aufloest.
+    if (url.isEmpty) url = MeetupCalendarService.logoFor(city);
     if (url.isEmpty) return const SizedBox.shrink();
     return SizedBox(
       width: size * 1.12, height: size,
