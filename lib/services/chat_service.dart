@@ -20,6 +20,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'app_logger.dart';
 import 'relay_socket.dart';
 import 'signing_service.dart';
@@ -132,6 +134,20 @@ class ChatService {
 
   static const Duration _timeout = Duration(seconds: 8);
 
+  /// Zwischengespeicherte Raumliste.
+  ///
+  /// Das Dashboard fragt fuer jeden Favoriten nach dem Raum. Ohne Cache
+  /// zoege es die komplette Raumliste mehrfach hintereinander vom Relay —
+  /// bei vier Favoriten viermal. Die Liste aendert sich selten; fuenf Minuten
+  /// sind ein guter Tausch zwischen Frische und Datenverkehr.
+  static List<ChatRoom>? _roomCache;
+  static DateTime? _roomCacheAt;
+  static const Duration _cacheTtl = Duration(minutes: 5);
+
+  /// Schluessel fuer den Lesestand: Raum -> Zeitstempel der letzten
+  /// gesehenen Nachricht (Unix-Sekunden).
+  static const String _readKey = 'chat_last_read';
+
   /// Fuehrt EINE Abfrage aus und sammelt die Ereignisse bis EOSE.
   ///
   /// Bewusst kein Dauer-Abo: Der Chat-Bildschirm haelt seine eigene offene
@@ -210,7 +226,29 @@ class ChatService {
   // ── Räume finden ───────────────────────────────────────────────────────
 
   /// Alle Meetup-Räume des Relays.
-  static Future<List<ChatRoom>> loadMeetupRooms() async {
+  ///
+  /// [force] umgeht den Zwischenspeicher — fuer ein bewusstes Neuladen.
+  static Future<List<ChatRoom>> loadMeetupRooms({bool force = false}) async {
+    final cached = _roomCache;
+    final at = _roomCacheAt;
+    if (!force &&
+        cached != null &&
+        at != null &&
+        DateTime.now().difference(at) < _cacheTtl) {
+      return cached;
+    }
+    final fresh = await _loadMeetupRoomsUncached();
+    // Eine leere Antwort NICHT zwischenspeichern: Sie kann auch heissen, dass
+    // das Relay gerade nicht erreichbar war, und dann waere der Chat fuenf
+    // Minuten lang scheinbar nicht vorhanden.
+    if (fresh.isNotEmpty) {
+      _roomCache = fresh;
+      _roomCacheAt = DateTime.now();
+    }
+    return fresh;
+  }
+
+  static Future<List<ChatRoom>> _loadMeetupRoomsUncached() async {
     final events = await _query({
       'kinds': [_kRoomMeta],
       '#t': ['meetup'],
@@ -292,6 +330,103 @@ class ChatService {
       if (room != null) return room;
     }
     return null;
+  }
+
+  // ── Lesestand und Ungelesenes ──────────────────────────────────────────
+
+  /// Zeitstempel der zuletzt gesehenen Nachricht eines Raums (Unix-Sekunden).
+  ///
+  /// Rein LOKAL. Nostr kennt keinen Lesestand, und ihn zu veroeffentlichen
+  /// waere auch unerwuenscht: Niemand muss im Netz nachlesen koennen, wann
+  /// jemand zuletzt in einen Raum geschaut hat.
+  static Future<Map<String, int>> _readMarks() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList(_readKey) ?? const <String>[];
+      final out = <String, int>{};
+      for (final entry in raw) {
+        // Format "<h>|<sekunden>"
+        final i = entry.lastIndexOf('|');
+        if (i <= 0) continue;
+        final ts = int.tryParse(entry.substring(i + 1));
+        if (ts != null) out[entry.substring(0, i)] = ts;
+      }
+      return out;
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// Merkt sich, bis wohin gelesen wurde.
+  static Future<void> markRead(String h, DateTime until) async {
+    try {
+      final marks = await _readMarks();
+      final ts = until.millisecondsSinceEpoch ~/ 1000;
+      // Nie zurueckdrehen: Ein aelterer Aufruf darf einen neueren Stand
+      // nicht ueberschreiben.
+      if ((marks[h] ?? 0) >= ts) return;
+      marks[h] = ts;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(
+          _readKey, marks.entries.map((e) => '${e.key}|${e.value}').toList());
+    } catch (e) {
+      AppLogger.debug(_tag, 'Lesestand nicht gespeichert: $e');
+    }
+  }
+
+  /// Wie viele ungelesene Nachrichten liegen in diesen Räumen?
+  ///
+  /// EINE Abfrage für alle Räume zusammen — der `#h`-Filter nimmt eine Liste.
+  /// Pro Raum einzeln zu fragen hiesse bei vier Favoriten vier
+  /// Verbindungsaufbauten beim Öffnen des Dashboards.
+  ///
+  /// Eigene Nachrichten zaehlen nicht mit: Was man selbst geschrieben hat,
+  /// hat man gelesen.
+  static Future<Map<String, int>> unreadCounts(List<String> hs) async {
+    if (hs.isEmpty) return {};
+    final marks = await _readMarks();
+    final me = await SigningService.pubkeyHex();
+
+    // Ab dem aeltesten Lesestand fragen. Räume ohne Lesestand bekommen ein
+    // Fenster von sieben Tagen: Wer den Raum noch nie geoeffnet hat, soll
+    // sehen, dass dort etwas los IST — aber nicht die Historie von Monaten
+    // als "ungelesen" gemeldet bekommen.
+    final fallback = DateTime.now()
+            .subtract(const Duration(days: 7))
+            .millisecondsSinceEpoch ~/
+        1000;
+    var since = fallback;
+    for (final h in hs) {
+      final m = marks[h] ?? fallback;
+      if (m < since) since = m;
+    }
+
+    final events = await _query({
+      'kinds': [_kMessage],
+      '#h': hs,
+      'since': since,
+      'limit': 500,
+    }, timeout: const Duration(seconds: 6));
+
+    final counts = <String, int>{for (final h in hs) h: 0};
+    for (final e in events) {
+      final ts = e['created_at'];
+      final pubkey = (e['pubkey'] ?? '').toString();
+      if (ts is! int || (me != null && pubkey == me)) continue;
+
+      final tags = (e['tags'] as List?)?.cast<List>() ?? const [];
+      for (final tag in tags) {
+        if (tag.isNotEmpty && tag[0] == 'h' && tag.length > 1) {
+          final h = tag[1].toString();
+          if (!counts.containsKey(h)) break;
+          if (ts > (marks[h] ?? fallback)) counts[h] = counts[h]! + 1;
+          break;
+        }
+      }
+    }
+    AppLogger.debug(_tag, 'Ungelesen: $counts');
+    return counts;
   }
 
   // ── Mitgliedschaft ─────────────────────────────────────────────────────

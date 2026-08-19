@@ -71,6 +71,12 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     _scrollToEnd();
 
+    // Alles Geladene gilt als gelesen. Der Lesestand liegt nur auf diesem
+    // Gerät — Nostr kennt keinen, und er gehört auch nicht ins Netz.
+    if (msgs.isNotEmpty) {
+      await ChatService.markRead(widget.room.h, msgs.last.createdAt);
+    }
+
     // Ab dem Zeitpunkt der letzten geladenen Nachricht weiterhoeren — sonst
     // kaeme alles Alte ein zweites Mal.
     final since = msgs.isNotEmpty ? msgs.last.createdAt : DateTime.now();
@@ -83,6 +89,8 @@ class _ChatScreenState extends State<ChatScreen> {
           _messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         });
         _scrollToEnd();
+        // Wer den Raum offen hat, liest mit.
+        ChatService.markRead(widget.room.h, m.createdAt);
       }, since: since);
     } catch (_) {
       // Ohne Live-Abo bleibt der Chat lesbar — nur eben nicht von selbst

@@ -214,6 +214,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Hintergrund schiebt — der Normalfall auf einem Event — kam zurueck
       // und sah nichts, obwohl die Session lief.
       _checkActiveSession();
+      _loadChatUnread();
     }
   }
 
@@ -455,7 +456,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     await _loadUser();
     if (_user.nickname == 'Anon' || _user.nickname.isEmpty) { if (mounted) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const IdentitySetupScreen())); await _loadUser(); } }
     await _loadBadges(); await _calculateTrustScore(); await _reVerifyAdminStatus();
-    _loadIdentityData(); _checkActiveSession(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
+    _loadIdentityData(); _checkActiveSession(); _loadChatUnread(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
     _loadNextHomeMeetup(); _loadProfilePicture(); _checkNostrNew();
   }
 
@@ -1622,6 +1623,43 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     );
   }
 
+  /// Ungelesene Nachrichten je Stadt. Leer, solange nichts geladen wurde.
+  final Map<String, int> _chatUnread = {};
+
+  /// Prueft fuer alle Favoriten, ob im jeweiligen Chatraum etwas Neues liegt.
+  ///
+  /// Laeuft im Hintergrund und ohne Ladeanzeige: Das Dashboard soll nicht auf
+  /// das Relay warten. Kommt nichts zurueck, bleibt die Leiste eben ohne
+  /// Punkt — das ist besser als ein Dashboard, das haengt.
+  Future<void> _loadChatUnread() async {
+    final cities = <String>[
+      if (_user.homeMeetupId.isNotEmpty) _user.homeMeetupId,
+      ..._user.favoriteMeetupIds,
+    ].toSet().toList();
+    if (cities.isEmpty) return;
+
+    try {
+      // Erst Stadt -> Raum, dann eine einzige Abfrage fuer alle Raeume.
+      final byRoom = <String, String>{};
+      for (final city in cities) {
+        final room = await ChatService.findRoomForCity(city);
+        if (room != null) byRoom[room.h] = city;
+      }
+      if (byRoom.isEmpty || !mounted) return;
+
+      final counts = await ChatService.unreadCounts(byRoom.keys.toList());
+      if (!mounted) return;
+      setState(() {
+        for (final e in counts.entries) {
+          final city = byRoom[e.key];
+          if (city != null) _chatUnread[city] = e.value;
+        }
+      });
+    } catch (e) {
+      AppLogger.debug('Chat', 'Ungelesen-Abfrage fehlgeschlagen: $e');
+    }
+  }
+
   /// Oeffnet den Chat-Raum eines Meetups.
   ///
   /// Die Suche laeuft ueber das Relay und dauert einen Moment — deshalb ein
@@ -1645,7 +1683,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           content: Text(t.chatNoRoom(city)), backgroundColor: cCard));
       return;
     }
-    navigator.push(MaterialPageRoute(builder: (_) => ChatScreen(room: room)));
+    await navigator.push(
+        MaterialPageRoute(builder: (_) => ChatScreen(room: room)));
+    // Zurueck aus dem Raum: Der Lesestand hat sich geaendert, also neu
+    // zaehlen — sonst bliebe der Punkt stehen, obwohl alles gelesen ist.
+    if (mounted) _loadChatUnread();
   }
 
   Widget _buildHomeMeetupTile() {
@@ -1882,6 +1924,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             icon: Icons.forum_rounded,
             label: AppLocalizations.of(context).btnChat,
             accent: cNostr,
+            badge: _chatUnread[cityName] ?? 0,
             onTap: () => _openMeetupChat(cityName),
           ),
         ),
@@ -1904,10 +1947,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     );
   }
 
+  /// [badge] > 0 setzt einen Zaehler ans Symbol.
   Widget _favAction({
     required IconData icon,
     required String label,
     required Color accent,
+    int badge = 0,
     VoidCallback? onTap,
   }) {
     final enabled = onTap != null;
@@ -1917,9 +1962,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 11),
         child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icon,
-              color: enabled ? accent : cTextTertiary.withValues(alpha: 0.5),
-              size: 15),
+          // Stack statt einer zusaetzlichen Zeile: Der Zaehler sitzt AM
+          // Symbol und veraendert die Breite des Feldes nicht — sonst
+          // wuerden die drei Felder ungleich breit, sobald etwas ungelesen
+          // ist.
+          Stack(clipBehavior: Clip.none, children: [
+            Icon(icon,
+                color: enabled ? accent : cTextTertiary.withValues(alpha: 0.5),
+                size: 15),
+            if (badge > 0)
+              Positioned(
+                right: -6,
+                top: -5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  constraints: const BoxConstraints(minWidth: 13),
+                  decoration: BoxDecoration(
+                    color: cOrange,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Text(badge > 99 ? '99+' : '$badge',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w900,
+                          height: 1.3)),
+                ),
+              ),
+          ]),
           const SizedBox(width: 6),
           Flexible(
             child: Text(label,
