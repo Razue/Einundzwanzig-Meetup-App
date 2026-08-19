@@ -20,6 +20,51 @@ class MeetupService {
     return 0.0;
   }
 
+  /// Zwischengespeicherte Liste — fuer das Aufloesen von Favoriten.
+  ///
+  /// Favoriten werden als Portal-ID gespeichert. Um daraus Stadt, Wappen
+  /// oder Land zu bekommen, braucht es das Meetup-Objekt; ohne Cache waere
+  /// das je Kachel ein Netzabruf.
+  static List<Meetup> _cache = const [];
+
+  /// Zuletzt geladene Meetups, moeglicherweise leer.
+  static List<Meetup> get cached => _cache;
+
+  /// Loest einen gespeicherten Favoriten auf.
+  ///
+  /// Nimmt zuerst die Portal-ID. Schlaegt das fehl, wird der Wert als
+  /// STADTNAME gedeutet — so bleiben Favoriten aus aelteren Fassungen
+  /// nutzbar, die noch Staedte gespeichert haben. Bei mehreren Meetups in
+  /// derselben Stadt gewinnt dann das erste; genau diese Mehrdeutigkeit ist
+  /// der Grund fuer die Umstellung auf die ID.
+  static Meetup? resolveFavorite(String stored) {
+    if (stored.isEmpty || _cache.isEmpty) return null;
+    for (final m in _cache) {
+      if (m.id == stored) return m;
+    }
+    for (final m in _cache) {
+      if (m.city.toLowerCase() == stored.toLowerCase()) return m;
+    }
+    return null;
+  }
+
+  /// Anzeigename eines gespeicherten Favoriten.
+  ///
+  /// Bei mehreren Meetups in einer Stadt der GRUPPENNAME ("BitcoinWalk
+  /// Würzburg"), sonst die Stadt. Zwei Karten mit derselben Aufschrift
+  /// waeren sonst nicht auseinanderzuhalten.
+  static String labelFor(String stored) {
+    final m = resolveFavorite(stored);
+    if (m == null) return stored;
+    final sameCity =
+        _cache.where((x) => x.city.toLowerCase() == m.city.toLowerCase()).length;
+    if (sameCity > 1 && m.name.isNotEmpty) return m.name;
+    return m.city;
+  }
+
+  /// Stadt eines gespeicherten Favoriten — fuer Terminsuche und Wappen.
+  static String cityFor(String stored) => resolveFavorite(stored)?.city ?? stored;
+
   static Future<List<Meetup>> fetchMeetups() async {
     try {
       final response = await http.get(Uri.parse(_url));
@@ -107,6 +152,8 @@ class MeetupService {
           AppLogger.warn('Meetups',
               '${list.length - unique.length} Eintrag/Eintraege mit identischer ID entfernt.');
         }
+        // Cache fuellen — resolveFavorite() lebt davon.
+        _cache = unique;
         return unique;
       } else {
         AppLogger.warn('Meetups', 'Portal antwortete mit HTTP ${response.statusCode}.');

@@ -138,7 +138,16 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                   itemCount: _filteredMeetups.length,
                   itemBuilder: (context, index) {
                     final meetup = _filteredMeetups[index];
-                    final active = _selected.contains(meetup.city);
+                    // Ausgewaehlt wird die PORTAL-ID, nicht die Stadt.
+                    // Vorher stand in den Favoriten "Würzburg" — und damit
+                    // liessen sich BitcoinWalk Würzburg und Würzburg Meetup
+                    // nicht auseinanderhalten: Termine, Wappen und Chat
+                    // landeten immer beim ersten der beiden.
+                    //
+                    // Alte Favoriten, die noch eine Stadt enthalten, gelten
+                    // weiterhin: resolveFavorite() faellt darauf zurueck.
+                    final active = _selected.contains(meetup.id) ||
+                        _selected.contains(meetup.city);
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
@@ -153,9 +162,10 @@ class _MeetupSelectionScreenState extends State<MeetupSelectionScreen> {
                             // TOGGLE statt sofort speichern & schliessen.
                             setState(() {
                               if (active) {
-                                _selected.remove(meetup.city);
+                                _selected.remove(meetup.id);
+                                _selected.remove(meetup.city); // Altbestand
                               } else {
-                                _selected.add(meetup.city);
+                                _selected.add(meetup.id);
                               }
                             });
                           },

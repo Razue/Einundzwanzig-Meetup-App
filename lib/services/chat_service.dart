@@ -377,7 +377,39 @@ class ChatService {
     return null;
   }
 
+  /// Der Raum zu einem Meetup, gesucht ueber die PORTAL-ID.
+  ///
+  /// Der genaue Weg: Bens Raeume tragen `["i","meetup:<id>"]` — dieselbe ID,
+  /// die auch diese App vom Portal kennt. Eine exakte Zuordnung, ohne
+  /// Namensvergleich und ohne Raten.
+  ///
+  /// Das loest den Wuerzburg-Fall: Dort gibt es BitcoinWalk Würzburg UND
+  /// Würzburg Meetup. Ueber den Stadtnamen landeten beide im selben Raum —
+  /// dem des erstgefundenen. Ueber die ID bekommt jedes Meetup seinen
+  /// eigenen.
+  static Future<ChatRoom?> findRoomForMeetupId(String portalId) async {
+    if (portalId.isEmpty) return null;
+    final events = await _query({
+      'kinds': [_kRoomMeta],
+      '#i': ['meetup:$portalId'],
+      'limit': 5,
+    });
+    for (final e in events) {
+      final room = ChatRoom.fromEvent(e);
+      if (room != null) {
+        AppLogger.debug(_tag, 'Raum fuer Meetup $portalId: ${room.h}');
+        return room;
+      }
+    }
+    AppLogger.debug(_tag, 'Kein Raum mit i-Tag meetup:$portalId.');
+    return null;
+  }
+
   /// Der Raum zu einem Meetup, gesucht ueber den STADTNAMEN.
+  ///
+  /// Nur noch Rueckfall fuer Favoriten aus aelteren Fassungen, in denen die
+  /// Stadt statt der ID gespeichert wurde. Bei mehreren Meetups in einer
+  /// Stadt trifft er die falsche Wahl — deshalb ist die ID der Weg.
   ///
   /// Noetig, weil diese App Meetups ueber die Stadt kennt (`homeMeetupId`),
   /// Bens Raeume aber einen Portal-Slug tragen ("einundzwanzig-saarbruecken").

@@ -591,16 +591,23 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
       // Je Favorit-Stadt das naechste Event bestimmen.
       final cards = <_FavCard>[];
-      for (final cityName in favs) {
+      for (final favKey in favs) {
+        // Der gespeicherte Wert ist eine Portal-ID (oder bei Altbestand eine
+        // Stadt). Fuer die Terminsuche wird daraus der Ort, fuer die
+        // Aufschrift der Gruppenname, falls die Stadt mehrere Meetups hat.
+        final cityName = MeetupService.cityFor(favKey);
+        final label = MeetupService.labelFor(favKey);
+
         final upcoming = events
             .where((e) => !e.startTime.isBefore(todayStart) && matchesCity(e, cityName))
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
         final chosen = upcoming.isNotEmpty ? upcoming.first : null;
         AppLogger.diag('HomeMeetup',
-            'Favorit "$cityName": ${upcoming.length} Termine, naechster = '
+            'Favorit "$label" ($favKey): ${upcoming.length} Termine, naechster = '
             '${chosen == null ? "keiner" : "\"${chosen.title}\" am ${chosen.startTime.day}.${chosen.startTime.month}. (${_daysUntil(chosen.startTime)} Tage)"}');
-        cards.add(_FavCard(city: cityName, event: chosen));
+        cards.add(_FavCard(
+            key: favKey, label: label, city: cityName, event: chosen));
       }
 
       // Sortierung: Staedte MIT Termin nach Datum aufsteigend; Staedte OHNE
@@ -1623,8 +1630,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     );
   }
 
-  /// Ungelesene Nachrichten je Stadt. Leer, solange nichts geladen wurde.
+  /// Ungelesene Nachrichten je gespeichertem Favoriten. Leer, solange
+  /// nichts geladen wurde.
   final Map<String, int> _chatUnread = {};
+
+  /// Findet den Raum zu einem gespeicherten Favoriten.
+  ///
+  /// Zuerst ueber die PORTAL-ID — das ist die exakte Zuordnung und der
+  /// einzige Weg, bei mehreren Meetups einer Stadt das richtige zu treffen.
+  /// Nur wenn der Favorit noch aus einer aelteren Fassung stammt und einen
+  /// Stadtnamen enthaelt, greift die alte Namenssuche.
+  Future<ChatRoom?> _findRoomFor(String favKey) async {
+    final meetup = MeetupService.resolveFavorite(favKey);
+    if (meetup != null) {
+      final byId = await ChatService.findRoomForMeetupId(meetup.id);
+      if (byId != null) return byId;
+    }
+    return ChatService.findRoomForCity(MeetupService.cityFor(favKey));
+  }
 
   /// Prueft fuer alle Favoriten, ob im jeweiligen Chatraum etwas Neues liegt.
   ///
@@ -1635,18 +1658,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Mengen-Literal statt Liste plus toSet(): Doppelte fallen direkt weg,
     // ohne dass eine Zwischenliste entsteht. Home-Meetup steht zuerst und
     // bleibt es auch — Mengen-Literale behalten die Einfuegereihenfolge.
-    final cities = <String>{
+    final favKeys = <String>{
       if (_user.homeMeetupId.isNotEmpty) _user.homeMeetupId,
       ..._user.favoriteMeetupIds,
     }.toList();
-    if (cities.isEmpty) return;
+    if (favKeys.isEmpty) return;
 
     try {
-      // Erst Stadt -> Raum, dann eine einzige Abfrage fuer alle Raeume.
+      // Erst Favorit -> Raum, dann eine einzige Abfrage fuer alle Raeume.
       final byRoom = <String, String>{};
-      for (final city in cities) {
-        final room = await ChatService.findRoomForCity(city);
-        if (room != null) byRoom[room.h] = city;
+      for (final favKey in favKeys) {
+        final room = await _findRoomFor(favKey);
+        if (room != null) byRoom[room.h] = favKey;
       }
       if (byRoom.isEmpty || !mounted) return;
 
@@ -1654,8 +1677,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       if (!mounted) return;
       setState(() {
         for (final e in counts.entries) {
-          final city = byRoom[e.key];
-          if (city != null) _chatUnread[city] = e.value;
+          final favKey = byRoom[e.key];
+          if (favKey != null) _chatUnread[favKey] = e.value;
         }
       });
     } catch (e) {
@@ -1667,7 +1690,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   ///
   /// Die Suche laeuft ueber das Relay und dauert einen Moment — deshalb ein
   /// Ladehinweis, sonst wirkt der Knopf tot.
-  Future<void> _openMeetupChat(String city) async {
+  Future<void> _openMeetupChat(String favKey, String label) async {
     final t = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -1677,7 +1700,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         duration: const Duration(seconds: 4),
         backgroundColor: cCard));
 
-    final room = await ChatService.findRoomForCity(city);
+    final room = await _findRoomFor(favKey);
     if (!mounted) return;
     messenger.hideCurrentSnackBar();
 
@@ -1685,7 +1708,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Vier Sekunden statt der ueblichen zwei: Der Satz nennt einen Grund
       // und einen Ort zum Nachsehen — den liest niemand im Vorbeigehen.
       messenger.showSnackBar(SnackBar(
-          content: Text(t.chatNoRoom(city)),
+          content: Text(t.chatNoRoom(label)),
           duration: const Duration(seconds: 4),
           backgroundColor: cCard));
       return;
@@ -1735,7 +1758,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Hoehe fix, damit der PageView im Grid nicht springt.
     final cards = _favCards.isNotEmpty
         ? _favCards
-        : [ _FavCard(city: _user.homeMeetupId, event: _nextHomeMeetup) ];
+        : [
+            _FavCard(
+                key: _user.homeMeetupId,
+                label: MeetupService.labelFor(_user.homeMeetupId),
+                city: MeetupService.cityFor(_user.homeMeetupId),
+                event: _nextHomeMeetup)
+          ];
 
     return GestureDetector(
       onLongPress: _showReorderSheet,
@@ -1791,8 +1820,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _favCardContent(_FavCard card) {
     final cityName = card.city;
     final event = card.event;
-    // Meetup-Objekt (fuer Land, Info-Screen, Wappen) zur Stadt aufloesen.
-    final meetup = _meetupForCity(cityName);
+    // Ueber die gespeicherte Kennung aufloesen, nicht ueber die Stadt: Nur
+    // so trifft es bei mehreren Meetups derselben Stadt das richtige.
+    final meetup =
+        MeetupService.resolveFavorite(card.key) ?? _meetupForCity(cityName);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
@@ -1826,17 +1857,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 // schrumpft die Schrift und darf auf zwei Zeilen umbrechen.
                 // Die Staffelung ist bewusst grob — feinere Abstufungen
                 // bringen optisch nichts.
-                Text(cityName.toUpperCase(),
+                Text(card.label.toUpperCase(),
                   maxLines: 2,
                   softWrap: true,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       color: cText,
-                      fontSize: cityName.length > 20
+                      fontSize: card.label.length > 20
                           ? 13
-                          : cityName.length > 15
+                          : card.label.length > 15
                               ? 15
-                              : cityName.length > 10
+                              : card.label.length > 10
                                   ? 17
                                   : 22,
                       fontWeight: FontWeight.w900,
@@ -1847,7 +1878,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               ])),
           ]),
         ),
-        _favActions(cityName, meetup),
+        _favActions(card, meetup),
       ]),
     );
   }
@@ -1910,7 +1941,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   ///
   /// Gleiche Breite ist Absicht: Keine der drei Handlungen ist wichtiger als
   /// die anderen, und gleiche Felder lassen sich blind treffen.
-  Widget _favActions(String cityName, Meetup? meetup) {
+  Widget _favActions(_FavCard card, Meetup? meetup) {
     return Container(
       decoration: const BoxDecoration(
         border: Border(top: BorderSide(color: cTileBorder, width: 0.5)),
@@ -1922,7 +1953,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             label: AppLocalizations.of(context).btnEvents,
             accent: cOrange,
             onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: cityName))),
+                MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: card.city))),
           ),
         ),
         Container(width: 0.5, height: 26, color: cTileBorder),
@@ -1931,8 +1962,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             icon: Icons.forum_rounded,
             label: AppLocalizations.of(context).btnChat,
             accent: cNostr,
-            badge: _chatUnread[cityName] ?? 0,
-            onTap: () => _openMeetupChat(cityName),
+            badge: _chatUnread[card.key] ?? 0,
+            onTap: () => _openMeetupChat(card.key, card.label),
           ),
         ),
         Container(width: 0.5, height: 26, color: cTileBorder),
@@ -3152,11 +3183,23 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
   }
 }
 
-/// Eine Favoriten-Karte: Stadt + deren naechstes Event (oder null).
+/// Eine Favoriten-Karte.
+///
+/// [key] ist der GESPEICHERTE Wert — seit dem Umbau die Portal-ID, bei
+/// Altbestand noch ein Stadtname. [city] ist der daraus aufgeloeste Ort
+/// fuer Terminsuche und Wappen, [label] die Aufschrift: bei mehreren
+/// Meetups in einer Stadt der Gruppenname, sonst die Stadt.
 class _FavCard {
+  final String key;
+  final String label;
   final String city;
   final CalendarEvent? event;
-  const _FavCard({required this.city, required this.event});
+  const _FavCard({
+    required this.key,
+    required this.label,
+    required this.city,
+    required this.event,
+  });
 }
 
 /// Gestrichelter Platzhalter an der Stelle, von der eine Kachel gerade
