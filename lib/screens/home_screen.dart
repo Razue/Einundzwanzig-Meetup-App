@@ -1632,10 +1632,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// das Relay warten. Kommt nichts zurueck, bleibt die Leiste eben ohne
   /// Punkt — das ist besser als ein Dashboard, das haengt.
   Future<void> _loadChatUnread() async {
-    final cities = <String>[
+    // Mengen-Literal statt Liste plus toSet(): Doppelte fallen direkt weg,
+    // ohne dass eine Zwischenliste entsteht. Home-Meetup steht zuerst und
+    // bleibt es auch — Mengen-Literale behalten die Einfuegereihenfolge.
+    final cities = <String>{
       if (_user.homeMeetupId.isNotEmpty) _user.homeMeetupId,
       ..._user.favoriteMeetupIds,
-    ].toSet().toList();
+    }.toList();
     if (cities.isEmpty) return;
 
     try {
@@ -1679,8 +1682,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     messenger.hideCurrentSnackBar();
 
     if (room == null) {
+      // Vier Sekunden statt der ueblichen zwei: Der Satz nennt einen Grund
+      // und einen Ort zum Nachsehen — den liest niemand im Vorbeigehen.
       messenger.showSnackBar(SnackBar(
-          content: Text(t.chatNoRoom(city)), backgroundColor: cCard));
+          content: Text(t.chatNoRoom(city)),
+          duration: const Duration(seconds: 4),
+          backgroundColor: cCard));
       return;
     }
     await navigator.push(

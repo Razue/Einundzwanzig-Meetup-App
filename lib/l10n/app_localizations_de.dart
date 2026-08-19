@@ -6598,7 +6598,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String chatNoRoom(String city) {
-    return 'Für $city gibt es noch keinen Chatraum auf dem Gruppen-Relay.';
+    return 'Für $city gibt es auf dem Gruppen-Relay noch keinen Chatraum. Einzelheiten stehen im Diagnose-Log.';
   }
 
   @override

@@ -6538,7 +6538,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String chatNoRoom(String city) {
-    return 'There is no chat room for $city on the group relay yet.';
+    return 'There is no chat room for $city on the group relay yet. Details are in the diagnostics log.';
   }
 
   @override

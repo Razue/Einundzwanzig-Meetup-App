@@ -2891,7 +2891,7 @@
     }
   },
   "chatSearching": "Looking for the chat room …",
-  "chatNoRoom": "There is no chat room for {city} on the group relay yet.",
+  "chatNoRoom": "There is no chat room for {city} on the group relay yet. Details are in the diagnostics log.",
   "@chatNoRoom": {
     "placeholders": {
       "city": {

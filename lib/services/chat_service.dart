@@ -41,6 +41,9 @@ const int _kRoomEdit = 9002;
 const int _kRoomMeta = 39000;
 const int _kRoomMembers = 39002;
 
+/// NIP-42: Antwort auf die Anmeldeaufforderung des Relays.
+const int _kAuth = 22242;
+
 /// Ein Raum, so wie ihn das Relay beschreibt.
 class ChatRoom {
   /// Raum-Kennung (`h`). Nur zusammen mit dem Relay eindeutig.
@@ -148,6 +151,104 @@ class ChatService {
   /// gesehenen Nachricht (Unix-Sekunden).
   static const String _readKey = 'chat_last_read';
 
+  /// Baut eine Verbindung auf UND meldet sich an, falls das Relay es
+  /// verlangt (NIP-42).
+  ///
+  /// Das Gruppen-Relay verlangt die Anmeldung schon zum LESEN — ohne sie
+  /// liefert es schlicht nichts zurueck, ohne Fehlermeldung. Genau das war
+  /// der Grund, warum die Raumliste leer blieb und der Chat-Knopf nichts tat.
+  ///
+  /// Ablauf: Das Relay schickt nach dem Verbinden `["AUTH", "<challenge>"]`.
+  /// Darauf antworten wir mit einem signierten Ereignis der Art 22242, das
+  /// Relay-Adresse und challenge traegt. Erst nach dessen Bestaetigung
+  /// nimmt das Relay Abfragen und Ereignisse an.
+  ///
+  /// [onEvent] bekommt alle Nachrichten, die NICHT zur Anmeldung gehoeren —
+  /// so muss keine Aufrufstelle die Anmeldung mitbehandeln.
+  static Future<RelaySocket?> _connectAuthed(
+    void Function(List<dynamic> msg) onEvent, {
+    Duration authTimeout = const Duration(seconds: 6),
+  }) async {
+    final RelaySocket ws;
+    try {
+      ws = await RelaySocket.connect(kGroupRelay)
+          .timeout(const Duration(seconds: 5));
+    } catch (e) {
+      AppLogger.warn(_tag, 'Verbindung fehlgeschlagen', e);
+      return null;
+    }
+
+    final ready = Completer<bool>();
+    String? authEventId;
+
+    ws.listen((data) {
+      List<dynamic> msg;
+      try {
+        msg = jsonDecode(data as String) as List<dynamic>;
+      } catch (_) {
+        return;
+      }
+      if (msg.isEmpty) return;
+
+      // --- Anmeldung ---
+      if (msg[0] == 'AUTH' && msg.length >= 2 && msg[1] is String) {
+        final challenge = msg[1] as String;
+        () async {
+          try {
+            final signed = await SigningService.signEvent(
+              kind: _kAuth,
+              content: '',
+              tags: [
+                ['relay', kGroupRelay],
+                ['challenge', challenge],
+              ],
+            );
+            authEventId = signed.id;
+            ws.add(jsonEncode(['AUTH', signed.toJson()]));
+          } catch (e) {
+            AppLogger.warn(_tag, 'Anmeldung konnte nicht signiert werden', e);
+            if (!ready.isCompleted) ready.complete(false);
+          }
+        }();
+        return;
+      }
+
+      // Bestaetigung der Anmeldung — erst danach ist die Verbindung nutzbar.
+      if (msg[0] == 'OK' &&
+          msg.length >= 3 &&
+          authEventId != null &&
+          msg[1] == authEventId) {
+        final ok = msg[2] == true;
+        AppLogger.debug(_tag,
+            'Anmeldung ${ok ? "angenommen" : "abgelehnt: ${msg.length >= 4 ? msg[3] : ""}"}');
+        if (!ready.isCompleted) ready.complete(ok);
+        return;
+      }
+
+      onEvent(msg);
+    }, onError: (_) {
+      if (!ready.isCompleted) ready.complete(false);
+    }, onDone: () {
+      if (!ready.isCompleted) ready.complete(false);
+    });
+
+    // Manche Relays fordern gar nicht auf. Dann gilt die Verbindung nach
+    // kurzer Wartezeit als nutzbar — laenger zu warten hiesse, gegen ein
+    // Relay zu arbeiten, das gar nichts von uns will.
+    Timer(const Duration(milliseconds: 900), () {
+      if (!ready.isCompleted && authEventId == null) ready.complete(true);
+    });
+
+    final ok = await ready.future.timeout(authTimeout, onTimeout: () => false);
+    if (!ok) {
+      try {
+        ws.close();
+      } catch (_) {}
+      return null;
+    }
+    return ws;
+  }
+
   /// Fuehrt EINE Abfrage aus und sammelt die Ereignisse bis EOSE.
   ///
   /// Bewusst kein Dauer-Abo: Der Chat-Bildschirm haelt seine eigene offene
@@ -158,32 +259,31 @@ class ChatService {
     Duration timeout = _timeout,
   }) async {
     final out = <Map<String, dynamic>>[];
-    RelaySocket? ws;
+    final done = Completer<void>();
+
+    final ws = await _connectAuthed((msg) {
+      if (msg.length >= 3 && msg[0] == 'EVENT') {
+        out.add(msg[2] as Map<String, dynamic>);
+      } else if (msg[0] == 'EOSE') {
+        if (!done.isCompleted) done.complete();
+      } else if (msg[0] == 'CLOSED') {
+        // Das Relay lehnt die Abfrage ab — meist "auth-required". Den Grund
+        // protokollieren, sonst sucht man spaeter an der falschen Stelle.
+        AppLogger.warn(_tag,
+            'Abfrage abgelehnt: ${msg.length >= 3 ? msg[2] : "ohne Grund"}');
+        if (!done.isCompleted) done.complete();
+      }
+    });
+    if (ws == null) return out;
+
     try {
-      ws = await RelaySocket.connect(kGroupRelay)
-          .timeout(const Duration(seconds: 5));
-      final done = Completer<void>();
-      ws.listen((data) {
-        try {
-          final msg = jsonDecode(data as String) as List<dynamic>;
-          if (msg.length >= 3 && msg[0] == 'EVENT') {
-            out.add(msg[2] as Map<String, dynamic>);
-          } else if (msg.isNotEmpty && msg[0] == 'EOSE') {
-            if (!done.isCompleted) done.complete();
-          }
-        } catch (_) {}
-      }, onError: (_) {
-        if (!done.isCompleted) done.complete();
-      }, onDone: () {
-        if (!done.isCompleted) done.complete();
-      });
       ws.add(jsonEncode(['REQ', 'q', filter]));
       await done.future.timeout(timeout, onTimeout: () {});
     } catch (e) {
       AppLogger.warn(_tag, 'Abfrage fehlgeschlagen', e);
     } finally {
       try {
-        ws?.close();
+        ws.close();
       } catch (_) {}
     }
     return out;
@@ -191,34 +291,28 @@ class ChatService {
 
   /// Sendet ein signiertes Ereignis und wartet auf die OK-Antwort.
   static Future<String?> _publish(SignedEvent signed) async {
-    RelaySocket? ws;
+    final done = Completer<String?>();
+
+    final ws = await _connectAuthed((msg) {
+      // ["OK", <id>, <true|false>, <grund>]
+      if (msg.length >= 3 && msg[0] == 'OK' && msg[1] == signed.id) {
+        final ok = msg[2] == true;
+        final reason = msg.length >= 4 ? msg[3].toString() : '';
+        if (!done.isCompleted) done.complete(ok ? null : reason);
+      }
+    });
+    if (ws == null) return 'Anmeldung am Relay fehlgeschlagen';
+
     try {
-      ws = await RelaySocket.connect(kGroupRelay)
-          .timeout(const Duration(seconds: 5));
-      final done = Completer<String?>();
-      ws.listen((data) {
-        try {
-          final msg = jsonDecode(data as String) as List<dynamic>;
-          // ["OK", <id>, <true|false>, <grund>]
-          if (msg.length >= 3 && msg[0] == 'OK' && msg[1] == signed.id) {
-            final ok = msg[2] == true;
-            final reason = msg.length >= 4 ? msg[3].toString() : '';
-            if (!done.isCompleted) done.complete(ok ? null : reason);
-          }
-        } catch (_) {}
-      }, onError: (_) {
-        if (!done.isCompleted) done.complete('Verbindungsfehler');
-      }, onDone: () {
-        if (!done.isCompleted) done.complete('Verbindung beendet');
-      });
       ws.add(signed.toEventMessage());
-      return await done.future.timeout(_timeout, onTimeout: () => 'Zeitüberschreitung');
+      return await done.future
+          .timeout(_timeout, onTimeout: () => 'Zeitüberschreitung');
     } catch (e) {
       AppLogger.warn(_tag, 'Senden fehlgeschlagen', e);
       return e.toString();
     } finally {
       try {
-        ws?.close();
+        ws.close();
       } catch (_) {}
     }
   }
@@ -516,17 +610,15 @@ class ChatService {
     void Function(ChatMessage) onMessage, {
     DateTime? since,
   }) async {
-    final ws = await RelaySocket.connect(kGroupRelay)
-        .timeout(const Duration(seconds: 5));
-    ws.listen((data) {
-      try {
-        final msg = jsonDecode(data as String) as List<dynamic>;
-        if (msg.length >= 3 && msg[0] == 'EVENT') {
-          final m = ChatMessage.fromEvent(msg[2] as Map<String, dynamic>);
-          if (m != null) onMessage(m);
-        }
-      } catch (_) {}
-    }, onError: (_) {}, onDone: () {});
+    final ws = await _connectAuthed((msg) {
+      if (msg.length >= 3 && msg[0] == 'EVENT') {
+        final m = ChatMessage.fromEvent(msg[2] as Map<String, dynamic>);
+        if (m != null) onMessage(m);
+      }
+    });
+    // Ohne Anmeldung kein Abo — der Aufrufer bekommt eine Beenden-Funktion,
+    // die nichts tut, statt einer Ausnahme mitten im Aufbau des Bildschirms.
+    if (ws == null) return () {};
 
     ws.add(jsonEncode([
       'REQ',

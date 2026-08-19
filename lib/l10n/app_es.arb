@@ -2891,7 +2891,7 @@
     }
   },
   "chatSearching": "Buscando la sala de chat …",
-  "chatNoRoom": "Todavía no hay sala de chat para {city} en el relé de grupos.",
+  "chatNoRoom": "Todavía no hay sala de chat para {city} en el relé de grupos. Los detalles están en el registro de diagnóstico.",
   "@chatNoRoom": {
     "placeholders": {
       "city": {

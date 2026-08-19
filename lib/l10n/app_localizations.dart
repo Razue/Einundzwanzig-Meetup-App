@@ -11851,7 +11851,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatNoRoom.
   ///
   /// In de, this message translates to:
-  /// **'Für {city} gibt es noch keinen Chatraum auf dem Gruppen-Relay.'**
+  /// **'Für {city} gibt es auf dem Gruppen-Relay noch keinen Chatraum. Einzelheiten stehen im Diagnose-Log.'**
   String chatNoRoom(String city);
 
   /// No description provided for @chatEventOpen.

@@ -6578,7 +6578,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String chatNoRoom(String city) {
-    return 'Todavía no hay sala de chat para $city en el relé de grupos.';
+    return 'Todavía no hay sala de chat para $city en el relé de grupos. Los detalles están en el registro de diagnóstico.';
   }
 
   @override

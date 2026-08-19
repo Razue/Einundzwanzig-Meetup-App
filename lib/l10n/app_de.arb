@@ -2913,7 +2913,7 @@
     }
   },
   "chatSearching": "Chatraum wird gesucht …",
-  "chatNoRoom": "Für {city} gibt es noch keinen Chatraum auf dem Gruppen-Relay.",
+  "chatNoRoom": "Für {city} gibt es auf dem Gruppen-Relay noch keinen Chatraum. Einzelheiten stehen im Diagnose-Log.",
   "@chatNoRoom": {
     "placeholders": {
       "city": {
