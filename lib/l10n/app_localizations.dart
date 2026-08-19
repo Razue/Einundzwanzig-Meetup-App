@@ -11877,6 +11877,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Info'**
   String get btnInfo;
+
+  /// No description provided for @chatEventHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Beiträge zum Termin · öffentlich auf Nostr'**
+  String get chatEventHint;
+
+  /// No description provided for @chatEventEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nichts geschrieben. Teile hier Infos zum Termin — Treffpunkt, Änderungen, Fragen. Die Beiträge hängen am Termin selbst und sind aus jeder Nostr-App zu sehen.'**
+  String get chatEventEmpty;
 }
 
 class _AppLocalizationsDelegate

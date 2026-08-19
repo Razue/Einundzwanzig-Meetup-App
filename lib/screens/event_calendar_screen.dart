@@ -22,7 +22,6 @@ import '../services/event_badge_auth_service.dart';
 import '../services/guide_service.dart';
 import '../tours/event_badge_tour.dart';
 import '../services/nostr_service.dart';
-import '../services/chat_service.dart';
 import '../services/event_badge_session_service.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/signing_service.dart';
@@ -243,42 +242,25 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     );
   }
 
-  /// Laeuft gerade eine Raumsuche? Sperrt den Knopf.
-  bool _openingChat = false;
-
-  /// Oeffnet den Chat zu einem Termin — und legt den Raum an, falls es noch
-  /// keinen gibt.
+  /// Oeffnet den Chat zu einem Termin.
   ///
-  /// Anlegen darf hier jeder, der den Termin sieht. Das ist Absicht: Ein
-  /// Termin ohne Chat waere fuer alle nutzlos, und der erste, der ihn
-  /// braucht, soll ihn eroeffnen koennen. Lehnt das Relay das Anlegen ab,
-  /// sagt die Meldung das.
-  Future<void> _openEventChat(_CalItem e) async {
+  /// Nichts anzulegen, nichts freizuschalten: Der Strang haengt als
+  /// NIP-22-Kommentar am Termin selbst und existiert, sobald jemand etwas
+  /// schreibt. Genau deshalb laeuft er NICHT ueber das Gruppen-Relay — dort
+  /// braeuchte ein Raum eine Berechtigung, die derjenige, der den Termin
+  /// angelegt hat, oft gar nicht hat.
+  void _openEventChat(_CalItem e) {
     final event = e.nostr;
     if (event == null) return;
 
-    final t = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-    setState(() => _openingChat = true);
-
-    final room = await ChatService.ensureEventRoom(
-      eventAddress: event.address,
-      title: event.title,
-      about: event.location,
-      picture: event.badgeImageUrl,
-    );
-
-    if (!mounted) return;
-    setState(() => _openingChat = false);
-
-    if (room == null) {
-      messenger.showSnackBar(SnackBar(
-          content: Text(t.chatEventFailed), backgroundColor: cRed));
-      return;
-    }
-    navigator.pop();
-    navigator.push(MaterialPageRoute(builder: (_) => ChatScreen(room: room)));
+    Navigator.of(context).pop();
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ChatScreen.event(
+        eventAddress: event.address,
+        eventAuthor: event.pubkey,
+        title: event.title,
+      ),
+    ));
   }
 
   /// Badge-Session fuer ein Event starten.
@@ -1014,15 +996,9 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: _openingChat ? null : () => _openEventChat(e),
-                  icon: _openingChat
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: cNostr))
-                      : const Icon(Icons.forum_rounded,
-                          color: cNostr, size: 18),
+                  onPressed: () => _openEventChat(e),
+                  icon: const Icon(Icons.forum_rounded,
+                      color: cNostr, size: 18),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: cNostr.withValues(alpha: 0.5)),
                     padding: const EdgeInsets.symmetric(vertical: 13),

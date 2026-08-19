@@ -6553,4 +6553,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get btnInfo => 'Info';
+
+  @override
+  String get chatEventHint => 'Comments on this event · public on Nostr';
+
+  @override
+  String get chatEventEmpty =>
+      'Nothing written yet. Share information about this event here — meeting point, changes, questions. The comments hang on the event itself and are visible from any Nostr app.';
 }

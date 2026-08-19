@@ -6593,4 +6593,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get btnInfo => 'Info';
+
+  @override
+  String get chatEventHint => 'Comentarios sobre la fecha · públicos en Nostr';
+
+  @override
+  String get chatEventEmpty =>
+      'Aún no hay nada escrito. Comparte información sobre la fecha: punto de encuentro, cambios, preguntas. Los comentarios cuelgan del propio evento.';
 }

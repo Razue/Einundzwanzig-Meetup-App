@@ -2924,5 +2924,7 @@
   "chatEventOpen": "Chat zum Termin",
   "chatEventFailed": "Der Chatraum konnte nicht geöffnet werden. Einzelheiten stehen im Diagnose-Log.",
   "btnChat": "Chat",
-  "btnInfo": "Info"
+  "btnInfo": "Info",
+  "chatEventHint": "Beiträge zum Termin · öffentlich auf Nostr",
+  "chatEventEmpty": "Noch nichts geschrieben. Teile hier Infos zum Termin — Treffpunkt, Änderungen, Fragen. Die Beiträge hängen am Termin selbst und sind aus jeder Nostr-App zu sehen."
 }

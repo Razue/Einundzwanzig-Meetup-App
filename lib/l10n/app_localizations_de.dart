@@ -6613,4 +6613,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get btnInfo => 'Info';
+
+  @override
+  String get chatEventHint => 'Beiträge zum Termin · öffentlich auf Nostr';
+
+  @override
+  String get chatEventEmpty =>
+      'Noch nichts geschrieben. Teile hier Infos zum Termin — Treffpunkt, Änderungen, Fragen. Die Beiträge hängen am Termin selbst und sind aus jeder Nostr-App zu sehen.';
 }

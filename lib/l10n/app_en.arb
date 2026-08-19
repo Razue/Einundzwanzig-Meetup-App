@@ -2902,5 +2902,7 @@
   "chatEventOpen": "Chat about this event",
   "chatEventFailed": "The chat room could not be opened. Details are in the diagnostics log.",
   "btnChat": "Chat",
-  "btnInfo": "Info"
+  "btnInfo": "Info",
+  "chatEventHint": "Comments on this event · public on Nostr",
+  "chatEventEmpty": "Nothing written yet. Share information about this event here — meeting point, changes, questions. The comments hang on the event itself and are visible from any Nostr app."
 }

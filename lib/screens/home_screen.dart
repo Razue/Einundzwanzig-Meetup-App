@@ -1691,7 +1691,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       return;
     }
     await navigator.push(
-        MaterialPageRoute(builder: (_) => ChatScreen(room: room)));
+        MaterialPageRoute(builder: (_) => ChatScreen.room(room)));
     // Zurueck aus dem Raum: Der Lesestand hat sich geaendert, also neu
     // zaehlen — sonst bliebe der Punkt stehen, obwohl alles gelesen ist.
     if (mounted) _loadChatUnread();

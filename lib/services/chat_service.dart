@@ -36,8 +36,6 @@ const String kGroupRelay = 'wss://group.einundzwanzig.space';
 const int _kMessage = 9;
 const int _kJoin = 9021;
 const int _kLeave = 9022;
-const int _kRoomCreate = 9007;
-const int _kRoomEdit = 9002;
 const int _kRoomMeta = 39000;
 const int _kRoomMembers = 39002;
 
@@ -55,8 +53,13 @@ class ChatRoom {
   /// Slug des Meetups, falls es ein Meetup-Raum ist.
   final String meetupSlug;
 
-  /// Verweis auf ein Kalender-Event (`<kind>:<pubkey>:<d>`), falls es ein
-  /// Event-Raum ist.
+  /// Verweis auf ein Kalender-Event (`<kind>:<pubkey>:<d>`).
+  ///
+  /// Kommt aus dem i-Tag, wenn jemand ueber Bens Weboberflaeche einen Raum
+  /// an einen Termin gebunden hat. Diese App legt selbst KEINE solchen
+  /// Raeume mehr an — Termin-Chats laufen als NIP-22-Kommentare, siehe
+  /// EventChatService. Gelesen wird das Feld trotzdem: Gibt es einen Raum,
+  /// soll er erkennbar bleiben.
   final String eventAddress;
 
   const ChatRoom({
@@ -411,20 +414,6 @@ class ChatService {
       .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
       .replaceAll(RegExp(r'^-+|-+$'), '');
 
-  /// Der Raum zu einem Kalender-Event, sonst null.
-  static Future<ChatRoom?> findEventRoom(String eventAddress) async {
-    if (eventAddress.isEmpty) return null;
-    final events = await _query({
-      'kinds': [_kRoomMeta],
-      '#i': ['event:$eventAddress'],
-      'limit': 10,
-    });
-    for (final e in events) {
-      final room = ChatRoom.fromEvent(e);
-      if (room != null) return room;
-    }
-    return null;
-  }
 
   // ── Lesestand und Ungelesenes ──────────────────────────────────────────
 
@@ -657,78 +646,5 @@ class ChatService {
 
   // ── Raum für ein Event anlegen ─────────────────────────────────────────
 
-  /// Legt einen Raum für ein Kalender-Event an, falls es noch keinen gibt.
-  ///
-  /// Der Ablauf folgt Bens Client: erst 9007 (anlegen), dann 9002 (Name und
-  /// Beschreibung), dann 9021 (der Ersteller tritt selbst bei). Die Kennung
-  /// wird aus der Event-Adresse abgeleitet, damit jeder Client denselben Raum
-  /// findet, ohne ihn suchen zu müssen.
-  ///
-  /// Ob das Relay 9007 von beliebigen Leuten annimmt, ist offen — falls nicht,
-  /// kommt der Grund als Rückgabewert und die Oberfläche kann es sagen,
-  /// statt still zu scheitern.
-  static Future<ChatRoom?> ensureEventRoom({
-    required String eventAddress,
-    required String title,
-    required String about,
-    String picture = '',
-  }) async {
-    final existing = await findEventRoom(eventAddress);
-    if (existing != null) return existing;
 
-    final h = _eventRoomId(eventAddress);
-    try {
-      final create = await SigningService.signEvent(
-        kind: _kRoomCreate,
-        content: '',
-        tags: [
-          ['h', h]
-        ],
-      );
-      final createErr = await _publish(create);
-      // "already exists" ist kein Fehler — dann gehört der Raum schon jemandem
-      // und wir wollen ohnehin nur hinein.
-      if (createErr != null && !createErr.toLowerCase().contains('already')) {
-        AppLogger.warn(_tag, 'Raum anlegen abgelehnt: $createErr');
-        return null;
-      }
-
-      final meta = await SigningService.signEvent(
-        kind: _kRoomEdit,
-        content: '',
-        tags: [
-          ['h', h],
-          ['name', title],
-          if (about.isNotEmpty) ['about', about],
-          if (picture.isNotEmpty) ['picture', picture],
-          // Bindung an das Kalender-Event — daran findet ihn findEventRoom.
-          ['i', 'event:$eventAddress'],
-          ['t', 'event'],
-        ],
-      );
-      await _publish(meta);
-      await join(h);
-
-      return ChatRoom(h: h, name: title, about: about, eventAddress: eventAddress);
-    } catch (e) {
-      AppLogger.warn(_tag, 'Event-Raum konnte nicht angelegt werden', e);
-      return null;
-    }
-  }
-
-  /// Kennung eines Event-Raums.
-  ///
-  /// Aus der Event-Adresse abgeleitet statt zufällig: So kommt jeder Client
-  /// auf dieselbe Kennung, und ein zweiter Versuch legt keinen zweiten Raum
-  /// an. Nur Kleinbuchstaben, Ziffern und Bindestriche — NIP-29 lässt für `h`
-  /// keine Doppelpunkte zu.
-  static String _eventRoomId(String eventAddress) {
-    final parts = eventAddress.split(':');
-    if (parts.length < 3) return 'evt-${eventAddress.hashCode.abs()}';
-    final author = parts[1];
-    final d = parts.sublist(2).join('-');
-    final shortAuthor = author.length >= 8 ? author.substring(0, 8) : author;
-    final clean = d.toLowerCase().replaceAll(RegExp(r'[^a-z0-9-]'), '-');
-    return 'evt-$shortAuthor-$clean';
-  }
 }
