@@ -6581,7 +6581,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatJoinHint =>
-      'Um mitzuschreiben, musst du dem Raum beitreten. Das Relay führt die Mitgliederliste — mitlesen kannst du auch ohne.';
+      'Mitlesen kannst du hier ohne Weiteres. Zum Mitschreiben musst du dem Raum beitreten — die Mitgliederliste führt das Relay.';
 
   @override
   String chatJoinFailed(String msg) {
@@ -6620,4 +6620,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatEventEmpty =>
       'Noch nichts geschrieben. Teile hier Infos zum Termin — Treffpunkt, Änderungen, Fragen. Die Beiträge hängen am Termin selbst und sind aus jeder Nostr-App zu sehen.';
+
+  @override
+  String get chatMemberHint =>
+      'Der Beitritt setzt eine Mitgliedschaft im Einundzwanzig-Verein voraus. Ohne sie lehnt das Relay den Beitritt ab — du bleibst dann stiller Mitleser.';
+
+  @override
+  String get chatMemberLink => 'Zum Verein';
 }

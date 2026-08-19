@@ -63,7 +63,12 @@ class _AppShellState extends State<AppShell> {
         await guide.markOnboardingAsked();
         if (!mounted) return;
         final wants = await _askForTour();
-        if (wants != true) return;
+        if (wants != true) {
+          // Nein heisst nein — und zwar fuer ALLE Bereiche, nicht nur fuer
+          // das Dashboard.
+          await guide.declineAllTours();
+          return;
+        }
       }
       if (!mounted) return;
 

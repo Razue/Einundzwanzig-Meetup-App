@@ -6561,7 +6561,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatJoinHint =>
-      'Para escribir aquí debes unirte a la sala. El relé mantiene la lista de miembros; leer funciona sin unirse.';
+      'Puedes leer sin más. Para escribir debes unirte a la sala: el relé mantiene la lista de miembros.';
 
   @override
   String chatJoinFailed(String msg) {
@@ -6600,4 +6600,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get chatEventEmpty =>
       'Aún no hay nada escrito. Comparte información sobre la fecha: punto de encuentro, cambios, preguntas. Los comentarios cuelgan del propio evento.';
+
+  @override
+  String get chatMemberHint =>
+      'Unirse requiere ser miembro de la asociación Einundzwanzig. Sin ello, el relé rechaza la solicitud y sigues como lector silencioso.';
+
+  @override
+  String get chatMemberLink => 'Sobre la membresía';
 }

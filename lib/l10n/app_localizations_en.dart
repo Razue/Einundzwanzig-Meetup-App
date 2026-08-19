@@ -6521,7 +6521,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatJoinHint =>
-      'To write here you have to join the room. The relay keeps the member list — reading works without joining.';
+      'You can read along here without anything further. To write you have to join the room — the relay keeps the member list.';
 
   @override
   String chatJoinFailed(String msg) {
@@ -6560,4 +6560,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatEventEmpty =>
       'Nothing written yet. Share information about this event here — meeting point, changes, questions. The comments hang on the event itself and are visible from any Nostr app.';
+
+  @override
+  String get chatMemberHint =>
+      'Joining requires membership in the Einundzwanzig association. Without it the relay rejects the request — you stay a silent reader.';
+
+  @override
+  String get chatMemberLink => 'About membership';
 }

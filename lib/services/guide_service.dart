@@ -161,6 +161,25 @@ class GuideService extends ChangeNotifier {
     await prefs.setBool(_onboardingAskedKey, true);
   }
 
+  /// Schaltet ALLE Touren ab.
+  ///
+  /// Wer die Frage auf dem Dashboard mit "Nein, danke" beantwortet, will
+  /// keine Fuehrung — und zwar nirgends. Vorher galt die Ablehnung nur fuer
+  /// die Dashboard-Tour; kurz darauf sprang der Guide in den Einstellungen
+  /// oder im Termin-Editor doch wieder an. Das wirkte, als haette die App
+  /// die Antwort ignoriert.
+  ///
+  /// Umgesetzt als "alle als gesehen markieren" statt als eigener Schalter:
+  /// So greift "Tour wiederholen" in den Einstellungen unveraendert weiter —
+  /// es raeumt genau diese Markierungen wieder weg.
+  Future<void> declineAllTours() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (final tour in GuideTour.values) {
+      await prefs.setBool('$_prefsPrefix${tour.name}', true);
+    }
+    await prefs.setBool(_onboardingAskedKey, true);
+  }
+
   Future<void> _markCompleted(GuideTour tour) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('$_prefsPrefix${tour.name}', true);

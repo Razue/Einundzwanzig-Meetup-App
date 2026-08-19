@@ -2873,7 +2873,7 @@
   "chatEmpty": "Aún no hay mensajes. Escribe el primero: la sala está abierta en el relé y también es accesible desde otras apps de Nostr.",
   "chatPlaceholder": "Escribe un mensaje …",
   "chatJoin": "Unirse a la sala",
-  "chatJoinHint": "Para escribir aquí debes unirte a la sala. El relé mantiene la lista de miembros; leer funciona sin unirse.",
+  "chatJoinHint": "Puedes leer sin más. Para escribir debes unirte a la sala: el relé mantiene la lista de miembros.",
   "chatJoinFailed": "Unión rechazada: {msg}",
   "@chatJoinFailed": {
     "placeholders": {
@@ -2904,5 +2904,7 @@
   "btnChat": "Chat",
   "btnInfo": "Info",
   "chatEventHint": "Comentarios sobre la fecha · públicos en Nostr",
-  "chatEventEmpty": "Aún no hay nada escrito. Comparte información sobre la fecha: punto de encuentro, cambios, preguntas. Los comentarios cuelgan del propio evento."
+  "chatEventEmpty": "Aún no hay nada escrito. Comparte información sobre la fecha: punto de encuentro, cambios, preguntas. Los comentarios cuelgan del propio evento.",
+  "chatMemberHint": "Unirse requiere ser miembro de la asociación Einundzwanzig. Sin ello, el relé rechaza la solicitud y sigues como lector silencioso.",
+  "chatMemberLink": "Sobre la membresía"
 }

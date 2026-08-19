@@ -2873,7 +2873,7 @@
   "chatEmpty": "No messages yet. Write the first one — the room sits openly on the relay and is reachable from other Nostr apps too.",
   "chatPlaceholder": "Write a message …",
   "chatJoin": "Join the room",
-  "chatJoinHint": "To write here you have to join the room. The relay keeps the member list — reading works without joining.",
+  "chatJoinHint": "You can read along here without anything further. To write you have to join the room — the relay keeps the member list.",
   "chatJoinFailed": "Join rejected: {msg}",
   "@chatJoinFailed": {
     "placeholders": {
@@ -2904,5 +2904,7 @@
   "btnChat": "Chat",
   "btnInfo": "Info",
   "chatEventHint": "Comments on this event · public on Nostr",
-  "chatEventEmpty": "Nothing written yet. Share information about this event here — meeting point, changes, questions. The comments hang on the event itself and are visible from any Nostr app."
+  "chatEventEmpty": "Nothing written yet. Share information about this event here — meeting point, changes, questions. The comments hang on the event itself and are visible from any Nostr app.",
+  "chatMemberHint": "Joining requires membership in the Einundzwanzig association. Without it the relay rejects the request — you stay a silent reader.",
+  "chatMemberLink": "About membership"
 }

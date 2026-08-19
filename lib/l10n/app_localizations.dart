@@ -11827,7 +11827,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatJoinHint.
   ///
   /// In de, this message translates to:
-  /// **'Um mitzuschreiben, musst du dem Raum beitreten. Das Relay führt die Mitgliederliste — mitlesen kannst du auch ohne.'**
+  /// **'Mitlesen kannst du hier ohne Weiteres. Zum Mitschreiben musst du dem Raum beitreten — die Mitgliederliste führt das Relay.'**
   String get chatJoinHint;
 
   /// No description provided for @chatJoinFailed.
@@ -11889,6 +11889,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Noch nichts geschrieben. Teile hier Infos zum Termin — Treffpunkt, Änderungen, Fragen. Die Beiträge hängen am Termin selbst und sind aus jeder Nostr-App zu sehen.'**
   String get chatEventEmpty;
+
+  /// No description provided for @chatMemberHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Beitritt setzt eine Mitgliedschaft im Einundzwanzig-Verein voraus. Ohne sie lehnt das Relay den Beitritt ab — du bleibst dann stiller Mitleser.'**
+  String get chatMemberHint;
+
+  /// No description provided for @chatMemberLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Verein'**
+  String get chatMemberLink;
 }
 
 class _AppLocalizationsDelegate

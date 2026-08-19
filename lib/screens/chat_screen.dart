@@ -6,6 +6,7 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/chat_service.dart';
@@ -13,6 +14,11 @@ import '../services/event_chat_service.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
 import '../widgets/nostr_avatar.dart';
+
+/// Die Vereinsseite. Dort wird die Mitgliedschaft beantragt, die das
+/// Gruppen-Relay zum Schreiben voraussetzt.
+const String kVereinUrl =
+    'https://verein.einundzwanzig.space/association/profile';
 
 class ChatScreen extends StatefulWidget {
   /// Meetup-Raum auf dem Gruppen-Relay. Null bei einem Termin-Strang.
@@ -169,8 +175,25 @@ class _ChatScreenState extends State<ChatScreen> {
       _member = member;
     });
     if (err != null) {
+      // Weist das Relay den Beitritt ab, ist die Ursache fast immer die
+      // fehlende Vereinsmitgliedschaft. Statt nur den rohen Grund zu zeigen,
+      // kommt der Weg dorthin gleich mit — sonst steht man mit einer
+      // englischen Relay-Meldung da und weiss nicht, was zu tun ist.
       messenger.showSnackBar(SnackBar(
-          content: Text(t.chatJoinFailed(err)), backgroundColor: cRed));
+        content: Text(t.chatJoinFailed(err)),
+        backgroundColor: cRed,
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: t.chatMemberLink,
+          textColor: Colors.white,
+          onPressed: () async {
+            final uri = Uri.parse(kVereinUrl);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            }
+          },
+        ),
+      ));
     }
   }
 
@@ -328,6 +351,45 @@ class _ChatScreenState extends State<ChatScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                     color: cTextSecondary, fontSize: 12.5, height: 1.45)),
+            const SizedBox(height: 10),
+            // Der entscheidende Satz: Schreiben setzt eine
+            // VEREINSMITGLIEDSCHAFT voraus. Ohne diesen Hinweis tippt man
+            // auf "Beitreten", bekommt eine Ablehnung vom Relay und weiss
+            // nicht, warum — die Ursache liegt ausserhalb der App.
+            GestureDetector(
+              onTap: () async {
+                final uri = Uri.parse(kVereinUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: cOrange.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: cOrange.withValues(alpha: 0.3), width: 0.5),
+                ),
+                child: Column(children: [
+                  Text(t.chatMemberHint,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: cTextSecondary, fontSize: 12, height: 1.45)),
+                  const SizedBox(height: 8),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    const Icon(Icons.open_in_new_rounded,
+                        color: cOrange, size: 14),
+                    const SizedBox(width: 6),
+                    Text(t.chatMemberLink,
+                        style: const TextStyle(
+                            color: cOrange,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700)),
+                  ]),
+                ]),
+              ),
+            ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
