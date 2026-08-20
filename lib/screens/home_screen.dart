@@ -443,7 +443,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   @override
   void dispose() {
     _favPageCtrl.dispose(); WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _midnightTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
-  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
+  /// Wird von der Huelle gerufen, sobald der Home-Reiter wieder vorne ist.
+  ///
+  /// Hier gehoeren die Zusagen mit hinein: Wer ueber die untere Leiste in den
+  /// Kalender geht, dort zusagt und zurueckwechselt, loest KEINE Rueckkehr
+  /// aus einer Route aus — das Dashboard blieb einfach stehen. Genau deshalb
+  /// erschien die Kachel erst nach dem Aktualisieren von Hand.
+  void refreshAfterScan() {
+    _loadBadges();
+    _calculateTrustScore();
+    _loadNextHomeMeetup();
+    _checkPortalOrganizer();
+    _refreshPortalConnected();
+    _loadMyEvents();
+  }
 
   bool _refreshing = false;
 
@@ -455,13 +468,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// - nächstes Home-Meetup + Portal-Verbindung aktualisieren
   /// So bekommt z.B. ein frisch im Portal ernannter Organisator oder ein
   /// per Nostr Verbürgter seine Rechte/Kachel, ohne die App neu zu starten.
-  Future<void> _refreshAll() async {
+  /// [fromGesture] unterdrueckt die Lauf-Meldung.
+  ///
+  /// Beim Ziehen sieht man den Kringel bereits — eine zusaetzliche Meldung
+  /// "wird aktualisiert" waere doppelt. Beim Knopf oben gibt es keine solche
+  /// Rueckmeldung, dort bleibt sie.
+  Future<void> _refreshAll({bool fromGesture = false}) async {
     if (_refreshing) return;
     setState(() => _refreshing = true);
     final t = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(t.refreshRunning), backgroundColor: cCard,
-        duration: const Duration(seconds: 2), behavior: SnackBarBehavior.floating));
+    if (!fromGesture) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.refreshRunning), backgroundColor: cCard,
+          duration: const Duration(seconds: 2), behavior: SnackBarBehavior.floating));
+    }
     try {
       await _loadUser(skipOrgCheck: true); // Org-Check unten kontrolliert
       await _loadBadges();
@@ -473,12 +493,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       await _checkPortalOrganizer();      // Portal-Weg (räumt ggf. Cache)
       await _reVerifyAdminStatus();       // WoT/Bürgen-Weg (sieht sauberen Cache)
       _loadNextHomeMeetup();              // void (feuert async intern)
+      // Zusagen und ungelesene Nachrichten gehoeren dazu: Wer aktualisiert,
+      // will den GANZEN Stand sehen, nicht nur Badges und Punkte.
+      _loadMyEvents();
+      _loadChatUnread();
     } catch (_) {/* einzelne Fehler ignorieren, Rest läuft */}
     if (!mounted) return;
     setState(() => _refreshing = false);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(t.refreshDone), backgroundColor: Colors.green.shade700,
-        behavior: SnackBarBehavior.floating));
+    if (!fromGesture) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.refreshDone), backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating));
+    }
   }
 
   // ============================================================
@@ -1067,12 +1093,28 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 _buildTileRows(excludeHomeMeetup: true, pinned: false).isNotEmpty;
             final pinnedHeight =
                 hasAvailable ? (c.maxHeight - 34).clamp(120.0, c.maxHeight) : c.maxHeight;
-            return SingleChildScrollView(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                _buildScaledTileBlock(pinnedHeight),
-                _buildAvailableSection(),
-                const SizedBox(height: 8),
-              ]),
+            // Ziehen zum Aktualisieren.
+            //
+            // Der Knopf oben bleibt — er ist der sichtbare Weg —, aber die
+            // Geste ist der erwartete. Wichtig dabei: Das Dashboard ist meist
+            // KUERZER als der Bildschirm und liesse sich dann gar nicht
+            // ziehen. Deshalb AlwaysScrollableScrollPhysics: Damit reagiert
+            // es auch ohne Ueberlaenge auf die Geste.
+            return RefreshIndicator(
+              onRefresh: () => _refreshAll(fromGesture: true),
+              color: cOrange,
+              backgroundColor: cCard,
+              // Etwas tiefer als ueblich, damit der Kringel unter der
+              // Kopfzeile erscheint und sie nicht ueberdeckt.
+              displacement: 28,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  _buildScaledTileBlock(pinnedHeight),
+                  _buildAvailableSection(),
+                  const SizedBox(height: 8),
+                ]),
+              ),
             );
           }),
         ),
@@ -1783,19 +1825,38 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       }
       if (e.startTime.isAfter(horizon)) return false;
       // Nur Termine der eigenen Favoriten.
-      return favKeys.any((k) {
-            final m = MeetupService.resolveFavorite(k);
-            return m != null && m.id == e.meetupId;
-          }) ||
-          favKeys.contains(e.meetupId);
+      //
+      // Zuerst ueber die Meetup-ID. Liefert das Portal sie fuer einen Termin
+      // nicht mit — was vorkommt —, bliebe die Liste sonst leer; dann wird
+      // ueber Titel und Ort verglichen, so wie es die Favoriten-Karten
+      // ohnehin tun.
+      for (final k in favKeys) {
+        final m = MeetupService.resolveFavorite(k);
+        if (e.meetupId.isNotEmpty && (m?.id == e.meetupId || k == e.meetupId)) {
+          return true;
+        }
+        final city = (m?.city ?? k).toLowerCase().trim();
+        if (city.length >= 3 &&
+            '${e.title} ${e.location}'.toLowerCase().contains(city)) {
+          return true;
+        }
+      }
+      return false;
     }).toList();
 
     final out = <_MeetupDateEntry>[];
     for (final e in candidates) {
       final r = await PortalApiService.getRsvpCached(e.portalEventId!);
       if (!PortalApiService.isGoing(r)) continue;
+      // Denselben Weg rueckwaerts: erst ID, dann Ortsname.
       final favKey = favKeys.firstWhere(
-        (k) => MeetupService.resolveFavorite(k)?.id == e.meetupId,
+        (k) {
+          final m = MeetupService.resolveFavorite(k);
+          if (e.meetupId.isNotEmpty && m?.id == e.meetupId) return true;
+          final city = (m?.city ?? k).toLowerCase().trim();
+          return city.length >= 3 &&
+              '${e.title} ${e.location}'.toLowerCase().contains(city);
+        },
         orElse: () => e.meetupId,
       );
       out.add(_MeetupDateEntry(
@@ -1810,7 +1871,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     out.sort((a, b) => a.event.startTime.compareTo(b.event.startTime));
 
     if (mounted) setState(() => _favMeetupDates = out);
-    AppLogger.debug('Events', '${out.length} zugesagte Meetup-Termine.');
+    AppLogger.diag('Events',
+        '${candidates.length} Termine der Favoriten geprueft, ${out.length} davon zugesagt.');
   }
 
   /// Laedt Zusagen und die dazugehoerigen Termine.

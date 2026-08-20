@@ -87,8 +87,20 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
             style: const TextStyle(
                 color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
       ),
-      body: widget.events.isEmpty && widget.meetupDates.isEmpty
-          ? Center(
+      // Ziehen zum Aktualisieren — hier holt es die ungelesenen Beitraege
+      // neu. Auch ueber dem Leer-Hinweis, denn gerade dort will man es
+      // versuchen.
+      body: RefreshIndicator(
+        onRefresh: _loadUnread,
+        color: cOrange,
+        backgroundColor: cCard,
+        child: widget.events.isEmpty && widget.meetupDates.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
                 child: Text(t.eventChatsEmpty,
@@ -96,8 +108,12 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                     style: const TextStyle(
                         color: cTextTertiary, fontSize: 14, height: 1.55)),
               ),
+                  ),
+                ),
+              ],
             )
           : ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
                 // Meetups zuerst: Das sind die regelmaessigen Termine, zu
@@ -113,6 +129,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                 ],
               ],
             ),
+      ),
     );
   }
 

@@ -141,7 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final since = msgs.isNotEmpty ? msgs.last.createdAt : DateTime.now();
     try {
       void onNew(ChatMessage m) {
-        if (!mounted || _seenIds.contains(m.id)) return;
+        if (!mounted || _seenIds.contains(m.id) || _isDuplicate(m)) return;
         setState(() {
           _seenIds.add(m.id);
           _messages.add(m);
@@ -181,6 +181,20 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() => _names[pubkey] = name);
       }
     }
+  }
+
+  /// Ist diese Nachricht bereits als vorlaeufige eigene enthalten?
+  ///
+  /// Verglichen werden Absender, Inhalt und Zeitpunkt. Zwei Minuten Spielraum,
+  /// weil der Zeitstempel des Relays vom lokalen abweichen kann — und weil
+  /// niemand denselben Satz zufaellig zweimal in zwei Minuten schreibt.
+  bool _isDuplicate(ChatMessage m) {
+    if (m.pubkey != _myPubkey) return false;
+    return _messages.any((x) =>
+        x.pubkey == m.pubkey &&
+        x.content == m.content &&
+        x.createdAt.difference(m.createdAt).abs() <
+            const Duration(minutes: 2));
   }
 
   void _scrollToEnd() {
@@ -249,6 +263,29 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() => _sending = false);
     if (err == null) {
       _inputCtrl.clear();
+
+      // Die eigene Nachricht SOFORT anzeigen.
+      //
+      // Vorher wartete der Bildschirm darauf, dass das Relay sie ueber das
+      // Live-Abo zurueckspiegelt. Viele Relays tun das nicht — sie senden nur
+      // an ANDERE Abonnenten. Der Text verschwand also aus dem Eingabefeld
+      // und tauchte nirgends wieder auf; es sah aus, als waere er verloren.
+      //
+      // Die Kennung ist vorlaeufig: Kommt dieselbe Nachricht doch noch vom
+      // Relay, traegt sie ihre echte ID und wuerde ein zweites Mal
+      // erscheinen — deshalb wird beim Empfang auf Inhalt UND Zeitpunkt
+      // geprueft (siehe _isDuplicate).
+      final mine = ChatMessage(
+        id: 'lokal-${DateTime.now().microsecondsSinceEpoch}',
+        pubkey: _myPubkey ?? '',
+        content: text,
+        createdAt: DateTime.now(),
+      );
+      setState(() {
+        _messages.add(mine);
+        _seenIds.add(mine.id);
+      });
+      _scrollToEnd();
     } else {
       messenger.showSnackBar(SnackBar(
           content: Text(t.chatSendFailed(err)), backgroundColor: cRed));
