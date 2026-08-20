@@ -472,6 +472,15 @@ class ChatService {
     }
   }
 
+  /// Lesestand zu einem Schluessel, 0 wenn noch nie gelesen.
+  ///
+  /// Oeffentlich, weil auch der Termin-Chat einen Lesestand braucht. Der
+  /// Schluessel ist dort die Termin-Adresse mit Praefix statt einer
+  /// Raum-Kennung — die Ablage ist dieselbe, und zwei getrennte Listen
+  /// waeren zwei Stellen, die auseinanderlaufen koennen.
+  static Future<int> lastReadFor(String key) async =>
+      (await _readMarks())[key] ?? 0;
+
   /// Merkt sich, bis wohin gelesen wurde.
   static Future<void> markRead(String h, DateTime until) async {
     try {

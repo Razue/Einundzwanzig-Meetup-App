@@ -31,7 +31,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'app_logger.dart';
-import 'chat_service.dart' show ChatMessage;
+import 'chat_service.dart' show ChatMessage, ChatService;
 import 'news_reactions_service.dart';
 import 'relay_socket.dart';
 import 'signing_service.dart';
@@ -174,6 +174,73 @@ class EventChatService {
     // Keines erreichbar: Der Strang bleibt lesbar, nur nicht von selbst
     // aktuell.
     return () {};
+  }
+
+  /// Schluessel des Lesestands zu einem Termin.
+  ///
+  /// Praefix, damit sich Termin-Straenge und Meetup-Raeume in derselben
+  /// Ablage nicht ins Gehege kommen.
+  static String readKey(String eventAddress) => 'evt|$eventAddress';
+
+  /// Ungelesene Beitraege je Termin.
+  ///
+  /// EINE Abfrage fuer alle Termine zusammen — der A-Filter nimmt eine
+  /// Liste. Eigene Beitraege zaehlen nicht mit: Was man selbst geschrieben
+  /// hat, hat man gelesen.
+  static Future<Map<String, int>> unreadCounts(List<String> addresses) async {
+    if (addresses.isEmpty) return {};
+    final me = await SigningService.pubkeyHex();
+
+    // Ab dem aeltesten Lesestand fragen; Termine ohne Lesestand bekommen ein
+    // Fenster von 14 Tagen. Wer einen Strang nie geoeffnet hat, soll sehen,
+    // dass etwas los IST — aber nicht die ganze Vorgeschichte gemeldet
+    // bekommen.
+    final marks = <String, int>{};
+    final fallback = DateTime.now()
+            .subtract(const Duration(days: 14))
+            .millisecondsSinceEpoch ~/
+        1000;
+    var since = fallback;
+    for (final a in addresses) {
+      final m = await ChatService.lastReadFor(readKey(a));
+      marks[a] = m == 0 ? fallback : m;
+      if (marks[a]! < since) since = marks[a]!;
+    }
+
+    final relays = await NewsReactionsService.readTargets();
+    final counts = <String, int>{for (final a in addresses) a: 0};
+    final seen = <String>{};
+
+    await Future.wait(relays.map((url) async {
+      final events = await _query(url, {
+        'kinds': [_kComment],
+        '#A': addresses,
+        'since': since,
+        'limit': 300,
+      });
+      for (final e in events) {
+        final id = (e['id'] ?? '').toString();
+        final ts = e['created_at'];
+        final pubkey = (e['pubkey'] ?? '').toString();
+        // Ueber die ID entdoppeln — dasselbe Ereignis kommt von mehreren
+        // Relays zurueck und wuerde sonst mehrfach gezaehlt.
+        if (ts is! int || id.isEmpty || !seen.add(id)) continue;
+        if (me != null && pubkey == me) continue;
+
+        final tags = (e['tags'] as List?)?.cast<List>() ?? const [];
+        for (final tag in tags) {
+          if (tag.length >= 2 && tag[0] == 'A') {
+            final a = tag[1].toString();
+            if (!counts.containsKey(a)) break;
+            if (ts > (marks[a] ?? fallback)) counts[a] = counts[a]! + 1;
+            break;
+          }
+        }
+      }
+    }));
+
+    AppLogger.debug(_tag, 'Ungelesene Beitraege: $counts');
+    return counts;
   }
 
   // ── Hilfsmittel ────────────────────────────────────────────────────────

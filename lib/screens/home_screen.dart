@@ -77,7 +77,10 @@ import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../services/chat_service.dart';
+import '../services/event_chat_service.dart';
+import '../services/event_rsvp_service.dart';
 import 'chat_screen.dart';
+import 'my_events_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../services/guide_service.dart';
@@ -335,6 +338,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // ── Optionale Kacheln (removable: true) ──
       _TileDef(id: 'community',    label: 'Community',        span: 2, builder: _buildCommunityTile),
       _TileDef(id: 'trust_network', label: 'Vertrauensnetzwerk', span: 2, builder: _buildTrustNetworkTile),
+      _TileDef(id: 'event_chats', label: 'Meine Termine', span: 3, builder: _buildMyEventsTile,
+          visible: () => _myEvents.isNotEmpty),
       _TileDef(id: 'events',       label: 'Events',           span: 1, builder: _buildEventsTile),
       _TileDef(id: 'shoutout',     label: 'Shoutout',         span: 1, builder: _buildShoutoutTile),
       _TileDef(id: 'podcast',      label: 'Podcast',          span: 1, builder: _buildPodcastTile),
@@ -456,7 +461,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     await _loadUser();
     if (_user.nickname == 'Anon' || _user.nickname.isEmpty) { if (mounted) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const IdentitySetupScreen())); await _loadUser(); } }
     await _loadBadges(); await _calculateTrustScore(); await _reVerifyAdminStatus();
-    _loadIdentityData(); _checkActiveSession(); _loadChatUnread(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
+    _loadIdentityData(); _checkActiveSession(); _loadChatUnread(); _loadMyEvents(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
     _loadNextHomeMeetup(); _loadProfilePicture(); _checkNostrNew();
   }
 
@@ -1655,6 +1660,98 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// Ungelesene Nachrichten je gespeichertem Favoriten. Leer, solange
   /// nichts geladen wurde.
   final Map<String, int> _chatUnread = {};
+
+  /// Kachel "Meine Termine".
+  ///
+  /// Erscheint nur, wenn ueberhaupt etwas zugesagt ist — eine Kachel, die
+  /// dauerhaft "0" zeigt, ist verschenkte Flaeche. Ausblenden laesst sie sich
+  /// wie jede andere per Langdruck.
+  Widget _buildMyEventsTile() => Container(
+        child: _tile(
+          accentColor: cNostr,
+          watermark: Icons.event_available_rounded,
+          onTap: () async {
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (_) => MyEventsScreen(events: _myEvents)));
+            // Zurueck: Lesestaende koennen sich geaendert haben.
+            if (mounted) _loadMyEvents();
+          },
+          child: _heroContent(
+            icon: Icons.event_available_rounded,
+            accent: cNostr,
+            label: AppLocalizations.of(context).tileEventChats,
+            // Die ZAHL traegt die Kachel: Wie viele Termine stehen an. Der
+            // Untertitel sagt nur dann etwas von Nachrichten, wenn es welche
+            // gibt — sonst waere er eine Dauermeldung ueber nichts.
+            value: '${_myEvents.length}',
+            // Die Farbe der ZAHL macht den Unterschied: orange, wenn etwas
+            // Neues in einem der Chats steht. Ein zusaetzliches Abzeichen
+            // waere auf einer Kachel dieser Groesse Zierrat.
+            valueColor: _myEventsUnread > 0 ? cOrange : null,
+            sub: _myEventsUnread > 0
+                ? AppLocalizations.of(context).tileEventChatsUnread(_myEventsUnread)
+                : AppLocalizations.of(context).tileEventChatsSub,
+          ),
+        ),
+      );
+
+  /// Zugesagte, noch bevorstehende Termine — Grundlage der Kachel.
+  List<NostrCalendarEvent> _myEvents = [];
+
+  /// Ungelesene Beitraege ueber ALLE zugesagten Termine zusammen.
+  int _myEventsUnread = 0;
+
+  /// Laedt Zusagen und die dazugehoerigen Termine.
+  ///
+  /// Zwei Abfragen: erst die eigenen Antworten (eine je Nutzer), dann die
+  /// Termine dazu. Vergangenes faellt weg — eine Kachel soll zeigen, was
+  /// ansteht, nicht was war.
+  Future<void> _loadMyEvents() async {
+    try {
+      final rsvps = await EventRsvpService.loadMine();
+      final accepted = rsvps.entries
+          .where((e) => e.value == RsvpStatus.accepted)
+          .map((e) => e.key)
+          .toList();
+      if (accepted.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _myEvents = [];
+            _myEventsUnread = 0;
+          });
+        }
+        return;
+      }
+
+      final events = <NostrCalendarEvent>[];
+      for (final address in accepted) {
+        final ev = await CalendarEventService.fetchByAddress(address);
+        if (ev == null) continue;
+        // Termine von gestern interessieren niemanden mehr; der Chat dazu
+        // bleibt ueber den Kalender erreichbar.
+        if (ev.start.isBefore(
+            DateTime.now().subtract(const Duration(days: 1)))) {
+          continue;
+        }
+        events.add(ev);
+      }
+      events.sort((a, b) => a.start.compareTo(b.start));
+
+      final counts = events.isEmpty
+          ? <String, int>{}
+          : await EventChatService.unreadCounts(
+              events.map((e) => e.address).toList());
+
+      if (!mounted) return;
+      setState(() {
+        _myEvents = events;
+        _myEventsUnread =
+            counts.values.fold<int>(0, (sum, v) => sum + v);
+      });
+    } catch (e) {
+      AppLogger.debug('Events', 'Zusagen konnten nicht geladen werden: $e');
+    }
+  }
 
   /// Findet den Raum zu einem gespeicherten Favoriten.
   ///

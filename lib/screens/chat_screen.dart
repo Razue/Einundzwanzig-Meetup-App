@@ -71,6 +71,11 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _sending = false;
   String? _myPubkey;
 
+  /// Schluessel des Lesestands — Raum-Kennung oder Termin-Adresse.
+  String get _readKey => widget.isEvent
+      ? EventChatService.readKey(widget.eventAddress!)
+      : widget.room!.h;
+
   /// Beendet das offene Abo. MUSS beim Verlassen aufgerufen werden, sonst
   /// bleibt die Relay-Verbindung im Hintergrund bestehen.
   void Function()? _unsubscribe;
@@ -118,8 +123,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     // Alles Geladene gilt als gelesen. Der Lesestand liegt nur auf diesem
     // Gerät — Nostr kennt keinen, und er gehört auch nicht ins Netz.
-    if (msgs.isNotEmpty && !widget.isEvent) {
-      await ChatService.markRead(widget.room!.h, msgs.last.createdAt);
+    if (msgs.isNotEmpty) {
+      await ChatService.markRead(_readKey, msgs.last.createdAt);
     }
 
     // Ab dem Zeitpunkt der letzten geladenen Nachricht weiterhoeren — sonst
@@ -135,9 +140,7 @@ class _ChatScreenState extends State<ChatScreen> {
         });
         _scrollToEnd();
         // Wer den Raum offen hat, liest mit.
-        if (!widget.isEvent) {
-          ChatService.markRead(widget.room!.h, m.createdAt);
-        }
+        ChatService.markRead(_readKey, m.createdAt);
       }
 
       _unsubscribe = widget.isEvent

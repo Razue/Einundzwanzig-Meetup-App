@@ -4433,7 +4433,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please sign in to the portal first (My meetups).';
 
   @override
-  String get rsvpFailed => 'RSVP failed';
+  String rsvpFailed(String msg) {
+    return 'Response not saved: $msg';
+  }
 
   @override
   String get crsLoading => 'Loading courses …';
@@ -6602,5 +6604,29 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String walletCollectionCount(int count) {
     return '$count badges';
+  }
+
+  @override
+  String get rsvpYes => 'I\'m coming';
+
+  @override
+  String get rsvpNo => 'Not coming';
+
+  @override
+  String get tileEventChats => 'My events';
+
+  @override
+  String get tileEventChatsSub => 'RSVPs & chats';
+
+  @override
+  String get eventChatsTitle => 'My events';
+
+  @override
+  String get eventChatsEmpty =>
+      'You have not accepted any event yet. Open one in the calendar and tap “I\'m coming” — it will appear here with its chat.';
+
+  @override
+  String tileEventChatsUnread(int count) {
+    return '$count new messages';
   }
 }

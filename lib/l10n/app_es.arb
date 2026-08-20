@@ -2956,5 +2956,27 @@
         "type": "int"
       }
     }
+  },
+  "rsvpYes": "Voy a ir",
+  "rsvpNo": "No voy",
+  "rsvpFailed": "Respuesta no guardada: {msg}",
+  "@rsvpFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "tileEventChats": "Mis fechas",
+  "tileEventChatsSub": "Confirmaciones y chats",
+  "eventChatsTitle": "Mis fechas",
+  "eventChatsEmpty": "Aún no has confirmado ninguna fecha. Abre una en el calendario y toca «Voy a ir»: aparecerá aquí con su chat.",
+  "tileEventChatsUnread": "{count} mensajes nuevos",
+  "@tileEventChatsUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -23,6 +23,7 @@ import '../services/guide_service.dart';
 import '../tours/event_badge_tour.dart';
 import '../services/nostr_service.dart';
 import '../services/event_badge_session_service.dart';
+import '../services/event_rsvp_service.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/signing_service.dart';
 import 'chat_screen.dart';
@@ -159,6 +160,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     _selected = DateTime(start.year, start.month, start.day);
     _loadMyPubkey();
     _loadRunningSession();
+    _loadRsvps();
     _load();
   }
 
@@ -240,6 +242,91 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
         ),
       ]),
     );
+  }
+
+  /// Eigene Antworten auf Termine, Adresse zu Status. Wird beim Oeffnen des
+  /// Kalenders geladen.
+  Map<String, RsvpStatus> _rsvps = {};
+  String? _rsvpBusy;
+
+  Future<void> _loadRsvps() async {
+    final mine = await EventRsvpService.loadMine();
+    if (mounted) setState(() => _rsvps = mine);
+  }
+
+  /// Zwei Knoepfe: Ich komme / Ich komme nicht.
+  ///
+  /// Bewusst KEIN dritter fuer "vielleicht". Das Protokoll kennt ihn, aber
+  /// eine dritte Wahl macht die Zeile breiter und die Aussage schwaecher —
+  /// wer unsicher ist, sagt einfach noch gar nichts.
+  Widget _rsvpRow(AppLocalizations t, NostrCalendarEvent event) {
+    final current = _rsvps[event.address];
+    final busy = _rsvpBusy == event.address;
+
+    Widget button(RsvpStatus status, IconData icon, String label, Color color) {
+      final active = current == status;
+      return Expanded(
+        child: OutlinedButton.icon(
+          onPressed: busy ? null : () => _setRsvp(event, status),
+          icon: Icon(icon,
+              size: 17, color: active ? Colors.black : color),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: active ? color : Colors.transparent,
+            side: BorderSide(color: color.withValues(alpha: active ? 1 : 0.45)),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+          label: Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: active ? Colors.black : color,
+                  fontSize: 12.5,
+                  fontWeight: active ? FontWeight.w800 : FontWeight.w600)),
+        ),
+      );
+    }
+
+    return Row(children: [
+      button(RsvpStatus.accepted, Icons.check_rounded, t.rsvpYes, cGreen),
+      const SizedBox(width: 8),
+      button(RsvpStatus.declined, Icons.close_rounded, t.rsvpNo, cTextSecondary),
+    ]);
+  }
+
+  Future<void> _setRsvp(NostrCalendarEvent event, RsvpStatus status) async {
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Sofort umschalten, dann senden. Eine Zusage ist eine Kleinigkeit; auf
+    // die Relay-Antwort zu warten, bevor sich etwas ruehrt, faende
+    // niemand angemessen. Schlaegt es fehl, wird zurueckgesetzt.
+    final previous = _rsvps[event.address];
+    setState(() {
+      _rsvps[event.address] = status;
+      _rsvpBusy = event.address;
+    });
+
+    final err = await EventRsvpService.setStatus(
+      eventAddress: event.address,
+      eventAuthorPubkey: event.pubkey,
+      status: status,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _rsvpBusy = null;
+      if (err != null) {
+        if (previous == null) {
+          _rsvps.remove(event.address);
+        } else {
+          _rsvps[event.address] = previous;
+        }
+      }
+    });
+    if (err != null) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.rsvpFailed(err)), backgroundColor: cRed));
+    }
   }
 
   /// Oeffnet den Chat zu einem Termin.
@@ -987,6 +1074,13 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             if (e.hasBadge) ...[
               const SizedBox(height: 16),
               _badgeNotice(t, e),
+            ],
+            // Zu- oder Absagen. Nur bei Nostr-Terminen, weil die Antwort
+            // als NIP-52-Ereignis an der Termin-Adresse haengt — Portal-
+            // Meetups haben keine.
+            if (e.nostr != null) ...[
+              const SizedBox(height: 14),
+              _rsvpRow(t, e.nostr!),
             ],
             // Chat zum Termin. Nur fuer Nostr-Termine: Portal-Meetups haben
             // ihren eigenen Meetup-Raum, ein zweiter Raum daneben wuerde die

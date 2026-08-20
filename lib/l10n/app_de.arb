@@ -2978,5 +2978,27 @@
         "type": "int"
       }
     }
+  },
+  "rsvpYes": "Ich komme",
+  "rsvpNo": "Ich komme nicht",
+  "rsvpFailed": "Antwort nicht gespeichert: {msg}",
+  "@rsvpFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "tileEventChats": "Meine Termine",
+  "tileEventChatsSub": "Zusagen & Chats",
+  "eventChatsTitle": "Meine Termine",
+  "eventChatsEmpty": "Du hast noch keinen Termin zugesagt. Öffne einen Termin im Kalender und tippe auf „Ich komme“ — er erscheint dann hier mit seinem Chat.",
+  "tileEventChatsUnread": "{count} neue Nachrichten",
+  "@tileEventChatsUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

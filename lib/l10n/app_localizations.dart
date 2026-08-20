@@ -8119,8 +8119,8 @@ abstract class AppLocalizations {
   /// No description provided for @rsvpFailed.
   ///
   /// In de, this message translates to:
-  /// **'Zusage fehlgeschlagen'**
-  String get rsvpFailed;
+  /// **'Antwort nicht gespeichert: {msg}'**
+  String rsvpFailed(String msg);
 
   /// No description provided for @crsLoading.
   ///
@@ -11949,6 +11949,48 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} Badges'**
   String walletCollectionCount(int count);
+
+  /// No description provided for @rsvpYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich komme'**
+  String get rsvpYes;
+
+  /// No description provided for @rsvpNo.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich komme nicht'**
+  String get rsvpNo;
+
+  /// No description provided for @tileEventChats.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Termine'**
+  String get tileEventChats;
+
+  /// No description provided for @tileEventChatsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusagen & Chats'**
+  String get tileEventChatsSub;
+
+  /// No description provided for @eventChatsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Termine'**
+  String get eventChatsTitle;
+
+  /// No description provided for @eventChatsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast noch keinen Termin zugesagt. Öffne einen Termin im Kalender und tippe auf „Ich komme“ — er erscheint dann hier mit seinem Chat.'**
+  String get eventChatsEmpty;
+
+  /// No description provided for @tileEventChatsUnread.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} neue Nachrichten'**
+  String tileEventChatsUnread(int count);
 }
 
 class _AppLocalizationsDelegate

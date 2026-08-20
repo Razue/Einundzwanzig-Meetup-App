@@ -2956,5 +2956,27 @@
         "type": "int"
       }
     }
+  },
+  "rsvpYes": "I'm coming",
+  "rsvpNo": "Not coming",
+  "rsvpFailed": "Response not saved: {msg}",
+  "@rsvpFailed": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "tileEventChats": "My events",
+  "tileEventChatsSub": "RSVPs & chats",
+  "eventChatsTitle": "My events",
+  "eventChatsEmpty": "You have not accepted any event yet. Open one in the calendar and tap “I'm coming” — it will appear here with its chat.",
+  "tileEventChatsUnread": "{count} new messages",
+  "@tileEventChatsUnread": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -4472,7 +4472,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zum Zusagen bitte zuerst im Portal anmelden (Meine Meetups).';
 
   @override
-  String get rsvpFailed => 'Zusage fehlgeschlagen';
+  String rsvpFailed(String msg) {
+    return 'Antwort nicht gespeichert: $msg';
+  }
 
   @override
   String get crsLoading => 'Lade Kurse …';
@@ -6662,5 +6664,29 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String walletCollectionCount(int count) {
     return '$count Badges';
+  }
+
+  @override
+  String get rsvpYes => 'Ich komme';
+
+  @override
+  String get rsvpNo => 'Ich komme nicht';
+
+  @override
+  String get tileEventChats => 'Meine Termine';
+
+  @override
+  String get tileEventChatsSub => 'Zusagen & Chats';
+
+  @override
+  String get eventChatsTitle => 'Meine Termine';
+
+  @override
+  String get eventChatsEmpty =>
+      'Du hast noch keinen Termin zugesagt. Öffne einen Termin im Kalender und tippe auf „Ich komme“ — er erscheint dann hier mit seinem Chat.';
+
+  @override
+  String tileEventChatsUnread(int count) {
+    return '$count neue Nachrichten';
   }
 }

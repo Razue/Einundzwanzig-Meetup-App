@@ -4455,7 +4455,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rsvpNeedLogin => 'Inicia sesión en el portal primero.';
 
   @override
-  String get rsvpFailed => 'Error al confirmar';
+  String rsvpFailed(String msg) {
+    return 'Respuesta no guardada: $msg';
+  }
 
   @override
   String get crsLoading => 'Cargando cursos …';
@@ -6642,5 +6644,29 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String walletCollectionCount(int count) {
     return '$count insignias';
+  }
+
+  @override
+  String get rsvpYes => 'Voy a ir';
+
+  @override
+  String get rsvpNo => 'No voy';
+
+  @override
+  String get tileEventChats => 'Mis fechas';
+
+  @override
+  String get tileEventChatsSub => 'Confirmaciones y chats';
+
+  @override
+  String get eventChatsTitle => 'Mis fechas';
+
+  @override
+  String get eventChatsEmpty =>
+      'Aún no has confirmado ninguna fecha. Abre una en el calendario y toca «Voy a ir»: aparecerá aquí con su chat.';
+
+  @override
+  String tileEventChatsUnread(int count) {
+    return '$count mensajes nuevos';
   }
 }
