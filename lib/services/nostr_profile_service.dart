@@ -76,6 +76,77 @@ class NostrProfileService {
     return null;
   }
 
+  /// Anzeigename zu einem Pubkey, null wenn keiner hinterlegt ist.
+  ///
+  /// Eigener Zwischenspeicher und eigene Abfrage neben dem Profilbild: Die
+  /// Bildsuche bricht beim ersten Relay ab, das ein Bild liefert — ein Relay
+  /// kann aber ein Bild kennen und den Namen nicht. Zwei getrennte Wege sind
+  /// hier weniger fehleranfaellig als ein gemeinsamer mit Sonderfaellen.
+  static final Map<String, String?> _nameCache = {};
+
+  static Future<String?> fetchDisplayName(String pubkeyHex) async {
+    if (pubkeyHex.isEmpty) return null;
+    if (_nameCache.containsKey(pubkeyHex)) return _nameCache[pubkeyHex];
+
+    String? found;
+    try {
+      final relays = await RelayConfig.getActiveRelays();
+      for (final r in relays) {
+        found = await _fetchNameFromRelay(r, pubkeyHex);
+        if (found != null && found.isNotEmpty) break;
+      }
+    } catch (_) {
+      // Ohne Namen bleibt der gekuerzte npub — kein Grund zu scheitern.
+    }
+    _nameCache[pubkeyHex] = found;
+    return found;
+  }
+
+  static Future<String?> _fetchNameFromRelay(
+      String relayUrl, String pubkeyHex) async {
+    RelaySocket? ws;
+    try {
+      ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
+      final completer = Completer<String?>();
+      final random = Random.secure();
+      final subId =
+          'nam-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+
+      ws.listen(
+        (data) {
+          try {
+            final message = jsonDecode(data as String) as List<dynamic>;
+            if (message[0] == 'EVENT' && message.length >= 3) {
+              final content =
+                  (message[2] as Map<String, dynamic>)['content'] as String? ??
+                      '';
+              final profile = jsonDecode(content) as Map<String, dynamic>;
+              // display_name hat Vorrang — das ist der Name, den Leute fuer
+              // die Anzeige waehlen; name ist oft der technische Kurzname.
+              final n = (profile['display_name'] as String?)?.trim();
+              final alt = (profile['name'] as String?)?.trim();
+              if (!completer.isCompleted) {
+                completer.complete(
+                    (n != null && n.isNotEmpty) ? n : (alt ?? ''));
+              }
+            } else if (message[0] == 'EOSE') {
+              if (!completer.isCompleted) completer.complete(null);
+            }
+          } catch (_) {}
+        },
+        onError: (_) { if (!completer.isCompleted) completer.complete(null); },
+        onDone: () { if (!completer.isCompleted) completer.complete(null); },
+      );
+
+      ws.add(jsonEncode(['REQ', subId, {'kinds': [0], 'authors': [pubkeyHex], 'limit': 1}]));
+      return await completer.future.timeout(_timeout, onTimeout: () => null);
+    } catch (_) {
+      return null;
+    } finally {
+      ws?.close();
+    }
+  }
+
   static Future<String?> _fetchFromRelay(String relayUrl, String pubkeyHex) async {
     RelaySocket? ws;
     final tally = RelayParseTally('NostrProfile', 'Profil von $relayUrl');

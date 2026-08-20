@@ -265,21 +265,27 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
 
     Widget button(RsvpStatus status, IconData icon, String label, Color color) {
       final active = current == status;
+      // NICHT gewaehlt = neutral grau. Vorher trug "Ich komme" auch ohne
+      // Zusage gruene Schrift und einen gruenen Rand — das las sich wie eine
+      // bereits erteilte Zusage, und wer sich darauf verliess, tauchte in
+      // keiner Teilnehmerliste auf. Farbe bedeutet hier: entschieden.
+      final fg = active ? Colors.black : cTextSecondary;
       return Expanded(
         child: OutlinedButton.icon(
           onPressed: busy ? null : () => _setRsvp(event, status),
-          icon: Icon(icon,
-              size: 17, color: active ? Colors.black : color),
+          icon: Icon(icon, size: 17, color: fg),
           style: OutlinedButton.styleFrom(
             backgroundColor: active ? color : Colors.transparent,
-            side: BorderSide(color: color.withValues(alpha: active ? 1 : 0.45)),
+            side: BorderSide(
+                color: active ? color : cTileBorder,
+                width: active ? 1 : 0.5),
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
           label: Text(label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  color: active ? Colors.black : color,
+                  color: fg,
                   fontSize: 12.5,
                   fontWeight: active ? FontWeight.w800 : FontWeight.w600)),
         ),

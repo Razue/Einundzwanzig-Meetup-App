@@ -34,8 +34,30 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
   void initState() {
     super.initState();
     _filtered = widget.meetups;
-    _selected.addAll(widget.initialSelected);
+
+    // Uebergebene Auswahl auf Portal-IDs umstellen.
+    //
+    // Aus aelteren Fassungen koennen dort noch Staedte stehen. Bleibt eine
+    // Stadt drin, gilt sie fuer JEDES Meetup dieses Ortes — und ein Tipp
+    // markiert dann zwei Zeilen auf einmal.
+    for (final stored in widget.initialSelected) {
+      if (widget.meetups.any((m) => m.id == stored)) {
+        _selected.add(stored);
+        continue;
+      }
+      final sameCity = widget.meetups
+          .where((m) => m.city.toLowerCase() == stored.toLowerCase())
+          .toList();
+      // Eindeutig: still umstellen. Mehrdeutig: weglassen, damit bewusst
+      // gewaehlt wird — raten waere hier schlechter als fragen.
+      if (sameCity.length == 1) _selected.add(sameCity.first.id);
+    }
   }
+
+  /// Wie viele Meetups gibt es in dieser Stadt?
+  int _sameCityCount(String city) => widget.meetups
+      .where((m) => m.city.toLowerCase() == city.toLowerCase())
+      .length;
 
   @override
   void dispose() {
@@ -47,7 +69,9 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
     if (!mounted) return;
     setState(() {
       _filtered = widget.meetups
-          .where((m) => m.city.toLowerCase().contains(query.toLowerCase()))
+          .where((m) =>
+              m.city.toLowerCase().contains(query.toLowerCase()) ||
+              m.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
@@ -83,10 +107,19 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
                 itemCount: _filtered.length,
                 itemBuilder: (context, index) {
                   final meetup = _filtered[index];
-                  final active = _selected.contains(meetup.city);
+                  // Ueber die PORTAL-ID, nicht ueber die Stadt. Sonst gelten
+                  // BitcoinWalk Würzburg und Würzburg Meetup als dasselbe:
+                  // Ein Tipp markierte beide, und weiter unten kam nur eines
+                  // davon an.
+                  final active = _selected.contains(meetup.id);
                   return ListTile(
                     title: Text(
-                      meetup.city,
+                      // Bei mehreren Meetups einer Stadt der Gruppenname —
+                      // zwei Zeilen mit derselben Aufschrift waeren nicht
+                      // auseinanderzuhalten.
+                      _sameCityCount(meetup.city) > 1 && meetup.name.isNotEmpty
+                          ? meetup.name
+                          : meetup.city,
                       style: TextStyle(
                         color: active ? cOrange : Colors.white,
                         fontWeight:
@@ -114,9 +147,9 @@ class _MeetupSearchSheetState extends State<MeetupSearchSheet> {
                     onTap: () {
                       setState(() {
                         if (active) {
-                          _selected.remove(meetup.city);
+                          _selected.remove(meetup.id);
                         } else {
-                          _selected.add(meetup.city);
+                          _selected.add(meetup.id);
                         }
                       });
                     },

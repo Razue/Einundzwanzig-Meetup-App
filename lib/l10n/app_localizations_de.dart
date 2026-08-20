@@ -6689,4 +6689,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String tileEventChatsUnread(int count) {
     return '$count neue Nachrichten';
   }
+
+  @override
+  String get chatYou => 'Du';
+
+  @override
+  String get chatCopyNpub => 'npub kopieren';
+
+  @override
+  String get chatNpubCopied => 'npub kopiert.';
 }

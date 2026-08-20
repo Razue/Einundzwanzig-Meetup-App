@@ -9,7 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import 'package:flutter/services.dart';
+
 import '../services/chat_service.dart';
+import '../services/nostr_profile_service.dart';
+import '../services/nostr_service.dart';
 import '../services/event_chat_service.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
@@ -64,6 +68,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final List<ChatMessage> _messages = [];
   final Set<String> _seenIds = {};
+
+  /// Anzeigenamen der Absender, Pubkey zu Name. Wird nachgeladen — die
+  /// Nachrichten stehen sofort, die Namen kommen dazu.
+  final Map<String, String> _names = {};
 
   bool _loading = true;
   bool _member = false;
@@ -120,6 +128,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _loading = false;
     });
     _scrollToEnd();
+    _loadNames();
 
     // Alles Geladene gilt als gelesen. Der Lesestand liegt nur auf diesem
     // Gerät — Nostr kennt keinen, und er gehört auch nicht ins Netz.
@@ -139,6 +148,7 @@ class _ChatScreenState extends State<ChatScreen> {
           _messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
         });
         _scrollToEnd();
+        _loadNames();
         // Wer den Raum offen hat, liest mit.
         ChatService.markRead(_readKey, m.createdAt);
       }
@@ -150,6 +160,26 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {
       // Ohne Live-Abo bleibt der Chat lesbar — nur eben nicht von selbst
       // aktuell. Das ist besser als ein Fehlerbildschirm.
+    }
+  }
+
+  /// Holt die Anzeigenamen aller Absender.
+  ///
+  /// Nach dem Zeichnen und je Person nur einmal: Bei fuenfzig Nachrichten
+  /// von fuenf Leuten waeren es sonst fuenfzig Abfragen fuer fuenf Namen.
+  Future<void> _loadNames() async {
+    final unknown = _messages
+        .map((m) => m.pubkey)
+        .toSet()
+        .where((p) => !_names.containsKey(p))
+        .toList();
+
+    for (final pubkey in unknown) {
+      final name = await NostrProfileService.fetchDisplayName(pubkey);
+      if (!mounted) return;
+      if (name != null && name.isNotEmpty) {
+        setState(() => _names[pubkey] = name);
+      }
     }
   }
 
@@ -284,8 +314,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _bubble(ChatMessage m) {
     final mine = m.pubkey == _myPubkey;
+    final name = _names[m.pubkey];
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment:
             mine ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -295,40 +326,133 @@ class _ChatScreenState extends State<ChatScreen> {
             NostrAvatar(
                 pubkeyHex: m.pubkey,
                 radius: 14,
-                // Kürzel aus dem Schlüssel als Rückfall: Ein Anzeigename
-                // liegt hier nicht vor, und ein leerer Kreis sagt nichts.
-                fallbackText: m.pubkey.substring(0, 2).toUpperCase()),
+                fallbackText: (name ?? m.pubkey).substring(0, 1).toUpperCase()),
             const SizedBox(width: 8),
           ],
           Flexible(
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              decoration: BoxDecoration(
-                color: mine ? cOrange.withValues(alpha: 0.16) : cCard,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: mine
-                        ? cOrange.withValues(alpha: 0.35)
-                        : cTileBorder,
-                    width: 0.5),
-              ),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(m.content,
+            child: Column(
+                crossAxisAlignment:
+                    mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  // Absender und Zeitpunkt UEBER der Nachricht.
+                  //
+                  // Vorher stand nur die Uhrzeit klein unter dem Text, und
+                  // wer geschrieben hatte, verriet allein das Profilbild —
+                  // bei fehlendem Bild also gar nichts. In einem Gruppenchat
+                  // ist der Absender aber die halbe Information.
+                  GestureDetector(
+                    onTap: () => _showAuthor(m.pubkey, name),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 3, left: 2, right: 2),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Text(mine
+                            ? AppLocalizations.of(context).chatYou
+                            : (name != null && name.isNotEmpty
+                                ? name
+                                : _shortKey(m.pubkey)),
+                            style: TextStyle(
+                                color: mine ? cOrange : cNostr,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700)),
+                        const SizedBox(width: 7),
+                        Text(_timeLabel(m.createdAt),
+                            style: const TextStyle(
+                                color: cTextTertiary, fontSize: 10.5)),
+                      ]),
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: mine ? cOrange.withValues(alpha: 0.16) : cCard,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: mine
+                              ? cOrange.withValues(alpha: 0.35)
+                              : cTileBorder,
+                          width: 0.5),
+                    ),
+                    child: Text(m.content,
                         style: const TextStyle(
                             color: cText, fontSize: 14, height: 1.4)),
-                    const SizedBox(height: 4),
-                    Text(
-                        '${m.createdAt.hour.toString().padLeft(2, '0')}:'
-                        '${m.createdAt.minute.toString().padLeft(2, '0')}',
-                        style: const TextStyle(
-                            color: cTextTertiary, fontSize: 10)),
-                  ]),
-            ),
+                  ),
+                ]),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Gekuerzter Schluessel als Notname: Anfang und Ende, daran erkennt man
+  /// jemanden wieder.
+  String _shortKey(String pubkey) => pubkey.length > 12
+      ? '${pubkey.substring(0, 6)}…${pubkey.substring(pubkey.length - 4)}'
+      : pubkey;
+
+  /// Datum nur, wenn die Nachricht nicht von heute ist — sonst waere jede
+  /// Zeile mit dem heutigen Datum zugepflastert.
+  String _timeLabel(DateTime d) {
+    final now = DateTime.now();
+    final sameDay =
+        d.year == now.year && d.month == now.month && d.day == now.day;
+    final time = '${d.hour.toString().padLeft(2, '0')}:'
+        '${d.minute.toString().padLeft(2, '0')}';
+    if (sameDay) return time;
+    return '${d.day}.${d.month}. $time';
+  }
+
+  /// Absender antippen: npub zum Kopieren.
+  void _showAuthor(String pubkey, String? name) {
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    String npub;
+    try {
+      npub = NostrService.hexToNpub(pubkey);
+    } catch (_) {
+      npub = pubkey;
+    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cCard,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            if (name != null && name.isNotEmpty)
+              Text(name,
+                  style: const TextStyle(
+                      color: cText, fontSize: 17, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 10),
+            SelectableText(npub,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: cTextSecondary,
+                    fontSize: 11.5,
+                    fontFamily: 'monospace')),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: npub));
+                  Navigator.pop(ctx);
+                  messenger.showSnackBar(
+                      SnackBar(content: Text(t.chatNpubCopied)));
+                },
+                icon: const Icon(Icons.copy_rounded,
+                    color: Colors.black, size: 18),
+                style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+                label: Text(t.chatCopyNpub,
+                    style: const TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ]),
+        ),
       ),
     );
   }

@@ -366,11 +366,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return null;
   }
 
-  Future<void> _toggleFav(String city) async {
+  Future<void> _toggleFav(String favKey) async {
     final u = await UserProfile.load();
     final favs = List<String>.from(u.favoriteMeetupIds);
-    final added = !favs.contains(city);
-    if (added) { favs.add(city); } else { favs.remove(city); }
+    final added = !favs.contains(favKey);
+    if (added) { favs.add(favKey); } else { favs.remove(favKey); }
     u.favoriteMeetupIds = favs;
     u.homeMeetupId = favs.isNotEmpty ? favs.first : '';
     await u.save();
@@ -379,9 +379,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       backgroundColor: added ? Colors.green : cSurface,
       duration: const Duration(seconds: 2),
+      // Fuer die Meldung den lesbaren Namen, nicht die Portal-ID: "Favorit
+      // hinzugefuegt: 4711" waere fuer niemanden eine Auskunft.
       content: Text(added
-          ? AppLocalizations.of(context).calFavAdded(city)
-          : AppLocalizations.of(context).calFavRemoved(city)),
+          ? AppLocalizations.of(context).calFavAdded(MeetupService.labelFor(favKey))
+          : AppLocalizations.of(context).calFavRemoved(MeetupService.labelFor(favKey))),
     ));
   }
 
@@ -695,11 +697,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     Builder(builder: (_) {
                                       final favCity = _cityForEvent(event);
                                       if (favCity == null) return const Icon(Icons.chevron_right, color: Colors.grey);
-                                      final isFav = _favCities.contains(favCity);
+                                      // Der Termin traegt seit dem Umbau die
+                                      // Portal-ID. Damit landet in den
+                                      // Favoriten GENAU dieses Meetup und
+                                      // nicht jedes der Stadt; ohne ID bleibt
+                                      // der Stadtname als Rueckfall.
+                                      final favKey = event.meetupId.isNotEmpty
+                                          ? event.meetupId
+                                          : favCity;
+                                      final isFav = _favCities.contains(favKey);
                                       return Row(mainAxisSize: MainAxisSize.min, children: [
                                         GestureDetector(
                                           behavior: HitTestBehavior.opaque,
-                                          onTap: () => _toggleFav(favCity),
+                                          onTap: () => _toggleFav(favKey),
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                                             child: Icon(isFav ? Icons.star_rounded : Icons.star_outline_rounded,

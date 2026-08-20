@@ -3000,5 +3000,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "chatYou": "Du",
+  "chatCopyNpub": "npub kopieren",
+  "chatNpubCopied": "npub kopiert."
 }

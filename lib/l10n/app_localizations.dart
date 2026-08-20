@@ -11991,6 +11991,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} neue Nachrichten'**
   String tileEventChatsUnread(int count);
+
+  /// No description provided for @chatYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get chatYou;
+
+  /// No description provided for @chatCopyNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'npub kopieren'**
+  String get chatCopyNpub;
+
+  /// No description provided for @chatNpubCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'npub kopiert.'**
+  String get chatNpubCopied;
 }
 
 class _AppLocalizationsDelegate

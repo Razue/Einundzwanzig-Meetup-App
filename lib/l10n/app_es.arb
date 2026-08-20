@@ -2978,5 +2978,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "chatYou": "Tú",
+  "chatCopyNpub": "Copiar npub",
+  "chatNpubCopied": "npub copiado."
 }

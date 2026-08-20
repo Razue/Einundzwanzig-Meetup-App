@@ -6629,4 +6629,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String tileEventChatsUnread(int count) {
     return '$count new messages';
   }
+
+  @override
+  String get chatYou => 'You';
+
+  @override
+  String get chatCopyNpub => 'Copy npub';
+
+  @override
+  String get chatNpubCopied => 'npub copied.';
 }
