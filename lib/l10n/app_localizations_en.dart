@@ -6623,7 +6623,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eventChatsEmpty =>
-      'You have not accepted any event yet. Open one in the calendar and tap “I\'m coming” — it will appear here with its chat.';
+      'This shows the next dates of your meetups and every event you have accepted. Pick a favourite meetup or accept an event in the calendar.';
 
   @override
   String tileEventChatsUnread(int count) {
@@ -6638,4 +6638,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatNpubCopied => 'npub copied.';
+
+  @override
+  String get eventChatsMeetups => 'My meetups';
+
+  @override
+  String get eventChatsEvents => 'Events I\'m attending';
+
+  @override
+  String get tileEventChatsNone => 'Nothing planned';
+
+  @override
+  String rsvpAttendees(int count) {
+    return '$count attending';
+  }
 }

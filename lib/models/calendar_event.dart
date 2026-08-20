@@ -16,6 +16,12 @@ class CalendarEvent {
   /// bei mehreren Meetups einer Stadt zwangslaeufig alle.
   final String meetupId;
 
+  /// Portal-ID des TERMINS (nicht des Meetups).
+  ///
+  /// Nur bei Portal-Terminen gesetzt. Damit laesst sich die Zu- oder Absage
+  /// abfragen und setzen — das Portal fuehrt sie unter dieser Nummer.
+  final int? portalEventId;
+
   CalendarEvent({
     required this.title,
     required this.description,
@@ -23,6 +29,7 @@ class CalendarEvent {
     required this.startTime,
     required this.url,
     this.meetupId = '',
+    this.portalEventId,
   });
 
   factory CalendarEvent.fromMap(Map<String, dynamic> map) {

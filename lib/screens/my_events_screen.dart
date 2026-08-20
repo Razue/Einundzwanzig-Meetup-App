@@ -12,16 +12,47 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/calendar_event.dart';
 import '../services/calendar_event_service.dart';
 import '../services/event_chat_service.dart';
 import '../theme.dart';
 import 'chat_screen.dart';
 
+/// Ein anstehender Meetup-Termin aus den Favoriten.
+class MyMeetupDate {
+  /// Gespeicherter Favorit (Portal-ID) — Schluessel fuer den Chat.
+  final String favKey;
+  final String label;
+  final CalendarEvent event;
+
+  /// Teilnehmerzahl laut Portal, -1 wenn unbekannt.
+  final int attendees;
+
+  const MyMeetupDate({
+    required this.favKey,
+    required this.label,
+    required this.event,
+    this.attendees = -1,
+  });
+}
+
 class MyEventsScreen extends StatefulWidget {
-  /// Zugesagte Termine, bereits nach Datum sortiert.
+  /// Zugesagte Veranstaltungen, bereits nach Datum sortiert.
   final List<NostrCalendarEvent> events;
 
-  const MyEventsScreen({super.key, required this.events});
+  /// Naechste Termine der Favoriten-Meetups.
+  final List<MyMeetupDate> meetupDates;
+
+  /// Oeffnet den Chatraum eines Meetups. Kommt von aussen, weil die Suche
+  /// ueber das Gruppen-Relay laeuft und das Dashboard sie ohnehin kennt.
+  final Future<void> Function(String favKey, String label) onOpenMeetupChat;
+
+  const MyEventsScreen({
+    super.key,
+    required this.events,
+    required this.meetupDates,
+    required this.onOpenMeetupChat,
+  });
 
   @override
   State<MyEventsScreen> createState() => _MyEventsScreenState();
@@ -56,7 +87,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
             style: const TextStyle(
                 color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
       ),
-      body: widget.events.isEmpty
+      body: widget.events.isEmpty && widget.meetupDates.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(32),
@@ -66,11 +97,95 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                         color: cTextTertiary, fontSize: 14, height: 1.55)),
               ),
             )
-          : ListView.builder(
+          : ListView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              itemCount: widget.events.length,
-              itemBuilder: (_, i) => _card(t, widget.events[i]),
+              children: [
+                // Meetups zuerst: Das sind die regelmaessigen Termine, zu
+                // denen man ohnehin geht. Veranstaltungen sind die Ausnahme
+                // und stehen darunter.
+                if (widget.meetupDates.isNotEmpty) ...[
+                  _sectionLabel(t.eventChatsMeetups),
+                  ...widget.meetupDates.map((m) => _meetupCard(t, m)),
+                ],
+                if (widget.events.isNotEmpty) ...[
+                  _sectionLabel(t.eventChatsEvents),
+                  ...widget.events.map((e) => _card(t, e)),
+                ],
+              ],
             ),
+    );
+  }
+
+  Widget _sectionLabel(String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(2, 8, 2, 10),
+        child: Text(text.toUpperCase(),
+            style: const TextStyle(
+                color: cTextTertiary,
+                fontSize: 11,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w800)),
+      );
+
+  /// Ein Meetup-Termin, fuer den man im Portal zugesagt hat.
+  Widget _meetupCard(AppLocalizations t, MyMeetupDate m) {
+    final d = m.event.startTime;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: cCard,
+          borderRadius: BorderRadius.circular(kTileRadius),
+          border: Border.all(color: cTileBorder, width: 0.5),
+        ),
+        child: Row(children: [
+          Expanded(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(m.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          color: cText,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 5),
+                  Row(children: [
+                    const Icon(Icons.event_rounded,
+                        color: cTextTertiary, size: 13),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                          '${d.day}.${d.month}.${d.year} · '
+                          '${d.hour.toString().padLeft(2, '0')}:'
+                          '${d.minute.toString().padLeft(2, '0')}'
+                          // Teilnehmerzahl nur, wenn das Portal sie kennt —
+                          // "0 Teilnehmer" bei fehlender Angabe waere eine
+                          // falsche Auskunft.
+                          '${m.attendees >= 0 ? ' · ${t.rsvpAttendees(m.attendees)}' : ''}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              color: cTextTertiary, fontSize: 12)),
+                    ),
+                  ]),
+                ]),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: () => widget.onOpenMeetupChat(m.favKey, m.label),
+            child: Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: cNostr.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: const Icon(Icons.forum_rounded, color: cNostr, size: 19),
+            ),
+          ),
+        ]),
+      ),
     );
   }
 

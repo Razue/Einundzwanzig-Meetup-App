@@ -118,6 +118,9 @@ class MeetupCalendarService {
           // und Logo. Damit laesst sich ein Termin eindeutig einem Meetup
           // zuordnen, statt ueber Namensvergleiche zu raten.
           meetupId: mv('id'),
+          // Achtung, zwei verschiedene Nummern: mv('id') ist das MEETUP,
+          // e['id'] der einzelne TERMIN. Die Zusage haengt am Termin.
+          portalEventId: e['id'] is int ? e['id'] as int : null,
         ));
       }
       if (events.isNotEmpty) {

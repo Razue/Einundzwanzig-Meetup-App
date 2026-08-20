@@ -11983,7 +11983,7 @@ abstract class AppLocalizations {
   /// No description provided for @eventChatsEmpty.
   ///
   /// In de, this message translates to:
-  /// **'Du hast noch keinen Termin zugesagt. Öffne einen Termin im Kalender und tippe auf „Ich komme“ — er erscheint dann hier mit seinem Chat.'**
+  /// **'Hier stehen die nächsten Termine deiner Meetups und alle Veranstaltungen, für die du zugesagt hast. Wähle ein Meetup als Favorit oder sage im Kalender zu.'**
   String get eventChatsEmpty;
 
   /// No description provided for @tileEventChatsUnread.
@@ -12009,6 +12009,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'npub kopiert.'**
   String get chatNpubCopied;
+
+  /// No description provided for @eventChatsMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get eventChatsMeetups;
+
+  /// No description provided for @eventChatsEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Zugesagte Veranstaltungen'**
+  String get eventChatsEvents;
+
+  /// No description provided for @tileEventChatsNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Nichts geplant'**
+  String get tileEventChatsNone;
+
+  /// No description provided for @rsvpAttendees.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} dabei'**
+  String rsvpAttendees(int count);
 }
 
 class _AppLocalizationsDelegate

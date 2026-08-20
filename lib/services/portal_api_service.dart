@@ -780,6 +780,20 @@ class PortalApiService {
     AppLogger.diag('Portal', 'Teilnehmer-Namen: Portal liefert (noch) keine Liste für Event $eventId.');
     return [];
   }
+  /// Sagt die Antwort, dass man hingeht?
+  ///
+  /// Das Portal liefert je nach Endpunkt unterschiedliche Felder — mal
+  /// `status`, mal `going`, mal `rsvped`. Die Pruefung stand bisher im
+  /// Kalender; sie gehoert hierher, damit nicht jede Aufrufstelle die
+  /// Eigenheiten der Antwort kennen muss.
+  static bool isGoing(Map<String, dynamic>? r) {
+    if (r == null) return false;
+    final st = (r['status'] ?? '').toString();
+    if (st == 'attending' || st == 'maybe') return true;
+    final v = r['going'] ?? r['is_going'] ?? r['rsvped'];
+    return v == true;
+  }
+
   /// Der Body MUSS einen Status tragen: 'attending' | 'maybe' | 'none'.
   static Future<PortalResult> rsvp(int eventId, {String status = 'attending'}) =>
       _write('POST', '$_apiBase/meetup-events/$eventId/rsvp', {'status': status});

@@ -2992,7 +2992,7 @@
   "tileEventChats": "Meine Termine",
   "tileEventChatsSub": "Zusagen & Chats",
   "eventChatsTitle": "Meine Termine",
-  "eventChatsEmpty": "Du hast noch keinen Termin zugesagt. Öffne einen Termin im Kalender und tippe auf „Ich komme“ — er erscheint dann hier mit seinem Chat.",
+  "eventChatsEmpty": "Hier stehen die nächsten Termine deiner Meetups und alle Veranstaltungen, für die du zugesagt hast. Wähle ein Meetup als Favorit oder sage im Kalender zu.",
   "tileEventChatsUnread": "{count} neue Nachrichten",
   "@tileEventChatsUnread": {
     "placeholders": {
@@ -3003,5 +3003,16 @@
   },
   "chatYou": "Du",
   "chatCopyNpub": "npub kopieren",
-  "chatNpubCopied": "npub kopiert."
+  "chatNpubCopied": "npub kopiert.",
+  "eventChatsMeetups": "Meine Meetups",
+  "eventChatsEvents": "Zugesagte Veranstaltungen",
+  "tileEventChatsNone": "Nichts geplant",
+  "rsvpAttendees": "{count} dabei",
+  "@rsvpAttendees": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

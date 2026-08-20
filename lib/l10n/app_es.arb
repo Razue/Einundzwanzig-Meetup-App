@@ -2970,7 +2970,7 @@
   "tileEventChats": "Mis fechas",
   "tileEventChatsSub": "Confirmaciones y chats",
   "eventChatsTitle": "Mis fechas",
-  "eventChatsEmpty": "Aún no has confirmado ninguna fecha. Abre una en el calendario y toca «Voy a ir»: aparecerá aquí con su chat.",
+  "eventChatsEmpty": "Aquí aparecen las próximas fechas de tus meetups y los eventos que has confirmado. Elige un meetup favorito o confirma en el calendario.",
   "tileEventChatsUnread": "{count} mensajes nuevos",
   "@tileEventChatsUnread": {
     "placeholders": {
@@ -2981,5 +2981,16 @@
   },
   "chatYou": "Tú",
   "chatCopyNpub": "Copiar npub",
-  "chatNpubCopied": "npub copiado."
+  "chatNpubCopied": "npub copiado.",
+  "eventChatsMeetups": "Mis meetups",
+  "eventChatsEvents": "Eventos confirmados",
+  "tileEventChatsNone": "Nada planeado",
+  "rsvpAttendees": "{count} asisten",
+  "@rsvpAttendees": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

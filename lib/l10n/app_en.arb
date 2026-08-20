@@ -2970,7 +2970,7 @@
   "tileEventChats": "My events",
   "tileEventChatsSub": "RSVPs & chats",
   "eventChatsTitle": "My events",
-  "eventChatsEmpty": "You have not accepted any event yet. Open one in the calendar and tap “I'm coming” — it will appear here with its chat.",
+  "eventChatsEmpty": "This shows the next dates of your meetups and every event you have accepted. Pick a favourite meetup or accept an event in the calendar.",
   "tileEventChatsUnread": "{count} new messages",
   "@tileEventChatsUnread": {
     "placeholders": {
@@ -2981,5 +2981,16 @@
   },
   "chatYou": "You",
   "chatCopyNpub": "Copy npub",
-  "chatNpubCopied": "npub copied."
+  "chatNpubCopied": "npub copied.",
+  "eventChatsMeetups": "My meetups",
+  "eventChatsEvents": "Events I'm attending",
+  "tileEventChatsNone": "Nothing planned",
+  "rsvpAttendees": "{count} attending",
+  "@rsvpAttendees": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

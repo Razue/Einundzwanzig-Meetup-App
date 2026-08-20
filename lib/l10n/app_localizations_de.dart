@@ -6683,7 +6683,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get eventChatsEmpty =>
-      'Du hast noch keinen Termin zugesagt. Öffne einen Termin im Kalender und tippe auf „Ich komme“ — er erscheint dann hier mit seinem Chat.';
+      'Hier stehen die nächsten Termine deiner Meetups und alle Veranstaltungen, für die du zugesagt hast. Wähle ein Meetup als Favorit oder sage im Kalender zu.';
 
   @override
   String tileEventChatsUnread(int count) {
@@ -6698,4 +6698,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get chatNpubCopied => 'npub kopiert.';
+
+  @override
+  String get eventChatsMeetups => 'Meine Meetups';
+
+  @override
+  String get eventChatsEvents => 'Zugesagte Veranstaltungen';
+
+  @override
+  String get tileEventChatsNone => 'Nichts geplant';
+
+  @override
+  String rsvpAttendees(int count) {
+    return '$count dabei';
+  }
 }

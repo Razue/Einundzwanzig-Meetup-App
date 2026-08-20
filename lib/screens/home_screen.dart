@@ -338,12 +338,15 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'trust_score',  label: 'Trust Score',      span: 2, removable: false, builder: _buildTrustScoreTile),
       // countdown-Kachel wurde in Home Meetup integriert
       _TileDef(id: 'home_meetup',  label: 'Home Meetup',      span: 3, removable: false, builder: _buildHomeMeetupTile),
+      // Feste Kachel direkt darunter: "Was habe ich vor" gehoert neben
+      // "Wo gehoere ich hin". Nicht abwaehlbar und IMMER sichtbar — auch
+      // ohne Zusagen, denn dann erklaert sie, dass es sie gibt. Eine Kachel,
+      // die erst bei Inhalt erscheint, findet niemand.
+      _TileDef(id: 'event_chats',  label: 'Meine Termine',    span: 3, removable: false, builder: _buildMyEventsTile),
       _TileDef(id: 'reputation',   label: 'Reputation',       span: 1, builder: _buildReputationTile),
       // ── Optionale Kacheln (removable: true) ──
       _TileDef(id: 'community',    label: 'Community',        span: 2, builder: _buildCommunityTile),
       _TileDef(id: 'trust_network', label: 'Vertrauensnetzwerk', span: 2, builder: _buildTrustNetworkTile),
-      _TileDef(id: 'event_chats', label: 'Meine Termine', span: 3, builder: _buildMyEventsTile,
-          visible: () => _myEvents.isNotEmpty),
       _TileDef(id: 'events',       label: 'Events',           span: 1, builder: _buildEventsTile),
       _TileDef(id: 'shoutout',     label: 'Shoutout',         span: 1, builder: _buildShoutoutTile),
       _TileDef(id: 'podcast',      label: 'Podcast',          span: 1, builder: _buildPodcastTile),
@@ -404,7 +407,27 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (saved != null && saved.isNotEmpty) {
       // Merge: gespeicherte Reihenfolge + neue Tiles die noch nicht drin sind
       final known = saved.where((id) => _defaultOrder.contains(id)).toList();
-      for (final id in _defaultOrder) { if (!known.contains(id)) known.add(id); }
+
+      // Neue Kacheln an ihren VORGESEHENEN Platz einfuegen, nicht ans Ende.
+      //
+      // Vorher landete alles Neue hinter der letzten Kachel — bei jemandem
+      // mit siebzehn angehefteten Kacheln also ganz unten, wo es niemand
+      // sieht. Gesucht wird deshalb der naechste Vorgaenger aus der
+      // Standardreihenfolge, der beim Nutzer schon vorhanden ist; dahinter
+      // kommt die neue Kachel.
+      for (final id in _defaultOrder) {
+        if (known.contains(id)) continue;
+        final idx = _defaultOrder.indexOf(id);
+        var pos = 0;
+        for (var i = idx - 1; i >= 0; i--) {
+          final at = known.indexOf(_defaultOrder[i]);
+          if (at >= 0) {
+            pos = at + 1;
+            break;
+          }
+        }
+        known.insert(pos, id);
+      }
       if (mounted) setState(() { _tileOrder = known; _hiddenTiles = savedHidden; });
     } else {
       if (mounted) setState(() { _tileOrder = List.from(_defaultOrder); _hiddenTiles = Set.from(_defaultHidden); });
@@ -646,6 +669,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       if (mounted) {
         setState(() {
           _favCards = cards;
+
           // _nextHomeMeetup weiter fuer Kompatibilitaet (Widget/Routing) setzen:
           // das global naechste Event ueber alle Favoriten.
           _nextHomeMeetup = cards.isNotEmpty ? cards.first.event : null;
@@ -663,6 +687,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         countdown = days <= 0 ? 'Heute' : (days == 1 ? 'Morgen' : 'in $days Tagen');
       }
       WidgetService.updateMeetup(city: front?.city ?? '', countdown: countdown);
+
+      // Zusagen zu Meetup-Terminen im Hintergrund nachziehen. Hier, weil die
+      // Terminliste an dieser Stelle ohnehin vorliegt — ein zweiter Abruf
+      // waere reine Verschwendung.
+      _loadMeetupRsvps(events);
     } catch (_) { if (mounted) setState(() => _countdownLoading = false); }
   }
 
@@ -1675,8 +1704,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           accentColor: cNostr,
           watermark: Icons.event_available_rounded,
           onTap: () async {
-            await Navigator.push(context,
-                MaterialPageRoute(builder: (_) => MyEventsScreen(events: _myEvents)));
+            await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MyEventsScreen(
+                    events: _myEvents,
+                    meetupDates: _favMeetupDates
+                        .map((m) => MyMeetupDate(
+                            favKey: m.favKey,
+                            label: m.label,
+                            event: m.event,
+                            attendees: m.attendees))
+                        .toList(),
+                    onOpenMeetupChat: _openMeetupChat,
+                  ),
+                ));
             // Zurueck: Lesestaende koennen sich geaendert haben.
             if (mounted) _loadMyEvents();
           },
@@ -1684,26 +1726,92 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             icon: Icons.event_available_rounded,
             accent: cNostr,
             label: AppLocalizations.of(context).tileEventChats,
-            // Die ZAHL traegt die Kachel: Wie viele Termine stehen an. Der
-            // Untertitel sagt nur dann etwas von Nachrichten, wenn es welche
-            // gibt — sonst waere er eine Dauermeldung ueber nichts.
-            value: '${_myEvents.length}',
+            // Die ZAHL traegt die Kachel: zugesagte Veranstaltungen PLUS die
+            // naechsten Termine der Favoriten-Meetups. Beides ist "was ich
+            // vorhabe" — die Unterscheidung, ob dahinter eine Zusage oder ein
+            // Favorit steht, interessiert erst eine Ebene tiefer.
+            value: '${_myEvents.length + _favMeetupDates.length}',
             // Die Farbe der ZAHL macht den Unterschied: orange, wenn etwas
             // Neues in einem der Chats steht. Ein zusaetzliches Abzeichen
             // waere auf einer Kachel dieser Groesse Zierrat.
             valueColor: _myEventsUnread > 0 ? cOrange : null,
-            sub: _myEventsUnread > 0
+            sub: _myEvents.isEmpty && _favMeetupDates.isEmpty
+                ? AppLocalizations.of(context).tileEventChatsNone
+                : _myEventsUnread > 0
                 ? AppLocalizations.of(context).tileEventChatsUnread(_myEventsUnread)
                 : AppLocalizations.of(context).tileEventChatsSub,
           ),
         ),
       );
 
-  /// Zugesagte, noch bevorstehende Termine — Grundlage der Kachel.
+  /// Zugesagte, noch bevorstehende Veranstaltungen — Grundlage der Kachel.
   List<NostrCalendarEvent> _myEvents = [];
+
+  /// Meetup-Termine, fuer die man im Portal ZUGESAGT hat.
+  ///
+  /// Das Portal fuehrt Zu- und Absagen je Termin unter einer eigenen Nummer
+  /// (`portalEventId`) — samt Teilnehmerzahl. Anfangs hatte ich angenommen,
+  /// es gaebe das nicht, und den Favoriten als Aussage genommen. Das war
+  /// falsch: Ein Favorit heisst "das ist mein Meetup", eine Zusage heisst
+  /// "ich komme am 20." — zwei verschiedene Dinge.
+  List<_MeetupDateEntry> _favMeetupDates = [];
 
   /// Ungelesene Beitraege ueber ALLE zugesagten Termine zusammen.
   int _myEventsUnread = 0;
+
+  /// Sammelt Meetup-Termine, fuer die im Portal zugesagt wurde.
+  ///
+  /// Gefragt wird nur fuer Termine der EIGENEN Favoriten und nur fuer die
+  /// naechsten drei Monate — eine Abfrage je Termin ueber alle 158 Termine
+  /// des Portals waere unverhaeltnismaessig fuer eine Kachel.
+  Future<void> _loadMeetupRsvps(List<CalendarEvent> allEvents) async {
+    final favKeys = <String>{
+      if (_user.homeMeetupId.isNotEmpty) _user.homeMeetupId,
+      ..._user.favoriteMeetupIds,
+    };
+    if (favKeys.isEmpty) {
+      if (mounted) setState(() => _favMeetupDates = []);
+      return;
+    }
+
+    final now = DateTime.now();
+    final horizon = now.add(const Duration(days: 90));
+    final candidates = allEvents.where((e) {
+      if (e.portalEventId == null) return false;
+      if (e.startTime.isBefore(now.subtract(const Duration(days: 1)))) {
+        return false;
+      }
+      if (e.startTime.isAfter(horizon)) return false;
+      // Nur Termine der eigenen Favoriten.
+      return favKeys.any((k) {
+            final m = MeetupService.resolveFavorite(k);
+            return m != null && m.id == e.meetupId;
+          }) ||
+          favKeys.contains(e.meetupId);
+    }).toList();
+
+    final out = <_MeetupDateEntry>[];
+    for (final e in candidates) {
+      final r = await PortalApiService.getRsvpCached(e.portalEventId!);
+      if (!PortalApiService.isGoing(r)) continue;
+      final favKey = favKeys.firstWhere(
+        (k) => MeetupService.resolveFavorite(k)?.id == e.meetupId,
+        orElse: () => e.meetupId,
+      );
+      out.add(_MeetupDateEntry(
+        favKey: favKey,
+        label: MeetupService.labelFor(favKey),
+        event: e,
+        attendees: (r?['attendees'] ?? r?['count'] ?? -1) is int
+            ? (r?['attendees'] ?? r?['count'] ?? -1) as int
+            : -1,
+      ));
+    }
+    out.sort((a, b) => a.event.startTime.compareTo(b.event.startTime));
+
+    if (mounted) setState(() => _favMeetupDates = out);
+    AppLogger.debug('Events', '${out.length} zugesagte Meetup-Termine.');
+  }
 
   /// Laedt Zusagen und die dazugehoerigen Termine.
   ///
@@ -3315,6 +3423,23 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
 /// Altbestand noch ein Stadtname. [city] ist der daraus aufgeloeste Ort
 /// fuer Terminsuche und Wappen, [label] die Aufschrift: bei mehreren
 /// Meetups in einer Stadt der Gruppenname, sonst die Stadt.
+/// Ein Meetup-Termin, fuer den man zugesagt hat.
+class _MeetupDateEntry {
+  final String favKey;
+  final String label;
+  final CalendarEvent event;
+
+  /// Teilnehmerzahl laut Portal, -1 wenn unbekannt.
+  final int attendees;
+
+  const _MeetupDateEntry({
+    required this.favKey,
+    required this.label,
+    required this.event,
+    required this.attendees,
+  });
+}
+
 class _FavCard {
   final String key;
   final String label;

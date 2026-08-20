@@ -6663,7 +6663,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get eventChatsEmpty =>
-      'Aún no has confirmado ninguna fecha. Abre una en el calendario y toca «Voy a ir»: aparecerá aquí con su chat.';
+      'Aquí aparecen las próximas fechas de tus meetups y los eventos que has confirmado. Elige un meetup favorito o confirma en el calendario.';
 
   @override
   String tileEventChatsUnread(int count) {
@@ -6678,4 +6678,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get chatNpubCopied => 'npub copiado.';
+
+  @override
+  String get eventChatsMeetups => 'Mis meetups';
+
+  @override
+  String get eventChatsEvents => 'Eventos confirmados';
+
+  @override
+  String get tileEventChatsNone => 'Nada planeado';
+
+  @override
+  String rsvpAttendees(int count) {
+    return '$count asisten';
+  }
 }
