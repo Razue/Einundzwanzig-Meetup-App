@@ -164,9 +164,9 @@ class BadgeSecurity {
         }
       }
 
-      const _contentKeys = {'v', 't', 'm', 'b', 'x'};
+      const contentKeys = {'v', 't', 'm', 'b', 'x'};
       final Map<String, dynamic> content = {};
-      for (final key in _contentKeys) {
+      for (final key in contentKeys) {
         if (data.containsKey(key)) {
           content[key] = data[key];
         }
@@ -289,6 +289,37 @@ class BadgeSecurity {
   // UNIFIED VERIFY: Kompakt + Legacy (unverändert)
   // =============================================
 
+  /// Macht aus "blocktrainer-event-2026" wieder "Blocktrainer Event 2026".
+  ///
+  /// Verlustbehaftet — Grossschreibung mitten im Wort geht verloren. Fuer
+  /// die Anzeige reicht es; der genaue Titel steht ohnehin im Kalender-Event.
+  static String _prettifySlug(String slug) {
+    final words = slug.split('-').where((w) => w.isNotEmpty);
+    return words
+        .map((w) => w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+
+  /// Adresse des Kalender-Events, falls es sich um ein Event-Badge handelt.
+  /// Form `<kind>:<pubkey>:<dTag>`, sonst null.
+  static String? eventAddressOf(Map<String, dynamic> normalized) {
+    final a = normalized['event_address'];
+    return (a is String && a.isNotEmpty) ? a : null;
+  }
+
+  /// Baut das m-Feld fuer ein Event-Badge.
+  static String eventMeetupId({
+    required String eventAddress,
+    required String title,
+  }) {
+    final slug = title
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9äöüß\s-]'), '')
+        .replaceAll(RegExp(r'\s+'), '-');
+    return 'evt:$eventAddress:$slug';
+  }
+
   static VerifyResult verify(Map<String, dynamic> data) {
     if (data.containsKey('p') && data.containsKey('s') && !data.containsKey('sig')) {
       return verifyCompact(data);
@@ -322,12 +353,41 @@ class BadgeSecurity {
     normalized['v'] = data['v'] ?? 1;
 
     final t = data['t'];
-    if (t == 'B') normalized['type'] = 'BADGE';
-    else if (t is String) normalized['type'] = t;
-    else normalized['type'] = data['type'] ?? 'BADGE';
+    if (t == 'B') {
+      normalized['type'] = 'BADGE';
+    } else if (t is String) {
+      normalized['type'] = t;
+    } else {
+      normalized['type'] = data['type'] ?? 'BADGE';
+    }
 
     final m = data['m'] as String? ?? '';
-    if (m.contains('-')) {
+
+    // EVENT-BADGE: "evt:<kind>:<ersteller-hex>:<dTag>:<titel-slug>"
+    //
+    // Warum ein eigenes Format: Ein gewoehnliches m wird an '-' zerlegt und
+    // der letzte Teil als Land gedeutet. Eine Event-Adresse darin haette
+    // "Blocktrainer Event" zu Stadt "31923:abc…:xy" und Land "SLUG"
+    // gemacht. Das Praefix trennt die beiden Welten sauber.
+    //
+    // Die vollstaendige Adresse steckt mit drin, damit die pruefende App
+    // das Kalender-Event holen und die Ausstellerliste gegenpruefen kann —
+    // nur der dTag allein sagt nicht, WESSEN Event gemeint ist.
+    if (m.startsWith('evt:')) {
+      final parts = m.split(':');
+      if (parts.length >= 5) {
+        normalized['event_address'] = '${parts[1]}:${parts[2]}:${parts[3]}';
+        final slug = parts.sublist(4).join(':');
+        normalized['meetup_id'] = 'evt:${parts[3]}';
+        normalized['meetup_name'] = _prettifySlug(slug);
+        normalized['meetup_country'] = '';
+        normalized['is_event'] = true;
+      } else {
+        // Unvollstaendig — lieber roh durchreichen als falsch deuten.
+        normalized['meetup_id'] = m;
+        normalized['meetup_name'] = m;
+      }
+    } else if (m.contains('-')) {
       final parts = m.split('-');
       final country = parts.last.toUpperCase();
       final city = parts.sublist(0, parts.length - 1).join('-');
@@ -363,8 +423,11 @@ class BadgeSecurity {
       normalized['admin_npub'] = data['admin_npub'] ?? '';
     }
 
-    if (data['s'] != null) normalized['sig'] = data['s'];
-    else if (data['sig'] != null) normalized['sig'] = data['sig'];
+    if (data['s'] != null) {
+      normalized['sig'] = data['s'];
+    } else if (data['sig'] != null) {
+      normalized['sig'] = data['sig'];
+    }
     if (data['sig_id'] != null) normalized['sig_id'] = data['sig_id'];
 
     if (data['qr_nonce'] != null) normalized['qr_nonce'] = data['qr_nonce'];

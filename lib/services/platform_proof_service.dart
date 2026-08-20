@@ -16,12 +16,10 @@
 // ============================================
 
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:nostr/nostr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'badge_security.dart';
 import 'reputation_publisher.dart';
-import 'secure_key_store.dart';
 import 'signing_service.dart';
 
 class PlatformProofService {
@@ -338,7 +336,6 @@ class PlatformProofService {
   static bool _verifySignature(ParsedVerifyString parsed) {
     try {
       final pubkeyHex = Nip19.decodePubkey(parsed.npub);
-      final int createdAt = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
       // Content rekonstruieren
       // Wir können created_at nicht exakt rekonstruieren,

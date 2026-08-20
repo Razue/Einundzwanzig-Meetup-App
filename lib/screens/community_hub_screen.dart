@@ -15,7 +15,11 @@ import '../theme.dart';
 import '../services/signing_service.dart';
 import '../services/satoshiduell_service.dart';
 import 'plebrap_player_screen.dart';
+import 'package:provider/provider.dart';
+
 import '../l10n/app_localizations.dart';
+import '../services/guide_service.dart';
+import '../tours/more_tours.dart';
 import '../services/portal_api_service.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import 'calendar_screen.dart';
@@ -30,8 +34,38 @@ Future<void> _openUrl(String url) async {
   try { await launchUrl(uri, mode: LaunchMode.externalApplication); } catch (_) {}
 }
 
-class CommunityHubScreen extends StatelessWidget {
+/// Aus StatelessWidget geworden, damit die Tour einen Lebenszyklus hat:
+/// starten beim Oeffnen, beenden beim Schliessen. Ohne State liefe sie bei
+/// jedem Neuzeichnen erneut los.
+class CommunityHubScreen extends StatefulWidget {
   const CommunityHubScreen({super.key});
+
+  @override
+  State<CommunityHubScreen> createState() => _CommunityHubScreenState();
+}
+
+class _CommunityHubScreenState extends State<CommunityHubScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _startTour();
+  }
+
+  Future<void> _startTour() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.portal)) return;
+    if (!mounted) return;
+    await guide.startTour(GuideTour.portal, CommunityTour.steps());
+  }
+
+  @override
+  void dispose() {
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.portal) guide.finishTour();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +81,9 @@ class CommunityHubScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             // PORTAL (groß)
-            _bigCard(
+            KeyedSubtree(
+              key: CommunityTour.portalKey,
+              child: _bigCard(
               context,
               icon: Icons.public_rounded,
               color: cOrange,
@@ -56,18 +92,19 @@ class CommunityHubScreen extends StatelessWidget {
               chips: const ['Meetups', 'Events', 'Kurse', 'Karte'],
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalAreaScreen())),
             ),
+            ),
             const SizedBox(height: 14),
             Row(children: [
-              Expanded(child: _smallCard(context, icon: Icons.article_rounded, color: cOrange, title: t.chNews, subtitle: t.chNewsSub,
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen())))),
+              Expanded(child: KeyedSubtree(key: CommunityTour.newsKey, child: _smallCard(context, icon: Icons.article_rounded, color: cOrange, title: t.chNews, subtitle: t.chNewsSub,
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NewsScreen()))))),
               const SizedBox(width: 14),
               Expanded(child: _smallCard(context, icon: Icons.flutter_dash, color: cNostr, title: t.chNostr, subtitle: t.chNostrSub,
                   onTap: () => _openUrl('https://njump.me/npub1qv02xpsc3lhxxx5x7xswf88w3u7kykft9ea7t78tz7ywxf7mxs9qrxujnc'))),
             ]),
             const SizedBox(height: 14),
             Row(children: [
-              Expanded(child: _smallCard(context, icon: Icons.campaign_rounded, color: cOrange, title: t.chShoutout, subtitle: t.chShoutoutSub,
-                  onTap: () => _openUrl('https://shoutout.einundzwanzig.space'))),
+              Expanded(child: KeyedSubtree(key: CommunityTour.shoutoutKey, child: _smallCard(context, icon: Icons.campaign_rounded, color: cOrange, title: t.chShoutout, subtitle: t.chShoutoutSub,
+                  onTap: () => _openUrl('https://shoutout.einundzwanzig.space')))),
               const SizedBox(width: 14),
               Expanded(child: _smallCard(context, icon: Icons.podcasts_rounded, color: cPurple, title: t.chPodcast, subtitle: t.chPodcastSub,
                   onTap: () => _openUrl('https://einundzwanzig.space/podcast/'))),
@@ -76,7 +113,9 @@ class CommunityHubScreen extends StatelessWidget {
             // SATOSHIDUELL — Quiz-Duelle um Sats (satoshiduell.de).
             // Öffnet die WebApp MIT npub in der URL: deren LoginView liest
             // ?npub=... und loggt automatisch ein -> One-Tap ins Spiel.
-            _duellCard(context, subtitle: t.chDuellSub),
+            KeyedSubtree(
+                key: CommunityTour.duellKey,
+                child: _duellCard(context, subtitle: t.chDuellSub)),
             const SizedBox(height: 14),
             // PLEBRAP — Bitcoin-Rap-Player (Songs von plebrap.de)
             _smallCardWide(context, icon: Icons.graphic_eq_rounded, color: cOrange,
@@ -301,8 +340,37 @@ class CommunityHubScreen extends StatelessWidget {
 // ============================================
 //  PORTAL-BEREICH (Ebene 2)
 // ============================================
-class PortalAreaScreen extends StatelessWidget {
+/// Wie der Community-Hub aus StatelessWidget geworden: Die Tour braucht
+/// einen Lebenszyklus, damit sie einmal startet statt bei jedem Neuzeichnen.
+class PortalAreaScreen extends StatefulWidget {
   const PortalAreaScreen({super.key});
+
+  @override
+  State<PortalAreaScreen> createState() => _PortalAreaScreenState();
+}
+
+class _PortalAreaScreenState extends State<PortalAreaScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _startTour();
+  }
+
+  Future<void> _startTour() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (!mounted) return;
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.portalArea)) return;
+    if (!mounted) return;
+    await guide.startTour(GuideTour.portalArea, PortalAreaTour.steps());
+  }
+
+  @override
+  void dispose() {
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.portalArea) guide.finishTour();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -318,15 +386,19 @@ class PortalAreaScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             _row(context, Icons.groups_rounded, cOrange, t.paMeetups, t.paMeetupsSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())),
+                rowKey: PortalAreaTour.meetupsKey),
             _row(context, Icons.event_available_rounded, cGreen, t.paEvents, t.paEventsSub,
                 () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()))),
             _row(context, Icons.school_rounded, cNostr, t.paCourses, t.paCoursesSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CoursesScreen())),
+                rowKey: PortalAreaTour.coursesKey),
             _row(context, Icons.map_rounded, cCyan, t.paMap, t.paMapSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyMeetupsScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyMeetupsScreen())),
+                rowKey: PortalAreaTour.mapKey),
             _row(context, Icons.edit_calendar_rounded, cOrange, t.paMine, t.paMineSub,
-                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen()))),
+                () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PortalMeetupsScreen())),
+                rowKey: PortalAreaTour.mineKey),
             _row(context, Icons.language_rounded, cTextSecondary, t.paWeb, t.paWebSub,
                 () => Navigator.push(context, MaterialPageRoute(builder: (_) => const legacy.CommunityPortalScreen()))),
           ],
@@ -335,7 +407,10 @@ class PortalAreaScreen extends StatelessWidget {
     );
   }
 
-  Widget _row(BuildContext context, IconData icon, Color color, String title, String sub, VoidCallback onTap) => GestureDetector(
+  Widget _row(BuildContext context, IconData icon, Color color, String title, String sub, VoidCallback onTap,
+          {Key? rowKey}) =>
+      GestureDetector(
+    key: rowKey,
     onTap: onTap,
     child: Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -952,7 +1027,7 @@ Widget _headerCard(String img, String title, String sub, IconData fb) => Contain
   child: Row(children: [
     ClipRRect(borderRadius: BorderRadius.circular(12),
       child: img.isNotEmpty
-          ? Image.network(img, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _fbIcon(fb))
+          ? Image.network(img, width: 64, height: 64, fit: BoxFit.cover, errorBuilder: (_, _, _) => _fbIcon(fb))
           : _fbIcon(fb)),
     const SizedBox(width: 14),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -974,7 +1049,7 @@ Widget _rowCard(String img, String title, String sub, IconData fb) => Container(
   decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cTileBorder, width: 0.5)),
   child: Row(children: [
     ClipRRect(borderRadius: BorderRadius.circular(9),
-      child: img.isNotEmpty ? Image.network(img, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _fbSmall(fb)) : _fbSmall(fb)),
+      child: img.isNotEmpty ? Image.network(img, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (_, _, _) => _fbSmall(fb)) : _fbSmall(fb)),
     const SizedBox(width: 11),
     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text(title, style: const TextStyle(color: cText, fontSize: 14, fontWeight: FontWeight.w700)),

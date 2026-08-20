@@ -3,7 +3,14 @@
 // Neutrales Auswahlmenü beim Öffnen des Events-Tabs mit drei Bereichen:
 //   1. Meetups            -> CalendarScreen (Meetup-Suche & -Liste)
 //   2. Veranstaltungskalender -> EventCalendarScreen (Monat/Jahr/Liste, farbig)
-//   3. Externe Termine    -> ExternalEventsScreen (nur Nostr-Events, keine Meetups)
+//
+// "Externe Termine" ist im August 2026 entfallen: Der Bildschirm zeigte
+// ausschliesslich Nostr-Events — und die stehen alle auch im
+// Veranstaltungskalender. Zwei Wege zu denselben Terminen haben die
+// Auswahl nur laenger gemacht, ohne etwas hinzuzufuegen.
+//
+// ExternalEventsScreen bleibt in dieser Datei stehen, falls sich eine
+// eigene Ansicht ohne Meetups doch als nuetzlich erweist.
 // ============================================
 
 import 'package:flutter/material.dart';
@@ -47,15 +54,6 @@ class EventsHubScreen extends StatelessWidget {
               title: t.hubCalendar,
               subtitle: t.hubCalendarSub,
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventCalendarScreen())),
-            ),
-            const SizedBox(height: 14),
-            _card(
-              context,
-              icon: Icons.public_rounded,
-              color: cGreen,
-              title: t.hubExternal,
-              subtitle: t.hubExternalSub,
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExternalEventsScreen())),
             ),
           ],
         ),

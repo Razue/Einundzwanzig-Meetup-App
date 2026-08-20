@@ -51,7 +51,7 @@ class MeetupCalendarService {
     if (s.isEmpty) return null;
     if (!_loggedUtcFormat) {
       _loggedUtcFormat = true;
-      AppLogger.diag('Portal', 'my-meetup-events Rohformat: "' + s + '"');
+      AppLogger.diag('Portal', 'my-meetup-events Rohformat: "$s"');
     }
     final dt = DateTime.tryParse(s);
     if (dt == null) return null;
@@ -114,6 +114,13 @@ class MeetupCalendarService {
           location: (e['location'] ?? '').toString(),
           startTime: start,
           url: link.isNotEmpty ? link : mv('portalLink'),
+          // Die Portal-ID kommt ueber denselben flachen Schluessel wie Name
+          // und Logo. Damit laesst sich ein Termin eindeutig einem Meetup
+          // zuordnen, statt ueber Namensvergleiche zu raten.
+          meetupId: mv('id'),
+          // Achtung, zwei verschiedene Nummern: mv('id') ist das MEETUP,
+          // e['id'] der einzelne TERMIN. Die Zusage haengt am Termin.
+          portalEventId: e['id'] is int ? e['id'] as int : null,
         ));
       }
       if (events.isNotEmpty) {
@@ -145,16 +152,14 @@ class MeetupCalendarService {
         
         List<CalendarEvent> events = [];
         
-        if (iCalendar.data != null) {
-          for (var item in iCalendar.data) {
-            if (item['type'] == 'VEVENT') {
-              // Basis-Event parsen
-              final base = CalendarEvent.fromMap(item);
-              // Wiederkehrende Termine (RRULE) in einzelne Vorkommen expandieren.
-              // Ohne RRULE liefert expand() einfach nur [base].
-              final rrule = item['rrule']?.toString();
-              events.addAll(RecurrenceExpander.expand(base, rrule));
-            }
+        for (var item in iCalendar.data) {
+          if (item['type'] == 'VEVENT') {
+            // Basis-Event parsen
+            final base = CalendarEvent.fromMap(item);
+            // Wiederkehrende Termine (RRULE) in einzelne Vorkommen expandieren.
+            // Ohne RRULE liefert expand() einfach nur [base].
+            final rrule = item['rrule']?.toString();
+            events.addAll(RecurrenceExpander.expand(base, rrule));
           }
         }
         

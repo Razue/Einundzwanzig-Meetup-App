@@ -58,8 +58,8 @@ class _IntroScreenState extends State<IntroScreen>
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const AppShell(),  // NEU
-          transitionsBuilder: (_, animation, __, child) =>
+          pageBuilder: (_, _, _) => const AppShell(),  // NEU
+          transitionsBuilder: (_, animation, _, child) =>
               FadeTransition(opacity: animation, child: child),
         ),
       );
@@ -97,9 +97,9 @@ class _IntroScreenState extends State<IntroScreen>
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const AppShell(),
+        pageBuilder: (_, _, _) => const AppShell(),
         transitionDuration: const Duration(milliseconds: 500),
-        transitionsBuilder: (_, animation, __, child) =>
+        transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),
     );
@@ -111,6 +111,19 @@ class _IntroScreenState extends State<IntroScreen>
       backgroundColor: cDark,
       body: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/intro_background_87.jpg',
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.52),
+            ),
+          ),
+
           // Ambient Glow
           Positioned(
             top: -80,
@@ -139,7 +152,7 @@ class _IntroScreenState extends State<IntroScreen>
                 padding: const EdgeInsets.only(right: 12, top: 4),
                 child: ValueListenableBuilder<Locale?>(
                   valueListenable: LocaleController.locale,
-                  builder: (_, current, __) => GestureDetector(
+                  builder: (_, current, _) => GestureDetector(
                     onTap: _showLanguagePopup,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -173,15 +186,18 @@ class _IntroScreenState extends State<IntroScreen>
                     duration: const Duration(milliseconds: 800),
                     curve: Curves.easeOutExpo,
                     offset: _showLogo ? Offset.zero : const Offset(0, 0.3),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 260,
-                      fit: BoxFit.contain,
+                    child: Transform.translate(
+                      offset: const Offset(-16, 0),
+                      child: Image.asset(
+                        'assets/images/intro_logo_86.png',
+                        width: 390,
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 48),
+                const SizedBox(height: 28),
 
                 // SLOGAN
                 AnimatedOpacity(
@@ -312,7 +328,7 @@ class _IntroScreenState extends State<IntroScreen>
       context: context,
       builder: (dialogCtx) => ValueListenableBuilder<Locale?>(
         valueListenable: LocaleController.locale,
-        builder: (_, current, __) => Dialog(
+        builder: (_, current, _) => Dialog(
           backgroundColor: cCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Column(mainAxisSize: MainAxisSize.min, children: [

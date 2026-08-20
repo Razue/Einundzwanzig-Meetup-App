@@ -16,6 +16,7 @@ import '../services/meetup_service.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
 import 'wot_dashboard.dart';
+import '../features.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
 
@@ -259,9 +260,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         Navigator.pop(context);
         _checkSession();
 
+        // Der Wizard fuehrt durch den NFC-Schritt. Ist NFC abgeschaltet,
+        // besteht er nur noch aus "Ueberspringen" — dann gleich zum QR.
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MeetupSessionWizard()),
+          MaterialPageRoute(
+              builder: (context) => kNfcEnabled
+                  ? const MeetupSessionWizard()
+                  : const RollingQRScreen()),
         );
       }
     } catch (e) {
@@ -328,44 +334,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
-  void _showGpsError(GpsStatus status) {
-    final t = AppLocalizations.of(context);
-    String msg;
-    switch (status) {
-      case GpsStatus.denied: msg = t.gpsDenied; break;
-      case GpsStatus.serviceDisabled: msg = t.gpsDisabled; break;
-      default: msg = t.gpsError;
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(children: [
-          const Icon(Icons.location_off_rounded, color: cRed, size: 22),
-          const SizedBox(width: 10),
-          Expanded(child: Text(t.gpsRequired, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
-        ]),
-        content: Text('${t.gpsRequiredOrg}\n\n$msg', style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.4)),
-        actions: [
-          // Direkter Weg in die Einstellungen — beim Feldtest stand das
-          // Meetup genau vor dieser Wand. Der Dialog bleibt bewusst OFFEN,
-          // damit man nach dem Umschalten gleich "Erneut versuchen" tippen kann.
-          if (status == GpsStatus.serviceDisabled)
-            TextButton(
-              onPressed: () => MeetupLocationService.openLocationSettings(),
-              child: Text(t.gpsOpenLocationSettings, style: const TextStyle(color: cTextSecondary)),
-            ),
-          if (status == GpsStatus.denied)
-            TextButton(
-              onPressed: () => MeetupLocationService.openAppSettings(),
-              child: Text(t.gpsOpenAppSettings, style: const TextStyle(color: cTextSecondary)),
-            ),
-          TextButton(onPressed: () { Navigator.pop(ctx); _startNewSession(); }, child: Text(t.gpsRetry, style: const TextStyle(color: cOrange))),
-        ],
-      ),
-    );
-  }
 
   /// Fragt den Meetup-Namen ab, wenn kein Portal-Meetup in der Nähe ist.
   /// Der GPS-Standort wurde bereits erfasst und wird als Veranstaltungsort
@@ -517,6 +485,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
         'Meetup-Auswahl: ${mine.length} eigene(s) oben, ${others.length} weitere alphabetisch.');
 
     final search = TextEditingController();
+    // Nach den Portal-Abfragen oben ist der Context nicht mehr garantiert
+    // gueltig; das mounted-Feld des States ist hier die richtige Pruefung.
+    if (!mounted) return null;
     final t = AppLocalizations.of(context);
 
     return showDialog<Meetup>(
@@ -708,6 +679,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   // Öffnet das Einundzwanzig-Portal, damit der Organisator dort einen
   // Termin eintragen kann. Aktuell der direkte Weg ins Portal (Login nötig);
   // echte In-App-Erstellung folgt, sobald das Portal eine API bereitstellt.
+  // ignore: unused_element  — geparkt, siehe Kommentar oben.
   Future<void> _openPortalForEvent() async {
     final user = await UserProfile.load();
 
@@ -820,18 +792,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   style: const TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: 'monospace')),
             ]),
             const SizedBox(height: 20),
-            // legacy Wrap compat — keep chip builder for session area below
-            Wrap(spacing: 8, runSpacing: 8, children: [
-              if (false) _buildStatusChip(
-                icon: _promotionSource == 'trust_score' ? Icons.trending_up : Icons.star,
-                label: _promotionSource == 'trust_score'
-                    ? AppLocalizations.of(context).apViaTrustScore
-                    : _promotionSource == 'seed_admin'
-                        ? AppLocalizations.of(context).apSeedAdmin
-                        : AppLocalizations.of(context).apOrganizer,
-                color: _promotionSource == 'trust_score' ? Colors.green : cOrange,
-              ),
-            ]),
 
             const SizedBox(height: 32),
 
@@ -1023,23 +983,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     );
   }
 
-  Widget _buildStatusChip({required IconData icon, required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 14),
-          const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: color, fontFamily: 'monospace', fontSize: 11)),
-        ],
-      ),
-    );
-  }
 
   Widget _buildAdminTile({
     required BuildContext context,

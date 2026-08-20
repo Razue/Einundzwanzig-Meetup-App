@@ -138,7 +138,7 @@ class _PulsingIconState extends State<_PulsingIcon>
     if (MediaQuery.of(context).disableAnimations) return _circle(1.0);
     return AnimatedBuilder(
       animation: _controller,
-      builder: (_, __) => _circle(1.0 + (0.06 * _controller.value)),
+      builder: (_, _) => _circle(1.0 + (0.06 * _controller.value)),
     );
   }
 }

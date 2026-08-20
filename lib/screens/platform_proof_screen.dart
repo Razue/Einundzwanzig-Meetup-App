@@ -278,6 +278,8 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
+              // Dialog-Navigator vor dem await festhalten.
+              final navigator = Navigator.of(context);
               await PlatformProofService.removeProof(proof.platform);
               // Reputation ohne diesen Proof aktualisieren
               final proofs = await PlatformProofService.getProofsForPublishing();
@@ -286,7 +288,7 @@ class _PlatformProofScreenState extends State<PlatformProofScreen> {
                 platformProofs: proofs,
                 force: true,
               );
-              Navigator.pop(context);
+              navigator.pop();
               _loadProofs();
             },
             child: Text(AppLocalizations.of(context).ppRevoke, style: const TextStyle(color: Colors.white)),

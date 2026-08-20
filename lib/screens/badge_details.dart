@@ -1,12 +1,16 @@
+import 'dart:async';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
+import '../widgets/badge_share_card.dart';
 import '../widgets/meetup_crest_watermark.dart';
 import 'badge_wallet.dart'; // BadgeArtPainter als Rueckfallmotiv
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
-import '../models/user.dart';
 
 class BadgeDetailsScreen extends StatefulWidget {
   final MeetupBadge badge;
@@ -64,41 +68,59 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
     return cTextTertiary;
   }
 
+  /// Schluessel auf die abzumalende Karte.
+  final GlobalKey _shareCardKey = GlobalKey();
+
+  /// Badge als BILD teilen.
+  ///
+  /// Vorher ging eine Textwand raus — Titel, Datum, Block, Signaturart,
+  /// Pruefsumme. Inhaltlich richtig, aber niemand postet das. Jetzt wird
+  /// die Karte abgemalt und als PNG verschickt; der Text schrumpft auf
+  /// zwei Zeilen, die neben dem Bild noch Sinn ergeben.
   void _shareBadge() async {
-    final user = await UserProfile.load();
-    final reputationText = b.toReputationString();
-    final hash = b.getVerificationHash();
-
-    final shareText = '''
-🏆 EINUNDZWANZIG MEETUP BADGE
-
-$reputationText
-
-Block: ${b.blockHeight > 0 ? _formatBlock(b.blockHeight) : AppLocalizations.of(context).badgeUnknown}
-Delivery: ${_deliveryLabelOf(context)}
-Signatur: ${_sigLabelOf(context)}
-Hash: $hash
-${user.nostrNpub.isNotEmpty ? 'Npub: ${user.nostrNpub}' : ''}
-
-✅ Proof of Attendance
-Verifizierbar über die Einundzwanzig Meetup App
-    ''';
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
 
     try {
-      await Share.share(
-        shareText,
-        subject: 'Mein Einundzwanzig Badge - ${b.meetupName}',
+      // Die Karte haengt unsichtbar im Baum. Ein Bild kann erst entstehen,
+      // wenn sie einmal gezeichnet wurde — deshalb auf den naechsten Frame
+      // warten, statt sofort zuzugreifen.
+      final completer = Completer<void>();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!completer.isCompleted) completer.complete();
+      });
+      await completer.future;
+
+      final boundary = _shareCardKey.currentContext?.findRenderObject()
+          as RenderRepaintBoundary?;
+      if (boundary == null) return;
+
+      // pixelRatio 3 bei 360x480 ergibt 1080x1440 — genug fuer jeden
+      // Messenger, ohne dass die Datei unhandlich wird.
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return;
+
+      final pngBytes = byteData.buffer.asUint8List();
+
+      // Bytes direkt teilen statt selbst eine Datei anzulegen:
+      // path_provider hat keine Web-Implementierung, und share_plus legt
+      // die temporaere Datei auf iOS und Android ohnehin selbst an.
+      const fileName = 'einundzwanzig_badge.png';
+      await Share.shareXFiles(
+        [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+        fileNameOverrides: const [fileName],
+        subject: b.meetupName,
+        text: '${b.meetupName} · ${b.date.day.toString().padLeft(2, '0')}.'
+            '${b.date.month.toString().padLeft(2, '0')}.${b.date.year}\n'
+            '${t.badgeShareTagline}',
       );
     } catch (e) {
-      await Clipboard.setData(ClipboardData(text: shareText));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context).badgeInfoCopied),
-            backgroundColor: cOrange,
-          ),
-        );
-      }
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(
+        content: Text(t.repShareError(e.toString())),
+        backgroundColor: Colors.red,
+      ));
     }
   }
 
@@ -116,7 +138,20 @@ Verifizierbar über die Einundzwanzig Meetup App
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Stack(children: [
+        // Die teilbare Karte liegt weit ausserhalb des Bildschirms. Sie muss
+        // im Baum stehen und GEZEICHNET werden, sonst liefert toImage()
+        // nichts — Offstage genuegt dafuer nicht, weil es das Zeichnen
+        // gerade unterbindet.
+        Positioned(
+          left: -kShareCardSize.width * 2,
+          top: 0,
+          child: RepaintBoundary(
+            key: _shareCardKey,
+            child: BadgeShareCard(badge: b),
+          ),
+        ),
+        SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -216,7 +251,8 @@ Verifizierbar über die Einundzwanzig Meetup App
             ),
           ],
         ),
-      ),
+        ),
+      ]),
     );
   }
 
@@ -424,11 +460,13 @@ Verifizierbar über die Einundzwanzig Meetup App
     final hash = b.getVerificationHash();
     return GestureDetector(
       onTap: () async {
+        final messenger = ScaffoldMessenger.of(context);
+        final copiedText = AppLocalizations.of(context).badgeHashCopied;
         await Clipboard.setData(ClipboardData(text: hash));
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).badgeHashCopied),
+              content: Text(copiedText),
               backgroundColor: cCard,
               duration: Duration(seconds: 2),
             ),

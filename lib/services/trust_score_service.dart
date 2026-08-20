@@ -298,16 +298,16 @@ class TrustScoreService {
     // die SUMME aller Badge-Werte). Reputation zaehlt jetzt nur noch
     // EINDEUTIGE Badges — gleiches Meetup am gleichen Tag = ein Badge.
     // Aeltester Eintrag gewinnt, damit der urspruengliche Claim zaehlt.
-    final _trusted = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList()
+    final trusted = badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList()
       ..sort((a, b) => a.date.compareTo(b.date));
-    final _seen = <String>{};
+    final seen = <String>{};
     final trustedBadges = <MeetupBadge>[];
-    for (final b in _trusted) {
-      if (_seen.add(MeetupBadge.identityKey(b))) trustedBadges.add(b);
+    for (final b in trusted) {
+      if (seen.add(MeetupBadge.identityKey(b))) trustedBadges.add(b);
     }
-    if (trustedBadges.length != _trusted.length) {
+    if (trustedBadges.length != trusted.length) {
       AppLogger.diag('TrustScore',
-          '${_trusted.length - trustedBadges.length} doppelte Badge(s) fuer die Reputation ignoriert.');
+          '${trusted.length - trustedBadges.length} doppelte Badge(s) fuer die Reputation ignoriert.');
     }
     
     if (trustedBadges.isEmpty) {
@@ -315,7 +315,15 @@ class TrustScoreService {
     }
 
     // --- GRUNDDATEN (nur aus vertrauenswürdigen Badges) ---
-    final uniqueMeetups = trustedBadges.map((b) => b.meetupName).toSet();
+    //
+    // Event-Badges zaehlen NICHT als besuchtes Meetup: Der Aufstieg zum
+    // Tag-Ersteller verlangt drei verschiedene Meetups, und wer auf drei
+    // Grossevents war, hat deswegen noch keine lokale Gemeinschaft erlebt.
+    // Als Badge und fuer die Vielfalt der AUSSTELLER zaehlen sie sehr wohl —
+    // dort ist die Aussage "von verschiedenen Leuten bestaetigt", und die
+    // stimmt auch bei Events.
+    final meetupBadges = trustedBadges.where((b) => !b.isEvent).toList();
+    final uniqueMeetups = meetupBadges.map((b) => b.meetupName).toSet();
     final uniqueSigners = trustedBadges.map((b) => b.signerNpub).where((s) => s.isNotEmpty).toSet();
     final uniqueCities = uniqueMeetups;
 
@@ -507,7 +515,10 @@ class TrustScoreService {
   // =============================================
   static double calculateBridgeScore(List<MeetupBadge> badges) {
     if (badges.length < 3) return 0;
-    final cities = badges.map((b) => b.meetupName).toSet();
+    // Auch hier nur echte Meetups: "verbindest du Cluster" meint ORTE, und
+    // ein Grossevent ist kein Ort im Sinne einer lokalen Gemeinschaft.
+    final cities =
+        badges.where((b) => !b.isEvent).map((b) => b.meetupName).toSet();
     if (cities.length <= 1) return 0;
     final signers = badges.map((b) => b.signerNpub).where((s) => s.isNotEmpty).toSet();
     return cities.length.toDouble() * max(signers.length.toDouble(), 1.0);

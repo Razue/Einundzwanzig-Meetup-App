@@ -359,7 +359,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get scanBadge => 'Escanear insignia';
 
   @override
-  String get scanBadgeSub => 'Código QR o etiqueta NFC del meetup';
+  String get scanBadgeSub => 'Código QR del meetup';
 
   @override
   String get scanReputation => 'Verificar reputación';
@@ -402,7 +402,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get walletNoBadgesSub =>
-      '¡Visita meetups y escanea etiquetas NFC para coleccionar insignias!';
+      '¡Visita meetups y escanea el código QR para coleccionar insignias!';
 
   @override
   String get walletShareReputation => 'COMPARTIR REPUTACIÓN';
@@ -1370,7 +1370,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get verifyScanInstruction =>
-      'Escanea la etiqueta NFC o el código QR\ndel organizador del meetup.';
+      'Escanea el código QR\ndel organizador del meetup.';
 
   @override
   String get verifyScanQrInstruction =>
@@ -2608,7 +2608,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get siBecomeOrgDesc =>
-      'Promoción automática al alcanzar suficiente Trust Score. Luego puedes crear tus propias etiquetas NFC y códigos QR.';
+      'Promoción automática al alcanzar suficiente Trust Score. Luego puedes crear tus propios códigos QR.';
 
   @override
   String siProgressLabel(Object name) {
@@ -2796,8 +2796,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get apHowStep1 => '1. Inicia un nuevo meetup (sesión).\n';
 
   @override
-  String get apHowStep2 =>
-      '2. Luego escribe etiquetas NFC o muestra el código QR.\n';
+  String get apHowStep2 => '2. Luego muestra el código QR.\n';
 
   @override
   String get apHowStep4 =>
@@ -4456,7 +4455,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rsvpNeedLogin => 'Inicia sesión en el portal primero.';
 
   @override
-  String get rsvpFailed => 'Error al confirmar';
+  String rsvpFailed(String msg) {
+    return 'Respuesta no guardada: $msg';
+  }
 
   @override
   String get crsLoading => 'Cargando cursos …';
@@ -5204,4 +5205,1491 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get idSetupMeetupLoadError =>
       'No se pudieron cargar los meetups. Puedes hacerlo después en el perfil.';
+
+  @override
+  String get rsInvalidUrl =>
+      'Dirección no válida. Se espera wss://host.tld sin ruta.';
+
+  @override
+  String get rsRelayUnreachable =>
+      'Relé inaccesible. Comprueba la dirección o tu conexión a internet.';
+
+  @override
+  String get rsRelayAlreadyAdded => 'Este relé ya está en la lista.';
+
+  @override
+  String get rsTesting => 'Comprobando la conexión …';
+
+  @override
+  String get rsRelayAdded => 'Relé añadido y accesible.';
+
+  @override
+  String get rsEnabledHint =>
+      'Activado: no significa que el relé esté accesible en este momento.';
+
+  @override
+  String get wotNoRelayReachable =>
+      'Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String get newsWriteArticle => 'Escribir un artículo';
+
+  @override
+  String get newsLike => 'Me gusta';
+
+  @override
+  String get newsShare => 'Compartir';
+
+  @override
+  String get newsLikeFailed =>
+      'No se pudo enviar la reacción. Ningún relé la aceptó.';
+
+  @override
+  String get newsZap => 'Zap';
+
+  @override
+  String get newsZapTitle => 'Enviar sats al autor';
+
+  @override
+  String get newsZapBody =>
+      'Elige un importe. Después se enviará la factura a tu cartera Lightning.';
+
+  @override
+  String get newsZapNoAddress =>
+      'El autor no tiene una dirección Lightning en su perfil.';
+
+  @override
+  String get newsZapUnsupportedAddress =>
+      'La dirección Lightning del autor no es compatible (solo direcciones del tipo nombre@dominio).';
+
+  @override
+  String get newsZapAmountRange =>
+      'El importe está fuera del rango que acepta el autor.';
+
+  @override
+  String get newsZapFailed =>
+      'El zap ha fallado. Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String get newsZapNoWallet => 'No se ha encontrado ninguna cartera Lightning';
+
+  @override
+  String get newsZapCopyInvoice => 'Copiar factura';
+
+  @override
+  String get evBadgeCreate => 'Crear insignia del evento';
+
+  @override
+  String get evBadgeCreateSub =>
+      'Los asistentes pueden recoger una insignia en el lugar.';
+
+  @override
+  String get evBadgeNotAllowed =>
+      'Solo los organizadores y líderes de meetups pueden repartir insignias. Aun así puedes crear el evento.';
+
+  @override
+  String get evBadgeChecking => 'Comprobando el permiso …';
+
+  @override
+  String get evBadgeImage => 'Imagen de la insignia';
+
+  @override
+  String get evBadgeImageHint => 'https://…/imagen.png';
+
+  @override
+  String get evBadgeLocation => 'Ubicación del evento';
+
+  @override
+  String get evBadgeLocationHint => 'Usar la ubicación actual';
+
+  @override
+  String get evBadgeLocationInfo =>
+      'Las insignias solo se pueden emitir cerca de estas coordenadas y solo el día del evento.';
+
+  @override
+  String get evBadgeNoLocation =>
+      'No se puede determinar la ubicación. Comprueba el servicio de localización y el permiso.';
+
+  @override
+  String get evBadgeIssuers => '¿Quién puede emitir insignias?';
+
+  @override
+  String get evBadgeIssuerHint => 'Pega npub1…';
+
+  @override
+  String get evBadgeIssuerInfo =>
+      'Tú siempre puedes. Añade ayudantes que repartirán insignias en el lugar: no necesitan un rol de organizador propio.';
+
+  @override
+  String get evBadgeIssuerInvalid =>
+      'Eso no es un npub válido. Se espera npub1… o una clave hex de 64 caracteres.';
+
+  @override
+  String get evBadgeIssuerDuplicate => 'Esa clave ya está en la lista.';
+
+  @override
+  String get evBadgeImageInfo =>
+      'Elige una imagen de tu galería: se subirá para que todos puedan verla. También sirve una URL ya lista.';
+
+  @override
+  String get evBadgeUploading => 'Subiendo la imagen …';
+
+  @override
+  String evBadgeUploadFailed(String msg) {
+    return 'Error al subir: $msg';
+  }
+
+  @override
+  String get evBadgeLocationPick => 'Elegir en el mapa';
+
+  @override
+  String get locPickTitle => 'Ubicación del evento';
+
+  @override
+  String get locPickHint => 'Toca el mapa para marcar el lugar.';
+
+  @override
+  String get locPickHintDone => 'Toca de nuevo para mover el marcador.';
+
+  @override
+  String get locPickJumpToMe => 'Ir a mi ubicación';
+
+  @override
+  String get locPickConfirm => 'Usar esta ubicación';
+
+  @override
+  String get evBadgeAvailable => 'Aquí hay una insignia';
+
+  @override
+  String get evBadgeAvailableSub =>
+      'Puedes recoger una insignia en el lugar: el día del evento y cerca del sitio.';
+
+  @override
+  String get evBadgeYouIssue => 'Puedes emitir insignias aquí';
+
+  @override
+  String get evBadgeYouIssueSub =>
+      'El día del evento puedes iniciar una sesión en el lugar y repartir insignias.';
+
+  @override
+  String get evBadgeStartSession => 'Iniciar sesión de insignias';
+
+  @override
+  String get evSessionNoIdentity => 'No hay clave Nostr. Crea una primero.';
+
+  @override
+  String get evSessionNotIssuer => 'No figuras como emisor de este evento.';
+
+  @override
+  String get evSessionOutsideWindow =>
+      'Las insignias solo están disponibles el día del evento.';
+
+  @override
+  String get evSessionNoEventLocation =>
+      'Este evento no tiene ubicación guardada. Sin coordenadas no se puede comprobar que estés en el lugar.';
+
+  @override
+  String get evSessionNoLocation =>
+      'No se puede determinar la ubicación. Comprueba el servicio de localización y el permiso.';
+
+  @override
+  String evSessionTooFar(String km) {
+    return 'Estás a $km km del lugar. Las insignias solo se pueden emitir allí.';
+  }
+
+  @override
+  String get evSessionFailed =>
+      'No se pudo iniciar la sesión. Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String mvEventIssuerOk(String event, String creator) {
+    return 'Insignia del evento «$event»: emitida con permiso de $creator.';
+  }
+
+  @override
+  String mvEventSignerNotListed(String event) {
+    return 'Atención: el emisor no figura como ayudante de «$event».';
+  }
+
+  @override
+  String mvEventCreatorNotAuthorized(String event) {
+    return 'Atención: quien creó «$event» no es un organizador registrado.';
+  }
+
+  @override
+  String mvEventHasNoBadge(String event) {
+    return 'Atención: «$event» no debería repartir insignias.';
+  }
+
+  @override
+  String get mvEventNotFound =>
+      'No se encuentra el evento vinculado. Sin conexión no se puede comprobar el permiso.';
+
+  @override
+  String get evBadgeShowSession => 'Mostrar código QR';
+
+  @override
+  String get badgeShareTagline =>
+      'Estuve allí en persona: verificado por Nostr.';
+
+  @override
+  String get shareCardCollectedBy => 'Recogida por';
+
+  @override
+  String get shareCardBlock => 'Bloque';
+
+  @override
+  String get shareCardScanned => 'Escaneada';
+
+  @override
+  String get shareCardChecksum => 'Suma de verificación';
+
+  @override
+  String get shareCardPromo =>
+      '¿Has estado en un meetup de Einundzwanzig? Consigue tu insignia: prueba criptográfica de que estuviste allí.';
+
+  @override
+  String get backupPwShow => 'Mostrar contraseña';
+
+  @override
+  String get backupPwHide => 'Ocultar contraseña';
+
+  @override
+  String backupPwRuleLength(int min) {
+    return 'Al menos $min caracteres: una frase larga es mejor que una contraseña corta y complicada.';
+  }
+
+  @override
+  String get backupPwRuleMatch => 'Ambas entradas coinciden';
+
+  @override
+  String get idSetupOtherWaySub =>
+      'nsec, ncryptsec, bunker o copia de seguridad';
+
+  @override
+  String get guideWelcomeTitle => '¡Bienvenido!';
+
+  @override
+  String get guideWelcomeBody =>
+      '¿Quieres un recorrido rápido por la app? Te mostraremos las funciones más importantes.';
+
+  @override
+  String get guideStart => 'Iniciar tour';
+
+  @override
+  String get guideNoThanks => 'No, gracias';
+
+  @override
+  String get guideSkip => 'SALTAR';
+
+  @override
+  String get guideFinishTour => 'Terminar tour';
+
+  @override
+  String get guideBack => 'Atrás';
+
+  @override
+  String get guideOnboardWelcomeTitle => 'Configuremos tu perfil';
+
+  @override
+  String get guideOnboardWelcomeBody =>
+      'Te guiaremos paso a paso por la configuración. Solo toma un minuto.';
+
+  @override
+  String get guideOnboardNicknameTitle => 'Elige un Apodo';
+
+  @override
+  String get guideOnboardNicknameBody =>
+      'Así te verán otros miembros de la comunidad. ¡Elige algo memorable!';
+
+  @override
+  String get guideOnboardMeetupTitle => 'Selecciona tu Meetup Principal';
+
+  @override
+  String get guideOnboardMeetupBody =>
+      'Tu meetup principal determina qué insignias puedes coleccionar y qué eventos ves primero.';
+
+  @override
+  String get guideOnboardNostrTitle => 'Tu Clave Nostr';
+
+  @override
+  String get guideOnboardNostrBody =>
+      'Esta clave criptográfica firma tus insignias y verifica tu reputación. Se almacena solo en tu dispositivo.';
+
+  @override
+  String get guideOnboardSaveTitle => 'Guardar tu Perfil';
+
+  @override
+  String get guideOnboardSaveBody =>
+      'Toca aquí cuando termines. Siempre puedes cambiar esta configuración después.';
+
+  @override
+  String get guideHomeMeetupTitle => 'Tu Meetup Principal';
+
+  @override
+  String get guideHomeMeetupBody =>
+      'Tus meetups favoritos y el próximo evento – de un vistazo.';
+
+  @override
+  String get guideHomeTrustScoreTitle => 'Tu Trust Score';
+
+  @override
+  String get guideHomeTrustScoreBody =>
+      'Aquí ves tu posición actual. Toca para ver el desglose por diversidad, actividad y calidad.';
+
+  @override
+  String get guideHomeReputationTitle => 'Reputación';
+
+  @override
+  String get guideHomeReputationBody =>
+      'Verifica tu reputación o la puntuación de confianza de otra persona.';
+
+  @override
+  String get guideHomeWotTitle => 'Red de Confianza';
+
+  @override
+  String get guideHomeWotBody =>
+      'Ve cómo estás conectado con otros en la Web of Trust.';
+
+  @override
+  String get guideHomeCommunityTitle => 'Portal de la Comunidad';
+
+  @override
+  String get guideHomeCommunityBody =>
+      'Accede al podcast, shoutouts, merch y más.';
+
+  @override
+  String get guideHomeUmrechnerTitle => 'Conversor';
+
+  @override
+  String get guideHomeUmrechnerBody =>
+      'Convierte rápidamente entre EUR y sats.';
+
+  @override
+  String get guideHomeBitcoinTitle => 'Precio de Bitcoin';
+
+  @override
+  String get guideHomeBitcoinBody =>
+      'Precio actual, estadísticas de red y altura de bloque.';
+
+  @override
+  String get guideHomeBadgeWalletTitle => 'Cartera de Insignias';
+
+  @override
+  String get guideHomeBadgeWalletBody =>
+      'Todas las insignias coleccionadas – firmadas criptográficamente y almacenadas solo en tu dispositivo.';
+
+  @override
+  String get guideHomeScanTitle => 'Reclamar una Insignia';
+
+  @override
+  String get guideHomeScanBody =>
+      'Toca aquí para escanear el código QR del organizador en un meetup o acerca tu dispositivo vía NFC.';
+
+  @override
+  String get guideHomeSettingsTitle => 'Configuración';
+
+  @override
+  String get guideHomeSettingsBody =>
+      'Configura copia de seguridad, idioma, relays y más. ¡No olvides crear una copia de seguridad!';
+
+  @override
+  String get guideSettingsBackupTitle => '¡Crea una Copia de Seguridad!';
+
+  @override
+  String get guideSettingsBackupBody =>
+      'IMPORTANTE: Crea una copia para proteger tu cuenta. Sin ella, tus insignias y perfil se pierden si pierdes tu dispositivo.';
+
+  @override
+  String get guideSettingsLanguageTitle => 'Idioma';
+
+  @override
+  String get guideSettingsLanguageBody =>
+      'Cambia entre alemán, inglés y español.';
+
+  @override
+  String get guideSettingsRelaysTitle => 'Relays Nostr';
+
+  @override
+  String get guideSettingsRelaysBody =>
+      'Configura a qué relays Nostr se conecta tu app.';
+
+  @override
+  String get guideSettingsHapticTitle => 'Retroalimentación Háptica';
+
+  @override
+  String get guideSettingsHapticBody =>
+      'Activa o desactiva la retroalimentación por vibración.';
+
+  @override
+  String get guideSettingsResetTitle => 'Restablecer App';
+
+  @override
+  String get guideSettingsResetBody =>
+      'Esto elimina tu perfil y todas las insignias. ¡Asegúrate de tener una copia primero!';
+
+  @override
+  String get guideEventsSearchTitle => 'Buscar Eventos';
+
+  @override
+  String get guideEventsSearchBody =>
+      'Busca meetups por ciudad o palabra clave.';
+
+  @override
+  String get guideEventsCalendarTitle => 'Calendario';
+
+  @override
+  String get guideEventsCalendarBody =>
+      'Explora todos los próximos eventos de meetup.';
+
+  @override
+  String get guideEventsCardTitle => 'Detalles del Evento';
+
+  @override
+  String get guideEventsCardBody =>
+      'Toca un evento para ver detalles, ubicación y enlaces.';
+
+  @override
+  String get guideEventsCreateTitle => 'Crear Evento';
+
+  @override
+  String get guideEventsCreateBody =>
+      'Como organizador, puedes crear nuevos eventos de meetup aquí.';
+
+  @override
+  String get guidePortalShoutoutTitle => 'Enviar un Shoutout';
+
+  @override
+  String get guidePortalShoutoutBody =>
+      'Envía un shoutout público a la comunidad.';
+
+  @override
+  String get guidePortalPodcastTitle => 'Podcast';
+
+  @override
+  String get guidePortalPodcastBody =>
+      'Escucha el podcast Einundzwanzig directamente en la app.';
+
+  @override
+  String get guidePortalSoundboardTitle => 'Soundboard';
+
+  @override
+  String get guidePortalSoundboardBody =>
+      'Reproduce clips y sonidos del podcast.';
+
+  @override
+  String get guidePortalMerchTitle => 'Tienda';
+
+  @override
+  String get guidePortalMerchBody => 'Explora merch y productos Bitcoin.';
+
+  @override
+  String get guidePortalMembershipTitle => 'Hazte Miembro';
+
+  @override
+  String get guidePortalMembershipBody =>
+      'Apoya a la asociación haciéndote miembro.';
+
+  @override
+  String get guidePortalMapTitle => 'Mapa de Meetups';
+
+  @override
+  String get guidePortalMapBody => 'Encuentra meetups cerca de ti en el mapa.';
+
+  @override
+  String get guideWalletBadgesTitle => 'Tus Insignias';
+
+  @override
+  String get guideWalletBadgesBody =>
+      'Todas las insignias coleccionadas – firmadas criptográficamente y almacenadas solo en tu dispositivo.';
+
+  @override
+  String get guideWalletShareQrTitle => 'Compartir Código QR';
+
+  @override
+  String get guideWalletShareQrBody =>
+      'Muestra tu código QR de reputación para escanear en persona.';
+
+  @override
+  String get guideWalletExportTitle => 'Exportar como JSON';
+
+  @override
+  String get guideWalletExportBody =>
+      'Exportación firmada con prueba Schnorr para verificación.';
+
+  @override
+  String get guideWalletShareTextTitle => 'Compartir como Texto';
+
+  @override
+  String get guideWalletShareTextBody =>
+      'Comparte tu reputación como texto legible.';
+
+  @override
+  String get guideReputationScoreTitle => 'Tu Puntuación';
+
+  @override
+  String get guideReputationScoreBody =>
+      'Tu trust score se calcula a partir de insignias, diversidad y actividad.';
+
+  @override
+  String get guideReputationLevelTitle => 'Tu Nivel';
+
+  @override
+  String get guideReputationLevelBody =>
+      'De NUEVO a VETERANO – tu nivel crece con tu participación.';
+
+  @override
+  String get guideReputationStatsTitle => 'Estadísticas';
+
+  @override
+  String get guideReputationStatsBody =>
+      'Insignias, meetups, firmantes y pruebas vinculadas de un vistazo.';
+
+  @override
+  String get guideReputationShareTitle => 'Compartir Reputación';
+
+  @override
+  String get guideReputationShareBody =>
+      'Comparte tu reputación verificada vía código QR o texto.';
+
+  @override
+  String get guideReputationUpdateTitle => 'Actualizar en Relays';
+
+  @override
+  String get guideReputationUpdateBody =>
+      'Publica tu última reputación en la red Nostr.';
+
+  @override
+  String guideStepOf(int current, int total) {
+    return 'Paso $current de $total';
+  }
+
+  @override
+  String get guideStepDone => 'Hecho';
+
+  @override
+  String get guideHintNickname => 'Toca el campo e introduce tu apodo.';
+
+  @override
+  String get guideHintOpenPicker =>
+      'Toca el campo para abrir la selección de meetups.';
+
+  @override
+  String get guideHintSearchCity => 'Escribe las primeras letras de tu ciudad.';
+
+  @override
+  String get guideHintStarMeetup => 'Toca la estrella junto a tu meetup.';
+
+  @override
+  String get guideHintConfirmSelection =>
+      'Confirma tu selección con el botón de abajo.';
+
+  @override
+  String get guideHintNostrKey =>
+      'Crea una clave nueva o importa una existente.';
+
+  @override
+  String get guideHintSave => 'Toca GUARDAR PERFIL.';
+
+  @override
+  String get guideOnboardMeetupSearchTitle => 'Busca tu ciudad';
+
+  @override
+  String get guideOnboardMeetupSearchBody =>
+      'Escribe el nombre de tu ciudad — la lista se filtra al instante.';
+
+  @override
+  String get guideOnboardMeetupPickTitle => 'Marca tu meetup';
+
+  @override
+  String get guideOnboardMeetupPickBody =>
+      'Marca con la estrella tu meetup. Puedes elegir varios favoritos; el primero será tu meetup principal.';
+
+  @override
+  String get guideOnboardMeetupConfirmTitle => 'Confirma la selección';
+
+  @override
+  String get guideOnboardMeetupConfirmBody =>
+      'El botón muestra cuántos favoritos has elegido. Tócalo para volver a tu perfil.';
+
+  @override
+  String get guideOnboardPlatformsTitle => 'Vincula tus plataformas';
+
+  @override
+  String get guideOnboardPlatformsBody =>
+      'Conecta cuentas como Telegram, X o anuncios clasificados con tu identidad Nostr. Cada plataforma confirmada suma a tu puntuación de confianza y demuestra a los demás que detrás del perfil hay una persona real.';
+
+  @override
+  String get guideHintPlatforms =>
+      'Opcional — puedes hacerlo más tarde desde tu perfil.';
+
+  @override
+  String get guideOnboardHumanityTitle => 'Prueba de humanidad';
+
+  @override
+  String get guideOnboardHumanityBody =>
+      'Un único zap de Lightning demuestra que manejas una cartera real: la defensa más eficaz contra cuentas automatizadas en la red de confianza. Si ya has enviado un zap, verifícalo aquí.';
+
+  @override
+  String get guideHintHumanity =>
+      'Opcional — la aplicación funciona igual sin esta prueba.';
+
+  @override
+  String get guideHomeEventsTitle => 'Eventos';
+
+  @override
+  String get guideHomeEventsBody =>
+      'Este panel muestra si hay algo hoy. Se vuelve naranja en cuanto hay un evento programado para el día y te lleva al calendario con todos los encuentros próximos.';
+
+  @override
+  String get guideHomeShoutoutTitle => 'Shoutout';
+
+  @override
+  String get guideHomeShoutoutBody =>
+      'Envía un mensaje a la comunidad: aparecerá en la página de shoutouts de Einundzwanzig. El panel la abre en tu navegador.';
+
+  @override
+  String get guideHomePodcastTitle => 'Pódcast';
+
+  @override
+  String get guideHomePodcastBody =>
+      'El pódcast de Einundzwanzig, directamente desde la app. El panel abre la lista de episodios en tu navegador.';
+
+  @override
+  String get guideHomePortalConnectTitle => 'Conexión con el portal';
+
+  @override
+  String get guideHomePortalConnectBody =>
+      'Verde significa conectado, rojo desconectado. La conexión con el portal de Einundzwanzig te muestra los eventos y cursos que se gestionan allí. Un toque en el panel cambia el estado.';
+
+  @override
+  String get guideHomeNewsTitle => 'Noticias';
+
+  @override
+  String get guideHomeNewsBody =>
+      'El titular más reciente de la comunidad aparece en el propio panel. Tócalo para ver la lista completa.';
+
+  @override
+  String get guideHomeMyMeetupsTitle => 'Mis meetups';
+
+  @override
+  String get guideHomeMyMeetupsBody =>
+      'Aquí gestionas las fechas de tus meetups en el portal: crear, modificar, cancelar. Solo tiene sentido si organizas tú.';
+
+  @override
+  String get guideHomeMoreTitle => 'Y aún hay más';
+
+  @override
+  String get guideHomeMoreBody =>
+      'En tu panel te esperan cuatro paneles más: SatoshiDuell para partidas de preguntas por sats, PlebRap para música de la comunidad, el área del portal con meetups, eventos, cursos y mapa, y el panel de Nostr con las últimas notas de tu red. Cada uno se puede ocultar o mostrar de nuevo en los ajustes.';
+
+  @override
+  String get guideHomeNearbyTitle => 'Cerca de ti';
+
+  @override
+  String get guideHomeNearbyBody =>
+      'Muestra los meetups de tu entorno: útil cuando viajas o buscas un segundo grupo en la región. La pantalla se abre sobre la app; volver te trae de nuevo aquí.';
+
+  @override
+  String get guideHomeEventsTabTitle => 'Zona de eventos';
+
+  @override
+  String get guideHomeEventsTabBody =>
+      'El cuarto botón lleva al calendario completo: todos los eventos, filtrables por lugar y periodo, con recordatorios.';
+
+  @override
+  String get guideHomeSettingsBackupHint =>
+      'Ve directo a la copia de seguridad: sin ella, tu clave desaparece si pierdes el móvil.';
+
+  @override
+  String get guideHintBackup =>
+      'Crea ahora una copia cifrada: es cuestión de un minuto.';
+
+  @override
+  String get guideEvBadgeSwitchTitle => 'Insignia para tu evento';
+
+  @override
+  String get guideEvBadgeSwitchBody =>
+      'Activa el interruptor si los asistentes deben poder recoger una insignia en el lugar. Sin él, es solo una cita.';
+
+  @override
+  String get guideEvBadgeSwitchHint =>
+      'Si no necesitas insignia para este evento, simplemente toca Continuar.';
+
+  @override
+  String get guideEvBadgeImageTitle => 'La imagen';
+
+  @override
+  String get guideEvBadgeImageBody =>
+      'Elige una imagen de tu galería: se subirá y aparecerá en cada insignia de este evento. Sin ella, el gráfico generado sostiene la tarjeta por sí solo.';
+
+  @override
+  String get guideEvBadgeLocationTitle => 'La ubicación importa';
+
+  @override
+  String get guideEvBadgeLocationBody =>
+      'Coloca el marcador donde ocurre el evento, no donde estás ahora. Las insignias solo se pueden emitir cerca y solo el día del evento.';
+
+  @override
+  String get guideEvBadgeIssuersTitle => 'Tus ayudantes';
+
+  @override
+  String get guideEvBadgeIssuersBody =>
+      'Añade los npubs de todos los que repartirán insignias en el lugar. No necesitan rol de organizador: el permiso vive en el evento y solo vale para él. Tú siempre puedes.';
+
+  @override
+  String get glTitle => 'Referencia';
+
+  @override
+  String get glSearchHint => 'Buscar: insignia, trust score, copia…';
+
+  @override
+  String get glNoResults =>
+      'No se ha encontrado nada. Prueba otra palabra: la búsqueda también cubre el texto.';
+
+  @override
+  String get glCatStart => 'Primeros pasos';
+
+  @override
+  String get glCatBadges => 'Insignias';
+
+  @override
+  String get glCatReputation => 'Reputación';
+
+  @override
+  String get glWhatIsAppTitle => 'Qué hace esta app';
+
+  @override
+  String get glWhatIsAppBody =>
+      'Demuestra que estuviste realmente en un meetup de Bitcoin. Con el tiempo, esas pruebas forman una reputación que te pertenece y que nadie puede retirarte: no está en un servidor de Einundzwanzig, sino firmada en la red Nostr.';
+
+  @override
+  String get glCollectTitle => 'Cómo conseguir una insignia';
+
+  @override
+  String get glCollectBody =>
+      'Ve al meetup y pide al organizador que muestre el código QR. Toca el botón redondo de escaneo en la barra inferior, captura el código y listo. La insignia queda en tu cartera.';
+
+  @override
+  String get glHomeMeetupTitle => 'Tu meetup principal';
+
+  @override
+  String get glHomeMeetupBody =>
+      'El meetup al que vas con regularidad. Determina qué eventos ves primero y qué escudo aparece en tus insignias. Puedes elegir varios favoritos; el primero cuenta como principal. Se puede cambiar en cualquier momento en el perfil.';
+
+  @override
+  String get glOfflineTitle => 'Qué funciona sin conexión';
+
+  @override
+  String get glOfflineBody =>
+      'Escanear y recibir una insignia funciona sin conexión: tu dispositivo verifica la firma. Sin red solo faltan los datos externos: altura de bloque, precio, eventos y la comprobación de si el organizador está registrado.';
+
+  @override
+  String get glBadgeProofTitle => 'Qué demuestra una insignia';
+
+  @override
+  String get glBadgeProofBody =>
+      'Que estuviste en un lugar concreto en un momento concreto, confirmado por alguien que también estaba allí. La confirmación es una firma Schnorr según BIP-340. Nadie puede falsificarla, ni los desarrolladores, porque haría falta la clave privada del organizador.';
+
+  @override
+  String get glRollingQrTitle => 'El QR rotativo';
+
+  @override
+  String get glRollingQrBody =>
+      'El código del organizador cambia cada pocos segundos. Una foto no sirve minutos después: solo quien está realmente delante puede capturarlo. Por eso una insignia no se puede pasar por chat.';
+
+  @override
+  String get glOnSiteTitle => 'Por qué solo en el lugar';
+
+  @override
+  String get glOnSiteBody =>
+      'Además del código rotativo, la app comprueba la distancia: quien esté demasiado lejos no recibe insignia. En los meetups los límites son amplios porque algunos grupos abarcan regiones enteras; en eventos especiales la ubicación es exacta y el límite estrecho.';
+
+  @override
+  String get glBadgeShareTitle => 'Compartir una insignia';
+
+  @override
+  String get glBadgeShareBody =>
+      'Abre una insignia y toca compartir arriba a la derecha. La app genera una imagen con lugar, fecha, altura de bloque y suma de verificación. Quien la vea puede comprobar los datos; tu clave privada no está incluida.';
+
+  @override
+  String get glTrustScoreTitle => 'El trust score';
+
+  @override
+  String get glTrustScoreBody =>
+      'Un número que resume la solidez de tu historial de asistencia. No decide solo la cantidad: meetups distintos, organizadores distintos y la regularidad pesan más que veinte visitas al mismo sitio en una semana.';
+
+  @override
+  String get glLevelsTitle => 'Los niveles';
+
+  @override
+  String get glLevelsBody =>
+      'A medida que sube tu trust score alcanzas niveles superiores. A partir de cierto nivel puedes iniciar sesiones y emitir insignias: no es un premio sino una responsabilidad, porque tu firma queda bajo las insignias de otros.';
+
+  @override
+  String get glHumanityTitle => 'Prueba de humanidad';
+
+  @override
+  String get glHumanityBody =>
+      'Un único zap de Lightning demuestra que detrás del perfil hay una persona con una cartera real. Es la defensa más eficaz contra cuentas creadas automáticamente en la red de confianza. Es opcional: la app funciona sin ello.';
+
+  @override
+  String get glPlatformsTitle => 'Pruebas de plataforma';
+
+  @override
+  String get glPlatformsBody =>
+      'Puedes vincular cuentas como Telegram o X con tu identidad Nostr. Cada plataforma confirmada suma al trust score y muestra a los demás que detrás del perfil hay una persona con historia. También es opcional.';
+
+  @override
+  String get guideHomeGlossaryTitle => 'Para consultar';
+
+  @override
+  String get guideHomeGlossaryBody =>
+      'Aquí está todo explicado con calma, ordenado por temas y con búsqueda. Cuando termine esta visita y quede alguna duda, la respuesta está aquí.';
+
+  @override
+  String get glCatNetwork => 'Red de confianza';
+
+  @override
+  String get glCatIdentity => 'Identidad y claves';
+
+  @override
+  String get glCatEvents => 'Eventos';
+
+  @override
+  String get glCatNostr => 'Nostr';
+
+  @override
+  String get glEncounterTitle => 'Encuentros';
+
+  @override
+  String get glEncounterBody =>
+      'Quien escaneó con el mismo organizador el mismo día cuenta como encuentro. Así surge una red de personas que realmente compartieron una sala, no de gente que se sigue en internet.';
+
+  @override
+  String get glDegreesTitle => 'Grados';
+
+  @override
+  String get glDegreesBody =>
+      'Primer grado significa que estuvisteis con el mismo organizador. Segundo grado: alguien a quien conociste ha conocido a esa persona. Si un meetup tuvo dos organizadores, el hecho de que se escaneen mutuamente une ambos grupos.';
+
+  @override
+  String get glVouchTitle => 'Avales';
+
+  @override
+  String get glVouchBody =>
+      'Los organizadores pueden avalarse entre sí. Un aval es un voto público y firmado: tras publicarlo, toda la red ve por quién respondes. Se puede retirar en cualquier momento, pero la retirada es igual de visible.';
+
+  @override
+  String get glEventNetTitle => 'Red de eventos';
+
+  @override
+  String get glEventNetBody =>
+      'Los eventos especiales se cuentan aparte. En un meetup de quince personas conoces a todos; en un evento de quinientas, no. Mezclarlos devaluaría lo que dice la red, por eso tienen su propia categoría.';
+
+  @override
+  String get glKeysTitle => 'nsec y npub';
+
+  @override
+  String get glKeysBody =>
+      'Tu npub es tu dirección pública: compártela sin problema. El nsec es la clave privada y no pertenece a nadie más: quien la tenga, ES tú. No hay restablecimiento: si el nsec desaparece, la identidad y su reputación se pierden.';
+
+  @override
+  String get glPasswordTitle => 'Las dos contraseñas';
+
+  @override
+  String get glPasswordBody =>
+      'Durante la configuración estableces una contraseña que envuelve tu clave en el dispositivo. Para la copia de seguridad defines otra que cifra el archivo. Pueden coincidir, pero son independientes, y ninguna se puede restablecer.';
+
+  @override
+  String get glSignerTitle => 'Aplicaciones de firma';
+
+  @override
+  String get glSignerBody =>
+      'En lugar de guardar la clave en esta app, puedes confiarla a una aplicación de firma como Amber o conectarla mediante un bunker. Esta app pedirá allí cada firma y nunca verá la clave.';
+
+  @override
+  String get glBackupTitle => 'La copia de seguridad';
+
+  @override
+  String get glBackupBody =>
+      'Guarda claves, insignias y ajustes en un archivo cifrado. Sin ella, si pierdes el dispositivo lo pierdes todo. Créala pronto, no cuando la necesites, y guarda el archivo separado de la contraseña.';
+
+  @override
+  String get glSpecialEventTitle => 'Eventos especiales';
+
+  @override
+  String get glSpecialEventBody =>
+      'Además de los meetups habituales hay eventos únicos con insignias propias. Cuentan como insignia y para la variedad de emisores, pero no como meetup visitado.';
+
+  @override
+  String get glEventHelperTitle => 'Ayudantes en un evento';
+
+  @override
+  String get glEventHelperBody =>
+      'Quien crea un evento con insignia puede añadir cualquier npub como emisor. Esos ayudantes no necesitan rol de organizador: el permiso está en el evento y solo vale para ese.';
+
+  @override
+  String get glEventWindowTitle => 'Ubicación y ventana temporal';
+
+  @override
+  String get glEventWindowBody =>
+      'Una insignia de evento solo se puede emitir el día del evento y cerca de la ubicación registrada. Ambas condiciones impiden repartir insignias desde casa.';
+
+  @override
+  String get glRelaysTitle => 'Relés';
+
+  @override
+  String get glRelaysBody =>
+      'Los relés son los servidores por los que viajan los mensajes de Nostr. La app escribe en varios a la vez. Puedes añadir los tuyos en los ajustes: se comprueba su accesibilidad antes de guardarlos.';
+
+  @override
+  String get glPublicTitle => 'Qué es público';
+
+  @override
+  String get glPublicBody =>
+      'Las insignias, los registros de asistencia y los avales están abiertos en los relés: cualquiera puede leerlos y verificarlos. No son públicos tu clave privada, tu contraseña de copia ni tu ubicación exacta.';
+
+  @override
+  String get glZapTitle => 'Zaps';
+
+  @override
+  String get glZapBody =>
+      'Un zap es un pequeño pago Lightning con un recibo de Nostr. En las noticias puedes enviar algo directamente a los autores. Un zap único también sirve como prueba de humanidad.';
+
+  @override
+  String get guideEvBasicsTitle => 'Título y lugar';
+
+  @override
+  String get guideEvBasicsBody =>
+      'El título aparecerá luego en la lista de eventos y en la insignia, si emites alguna. El campo de ubicación es la dirección legible; las coordenadas para emitir insignias se fijan aparte en el mapa, más abajo.';
+
+  @override
+  String get guideEvWhenWhereTitle => 'Cuándo se celebra';
+
+  @override
+  String get guideEvWhenWhereBody =>
+      'El inicio es obligatorio; el final es opcional. En un evento con insignia cuenta el día natural: las insignias solo se pueden emitir ese día, de medianoche a medianoche.';
+
+  @override
+  String get glCatApp => 'App y manejo';
+
+  @override
+  String get glTilesTitle => 'Personalizar el panel';
+
+  @override
+  String get glTilesBody =>
+      'Mantén pulsado un panel para moverlo u ocultarlo. El trust score y el meetup principal siempre permanecen; el resto se puede desanclar. Los ocultos van al gestor y se pueden recuperar.';
+
+  @override
+  String get glLanguageTitle => 'Idioma';
+
+  @override
+  String get glLanguageBody =>
+      'La app está en alemán, inglés y español. Sin elección propia sigue el idioma del sistema. Puedes cambiarlo en los ajustes; el cambio surte efecto de inmediato, sin reiniciar.';
+
+  @override
+  String get glLogTitle => 'Registro de diagnóstico';
+
+  @override
+  String get glLogBody =>
+      'Un registro de lo que la app hace en segundo plano: qué relés respondieron, por qué se rechazó un escaneo. Cuando algo falla, es el primer sitio donde mirar. Se queda en el dispositivo y nunca se sube.';
+
+  @override
+  String get glResetTitle => 'Restablecer la app';
+
+  @override
+  String get glResetBody =>
+      'Borra el perfil, las claves y todas las insignias del dispositivo, de forma definitiva. Sin copia de seguridad pierdes tu identidad, aunque las insignias sigan en los relés: sin la clave no podrás reclamarlas. Haz una copia antes.';
+
+  @override
+  String get glNicknameTitle => 'Tu nombre visible';
+
+  @override
+  String get glNicknameBody =>
+      'El nombre con el que apareces en la red. Es libre, no tiene que ser el real y puedes cambiarlo cuando quieras: tu identidad depende de la clave, no del nombre.';
+
+  @override
+  String get glFindMeetupTitle => 'Encontrar meetups';
+
+  @override
+  String get glFindMeetupBody =>
+      'La búsqueda de meetups lista todos los grupos registrados. «Cerca» muestra lo que hay alrededor de tu ubicación actual: útil al viajar o si buscas un segundo grupo en la región.';
+
+  @override
+  String get glBlockHeightTitle => 'La altura de bloque';
+
+  @override
+  String get glBlockHeightBody =>
+      'Cada insignia lleva el número del bloque de Bitcoin vigente en el momento del escaneo. Funciona como una marca de tiempo que nadie puede mover después, al contrario que el reloj de un móvil.';
+
+  @override
+  String get glChecksumTitle => 'La suma de verificación';
+
+  @override
+  String get glChecksumBody =>
+      'Una huella corta de todo el contenido de la insignia. Dos personas pueden comparar sus insignias del mismo meetup: si coinciden las sumas, ambos recibieron los mismos datos.';
+
+  @override
+  String get glWorldMapTitle => 'El mapa mundial de insignias';
+
+  @override
+  String get glWorldMapBody =>
+      'Muestra tus insignias donde las conseguiste. Una lista de nombres se convierte en un mapa de tus visitas: útil para ver dónde quedan huecos.';
+
+  @override
+  String get glDuplicateTitle => 'Insignias duplicadas';
+
+  @override
+  String get glDuplicateBody =>
+      'Hay exactamente una insignia por meetup y día. Escanear el mismo código dos veces no da una segunda: una insignia representa una visita, no un escaneo.';
+
+  @override
+  String get glVerifyPersonTitle => 'Verificar a alguien';
+
+  @override
+  String get glVerifyPersonBody =>
+      'Pide a la otra persona su QR de reputación y escanéalo. La app comprueba si los datos coinciden con las insignias firmadas y muestra cómo estáis conectados. Útil antes de comerciar con desconocidos.';
+
+  @override
+  String get glRepCardTitle => 'La tarjeta de reputación';
+
+  @override
+  String get glRepCardBody =>
+      'Un resumen compartible de tu reputación como imagen: nivel, número de meetups, periodo. No contiene ninguna clave privada y se puede publicar sin problema.';
+
+  @override
+  String get glPublishTitle => 'Publicar tu reputación';
+
+  @override
+  String get glPublishBody =>
+      'Para que otros comprueben tu reputación, esta debe estar en los relés. La app la publica firmada; sin ese paso, tu interlocutor solo ve lo que le enseñas directamente.';
+
+  @override
+  String get glTrustPathTitle => 'Ruta de confianza';
+
+  @override
+  String get glTrustPathBody =>
+      'Muestra la cadena que te conecta con otra persona: quién conoció a quién y dónde. Un número abstracto se convierte en algo comprensible: no solo que estáis conectados, sino a través de qué.';
+
+  @override
+  String get glDistrustTitle => 'Denuncias y suspensión';
+
+  @override
+  String get glDistrustBody =>
+      'Los organizadores pueden denunciar abusos. Si se acumulan denuncias contra alguien, queda marcado como suspendido: sus insignias no desaparecen, pero llevan esa advertencia. La denuncia también va firmada.';
+
+  @override
+  String get glOrganizerTitle => 'Convertirse en organizador';
+
+  @override
+  String get glOrganizerBody =>
+      'A partir de cierto trust score puedes iniciar sesiones. Además suelen hacer falta avales de organizadores existentes: el rol no se concede, crece desde la red.';
+
+  @override
+  String get glNcryptsecTitle => 'ncryptsec';
+
+  @override
+  String get glNcryptsecBody =>
+      'Un nsec cifrado con una contraseña (NIP-49). La cadena empieza por ncryptsec1 y no sirve de nada sin la contraseña, así que se transporta con menos riesgo que un nsec desnudo.';
+
+  @override
+  String get glPasskeyTitle => 'Passkey';
+
+  @override
+  String get glPasskeyBody =>
+      'Protección adicional por huella o reconocimiento facial. El passkey no sustituye a tu contraseña, se antepone a ella. Es opcional y solo en este dispositivo.';
+
+  @override
+  String get glNip05Title => 'Dirección NIP-05';
+
+  @override
+  String get glNip05Body =>
+      'Una dirección legible del tipo nombre@dominio que apunta a tu clave, como una etiqueta para la red. Demuestra que alguien con acceso a ese dominio responde por ti, pero no sustituye a las demás comprobaciones.';
+
+  @override
+  String get glImportTitle => 'Traer tu propia clave';
+
+  @override
+  String get glImportBody =>
+      'Si ya tienes una identidad Nostr puedes usarla aquí: como nsec, como ncryptsec o mediante un bunker. Tus contactos y tu perfil se mantienen; la app solo añade insignias y reputación.';
+
+  @override
+  String get glRestoreTitle => 'Restaurar una copia';
+
+  @override
+  String get glRestoreBody =>
+      'Durante la configuración puedes cargar una copia en lugar de crear una clave nueva. Necesitas el archivo Y la contraseña con la que se cifró: uno solo no basta.';
+
+  @override
+  String get glCalendarSourcesTitle => 'De dónde vienen los eventos';
+
+  @override
+  String get glCalendarSourcesBody =>
+      'El calendario reúne dos fuentes: eventos del portal de Einundzwanzig y otros introducidos vía Nostr. El color los distingue: meetups del portal en naranja, eventos Nostr en turquesa.';
+
+  @override
+  String get glPortalTitle => 'La conexión con el portal';
+
+  @override
+  String get glPortalBody =>
+      'Puedes iniciar sesión en el portal de Einundzwanzig con tu clave Nostr. Verás los eventos y cursos que allí se gestionan y, como líder, podrás crear los tuyos. Sin conexión, todo lo demás sigue funcionando.';
+
+  @override
+  String get glCreateEventTitle => 'Crear un evento';
+
+  @override
+  String get glCreateEventBody =>
+      'Cualquiera puede añadir un evento: se publica firmado en Nostr y aparece en el calendario de todos. Sin embargo, solo organizadores y líderes pueden asociarle una insignia.';
+
+  @override
+  String get glNostrBasicsTitle => 'Qué es Nostr';
+
+  @override
+  String get glNostrBasicsBody =>
+      'Un protocolo abierto para mensajes firmados por su propio autor. No hay empresa detrás ni cuenta que puedan bloquear: solo claves y relés. Por eso tu identidad de esta app también funciona en otras aplicaciones Nostr.';
+
+  @override
+  String get glNewsTitle => 'La sección de noticias';
+
+  @override
+  String get glNewsBody =>
+      'Los artículos vienen de la revista Einundzwanzig y existen como textos largos de Nostr. Puedes leerlos en la app, darles un me gusta, compartirlos y enviar sats a los autores.';
+
+  @override
+  String get glConverterTitle => 'Conversor y precio';
+
+  @override
+  String get glConverterBody =>
+      'Convierte euros a sats y viceversa. El precio y la altura de bloque vienen de una instancia de mempool; puedes cambiarla en los ajustes, por ejemplo a tu propio nodo.';
+
+  @override
+  String get glCommunityTitle => 'Sección de comunidad';
+
+  @override
+  String get glCommunityBody =>
+      'Un punto de reunión para todo lo de Einundzwanzig que no trata de insignias: pódcast, shoutouts, PlebRap, SatoshiDuell y el mapa de meetups. Gran parte se abre en el navegador.';
+
+  @override
+  String get settingsRestartGuide => 'Repetir la visita';
+
+  @override
+  String get settingsRestartGuideSub =>
+      'Volver a mostrar todas las visitas guiadas';
+
+  @override
+  String get settingsGuideReset =>
+      'Visitas restablecidas: volverán a iniciarse al abrir esas secciones.';
+
+  @override
+  String get guideSettingsRestartTitle => 'Repetir la visita';
+
+  @override
+  String get guideSettingsRestartBody =>
+      'Restablece todas las visitas guiadas. Volverán a iniciarse la próxima vez que abras cada sección.';
+
+  @override
+  String get guideWalletMapTitle => 'Mapa mundial';
+
+  @override
+  String get guideWalletMapBody =>
+      'Muestra tus insignias donde las conseguiste. Una lista se convierte en un mapa de tus visitas.';
+
+  @override
+  String get guideWalletViewTitle => 'Cambiar la vista';
+
+  @override
+  String get guideWalletViewBody =>
+      'Alterna entre tarjetas grandes y una vista compacta. Con muchas insignias, la compacta se revisa más rápido.';
+
+  @override
+  String get guideCommunityPortalTitle => 'El portal';
+
+  @override
+  String get guideCommunityPortalBody =>
+      'Acceso a meetups, eventos, cursos y el mapa en einundzwanzig.space. Gran parte se abre en el navegador.';
+
+  @override
+  String get guideCommunityNewsTitle => 'Noticias y Nostr';
+
+  @override
+  String get guideCommunityNewsBody =>
+      'Artículos de la revista Einundzwanzig y las últimas notas de tu red Nostr, ambos legibles en la app.';
+
+  @override
+  String get guideCommunityFunTitle => 'Para participar';
+
+  @override
+  String get guideCommunityFunBody =>
+      'SatoshiDuell para partidas de preguntas por sats y PlebRap para música de la comunidad. Ambos solo necesitan tu identidad.';
+
+  @override
+  String get guideMyMeetupsListTitle => 'Tus meetups';
+
+  @override
+  String get guideMyMeetupsListBody =>
+      'Los meetups en los que estás registrado en el portal. Toca uno para ver y gestionar sus fechas; el botón de abajo también crea nuevas.';
+
+  @override
+  String get guideMyMeetupsCreateTitle => 'Crear una fecha';
+
+  @override
+  String get guideMyMeetupsCreateBody =>
+      'Añade una nueva fecha en el portal. Aparecerá en el calendario de todos los que tengan este meetup como favorito.';
+
+  @override
+  String get guideWotTabsTitle => 'Las tres vistas';
+
+  @override
+  String get guideWotTabsBody =>
+      'Red muestra quién está conectado con quién. Avales muestra por quién respondes y quién responde por ti. Denuncias reúne las advertencias de la red.';
+
+  @override
+  String get guideWotRefreshTitle => 'Recargar';
+
+  @override
+  String get guideWotRefreshBody =>
+      'Obtiene el estado actual de los relés. La red crece con cada meetup; sin recargar ves el estado de tu última visita.';
+
+  @override
+  String get guideHomeCustomizeTitle => 'Tu panel';
+
+  @override
+  String get guideHomeCustomizeBody =>
+      'Bajo este encabezado están los paneles que no has anclado: no han desaparecido, solo están apartados. Mantén pulsado un panel para anclarlo, soltarlo o moverlo.';
+
+  @override
+  String get guidePaMeetupsTitle => 'Meetups y fechas';
+
+  @override
+  String get guidePaMeetupsBody =>
+      'Ambos llevan al calendario: uno a los grupos, el otro a las próximas fechas. Lo que ves depende de tus favoritos.';
+
+  @override
+  String get guidePaCoursesTitle => 'Cursos';
+
+  @override
+  String get guidePaCoursesBody =>
+      'La oferta formativa de Einundzwanzig con sus docentes, desde una noche para principiantes hasta una serie de varias partes.';
+
+  @override
+  String get guidePaMapTitle => 'El mapa';
+
+  @override
+  String get guidePaMapBody =>
+      'Muestra los meetups de tu entorno en un mapa. Útil al viajar o para saber qué más hay en la región además de tu meetup principal.';
+
+  @override
+  String get guidePaMineTitle => 'Mis meetups';
+
+  @override
+  String get guidePaMineBody =>
+      'Solo interesa a los organizadores: aquí gestionas las fechas de los meetups en los que estás registrado. Si no llevas ninguno, verás una lista vacía.';
+
+  @override
+  String get guideSettingsProfileTitle => 'Perfil y claves';
+
+  @override
+  String get guideSettingsProfileBody =>
+      'Aquí cambias tu nombre y tu meetup principal, y aquí están tus claves Nostr. Abajo puedes copiar el npub y mostrar el nsec. Si la app creó una clave para ti, aquí la encuentras.';
+
+  @override
+  String get glFindKeysTitle => '¿Dónde están mis claves?';
+
+  @override
+  String get glFindKeysBody =>
+      'Ajustes → Perfil, al final. Allí copias el npub con un toque y muestras el nsec, esto último solo tras una advertencia: quien ve el nsec tiene tu identidad. Si usas Amber, una extensión o un bunker, aquí no hay nsec: está allí, no en esta app.';
+
+  @override
+  String get idSetupSecureTitle => 'Identidad creada: asegúrala ahora';
+
+  @override
+  String get idSetupSecureBody =>
+      'Hay dos maneras de asegurarlo y hacen cosas distintas. Lo mejor es hacer ambas.';
+
+  @override
+  String get idSetupSecureBackup => 'Crear copia de seguridad';
+
+  @override
+  String get idSetupSecureCopy => 'Copiar la clave al portapapeles';
+
+  @override
+  String get idSetupSecureWhere =>
+      'Puedes encontrar tus claves en cualquier momento en Ajustes → Perfil.';
+
+  @override
+  String get idSetupSecureBackupTitle => 'Archivo de copia';
+
+  @override
+  String get idSetupSecureBackupBody =>
+      'Contiene todo: claves, insignias, reputación y ajustes. Con él, tu app vuelve exactamente igual en un dispositivo nuevo. El archivo está cifrado con su propia contraseña.';
+
+  @override
+  String get idSetupSecureKeyTitle => 'Clave cifrada';
+
+  @override
+  String get idSetupSecureKeyBody =>
+      'Por último, tu clave Nostr sola, envuelta con tu contraseña (ncryptsec). Salva tu identidad pero no las insignias; a cambio nunca queda obsoleta.';
+
+  @override
+  String get idSetupSecureRepeat =>
+      'Repite la copia de vez en cuando en Ajustes → Copia de seguridad. Un archivo de hoy no conoce las insignias de mañana.';
+
+  @override
+  String get idSetupSecureKeySave => 'Guardar como archivo';
+
+  @override
+  String get idSetupSecureKeySaved => 'Archivo de clave guardado.';
+
+  @override
+  String get idSetupSecureSkip => 'Omitir';
+
+  @override
+  String get idSetupSecureFileHeader =>
+      'Einundzwanzig Meetup App — clave Nostr cifrada (ncryptsec, NIP-49). Sin la contraseña correspondiente, este archivo no sirve de nada. Guárdalos por separado.';
+
+  @override
+  String get chatRelayHint => 'Relé de grupos de Einundzwanzig';
+
+  @override
+  String get chatEmpty =>
+      'Aún no hay mensajes. Escribe el primero: la sala está abierta en el relé y también es accesible desde otras apps de Nostr.';
+
+  @override
+  String get chatPlaceholder => 'Escribe un mensaje …';
+
+  @override
+  String get chatJoin => 'Unirse a la sala';
+
+  @override
+  String get chatJoinHint =>
+      'Puedes leer sin más. Para escribir debes unirte a la sala: el relé mantiene la lista de miembros.';
+
+  @override
+  String chatJoinFailed(String msg) {
+    return 'Unión rechazada: $msg';
+  }
+
+  @override
+  String chatSendFailed(String msg) {
+    return 'Mensaje no entregado: $msg';
+  }
+
+  @override
+  String get chatSearching => 'Buscando la sala de chat …';
+
+  @override
+  String chatNoRoom(String city) {
+    return 'Todavía no hay sala de chat para $city en el relé de grupos. Los detalles están en el registro de diagnóstico.';
+  }
+
+  @override
+  String get chatEventOpen => 'Chat sobre esta fecha';
+
+  @override
+  String get chatEventFailed =>
+      'No se pudo abrir la sala de chat. Los detalles están en el registro de diagnóstico.';
+
+  @override
+  String get btnChat => 'Chat';
+
+  @override
+  String get btnInfo => 'Info';
+
+  @override
+  String get chatEventHint => 'Comentarios sobre la fecha · públicos en Nostr';
+
+  @override
+  String get chatEventEmpty =>
+      'Aún no hay nada escrito. Comparte información sobre la fecha: punto de encuentro, cambios, preguntas. Los comentarios cuelgan del propio evento.';
+
+  @override
+  String get chatMemberHint =>
+      'Unirse requiere ser miembro de la asociación Einundzwanzig. Sin ello, el relé rechaza la solicitud y sigues como lector silencioso.';
+
+  @override
+  String get chatMemberLink => 'Sobre la membresía';
+
+  @override
+  String walletSince(String month) {
+    return 'desde $month';
+  }
+
+  @override
+  String walletLastVisit(String ago) {
+    return 'última vez $ago';
+  }
+
+  @override
+  String get walletAgoToday => 'hoy';
+
+  @override
+  String get walletAgoYesterday => 'ayer';
+
+  @override
+  String walletAgoDays(int days) {
+    return 'hace $days días';
+  }
+
+  @override
+  String walletAgoMonths(int months) {
+    return 'hace $months meses';
+  }
+
+  @override
+  String walletAgoYears(int years) {
+    return 'hace $years años';
+  }
+
+  @override
+  String walletCollectionCount(int count) {
+    return '$count insignias';
+  }
+
+  @override
+  String get rsvpYes => 'Voy a ir';
+
+  @override
+  String get rsvpNo => 'No voy';
+
+  @override
+  String get tileEventChats => 'Mis fechas';
+
+  @override
+  String get tileEventChatsSub => 'Confirmaciones y chats';
+
+  @override
+  String get eventChatsTitle => 'Mis fechas';
+
+  @override
+  String get eventChatsEmpty =>
+      'Aquí aparecen las próximas fechas de tus meetups y los eventos que has confirmado. Elige un meetup favorito o confirma en el calendario.';
+
+  @override
+  String tileEventChatsUnread(int count) {
+    return '$count mensajes nuevos';
+  }
+
+  @override
+  String get chatYou => 'Tú';
+
+  @override
+  String get chatCopyNpub => 'Copiar npub';
+
+  @override
+  String get chatNpubCopied => 'npub copiado.';
+
+  @override
+  String get eventChatsMeetups => 'Mis meetups';
+
+  @override
+  String get eventChatsEvents => 'Eventos confirmados';
+
+  @override
+  String get tileEventChatsNone => 'Nada planeado';
+
+  @override
+  String rsvpAttendees(int count) {
+    return '$count asisten';
+  }
 }

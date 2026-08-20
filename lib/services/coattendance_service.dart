@@ -26,8 +26,25 @@ class CoAttendanceRecord {
 /// Ein Knoten im Co-Attendance-Netzwerk.
 class CoAttNode {
   final String npub;
-  final Set<String> meetups; // meetupEventIds, an denen er teilnahm
-  CoAttNode(this.npub) : meetups = <String>{};
+
+  /// Meetup-Begegnungen. Der Kern des Vertrauensnetzwerks: kleine Runden,
+  /// in denen man sich tatsaechlich getroffen hat.
+  final Set<String> meetups;
+
+  /// Event-Begegnungen — getrennt gefuehrt.
+  ///
+  /// Auf einem Meetup mit fuenfzehn Leuten trifft man jeden. Auf einem
+  /// Event mit fuenfhundert nicht. Wuerden beide im selben Topf liegen,
+  /// machte ein einziges Grossevent Tausende Menschen zu "direkten
+  /// Begegnungen" und die Aussage des Netzwerks waere dahin.
+  final Set<String> events;
+
+  CoAttNode(this.npub)
+      : meetups = <String>{},
+        events = <String>{};
+
+  /// Alles zusammen — fuer Ansichten, die beides zeigen wollen.
+  Set<String> get all => {...meetups, ...events};
 }
 
 /// Ergebnis der Netzwerk-Analyse zwischen mir und einer Zielperson.
@@ -90,7 +107,35 @@ class CoAttendanceService {
   /// Die Badge-Identitaet (`meetupEventId`) bleibt UNVERAENDERT — sonst
   /// waere der Duplikatschutz betroffen, und ein Teilnehmer koennte an
   /// einem Abend mehrere Badges sammeln.
-  static String attendanceKey(String meetupEventId, String signerNpub) {
+  /// Praefix fuer Event-Anwesenheiten. Es steht VOR dem Schluessel, damit
+  /// beim Einlesen ohne Zusatzwissen erkennbar ist, in welchen Topf ein
+  /// Eintrag gehoert — die Relay-Daten tragen sonst keinen Typ.
+  static const String eventPrefix = 'ev|';
+
+  static bool isEventKey(String key) => key.startsWith(eventPrefix);
+
+  /// Anwesenheitsschluessel.
+  ///
+  /// Bei MEETUPS haengt der Signierer mit dran. Grund: Zwei unabhaengige
+  /// Sitzungen mit demselben Namen und Datum — jeder Entwickler legt
+  /// irgendwann eine "test"-Session an — wuerden sonst Fremde miteinander
+  /// verknuepfen. Das ist im Feld passiert und war der Anlass fuer diese
+  /// Ergaenzung.
+  ///
+  /// Bei EVENTS faellt er weg, und zwar aus zwei Gruenden. Erstens ist die
+  /// Gefahr nicht gegeben: In der Event-Adresse steckt der Pubkey des
+  /// Erstellers, sie ist also von Natur aus eindeutig — ein zweites
+  /// "Blocktrainer Event" von jemand anderem hat einen anderen Schluessel.
+  /// Zweitens gehoert es zur Sache: Ein Event IST ein Event, egal bei
+  /// welchem Helfer man gescannt hat. Ohne diese Zusammenfassung zerfiele
+  /// eine Veranstaltung in so viele Gruppen, wie Helfer im Einsatz waren.
+  static String attendanceKey(
+    String meetupEventId,
+    String signerNpub, {
+    bool isEvent = false,
+  }) {
+    if (isEvent) return '$eventPrefix$meetupEventId';
+
     final signer = signerNpub.trim();
     if (signer.isEmpty) return meetupEventId; // Altformat, besser als nichts
     final short = signer.length > 12 ? signer.substring(signer.length - 12) : signer;
@@ -105,7 +150,8 @@ class CoAttendanceService {
     }
 
     try {
-      final key = attendanceKey(badge.meetupEventId, badge.signerNpub);
+      final key = attendanceKey(badge.meetupEventId, badge.signerNpub,
+          isEvent: badge.isEvent);
 
       // Inhalt bewusst minimal (datenschutzbewusst)
       final content = jsonEncode({
@@ -222,7 +268,11 @@ class CoAttendanceService {
         // zwischen Leuten, die sich nie begegnet sind.
         if (_isDegenerateEventId(r.meetupEventId)) continue;
         final node = nodes.putIfAbsent(r.npub, () => CoAttNode(r.npub));
-        node.meetups.add(r.meetupEventId);
+        if (isEventKey(r.meetupEventId)) {
+          node.events.add(r.meetupEventId);
+        } else {
+          node.meetups.add(r.meetupEventId);
+        }
       }
     }
     return nodes;
@@ -426,6 +476,11 @@ class CoAttendanceService {
     int blockHeight = 0,
     double lat = 0,
     double lng = 0,
+    /// Event statt Meetup. Muss durchgereicht werden, sonst landete der
+    /// Helfer selbst im Meetup-Graphen, waehrend alle, die bei ihm gescannt
+    /// haben, im Event-Graphen sitzen — er waere von seinen eigenen
+    /// Teilnehmern getrennt.
+    bool isEvent = false,
   }) async {
     try {
       // Exakt dasselbe Format wie in meetup_verification.dart
@@ -448,6 +503,7 @@ class CoAttendanceService {
         iconPath: '',
         blockHeight: finalBlockHeight,
         meetupEventId: meetupEventId,
+        isEvent: isEvent,
         delivery: 'organizer',
         isOrganizer: true,
         lat: lat,
@@ -467,7 +523,8 @@ class CoAttendanceService {
       //    Hier KEIN isNostrSigned-Check wie bei publishAttendance, weil die
       //    Teilnahme durch die Organisator-Signatur der Session ohnehin belegt
       //    ist (nur der Organisator besitzt den Schlüssel).
-      await _publishOrganizerAttendance(meetupEventId, meetupName, date);
+      await _publishOrganizerAttendance(meetupEventId, meetupName, date,
+          isEvent: isEvent);
 
       return badge;
     } catch (e) {
@@ -477,11 +534,13 @@ class CoAttendanceService {
   }
 
   static Future<int> _publishOrganizerAttendance(
-      String meetupEventId, String meetupName, DateTime date) async {
+      String meetupEventId, String meetupName, DateTime date,
+      {bool isEvent = false}) async {
     // Der Organisator IST der Signierer seiner eigenen Session — damit
     // stimmt sein Schluessel mit dem seiner Teilnehmer ueberein.
     final ownNpub = await SigningService.npub();
-    final key = attendanceKey(meetupEventId, ownNpub ?? '');
+    final key =
+        attendanceKey(meetupEventId, ownNpub ?? '', isEvent: isEvent);
     try {
       final content = jsonEncode({
         'event': key,

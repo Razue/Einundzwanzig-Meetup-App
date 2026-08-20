@@ -4,6 +4,11 @@ import '../l10n/app_localizations.dart';
 import 'nfc_writer.dart';
 import 'rolling_qr_screen.dart';
 
+/// Fuehrt durch den NFC-Schritt beim Start einer Session.
+///
+/// Wird nur noch geoeffnet, wenn [kNfcEnabled] true ist. Ohne NFC springt
+/// der Organisator-Bereich direkt zum Rolling QR — dieser Bildschirm bliebe
+/// sonst als Seite uebrig, die nur einen "Ueberspringen"-Knopf traegt.
 class MeetupSessionWizard extends StatelessWidget {
   const MeetupSessionWizard({super.key});
 

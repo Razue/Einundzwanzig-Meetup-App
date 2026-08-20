@@ -35,12 +35,10 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:nostr/nostr.dart';
 import '../models/badge.dart';
-import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'nostr_service.dart';
 import 'badge_security.dart';
 import 'admin_registry.dart';
-import 'trust_score_service.dart';
 import 'app_logger.dart';
 import 'relay_socket.dart';
 
@@ -257,7 +255,7 @@ class PromotionClaimService {
     const maxClaimAgeDays = 90;
     if (now - claim.createdAt > maxClaimAgeDays * 86400) {
       AppLogger.debug('PromotionClaim',
-        'Claim abgelehnt: Zu alt (>${maxClaimAgeDays} Tage)');
+        'Claim abgelehnt: Zu alt (>$maxClaimAgeDays Tage)');
       return null;
     }
 
@@ -269,7 +267,6 @@ class PromotionClaimService {
       try {
         final proofMap = proof as Map<String, dynamic>;
         final sig = proofMap['sig'] as String? ?? '';
-        final sigId = proofMap['sig_id'] as String? ?? '';
         final adminPubkey = proofMap['admin_pubkey'] as String? ?? '';
         final sigVersion = proofMap['sig_version'] as int? ?? 0;
         final sigContent = proofMap['sig_content'] as String? ?? '';

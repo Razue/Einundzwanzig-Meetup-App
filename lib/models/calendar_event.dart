@@ -8,12 +8,28 @@ class CalendarEvent {
   final DateTime startTime;
   final String url;
 
+  /// Portal-ID des Meetups, zu dem dieser Termin gehoert.
+  ///
+  /// Leer bei Terminen aus ICS-Dateien und aus Nostr — die kennen kein
+  /// Portal-Meetup. Wo sie gesetzt ist, ist sie der GENAUE Weg, einen Termin
+  /// einem Favoriten zuzuordnen: Der Vergleich ueber Titel und Ort trifft
+  /// bei mehreren Meetups einer Stadt zwangslaeufig alle.
+  final String meetupId;
+
+  /// Portal-ID des TERMINS (nicht des Meetups).
+  ///
+  /// Nur bei Portal-Terminen gesetzt. Damit laesst sich die Zu- oder Absage
+  /// abfragen und setzen — das Portal fuehrt sie unter dieser Nummer.
+  final int? portalEventId;
+
   CalendarEvent({
     required this.title,
     required this.description,
     required this.location,
     required this.startTime,
     required this.url,
+    this.meetupId = '',
+    this.portalEventId,
   });
 
   factory CalendarEvent.fromMap(Map<String, dynamic> map) {
@@ -65,7 +81,7 @@ class CalendarEvent {
     String cleanDesc = rawDesc
         .replaceAll('\\n', '\n')
         .replaceAll('\\', '')
-        .replaceAll('\,', ',');
+        .replaceAll(',', ',');
 
     return CalendarEvent(
       title: map['summary']?.toString() ?? 'Meetup',

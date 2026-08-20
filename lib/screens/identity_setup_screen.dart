@@ -2,6 +2,11 @@
 // IDENTITY SETUP — Erststart „Neu“ / „Schon dabei“
 // ============================================
 
+import 'dart:convert';
+import 'dart:ui' as ui;
+
+import 'package:file_picker/file_picker.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,6 +37,14 @@ enum _SetupStep {
   nameOnly,
   meetup,
 }
+
+/// Mindestlaenge fuer das Schluessel-Passwort.
+///
+/// Dieselbe Zahl wie BackupService.minPasswordLength, aber bewusst eigen:
+/// Es sind zwei UNABHAENGIGE Geheimnisse — dieses verpackt den privaten
+/// Schluessel (NIP-49 ncryptsec), jenes die Sicherungsdatei. Wer eines
+/// aendert, soll nicht versehentlich das andere mitaendern.
+const int kMinPasswordLength = 8;
 
 class IdentitySetupScreen extends StatefulWidget {
   const IdentitySetupScreen({super.key});
@@ -325,6 +338,18 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     await _offerBackupThenHome();
   }
 
+  /// Nach dem Anlegen: Identitaet sichern — in ZWEI Schritten.
+  ///
+  /// Warum nacheinander statt nebeneinander: Zwei gleichwertige Knoepfe
+  /// laden dazu ein, sich fuer einen zu entscheiden. Genau das soll man
+  /// hier nicht. Die beiden Sicherungen koennen Verschiedenes:
+  ///
+  ///   Backup-Datei  — Schluessel PLUS Badges, Reputation, Einstellungen.
+  ///                   Veraltet mit der Zeit, muss also wiederholt werden.
+  ///   ncryptsec     — nur der Schluessel, mit dem Passwort verpackt.
+  ///                   Veraltet nie, rettet aber auch nur die Identitaet.
+  ///
+  /// Deshalb erst das eine, dann das andere, mit Fortschritt oben.
   Future<void> _offerBackupThenHome() async {
     if (!mounted) return;
     setState(() => _busy = false);
@@ -333,52 +358,208 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
       await showModalBottomSheet<void>(
         context: context,
         backgroundColor: cCard,
+        isScrollControlled: true,
+        // Nicht wegwischbar: Dieses eine Blatt soll man lesen. Der
+        // "Spaeter"-Knopf bleibt der Ausweg.
+        isDismissible: false,
+        enableDrag: false,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        builder: (ctx) {
-          final t = AppLocalizations.of(ctx);
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(t.idSetupBackupTitle,
-                    style: const TextStyle(
-                        color: cText,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Text(t.idSetupBackupBody,
-                    style: const TextStyle(color: cTextSecondary, height: 1.4)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: wrap));
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(t.keyExportCopied)),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cOrange,
-                    foregroundColor: Colors.black,
+        builder: (ctx) => StatefulBuilder(
+          builder: (ctx, setSheet) {
+            final t = AppLocalizations.of(ctx);
+            final step2 = _secureStep == 2;
+
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(children: [
+                        Icon(step2 ? Icons.key_rounded : Icons.save_alt_rounded,
+                            color: cOrange, size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                              step2
+                                  ? t.idSetupSecureKeyTitle
+                                  : t.idSetupSecureBackupTitle,
+                              style: const TextStyle(
+                                  color: cText,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                        Text(step2 ? '2/2' : '1/2',
+                            style: const TextStyle(
+                                color: cTextTertiary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700)),
+                      ]),
+                      const SizedBox(height: 10),
+                      Text(
+                          step2
+                              ? t.idSetupSecureKeyBody
+                              : t.idSetupSecureBackupBody,
+                          style: const TextStyle(
+                              color: cTextSecondary,
+                              height: 1.45,
+                              fontSize: 13.5)),
+
+                      const SizedBox(height: 16),
+                      // Der Merksatz gehoert zu Schritt 1: Ein Backup von
+                      // heute kennt die Badges von morgen nicht.
+                      if (!step2)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: cOrange.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.update_rounded,
+                                    color: cOrange, size: 16),
+                                const SizedBox(width: 9),
+                                Expanded(
+                                  child: Text(t.idSetupSecureRepeat,
+                                      style: const TextStyle(
+                                          color: cTextSecondary,
+                                          fontSize: 12,
+                                          height: 1.45)),
+                                ),
+                              ]),
+                        ),
+
+                      if (step2)
+                        Row(crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.info_outline_rounded,
+                                  color: cTextTertiary, size: 15),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(t.idSetupSecureWhere,
+                                    style: const TextStyle(
+                                        color: cTextTertiary,
+                                        fontSize: 11.5,
+                                        height: 1.4)),
+                              ),
+                            ]),
+
+                      const SizedBox(height: 18),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          if (step2) {
+                            await _saveKeyFile(wrap);
+                            if (ctx.mounted) Navigator.pop(ctx);
+                          } else {
+                            await BackupService.createBackup(context);
+                            setSheet(() => _secureStep = 2);
+                          }
+                        },
+                        icon: const Icon(Icons.save_alt_rounded,
+                            color: Colors.black, size: 18),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: cOrange,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        label: Text(
+                            step2
+                                ? t.idSetupSecureKeySave
+                                : t.idSetupSecureBackup,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w800)),
+                      ),
+
+                      if (step2) ...[
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: wrap));
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(t.keyExportCopied)),
+                            );
+                          },
+                          icon: const Icon(Icons.copy_rounded,
+                              color: cTextSecondary, size: 18),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: cTileBorder),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                          ),
+                          label: Text(t.idSetupSecureCopy,
+                              style: const TextStyle(color: cTextSecondary)),
+                        ),
+                      ],
+
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: () {
+                          // Ueberspringen fuehrt in Schritt 1 WEITER zu
+                          // Schritt 2 statt gleich hinaus: Wer die Datei
+                          // nicht will, soll wenigstens den Schluessel sehen.
+                          if (step2) {
+                            Navigator.pop(ctx);
+                          } else {
+                            setSheet(() => _secureStep = 2);
+                          }
+                        },
+                        child: Text(
+                            step2 ? t.idSetupBackupLater : t.idSetupSecureSkip,
+                            style: const TextStyle(color: cTextSecondary)),
+                      ),
+                    ],
                   ),
-                  child: Text(t.idSetupBackupCopy),
                 ),
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: Text(t.idSetupBackupLater,
-                      style: const TextStyle(color: cTextSecondary)),
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       );
     }
     await _continueAfterIdentity();
+  }
+
+  /// Welcher der beiden Sicherungsschritte gerade offen ist.
+  int _secureStep = 1;
+
+  /// Schreibt den verschluesselten Schluessel als Datei.
+  ///
+  /// Die Zwischenablage bleibt als zweiter Weg bestehen, ist aber nicht mehr
+  /// der einzige: Sie wird von anderen Apps mitgelesen, und ein Wert, den
+  /// man Jahre aufheben soll, gehoert nicht dorthin.
+  Future<void> _saveKeyFile(String wrap) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final t = AppLocalizations.of(context);
+    final now = DateTime.now();
+    final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')}';
+    final fileName = 'Nostr-Schluessel_${dateStr}_21MeetupApp.txt';
+
+    // Klartext im Sinne von lesbar — verschluesselt ist der Inhalt selbst.
+    // Die Erklaerzeile steht mit drin, weil so eine Datei Jahre spaeter
+    // gefunden wird und dann niemand mehr weiss, was das ist.
+    final content = '${t.idSetupSecureFileHeader}\n\n$wrap\n';
+
+    try {
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: t.idSetupSecureKeySave,
+        fileName: fileName,
+        bytes: Uint8List.fromList(utf8.encode(content)),
+      );
+      if (path == null) return; // abgebrochen
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.idSetupSecureKeySaved), backgroundColor: cGreen));
+    } catch (e) {
+      // Kein Speicherdialog (etwa im Browser): dann bleibt die Zwischenablage.
+      await Clipboard.setData(ClipboardData(text: wrap));
+      messenger.showSnackBar(SnackBar(content: Text(t.keyExportCopied)));
+    }
   }
 
   Future<void> _connectPrimary() async {
@@ -475,13 +656,150 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     if (ok && mounted) await _goHome();
   }
 
+  /// Schritte, die den Hintergrund in voller Staerke tragen — dieselbe
+  /// Bildsprache wie der IntroScreen davor.
+  ///
+  /// Das Kriterium ist, ob die Seite EINGABEFELDER hat, nicht wie sie
+  /// heisst: Wo getippt wird, tritt das Bild als Wasserzeichen zurueck;
+  /// wo nur ein Knopf steht, darf es wirken. Wer eine Seite verschiebt,
+  /// aendert nur diese Menge.
+  ///
+  /// Mit Feldern (also NICHT hier): neu, resume, existingMore, nameOnly.
+  static const _boldBackgroundSteps = <_SetupStep>{
+    _SetupStep.choose,
+    _SetupStep.passkey,
+    _SetupStep.existing,
+    _SetupStep.meetup,
+  };
+
+  bool get _boldBackground => _boldBackgroundSteps.contains(_step);
+
+  /// Abdunklung ueber dem Hintergrundbild.
+  ///
+  /// Alle Zahlen hier sind am Bild GEMESSEN. Das Motiv ist von Haus aus
+  /// sehr dunkel: Die hellsten Leiterbahnen liegen bei Helligkeit 36 von
+  /// 255, die Flaeche dazwischen bei 0. Bei 0.52 — dem Wert des
+  /// IntroScreens — bleiben davon 17 uebrig, und genau so sieht der
+  /// Startbildschirm aus.
+  ///
+  /// Fuer das Wasserzeichen war MEHR Schwarz der falsche Hebel: Bei 0.68
+  /// blieben 11 stehen, bei 0.86 nur 5 — beides ist auf dem Geraet nicht
+  /// mehr von Schwarz zu unterscheiden. Deshalb wird das Bild fuer das
+  /// Wasserzeichen stattdessen AUFGEHELLT (siehe _watermarkBoost) und dann
+  /// normal abgedunkelt.
+  static const double _veilBold = 0.52;
+  static const double _veilSubtle = 0.55;
+
+  /// Aufhellung des Wasserzeichens.
+  ///
+  /// Multipliziert die Helligkeit. Schwarz bleibt dabei schwarz (0 x 2.2 = 0),
+  /// nur die Leiterbahnen werden heller — der Kontrast steigt also, statt
+  /// dass alles grau wird. Nach Weichzeichnen und Abdunklung stehen die
+  /// Linien bei rund 33 und damit etwa doppelt so hell wie auf den
+  /// kraeftigen Seiten; die weiche Zeichnung haelt sie trotzdem im
+  /// Hintergrund.
+  static const double _watermarkBoost = 2.2;
+
+  /// Weichzeichnung des Wasserzeichens. Sie kostet kaum Helligkeit
+  /// (gemessen 36 auf 33), sorgt aber dafuer, dass die Leiterbahnen nicht
+  /// mit den Eingabefeldern um Aufmerksamkeit konkurrieren.
+  static const double _watermarkBlur = 4;
+
+  /// Hintergrund fuer alle Schritte.
+  ///
+  /// Beide Fassungen liegen dauerhaft im Baum und werden ueberblendet,
+  /// statt sie je nach Schritt neu aufzubauen: So gibt es beim Wechsel
+  /// kein Aufblitzen, und das Bild wird nur einmal dekodiert.
+  Widget _buildBackground() {
+    final bold = _boldBackground;
+    const asset = 'assets/images/intro_background_87.jpg';
+    const fade = Duration(milliseconds: 450);
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Scharfe Fassung wie im IntroScreen.
+            const Image(
+              image: AssetImage(asset),
+              fit: BoxFit.cover,
+            ),
+
+            // Weichgezeichnete UND aufgehellte Fassung, blendet auf den
+            // Formularseiten ein.
+            AnimatedOpacity(
+              opacity: bold ? 0.0 : 1.0,
+              duration: fade,
+              curve: Curves.easeInOut,
+              child: ImageFiltered(
+                imageFilter: ui.ImageFilter.blur(
+                    sigmaX: _watermarkBlur, sigmaY: _watermarkBlur),
+                child: ColorFiltered(
+                  // Reine Helligkeitsmultiplikation: Die Diagonale skaliert
+                  // R, G und B, die Alpha-Zeile bleibt unveraendert.
+                  colorFilter: const ColorFilter.matrix(<double>[
+                    _watermarkBoost, 0, 0, 0, 0, //
+                    0, _watermarkBoost, 0, 0, 0, //
+                    0, 0, _watermarkBoost, 0, 0, //
+                    0, 0, 0, 1, 0, //
+                  ]),
+                  child: const Image(
+                    image: AssetImage(asset),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            ),
+
+            // Abdunklung — siehe _veilBold / _veilSubtle oben.
+            AnimatedContainer(
+              duration: fade,
+              curve: Curves.easeInOut,
+              color: Colors.black
+                  .withValues(alpha: bold ? _veilBold : _veilSubtle),
+            ),
+
+            // Warmer Schein von oben, ebenfalls aus dem IntroScreen.
+            Positioned(
+              top: -80,
+              left: 0,
+              right: 0,
+              height: 500,
+              child: AnimatedOpacity(
+                opacity: bold ? 1.0 : 0.7,
+                duration: fade,
+                curve: Curves.easeInOut,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.topCenter,
+                      radius: 1.0,
+                      colors: [
+                        cOrange.withValues(alpha: 0.08),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: cDark,
+      // Der Hintergrund reicht bis unter die Titelleiste — sonst saesse
+      // dort ein schwarzer Balken und das Bild begaenne mit einer Kante.
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: cDark,
+        backgroundColor: Colors.transparent,
         foregroundColor: cText,
         elevation: 0,
         title: Text(_title(t),
@@ -516,53 +834,65 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
                       },
               ),
       ),
-      body: SafeArea(
-        child: AbsorbPointer(
-          absorbing: _busy || _bootstrapping,
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-            children: [
-              if (_error != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: cRed.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+      body: Stack(
+        children: [
+          _buildBackground(),
+          SafeArea(
+            child: AbsorbPointer(
+            absorbing: _busy || _bootstrapping,
+            child: ListView(
+              // Oben kToolbarHeight zusaetzlich: Durch extendBodyBehindAppBar
+              // beginnt der Body hinter der Titelleiste.
+              padding: const EdgeInsets.fromLTRB(
+                  24, 8 + kToolbarHeight, 24, 32),
+              children: [
+                if (_error != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: cRed.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(_error!,
+                        style: const TextStyle(color: cRed, height: 1.3)),
                   ),
-                  child: Text(_error!,
-                      style: const TextStyle(color: cRed, height: 1.3)),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                ],
+                // Nur noch beim ANFANGSLADEN ein Balken. Waehrend einer
+                // Aktion sitzt der Ladekringel jetzt IM Knopf — dort, wo
+                // gerade getippt wurde. Der Balken oben erschien weit weg
+                // vom Finger und wirkte dadurch verzoegert.
+                if (_bootstrapping)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16),
+                    child: LinearProgressIndicator(
+                      color: cOrange,
+                      backgroundColor: cBorder,
+                    ),
+                  ),
+                if (_bootstrapping)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 48),
+                    child: Text(t.idSetupSubtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: cTextSecondary)),
+                  )
+                else
+                  ...switch (_step) {
+                    _SetupStep.choose => _buildChoose(t),
+                    _SetupStep.neu => _buildNeu(t),
+                    _SetupStep.resume => _buildResume(t),
+                    _SetupStep.passkey => _buildPasskey(t),
+                    _SetupStep.existing => _buildExisting(t),
+                    _SetupStep.existingMore => _buildExistingMore(t),
+                    _SetupStep.nameOnly => _buildNameOnly(t),
+                    _SetupStep.meetup => _buildMeetup(t),
+                  },
               ],
-              if (_busy || _bootstrapping)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 16),
-                  child: LinearProgressIndicator(
-                    color: cOrange,
-                    backgroundColor: cBorder,
-                  ),
-                ),
-              if (_bootstrapping)
-                Padding(
-                  padding: const EdgeInsets.only(top: 48),
-                  child: Text(t.idSetupSubtitle,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: cTextSecondary)),
-                )
-              else
-                ...switch (_step) {
-                  _SetupStep.choose => _buildChoose(t),
-                  _SetupStep.neu => _buildNeu(t),
-                  _SetupStep.resume => _buildResume(t),
-                  _SetupStep.passkey => _buildPasskey(t),
-                  _SetupStep.existing => _buildExisting(t),
-                  _SetupStep.existingMore => _buildExistingMore(t),
-                  _SetupStep.nameOnly => _buildNameOnly(t),
-                  _SetupStep.meetup => _buildMeetup(t),
-                },
-            ],
+            ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -620,6 +950,15 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         ),
       ];
 
+  /// Dieselben Bedingungen wie beim Backup-Passwort, nur fuer ein anderes
+  /// Geheimnis: Hier wird der PRIVATE SCHLUESSEL verpackt (NIP-49
+  /// ncryptsec), beim Backup die ganze Sicherungsdatei. Zwei unabhaengige
+  /// Passwoerter — man darf dasselbe nehmen, muss aber nicht.
+  bool get _pwLongEnough => _passCtrl.text.length >= kMinPasswordLength;
+  bool get _pwMatches =>
+      _passCtrl.text.isNotEmpty && _passCtrl.text == _pass2Ctrl.text;
+  bool get _pwOk => _pwLongEnough && _pwMatches;
+
   List<Widget> _buildNeu(AppLocalizations t) => [
         Text(t.idSetupNewHint,
             style: const TextStyle(color: cTextSecondary, height: 1.4)),
@@ -627,10 +966,16 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         _field(_nameCtrl, t.idSetupNameLabel, Icons.badge_outlined),
         const SizedBox(height: 12),
         _field(_passCtrl, t.idSetupPasswordLabel, Icons.lock_outline,
-            obscure: true),
+            obscure: true,
+            borderColor:
+                _pwBorder(_pwLongEnough, _passCtrl.text.isNotEmpty)),
         const SizedBox(height: 12),
         _field(_pass2Ctrl, t.idSetupPasswordConfirmLabel, Icons.lock_outline,
-            obscure: true),
+            obscure: true,
+            borderColor: _pwBorder(_pwMatches, _pass2Ctrl.text.isNotEmpty)),
+        const SizedBox(height: 4),
+        _rule(_pwLongEnough, t.backupPwRuleLength(kMinPasswordLength)),
+        _rule(_pwMatches, t.backupPwRuleMatch),
         const SizedBox(height: 10),
         // Das Passwort ist keine App-Sperre, sondern der einzige Weg zurueck an
         // den Schluessel. Wer das erst beim Geraetewechsel erfaehrt, erfaehrt
@@ -649,7 +994,9 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupCreate, _register),
+        // Gesperrt, solange die Bedingungen offen sind — zusammen mit der
+        // Liste darueber ist damit sichtbar, WORAN es liegt.
+        _primaryButton(t.idSetupCreate, _pwOk ? _register : null, busy: _busy),
       ];
 
   List<Widget> _buildResume(AppLocalizations t) => [
@@ -663,7 +1010,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         ),
         const SizedBox(height: 24),
         if (_hasLocalKey)
-          _primaryButton(t.idSetupResumeContinue, () => _resume())
+          _primaryButton(t.idSetupResumeContinue, () => _resume(), busy: _busy)
         else if (_hasPasskeyWrap && !_resumeUsePassword) ...[
           _primaryButton(
               t.idSetupResumePasskey, () => _resume(usePasskey: true)),
@@ -681,10 +1028,13 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
             ),
           ],
         ] else ...[
+          // Kein Regelwerk: Hier wird ein BESTEHENDES Passwort eingegeben.
+          // Eine Laengenpruefung wuerde nur aussperren, wer sein altes
+          // Passwort kuerzer gewaehlt hat.
           _field(_resumePassCtrl, t.idSetupPasswordLabel, Icons.lock_outline,
               obscure: true),
           const SizedBox(height: 16),
-          _primaryButton(t.idSetupResumeContinue, () => _resume()),
+          _primaryButton(t.idSetupResumeContinue, () => _resume(), busy: _busy),
         ],
       ];
 
@@ -692,7 +1042,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         Text(t.idSetupPasskeyBody,
             style: const TextStyle(color: cTextSecondary, height: 1.4)),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupPasskeyAction, _addPasskey),
+        _primaryButton(t.idSetupPasskeyAction, _addPasskey, busy: _busy),
         const SizedBox(height: 8),
         TextButton(
           onPressed: _skipPasskey,
@@ -727,14 +1077,18 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         primary: true,
         onTap: _connectPrimary,
       ),
-      const SizedBox(height: 16),
-      TextButton(
-        onPressed: () => setState(() {
+      const SizedBox(height: 12),
+      // Frueher ein blosser Textknopf. Als Kachel wie auf der Startseite
+      // sieht man erstens, DASS es ein zweiter Weg ist, und zweitens
+      // wohin er fuehrt — "Anderer Weg" allein sagte beides nicht.
+      _card(
+        icon: Icons.alt_route_rounded,
+        title: t.idSetupOtherWay,
+        subtitle: t.idSetupOtherWaySub,
+        onTap: () => setState(() {
           _error = null;
           _step = _SetupStep.existingMore;
         }),
-        child: Text(t.idSetupOtherWay,
-            style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
       ),
     ];
   }
@@ -749,7 +1103,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         _field(_importPassCtrl, t.idSetupImportPasswordLabel, Icons.lock_outline,
             obscure: true),
         const SizedBox(height: 16),
-        _primaryButton(t.idSetupImportAction, _importKey),
+        _primaryButton(t.idSetupImportAction, _importKey, busy: _busy),
         const SizedBox(height: 20),
         if (_path != RecommendedExistingPath.bunker) ...[
           _card(
@@ -804,7 +1158,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
         const SizedBox(height: 20),
         _field(_nameCtrl, t.idSetupNameLabel, Icons.badge_outlined),
         const SizedBox(height: 24),
-        _primaryButton(t.idSetupContinue, _saveNameOnly),
+        _primaryButton(t.idSetupContinue, _saveNameOnly, busy: _busy),
       ];
 
   List<Widget> _buildMeetup(AppLocalizations t) => [
@@ -832,7 +1186,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
           ),
           const SizedBox(height: 24),
           if (_selectedMeetupCities.isNotEmpty)
-            _primaryButton(t.idSetupMeetupContinue, _saveMeetupAndHome),
+            _primaryButton(t.idSetupMeetupContinue, _saveMeetupAndHome, busy: _busy),
           TextButton(
             onPressed: _goHome,
             child: Text(t.idSetupMeetupLater,
@@ -891,43 +1245,99 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     );
   }
 
+  /// Welche Passwortfelder gerade offen liegen. Pro Feld, nicht global:
+  /// Beim Bestaetigen will man oft nur EINES von beiden sehen.
+  final Map<TextEditingController, bool> _revealed = {};
+
   Widget _field(
     TextEditingController ctrl,
     String label,
     IconData icon, {
     bool obscure = false,
     int maxLines = 1,
+    /// Rahmenfarbe. null = neutral. Damit faerbt sich das Feld waehrend des
+    /// Tippens rot oder gruen, statt erst beim Absenden zu meckern.
+    Color? borderColor,
   }) {
+    final revealed = _revealed[ctrl] ?? false;
+    final border = borderColor ?? cTileBorder;
+
     return TextField(
       controller: ctrl,
-      obscureText: obscure,
+      obscureText: obscure && !revealed,
       maxLines: obscure ? 1 : maxLines,
       style: const TextStyle(color: cText),
+      onChanged: (_) => setState(() {}),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: cTextSecondary),
         prefixIcon: Icon(icon, color: cTextSecondary, size: 20),
+        suffixIcon: obscure
+            ? IconButton(
+                icon: Icon(
+                    revealed
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: cTextSecondary,
+                    size: 20),
+                onPressed: () =>
+                    setState(() => _revealed[ctrl] = !revealed),
+              )
+            : null,
         filled: true,
         fillColor: cCard,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: cTileBorder),
+          borderSide: BorderSide(
+              color: border, width: borderColor != null ? 1.3 : 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: cOrange),
+          borderSide: BorderSide(color: borderColor ?? cOrange, width: 1.6),
         ),
       ),
     );
   }
 
-  Widget _primaryButton(String label, VoidCallback onPressed) {
+  /// Eine Zeile der Bedingungsliste.
+  Widget _rule(bool ok, String text) => Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(ok ? Icons.check_circle : Icons.circle_outlined,
+              size: 15, color: ok ? cGreen : cTextTertiary),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Text(text,
+                style: TextStyle(
+                    color: ok ? cGreen : cTextSecondary,
+                    fontSize: 12,
+                    height: 1.35)),
+          ),
+        ]),
+      );
+
+  /// Rahmenfarbe fuer ein Passwortfeld: neutral solange leer, sonst rot
+  /// oder gruen.
+  Color? _pwBorder(bool ok, bool touched) =>
+      touched ? (ok ? cGreen : cRed) : null;
+
+  /// [onPressed] darf null sein — dann ist der Knopf gesperrt und der
+  /// Farbverlauf weicht einer stumpfen Flaeche. Ohne diesen Unterschied
+  /// saehe ein gesperrter Knopf aus wie ein bedienbarer, der nichts tut.
+  /// [busy] zeigt einen Ladekringel STATT der Beschriftung und sperrt den
+  /// Knopf. Ohne das sah "Loslegen" beim Anlegen des Schluessels tot aus:
+  /// Die Ableitung dauert spuerbar, und wer keine Rueckmeldung bekommt,
+  /// tippt ein zweites und drittes Mal.
+  Widget _primaryButton(String label, VoidCallback? onPressed,
+      {bool busy = false}) {
+    final enabled = onPressed != null && !busy;
     return SizedBox(
       width: double.infinity,
       height: 52,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: gradientOrange,
+          gradient: enabled ? gradientOrange : null,
+          color: enabled ? null : cSurface,
           borderRadius: BorderRadius.circular(14),
         ),
         child: ElevatedButton(
@@ -940,9 +1350,17 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: Text(label,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+          child: busy
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2.4, color: Colors.black))
+              : Text(label,
+                  style: TextStyle(
+                      color: enabled ? Colors.black : cTextTertiary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5)),
         ),
       ),
     );

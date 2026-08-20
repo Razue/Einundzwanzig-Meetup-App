@@ -25,7 +25,6 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'nostr_service.dart';
-import 'secure_key_store.dart';
 import 'signing_service.dart';
 import 'app_logger.dart';
 import 'relay_socket.dart';
@@ -338,8 +337,7 @@ class AdminRegistry {
     
     // Relay-Daten ersetzen den Cache für bekannte Autoren
     // Neue Einträge aus Relay kommen dazu, fehlende werden entfernt
-    final relayNpubs = relayEntries.map((e) => e.npub).toSet();
-    
+
     // Behalte nur Cache-Einträge die AUCH im Relay-Fetch vorhanden sind
     // (oder die ein neueres addedAt haben als der Relay-Fetch)
     final merged = <String, AdminEntry>{};

@@ -13,6 +13,22 @@ import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/calendar_event_service.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../services/blossom_upload_service.dart';
+import 'package:provider/provider.dart';
+
+import '../services/event_badge_auth_service.dart';
+import '../services/guide_service.dart';
+import '../tours/event_badge_tour.dart';
+import '../services/nostr_service.dart';
+import '../services/event_badge_session_service.dart';
+import '../services/event_rsvp_service.dart';
+import '../services/rolling_qr_service.dart';
+import '../services/signing_service.dart';
+import 'chat_screen.dart';
+import 'rolling_qr_screen.dart';
+import 'location_picker_screen.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/portal_api_service.dart';
 import '../models/calendar_event.dart' as ical;
@@ -33,6 +49,12 @@ class _CalItem {
   final bool isCourse; // Portal-Kurstermin (eigene Farbe)
   final String url;
 
+  /// Das zugrunde liegende Nostr-Event — nur bei Terminen aus dem
+  /// Nostr-Kalender gesetzt. Traegt Badge-Bild, Koordinaten und die
+  /// Aussteller-Liste; die Anzeige greift direkt darauf zu, statt jedes
+  /// Feld einzeln durchzureichen.
+  final NostrCalendarEvent? nostr;
+
   _CalItem({
     required this.title,
     required this.description,
@@ -43,10 +65,17 @@ class _CalItem {
     required this.isMeetup,
     this.isCourse = false,
     this.url = '',
+    this.nostr,
   });
 
   DateTime get day => DateTime(start.year, start.month, start.day);
   Color get color => isCourse ? cCourse : (isMeetup ? cOrange : cNostr);
+
+  /// Gibt es fuer diesen Termin ein Badge?
+  bool get hasBadge => nostr?.badgeEnabled ?? false;
+
+  /// Bild des Event-Badges, leer wenn keines hinterlegt ist.
+  String get badgeImage => nostr?.badgeImageUrl ?? '';
 
   factory _CalItem.fromNostr(NostrCalendarEvent e) => _CalItem(
         title: e.title,
@@ -56,6 +85,7 @@ class _CalItem {
         end: e.end,
         allDay: e.allDay,
         isMeetup: false,
+        nostr: e,
       );
 
   factory _CalItem.fromMeetup(ical.CalendarEvent e) => _CalItem(
@@ -69,6 +99,8 @@ class _CalItem {
       );
 }
 
+/// Kennung fuer den eigenen Schluessel im Kalender-Bildschirm. Wird einmal
+/// beim Laden geholt und dann nur noch verglichen.
 class EventCalendarScreen extends StatefulWidget {
   /// Tag, der beim Oeffnen ausgewaehlt sein soll. Wird von der
   /// Dashboard-Kachel gesetzt, damit man direkt in der Tagesuebersicht
@@ -103,14 +135,280 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     super.dispose();
   }
 
+  /// Eigener Schluessel — einmal geholt, danach nur noch verglichen. Damit
+  /// erkennt der Bildschirm, ob man bei einem Termin als Aussteller
+  /// eingetragen ist. Eine eigene Relay-Abfrage dafuer waere ueberfluessig:
+  /// Die Termine liegen ohnehin schon geladen vor.
+  String? _myPubkey;
+
+  /// Laeuft gerade ein Sessionstart? Sperrt den Knopf — die Ortspruefung
+  /// dauert ein paar Sekunden, und zweimal tippen erzeugt sonst zwei
+  /// Versuche.
+  bool _startingSession = false;
+
+  /// meetupId einer bereits laufenden Session, sonst null. Damit der Knopf
+  /// "QR anzeigen" statt "Session starten" heisst — sonst sieht es aus, als
+  /// muesste man jedes Mal neu beginnen, obwohl die alte Session
+  /// weiterlaeuft.
+  String? _runningSessionId;
+
   @override
   void initState() {
     super.initState();
     final start = widget.initialDay ?? DateTime.now();
     _focused = DateTime(start.year, start.month);
     _selected = DateTime(start.year, start.month, start.day);
+    _loadMyPubkey();
+    _loadRunningSession();
+    _loadRsvps();
     _load();
   }
+
+  Future<void> _loadRunningSession() async {
+    final s = await RollingQRService.loadSession();
+    if (!mounted) return;
+    setState(() =>
+        _runningSessionId = (s != null && !s.isExpired) ? s.meetupId : null);
+  }
+
+  Future<void> _loadMyPubkey() async {
+    final key = await SigningService.pubkeyHex();
+    if (mounted) setState(() => _myPubkey = key);
+  }
+
+  /// Hinweiskasten unter dem Termin: Es gibt ein Badge — und wer es
+  /// ausgeben darf, erfaehrt es hier.
+  Widget _badgeNotice(AppLocalizations t, _CalItem e) {
+    final iAmIssuer =
+        _myPubkey != null && (e.nostr?.isIssuer(_myPubkey!) ?? false);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cOrange.withValues(alpha: iAmIssuer ? 0.12 : 0.06),
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(
+            color: cOrange.withValues(alpha: iAmIssuer ? 0.5 : 0.25),
+            width: 0.5),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Icon(Icons.military_tech_rounded, color: cOrange, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(iAmIssuer ? t.evBadgeYouIssue : t.evBadgeAvailable,
+                style: const TextStyle(
+                    color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 3),
+            Text(
+                iAmIssuer
+                    ? t.evBadgeYouIssueSub
+                    : t.evBadgeAvailableSub,
+                style: const TextStyle(
+                    color: cTextSecondary, fontSize: 12, height: 1.45)),
+            // Der Knopf erscheint NUR am Termintag. Ihn ganzjaehrig zu
+            // zeigen und dann abzulehnen waere eine Einladung ins Leere.
+            if (iAmIssuer && (e.nostr?.isBadgeWindowOpen ?? false)) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _startingSession ? null : () => _startEventSession(e),
+                  icon: _startingSession
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.black))
+                      : const Icon(Icons.qr_code_2_rounded,
+                          color: Colors.black, size: 18),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cOrange,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(kTileRadius)),
+                  ),
+                  label: Text(
+                      _runningSessionId != null &&
+                              e.nostr != null &&
+                              _runningSessionId!.contains(e.nostr!.dTag)
+                          ? t.evBadgeShowSession
+                          : t.evBadgeStartSession,
+                      style: const TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.w800)),
+                ),
+              ),
+            ],
+          ]),
+        ),
+      ]),
+    );
+  }
+
+  /// Eigene Antworten auf Termine, Adresse zu Status. Wird beim Oeffnen des
+  /// Kalenders geladen.
+  Map<String, RsvpStatus> _rsvps = {};
+  String? _rsvpBusy;
+
+  Future<void> _loadRsvps() async {
+    final mine = await EventRsvpService.loadMine();
+    if (mounted) setState(() => _rsvps = mine);
+  }
+
+  /// Zwei Knoepfe: Ich komme / Ich komme nicht.
+  ///
+  /// Bewusst KEIN dritter fuer "vielleicht". Das Protokoll kennt ihn, aber
+  /// eine dritte Wahl macht die Zeile breiter und die Aussage schwaecher —
+  /// wer unsicher ist, sagt einfach noch gar nichts.
+  /// [setSheet] zeichnet das Blatt neu — der Kalender-State erreicht es
+  /// nicht.
+  Widget _rsvpRow(
+      AppLocalizations t, NostrCalendarEvent event, StateSetter setSheet) {
+    final current = _rsvps[event.address];
+    final busy = _rsvpBusy == event.address;
+
+    Widget button(RsvpStatus status, IconData icon, String label, Color color) {
+      final active = current == status;
+      // NICHT gewaehlt = neutral grau. Vorher trug "Ich komme" auch ohne
+      // Zusage gruene Schrift und einen gruenen Rand — das las sich wie eine
+      // bereits erteilte Zusage, und wer sich darauf verliess, tauchte in
+      // keiner Teilnehmerliste auf. Farbe bedeutet hier: entschieden.
+      final fg = active ? Colors.black : cTextSecondary;
+      return Expanded(
+        child: OutlinedButton.icon(
+          onPressed: busy ? null : () => _setRsvp(event, status, setSheet),
+          icon: Icon(icon, size: 17, color: fg),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: active ? color : Colors.transparent,
+            side: BorderSide(
+                color: active ? color : cTileBorder,
+                width: active ? 1 : 0.5),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+          label: Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  color: fg,
+                  fontSize: 12.5,
+                  fontWeight: active ? FontWeight.w800 : FontWeight.w600)),
+        ),
+      );
+    }
+
+    return Row(children: [
+      button(RsvpStatus.accepted, Icons.check_rounded, t.rsvpYes, cGreen),
+      const SizedBox(width: 8),
+      button(RsvpStatus.declined, Icons.close_rounded, t.rsvpNo, cTextSecondary),
+    ]);
+  }
+
+  Future<void> _setRsvp(NostrCalendarEvent event, RsvpStatus status,
+      StateSetter setSheet) async {
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    // Sofort umschalten, dann senden. Eine Zusage ist eine Kleinigkeit; auf
+    // die Relay-Antwort zu warten, bevor sich etwas ruehrt, faende
+    // niemand angemessen. Schlaegt es fehl, wird zurueckgesetzt.
+    final previous = _rsvps[event.address];
+    // BEIDE neu zeichnen: setState fuer den Kalender darunter, setSheet fuer
+    // das Blatt darueber. Die Daten liegen im Kalender-State, gezeigt werden
+    // sie im Blatt — eines allein genuegt nicht.
+    setState(() {
+      _rsvps[event.address] = status;
+      _rsvpBusy = event.address;
+    });
+    setSheet(() {});
+
+    final err = await EventRsvpService.setStatus(
+      eventAddress: event.address,
+      eventAuthorPubkey: event.pubkey,
+      status: status,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _rsvpBusy = null;
+      if (err != null) {
+        if (previous == null) {
+          _rsvps.remove(event.address);
+        } else {
+          _rsvps[event.address] = previous;
+        }
+      }
+    });
+    setSheet(() {});
+    if (err != null) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.rsvpFailed(err)), backgroundColor: cRed));
+    }
+  }
+
+  /// Oeffnet den Chat zu einem Termin.
+  ///
+  /// Nichts anzulegen, nichts freizuschalten: Der Strang haengt als
+  /// NIP-22-Kommentar am Termin selbst und existiert, sobald jemand etwas
+  /// schreibt. Genau deshalb laeuft er NICHT ueber das Gruppen-Relay — dort
+  /// braeuchte ein Raum eine Berechtigung, die derjenige, der den Termin
+  /// angelegt hat, oft gar nicht hat.
+  void _openEventChat(_CalItem e) {
+    final event = e.nostr;
+    if (event == null) return;
+
+    Navigator.of(context).pop();
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ChatScreen.event(
+        eventAddress: event.address,
+        eventAuthor: event.pubkey,
+        title: event.title,
+      ),
+    ));
+  }
+
+  /// Badge-Session fuer ein Event starten.
+  Future<void> _startEventSession(_CalItem e) async {
+    final event = e.nostr;
+    if (event == null) return;
+
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() => _startingSession = true);
+
+    final res = await EventBadgeSessionService.start(event);
+
+    if (!mounted) return;
+    setState(() => _startingSession = false);
+
+    if (!res.ok) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(_sessionErrorText(t, res)),
+        backgroundColor: cRed,
+        duration: const Duration(seconds: 5),
+      ));
+      return;
+    }
+
+    // Detailblatt schliessen, dann den QR zeigen — sonst laege der Code
+    // hinter dem halbhohen Blatt.
+    navigator.pop();
+    await navigator.push(
+      MaterialPageRoute(builder: (_) => const RollingQRScreen()),
+    );
+    if (mounted) _loadRunningSession();
+  }
+
+  String _sessionErrorText(AppLocalizations t, EventSessionResult res) =>
+      switch (res.error) {
+        EventSessionError.noIdentity => t.evSessionNoIdentity,
+        EventSessionError.notIssuer => t.evSessionNotIssuer,
+        EventSessionError.outsideWindow => t.evSessionOutsideWindow,
+        EventSessionError.noEventLocation => t.evSessionNoEventLocation,
+        EventSessionError.locationUnavailable => t.evSessionNoLocation,
+        EventSessionError.tooFarAway =>
+          t.evSessionTooFar((res.distanceKm ?? 0).toStringAsFixed(1)),
+        _ => t.evSessionFailed,
+      };
 
   Future<void> _load() async {
     setState(() => _loading = true);
@@ -670,12 +968,25 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(6),
                 child: Image.network(logo, width: 26, height: 26, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                    errorBuilder: (_, _, _) => const SizedBox.shrink()),
               ),
             );
           }),
           const SizedBox(width: 8),
           Expanded(child: Text(e.title, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700))),
+          // Abzeichen "hier gibt es ein Badge" — steht VOR dem Typ-Etikett,
+          // weil es die seltenere und damit interessantere Information ist.
+          if (e.hasBadge) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                  color: cOrange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6)),
+              child: const Icon(Icons.military_tech_rounded,
+                  color: cOrange, size: 13),
+            ),
+            const SizedBox(width: 6),
+          ],
           // Typ-Badge (Meetup = orange, Veranstaltung = cyan)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -684,6 +995,21 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                 style: TextStyle(color: e.color, fontSize: 10, fontWeight: FontWeight.w700)),
           ),
         ]),
+        // Badge-Bild als schmales Band. Bewusst niedrig: Die Liste soll
+        // uebersichtlich bleiben, das Bild ist Wiedererkennung, nicht Inhalt.
+        if (e.badgeImage.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              e.badgeImage,
+              height: 84,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         Row(children: [
           const Icon(Icons.schedule_rounded, color: cTextTertiary, size: 13),
@@ -723,7 +1049,12 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       backgroundColor: cCard,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => DraggableScrollableSheet(
+      // StatefulBuilder um das Blatt: Es haengt in einer EIGENEN Route und
+      // zeichnet sich NICHT neu, wenn der Kalender setState aufruft. Deshalb
+      // faerbte sich "Ich komme" erst, wenn man das Blatt schloss und wieder
+      // oeffnete — die Zusage war laengst gespeichert, nur sah man es nicht.
+      builder: (_) => StatefulBuilder(
+        builder: (_, setSheet) => DraggableScrollableSheet(
         expand: false, initialChildSize: 0.55, maxChildSize: 0.9, minChildSize: 0.35,
         builder: (_, scroll) => SingleChildScrollView(
           controller: scroll,
@@ -759,6 +1090,37 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             if (e.description.isNotEmpty) ...[
               const SizedBox(height: 14),
               Text(e.description, style: const TextStyle(color: cText, fontSize: 14, height: 1.5)),
+            ],
+            if (e.hasBadge) ...[
+              const SizedBox(height: 16),
+              _badgeNotice(t, e),
+            ],
+            // Zu- oder Absagen. Nur bei Nostr-Terminen, weil die Antwort
+            // als NIP-52-Ereignis an der Termin-Adresse haengt — Portal-
+            // Meetups haben keine.
+            if (e.nostr != null) ...[
+              const SizedBox(height: 14),
+              _rsvpRow(t, e.nostr!, setSheet),
+            ],
+            // Chat zum Termin. Nur fuer Nostr-Termine: Portal-Meetups haben
+            // ihren eigenen Meetup-Raum, ein zweiter Raum daneben wuerde die
+            // Unterhaltung nur aufteilen.
+            if (e.nostr != null) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _openEventChat(e),
+                  icon: const Icon(Icons.forum_rounded,
+                      color: cNostr, size: 18),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: cNostr.withValues(alpha: 0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                  ),
+                  label: Text(t.chatEventOpen,
+                      style: const TextStyle(color: cNostr, fontSize: 13)),
+                ),
+              ),
             ],
             if (links.isNotEmpty) ...[
               const SizedBox(height: 16),
@@ -810,6 +1172,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
           ]),
         ),
       ),
+      ),
     );
   }
 
@@ -856,12 +1219,176 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
   DateTime? _end;
   bool _publishing = false;
 
+  // --- Event-Badge ---
+  final _imageCtrl = TextEditingController();
+  bool _badgeEnabled = false;
+  double _lat = 0;
+  double _lng = 0;
+  bool _uploading = false;
+
+  /// Ein Eingabefeld je Helfer. Bewusst Felder statt einer festen Liste:
+  /// Ein eingefuegter npub laesst sich so noch korrigieren, ohne ihn erst
+  /// loeschen und neu einfuegen zu muessen. Die erste Zeile steht von
+  /// Anfang an da, damit sichtbar ist, worum es geht.
+  final List<TextEditingController> _issuerCtrls = [TextEditingController()];
+
+  /// null = wird noch geprueft. Jeder darf Events anlegen; das Badge daran
+  /// ist an die Berechtigung gebunden.
+  EventBadgeRight? _right;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRight();
+  }
+
+  Future<void> _checkRight() async {
+    final right = await EventBadgeAuthService.myRight();
+    if (!mounted) return;
+    setState(() => _right = right);
+
+    // Die Tour laeuft fuer JEDEN — Titel, Ort und Zeitraum betreffen alle.
+    // Nur der Badge-Teil haengt an der Berechtigung: Wer den Schalter nicht
+    // bedienen kann, bekommt die drei Schritte dazu gar nicht erst zu
+    // sehen. Deshalb wird erst hier gestartet, wenn die Pruefung durch ist.
+    final guide = context.read<GuideService>();
+    if (await guide.wasTourCompleted(GuideTour.events)) return;
+    if (!mounted) return;
+
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (!mounted) return;
+    await guide.startTour(
+      GuideTour.events,
+      EventBadgeTour.steps(mayCreateBadge: right != EventBadgeRight.none),
+    );
+  }
+
+  bool get _mayCreateBadge =>
+      _right != null && _right != EventBadgeRight.none;
+
   @override
   void dispose() {
+    // Editor zu, Tour raus: Sonst suchte das Overlay Ziele in einem Blatt,
+    // das nicht mehr existiert.
+    final guide = context.read<GuideService>();
+    if (guide.activeTour == GuideTour.events) guide.finishTour();
+
     _titleCtrl.dispose();
     _locationCtrl.dispose();
     _descCtrl.dispose();
+    _imageCtrl.dispose();
+    for (final c in _issuerCtrls) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  /// Wandelt eine Eingabezeile in einen Hex-Pubkey.
+  ///
+  /// Nimmt npub UND Hex — beim Kopieren aus verschiedenen Quellen bekommt
+  /// man mal das eine, mal das andere. Gibt null zurueck, wenn nichts
+  /// Verwertbares drinsteht.
+  String? _toHex(String raw) {
+    final s = raw.trim();
+    if (s.isEmpty) return null;
+    if (s.startsWith('npub1')) {
+      try {
+        final hex = NostrService.npubToHex(s);
+        return hex.length == 64 ? hex.toLowerCase() : null;
+      } catch (_) {
+        return null;
+      }
+    }
+    if (RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(s)) return s.toLowerCase();
+    return null;
+  }
+
+  /// Alle gueltigen Aussteller, ohne Doppelte und ohne leere Zeilen.
+  List<String> get _issuerHexes {
+    final out = <String>[];
+    for (final c in _issuerCtrls) {
+      final hex = _toHex(c.text);
+      if (hex != null && !out.contains(hex)) out.add(hex);
+    }
+    return out;
+  }
+
+  /// Steht in dieser Zeile etwas, das kein npub ist? Nur dann wird gemeckert —
+  /// eine leere Zeile ist kein Fehler, sondern ein Angebot.
+  bool _rowInvalid(TextEditingController c) =>
+      c.text.trim().isNotEmpty && _toHex(c.text) == null;
+
+  void _addIssuerRow() {
+    setState(() => _issuerCtrls.add(TextEditingController()));
+  }
+
+  void _removeIssuerRow(int index) {
+    setState(() {
+      _issuerCtrls[index].dispose();
+      _issuerCtrls.removeAt(index);
+      // Nie ganz ohne Zeile dastehen — sonst waere der Abschnitt leer und
+      // niemand wuesste, wie man wieder eine bekommt.
+      if (_issuerCtrls.isEmpty) _issuerCtrls.add(TextEditingController());
+    });
+  }
+
+  /// Ort des Events auf der Karte waehlen.
+  Future<void> _pickLocation() async {
+    final picked = await Navigator.push<dynamic>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LocationPickerScreen(
+          initialLat: _lat != 0 ? _lat : null,
+          initialLng: _lng != 0 ? _lng : null,
+        ),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _lat = picked.latitude as double;
+      _lng = picked.longitude as double;
+    });
+  }
+
+  /// Bild aus der Galerie waehlen und hochladen.
+  ///
+  /// Der Upload ist keine Bequemlichkeit, sondern Pflicht: Im Kalender-Event
+  /// steht eine URL, die JEDER laden koennen muss. Ein Galeriepfad waere auf
+  /// jedem anderen Geraet wertlos.
+  Future<void> _pickImage() async {
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+      if (image == null || !mounted) return;
+
+      setState(() => _uploading = true);
+      final res = await BlossomUploadService.uploadImage(image.path);
+      if (!mounted) return;
+      setState(() => _uploading = false);
+
+      if (res.ok) {
+        setState(() => _imageCtrl.text = res.url!);
+      } else {
+        messenger.showSnackBar(SnackBar(
+          content: Text(t.evBadgeUploadFailed(res.error ?? '')),
+          backgroundColor: cRed,
+        ));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _uploading = false);
+      messenger.showSnackBar(SnackBar(
+        content: Text(t.evBadgeUploadFailed(e.toString())),
+        backgroundColor: cRed,
+      ));
+    }
   }
 
   Future<void> _pickStart() async {
@@ -899,6 +1426,11 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     if (_titleCtrl.text.trim().isEmpty) { _snack(t.calNeedTitle, cRed); return; }
     if (_start == null) { _snack(t.calNeedStart, cRed); return; }
     setState(() => _publishing = true);
+    // Badge nur mitsenden, wenn es angehakt UND erlaubt ist. Die zweite
+    // Bedingung ist kein Zierrat: Der Schalter koennte durch einen spaeteren
+    // Umbau erreichbar werden, ohne dass die Pruefung noch greift.
+    final withBadge = _badgeEnabled && _mayCreateBadge;
+
     final count = await CalendarEventService.publishEvent(
       title: _titleCtrl.text.trim(),
       description: _descCtrl.text.trim(),
@@ -906,6 +1438,11 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
       start: _start!,
       end: _end,
       allDay: _allDay,
+      badgeEnabled: withBadge,
+      badgeImageUrl: withBadge ? _imageCtrl.text.trim() : '',
+      lat: withBadge ? _lat : 0,
+      lng: withBadge ? _lng : 0,
+      issuers: withBadge ? _issuerHexes : const [],
     );
     if (!mounted) return;
     setState(() => _publishing = false);
@@ -942,11 +1479,18 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            _label(t.calFieldTitle),
-            _input(_titleCtrl, t.calFieldTitleHint),
-            const SizedBox(height: 16),
-            _label(t.calFieldLocation),
-            _input(_locationCtrl, t.calFieldLocationHint),
+            KeyedSubtree(
+              key: EventBadgeTour.basicsKey,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _label(t.calFieldTitle),
+                    _input(_titleCtrl, t.calFieldTitleHint),
+                    const SizedBox(height: 16),
+                    _label(t.calFieldLocation),
+                    _input(_locationCtrl, t.calFieldLocationHint),
+                  ]),
+            ),
             const SizedBox(height: 16),
             // Ganztägig-Schalter
             Container(
@@ -968,11 +1512,18 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
               ]),
             ),
             const SizedBox(height: 16),
-            _label(t.calFieldStart),
-            _dateButton(_fmt(_start, t), _start != null, _pickStart),
-            const SizedBox(height: 16),
-            _label(t.calFieldEnd),
-            _dateButton(_fmt(_end, t), _end != null, _pickEnd),
+            KeyedSubtree(
+              key: EventBadgeTour.whenWhereKey,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _label(t.calFieldStart),
+                    _dateButton(_fmt(_start, t), _start != null, _pickStart),
+                    const SizedBox(height: 16),
+                    _label(t.calFieldEnd),
+                    _dateButton(_fmt(_end, t), _end != null, _pickEnd),
+                  ]),
+            ),
             if (_end != null)
               Align(
                 alignment: Alignment.centerRight,
@@ -982,6 +1533,8 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
             const SizedBox(height: 16),
             _label(t.calFieldDescription),
             _input(_descCtrl, t.calFieldDescriptionHint, maxLines: 4),
+            const SizedBox(height: 16),
+            _badgeSection(t),
             const SizedBox(height: 16),
             // Hinweis: öffentlich bei Nostr
             Container(
@@ -1013,6 +1566,208 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     );
   }
 
+  /// Der gesamte Event-Badge-Abschnitt.
+  ///
+  /// Sichtbar fuer alle — auch fuer Leute ohne Berechtigung. Einen Bereich
+  /// ganz zu verstecken laesst niemanden verstehen, dass es ihn gibt; ein
+  /// gesperrter Schalter mit Begruendung schon.
+  Widget _badgeSection(AppLocalizations t) {
+    final may = _mayCreateBadge;
+    final checking = _right == null;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cCard,
+        borderRadius: BorderRadius.circular(kTileRadius),
+        border: Border.all(
+            color: _badgeEnabled ? cOrange.withValues(alpha: 0.5) : cTileBorder,
+            width: _badgeEnabled ? 1 : 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          Icon(Icons.military_tech_rounded,
+              color: may ? cOrange : cTextTertiary, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(t.evBadgeCreate,
+                  style: TextStyle(
+                      color: may ? cText : cTextTertiary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(
+                checking
+                    ? t.evBadgeChecking
+                    : (may ? t.evBadgeCreateSub : t.evBadgeNotAllowed),
+                style: const TextStyle(
+                    color: cTextTertiary, fontSize: 11.5, height: 1.4),
+              ),
+            ]),
+          ),
+          KeyedSubtree(
+            key: EventBadgeTour.switchKey,
+            child: Switch(
+              value: _badgeEnabled,
+              activeTrackColor: cOrange,
+              onChanged: may ? (v) => setState(() => _badgeEnabled = v) : null,
+            ),
+          ),
+        ]),
+
+        if (_badgeEnabled) ...[
+          const SizedBox(height: 18),
+          KeyedSubtree(
+              key: EventBadgeTour.imageKey, child: _label(t.evBadgeImage)),
+          Row(children: [
+            Expanded(child: _input(_imageCtrl, t.evBadgeImageHint)),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _uploading ? null : _pickImage,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: cOrange,
+                  disabledBackgroundColor: cSurface,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(kTileRadius)),
+                ),
+                child: _uploading
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: cOrange))
+                    : const Icon(Icons.photo_library_rounded,
+                        color: Colors.black, size: 20),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 6),
+          Text(_uploading ? t.evBadgeUploading : t.evBadgeImageInfo,
+              style: const TextStyle(
+                  color: cTextTertiary, fontSize: 11, height: 1.4)),
+
+          if (_imageCtrl.text.trim().startsWith('http')) ...[
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(kTileRadius),
+              child: Image.network(
+                _imageCtrl.text.trim(),
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                // Kaputte URL: lieber gar nichts als ein Fehlersymbol.
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 16),
+          KeyedSubtree(
+              key: EventBadgeTour.locationKey,
+              child: _label(t.evBadgeLocation)),
+          GestureDetector(
+            onTap: _pickLocation,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              decoration: BoxDecoration(
+                color: cSurface,
+                borderRadius: BorderRadius.circular(kTileRadius),
+                border: Border.all(
+                    color: (_lat != 0 || _lng != 0) ? cOrange : cTileBorder,
+                    width: (_lat != 0 || _lng != 0) ? 1 : 0.5),
+              ),
+              child: Row(children: [
+                Icon(Icons.map_rounded,
+                    color: (_lat != 0 || _lng != 0) ? cOrange : cTextTertiary,
+                    size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    (_lat != 0 || _lng != 0)
+                        ? '${_lat.toStringAsFixed(5)}, ${_lng.toStringAsFixed(5)}'
+                        : t.evBadgeLocationPick,
+                    style: TextStyle(
+                        color: (_lat != 0 || _lng != 0) ? cText : cTextTertiary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+                if (_lat != 0 || _lng != 0)
+                  GestureDetector(
+                    onTap: () => setState(() { _lat = 0; _lng = 0; }),
+                    child: const Icon(Icons.close_rounded,
+                        color: cTextTertiary, size: 18),
+                  )
+                else
+                  const Icon(Icons.chevron_right_rounded,
+                      color: cTextTertiary, size: 18),
+              ]),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(t.evBadgeLocationInfo,
+              style: const TextStyle(
+                  color: cTextTertiary, fontSize: 11, height: 1.4)),
+
+          const SizedBox(height: 16),
+          KeyedSubtree(
+              key: EventBadgeTour.issuersKey,
+              child: _label(t.evBadgeIssuers)),
+          for (int i = 0; i < _issuerCtrls.length; i++)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(children: [
+                Expanded(
+                  child: _input(_issuerCtrls[i], t.evBadgeIssuerHint,
+                      onChanged: (_) => setState(() {}),
+                      borderColor: _rowInvalid(_issuerCtrls[i]) ? cRed : null),
+                ),
+                const SizedBox(width: 10),
+                // Nur die LETZTE Zeile traegt das Plus, alle anderen den
+                // Papierkorb. Zwei Knoepfe pro Zeile waeren doppelt so viel
+                // zum Zielen und halb so klar.
+                SizedBox(
+                  height: 48,
+                  width: 48,
+                  child: i == _issuerCtrls.length - 1
+                      ? ElevatedButton(
+                          onPressed: _addIssuerRow,
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            backgroundColor: cOrange,
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(kTileRadius)),
+                          ),
+                          child: const Icon(Icons.add_rounded,
+                              color: Colors.black),
+                        )
+                      : ElevatedButton(
+                          onPressed: () => _removeIssuerRow(i),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            backgroundColor: cSurface,
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(kTileRadius)),
+                          ),
+                          child: const Icon(Icons.delete_outline_rounded,
+                              color: cRed),
+                        ),
+                ),
+              ]),
+            ),
+          Text(t.evBadgeIssuerInfo,
+              style: const TextStyle(
+                  color: cTextTertiary, fontSize: 11, height: 1.4)),
+        ],
+      ]),
+    );
+  }
+
   Widget _label(String text) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
     child: Text(text.toUpperCase(), style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.0)),
@@ -1031,18 +1786,24 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     ),
   );
 
-  Widget _input(TextEditingController c, String hint, {int maxLines = 1}) => TextField(
+  /// [onChanged] und [borderColor] sind fuer die Aussteller-Zeilen dazu-
+  /// gekommen: Sie faerben sich rot, sobald etwas drinsteht, das kein npub
+  /// ist — waehrend des Tippens, nicht erst beim Veroeffentlichen.
+  Widget _input(TextEditingController c, String hint,
+          {int maxLines = 1, ValueChanged<String>? onChanged, Color? borderColor}) =>
+      TextField(
     controller: c,
     maxLines: maxLines,
+    onChanged: onChanged,
     style: const TextStyle(color: cText, fontSize: 15),
     decoration: InputDecoration(
       hintText: hint,
       hintStyle: const TextStyle(color: cTextTertiary, fontSize: 14),
       filled: true, fillColor: cCard,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cTileBorder, width: 0.5)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: const BorderSide(color: cOrange, width: 1.5)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: BorderSide(color: borderColor ?? cTileBorder, width: 0.5)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: BorderSide(color: borderColor ?? cTileBorder, width: borderColor != null ? 1 : 0.5)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kTileRadius), borderSide: BorderSide(color: borderColor ?? cOrange, width: 1.5)),
     ),
   );
 }

@@ -63,6 +63,16 @@ class MeetupBadge {
   /// Aeltere Badges (vor dieser Version) gelten als geprueft, weil damals
   /// ohne Standort gar kein Badge vergeben wurde.
   final bool presenceVerified;
+  /// EVENT-BADGE statt Meetup-Badge.
+  ///
+  /// Wirkt an zwei Stellen unterschiedlich, und das ist Absicht:
+  ///   - Trust Score: zaehlt als Badge und fuer die Vielfalt der Aussteller,
+  ///     aber NICHT als besuchtes Meetup. Drei Grossevents duerfen nicht
+  ///     dieselbe Aussage tragen wie drei lokale Meetups.
+  ///   - Vertrauensnetzwerk: eigene Kategorie. Auf einem Event mit 500
+  ///     Leuten hat man sich eben NICHT alle getroffen.
+  final bool isEvent;
+
   final double lat;             // GPS-Breitengrad des Erstellungsorts (0 = unbekannt)
   final double lng;             // GPS-Längengrad des Erstellungsorts (0 = unbekannt)
 
@@ -90,6 +100,7 @@ class MeetupBadge {
     this.isRetroactive = false,
     this.presenceVerified = true,
     this.isOrganizer = false,
+    this.isEvent = false,
     this.lat = 0,
     this.lng = 0,
   });
@@ -184,6 +195,7 @@ class MeetupBadge {
       'isRetroactive': isRetroactive,
       'presenceVerified': presenceVerified,
       'isOrganizer': isOrganizer,
+      'isEvent': isEvent,
       'lat': lat,
       'lng': lng,
     };
@@ -214,6 +226,7 @@ class MeetupBadge {
       isRetroactive: json['isRetroactive'] as bool? ?? false,
       presenceVerified: json['presenceVerified'] as bool? ?? true,
       isOrganizer: json['isOrganizer'] as bool? ?? false,
+      isEvent: json['isEvent'] as bool? ?? false,
       lat: (json['lat'] as num?)?.toDouble() ?? 0,
       lng: (json['lng'] as num?)?.toDouble() ?? 0,
     );
@@ -253,6 +266,7 @@ class MeetupBadge {
       claimTimestamp: claimTimestamp,
       isRetroactive: isRetroactive,
       isOrganizer: isOrganizer ?? this.isOrganizer,
+      isEvent: isEvent,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
       presenceVerified: presenceVerified,
@@ -310,6 +324,7 @@ class MeetupBadge {
       isRetroactive: isRetroactive ?? this.isRetroactive,
       presenceVerified: presenceVerified ?? this.presenceVerified,
       isOrganizer: isOrganizer ?? this.isOrganizer,
+      isEvent: isEvent,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
     );

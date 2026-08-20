@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:crypto/crypto.dart';
 import 'package:einundzwanzig_meetup_app/models/badge.dart';
 
 // Dart erlaubt 'a' * 128 nicht in const/default-Kontexten.
@@ -19,7 +18,7 @@ const _yId64 = 'yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 const _zPub64 = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz';
 
 void main() {
-  MeetupBadge _fullBadge({
+  MeetupBadge fullBadge({
     String id = 'badge-001',
     String meetupName = 'Aschaffenburg',
     int sigVersion = 2,
@@ -51,11 +50,11 @@ void main() {
     );
   }
 
-  MeetupBadge _claimedBadge({
+  MeetupBadge claimedBadge({
     String id = 'badge-001',
     String meetupName = 'Aschaffenburg',
   }) {
-    return _fullBadge(
+    return fullBadge(
       id: id,
       meetupName: meetupName,
       claimSig: _claimSig128,
@@ -66,7 +65,7 @@ void main() {
 
   group('toJson / fromJson Roundtrip', () {
     test('vollstaendiges Badge ueberlebt Roundtrip', () {
-      final original = _claimedBadge();
+      final original = claimedBadge();
       final json = original.toJson();
       final restored = MeetupBadge.fromJson(json);
 
@@ -100,7 +99,7 @@ void main() {
     });
 
     test('JSON-Encode produziert gueltiges JSON', () {
-      final badge = _fullBadge();
+      final badge = fullBadge();
       final jsonStr = jsonEncode(badge.toJson());
       final decoded = jsonDecode(jsonStr) as Map<String, dynamic>;
       expect(decoded['id'], 'badge-001');
@@ -109,49 +108,49 @@ void main() {
 
   group('Kryptographische Properties', () {
     test('hasCryptoProof: v2 mit Signatur true', () {
-      expect(_fullBadge(sigVersion: 2).hasCryptoProof, isTrue);
+      expect(fullBadge(sigVersion: 2).hasCryptoProof, isTrue);
     });
 
     test('hasCryptoProof: v0 ohne Signatur false', () {
-      expect(_fullBadge(sigVersion: 0, sig: '').hasCryptoProof, isFalse);
+      expect(fullBadge(sigVersion: 0, sig: '').hasCryptoProof, isFalse);
     });
 
     test('hasCryptoProof: v1 Legacy true (hat sig)', () {
-      expect(_fullBadge(sigVersion: 1).hasCryptoProof, isTrue);
+      expect(fullBadge(sigVersion: 1).hasCryptoProof, isTrue);
     });
 
     test('isNostrSigned: v2 + 128-Char-Sig + Pubkey true', () {
-      expect(_fullBadge(sigVersion: 2).isNostrSigned, isTrue);
+      expect(fullBadge(sigVersion: 2).isNostrSigned, isTrue);
     });
 
     test('isNostrSigned: v1 false', () {
-      expect(_fullBadge(sigVersion: 1).isNostrSigned, isFalse);
+      expect(fullBadge(sigVersion: 1).isNostrSigned, isFalse);
     });
 
     test('isNostrSigned: v2 aber leere Signatur false', () {
-      expect(_fullBadge(sigVersion: 2, sig: '').isNostrSigned, isFalse);
+      expect(fullBadge(sigVersion: 2, sig: '').isNostrSigned, isFalse);
     });
 
     test('isNostrSigned: v2 mit zu kurzer Signatur false', () {
-      expect(_fullBadge(sigVersion: 2, sig: _pub64).isNostrSigned, isFalse);
+      expect(fullBadge(sigVersion: 2, sig: _pub64).isNostrSigned, isFalse);
     });
   });
 
   group('Claim-Binding', () {
     test('isClaimed: mit claimSig + claimPubkey true', () {
-      expect(_claimedBadge().isClaimed, isTrue);
+      expect(claimedBadge().isClaimed, isTrue);
     });
 
     test('isClaimed: ohne Claim false', () {
-      expect(_fullBadge().isClaimed, isFalse);
+      expect(fullBadge().isClaimed, isFalse);
     });
 
     test('isFullyBound: Signatur + Claim true', () {
-      expect(_claimedBadge().isFullyBound, isTrue);
+      expect(claimedBadge().isFullyBound, isTrue);
     });
 
     test('isFullyBound: Signatur ohne Claim false', () {
-      expect(_fullBadge().isFullyBound, isFalse);
+      expect(fullBadge().isFullyBound, isFalse);
     });
 
     test('isFullyBound: Claim ohne Signatur false', () {
@@ -166,7 +165,7 @@ void main() {
 
   group('withClaim', () {
     test('erzeugt neues Badge mit Claim-Daten', () {
-      final original = _fullBadge();
+      final original = fullBadge();
       expect(original.isClaimed, isFalse);
 
       final claimed = original.withClaim(
@@ -183,7 +182,7 @@ void main() {
     });
 
     test('behaelt Original-Daten bei', () {
-      final original = _fullBadge();
+      final original = fullBadge();
       final claimed = original.withClaim(
         claimSig: _xSig128, claimEventId: _yId64,
         claimPubkey: _zPub64, claimTimestamp: 1700000000,
@@ -195,7 +194,7 @@ void main() {
     });
 
     test('retroactive Flag wird gesetzt', () {
-      final claimed = _fullBadge().withClaim(
+      final claimed = fullBadge().withClaim(
         claimSig: _xSig128, claimEventId: _yId64,
         claimPubkey: _zPub64, claimTimestamp: 1700000000,
         isRetroactive: true,
@@ -206,7 +205,7 @@ void main() {
 
   group('proofId', () {
     test('nutzt sigId wenn vorhanden', () {
-      expect(_fullBadge().proofId, _sigId64);
+      expect(fullBadge().proofId, _sigId64);
     });
 
     test('nutzt sig-Prefix als Fallback', () {
@@ -229,23 +228,23 @@ void main() {
 
   group('claimProofId', () {
     test('geclaimes Badge hat claimProofId', () {
-      final badge = _claimedBadge();
+      final badge = claimedBadge();
       expect(badge.claimProofId, isNotEmpty);
       expect(badge.claimProofId.length, 64);
     });
 
     test('ungeclaimtes Badge hat leere claimProofId', () {
-      expect(_fullBadge().claimProofId, isEmpty);
+      expect(fullBadge().claimProofId, isEmpty);
     });
 
     test('claimProofId ist deterministisch', () {
-      expect(_claimedBadge().claimProofId, _claimedBadge().claimProofId);
+      expect(claimedBadge().claimProofId, claimedBadge().claimProofId);
     });
   });
 
   group('Badge-Proof Hashes', () {
     test('generateBadgeProof: deterministisch', () {
-      final badges = [_fullBadge(id: '1'), _fullBadge(id: '2')];
+      final badges = [fullBadge(id: '1'), fullBadge(id: '2')];
       final a = MeetupBadge.generateBadgeProof(badges);
       final b = MeetupBadge.generateBadgeProof(badges);
       expect(a, b);
@@ -257,8 +256,8 @@ void main() {
     });
 
     test('generateBadgeProof: Reihenfolge wird sortiert', () {
-      final b1 = _fullBadge(id: '1');
-      final b2 = _fullBadge(id: '2');
+      final b1 = fullBadge(id: '1');
+      final b2 = fullBadge(id: '2');
       expect(
         MeetupBadge.generateBadgeProof([b1, b2]),
         MeetupBadge.generateBadgeProof([b2, b1]),
@@ -266,20 +265,20 @@ void main() {
     });
 
     test('verifyBadgeProof: korrekt true', () {
-      final badges = [_fullBadge(id: '1'), _fullBadge(id: '2')];
+      final badges = [fullBadge(id: '1'), fullBadge(id: '2')];
       final proof = MeetupBadge.generateBadgeProof(badges);
       expect(MeetupBadge.verifyBadgeProof(badges, proof), isTrue);
     });
 
     test('verifyBadgeProof: manipuliert false', () {
-      expect(MeetupBadge.verifyBadgeProof([_fullBadge(id: '1')], 'fake'), isFalse);
+      expect(MeetupBadge.verifyBadgeProof([fullBadge(id: '1')], 'fake'), isFalse);
     });
 
     test('generateBadgeProofV2: nur gebundene Badges', () {
       final badges = [
-        _claimedBadge(id: '1'),
-        _fullBadge(id: '2'),
-        _claimedBadge(id: '3'),
+        claimedBadge(id: '1'),
+        fullBadge(id: '2'),
+        claimedBadge(id: '3'),
       ];
       final proof = MeetupBadge.generateBadgeProofV2(badges);
       expect(proof, isNotEmpty);
@@ -287,16 +286,16 @@ void main() {
     });
 
     test('generateBadgeProofV2: keine gebundenen leer', () {
-      expect(MeetupBadge.generateBadgeProofV2([_fullBadge(id: '1')]), isEmpty);
+      expect(MeetupBadge.generateBadgeProofV2([fullBadge(id: '1')]), isEmpty);
     });
   });
 
   group('Reputations-Statistiken', () {
     test('getReputationStats: korrekte Zaehlung', () {
       final badges = [
-        _claimedBadge(id: '1'),
-        _fullBadge(id: '2'),
-        _claimedBadge(id: '3'),
+        claimedBadge(id: '1'),
+        fullBadge(id: '2'),
+        claimedBadge(id: '3'),
         MeetupBadge(id: '4', meetupName: 'X', date: DateTime.now(), iconPath: '', sigVersion: 0),
       ];
       final stats = MeetupBadge.getReputationStats(badges);
@@ -309,16 +308,16 @@ void main() {
 
     test('countVerifiedBadges', () {
       final badges = [
-        _fullBadge(id: '1', sigVersion: 2),
-        _fullBadge(id: '2', sigVersion: 0, sig: ''),
-        _fullBadge(id: '3', sigVersion: 1),
+        fullBadge(id: '1', sigVersion: 2),
+        fullBadge(id: '2', sigVersion: 0, sig: ''),
+        fullBadge(id: '3', sigVersion: 1),
       ];
       expect(MeetupBadge.countVerifiedBadges(badges), 2);
     });
 
     test('retroactive Badges werden separat gezaehlt', () {
       final badges = [
-        _fullBadge(id: '1', claimSig: _claimSig128, claimPubkey: _claimPub64, claimTimestamp: 1700000000),
+        fullBadge(id: '1', claimSig: _claimSig128, claimPubkey: _claimPub64, claimTimestamp: 1700000000),
         MeetupBadge(
           id: '2', meetupName: 'Test', date: DateTime.now(), iconPath: '',
           sig: _sig128, sigId: _sigId64, adminPubkey: _pub64, sigVersion: 2,

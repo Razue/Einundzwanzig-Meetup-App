@@ -40,7 +40,6 @@ class NostrAvatar extends StatefulWidget {
 
 class _NostrAvatarState extends State<NostrAvatar> {
   String? _pictureUrl;
-  bool _loading = true;
 
   @override
   void initState() {
@@ -71,19 +70,11 @@ class _NostrAvatarState extends State<NostrAvatar> {
           }
         }
       }
-      if (hex == null || hex.isEmpty) {
-        if (mounted) setState(() => _loading = false);
-        return;
-      }
+      if (hex == null || hex.isEmpty) return;
       final url = await NostrProfileService.fetchProfilePicture(hex);
-      if (mounted) {
-        setState(() {
-          _pictureUrl = url;
-          _loading = false;
-        });
-      }
+      if (mounted) setState(() => _pictureUrl = url);
     } catch (_) {
-      if (mounted) setState(() => _loading = false);
+      // Kein Profilbild erreichbar — der Buchstaben-Kreis bleibt stehen.
     }
   }
 
@@ -115,7 +106,7 @@ class _NostrAvatarState extends State<NostrAvatar> {
       backgroundColor: widget.backgroundColor,
       backgroundImage: NetworkImage(_pictureUrl!),
       // Wenn das Bild nicht lädt, bleibt der farbige Kreis als Hintergrund.
-      onBackgroundImageError: (_, __) {
+      onBackgroundImageError: (_, _) {
         if (mounted) setState(() => _pictureUrl = null);
       },
     );

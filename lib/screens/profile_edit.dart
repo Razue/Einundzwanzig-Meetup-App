@@ -703,12 +703,19 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               final nsec = nsecController.text.trim();
               if (nsec.isEmpty) return;
 
+              // Navigator, Messenger und Text vor dem await greifen: Der
+              // mounted-Check unten gehoert zum State des Bildschirms, nicht
+              // zum Context des Dialogs — deshalb deckte er diese drei
+              // Zugriffe nicht ab.
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(context);
+              final importedText = AppLocalizations.of(context).profileKeyImported;
               try {
                 final keys = await NostrService.importNsec(nsec);
                 await SigningService.useLocalMode(); // lokaler Modus aktiv
                 await LocalKeyVault.clearAll();
+                navigator.pop();
                 if (mounted) {
-                  Navigator.pop(context);
                   setState(() {
                     _hasNostrKey = true;
                     _isAmber = false;
@@ -716,9 +723,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     _isNip46 = false;
                     _nostrNpub = keys['npub']!;
                   });
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     SnackBar(
-                      content: Text(AppLocalizations.of(context).profileKeyImported),
+                      content: Text(importedText),
                       backgroundColor: Colors.green,
                     ),
                   );

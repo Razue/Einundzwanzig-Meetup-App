@@ -283,7 +283,7 @@ class _MarkdownViewState extends State<MarkdownView> {
             child: Image.memory(
               bytes,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
         );
@@ -321,7 +321,7 @@ class _MarkdownViewState extends State<MarkdownView> {
           fit: BoxFit.cover,
           // Speicher schonen: sehr große Fotos herunterskalieren.
           cacheWidth: 1080,
-          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          errorBuilder: (_, _, _) => const SizedBox.shrink(),
           loadingBuilder: (ctx, child, progress) =>
               progress == null ? child : Container(
                 height: 160, alignment: Alignment.center,

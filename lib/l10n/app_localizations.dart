@@ -751,7 +751,7 @@ abstract class AppLocalizations {
   /// No description provided for @scanBadgeSub.
   ///
   /// In de, this message translates to:
-  /// **'QR-Code oder NFC-Tag vom Meetup'**
+  /// **'QR-Code vom Meetup'**
   String get scanBadgeSub;
 
   /// No description provided for @scanReputation.
@@ -835,7 +835,7 @@ abstract class AppLocalizations {
   /// No description provided for @walletNoBadgesSub.
   ///
   /// In de, this message translates to:
-  /// **'Besuche Meetups und scanne NFC-Tags um Badges zu sammeln!'**
+  /// **'Besuche Meetups und scanne den QR-Code, um Badges zu sammeln!'**
   String get walletNoBadgesSub;
 
   /// No description provided for @walletShareReputation.
@@ -2647,7 +2647,7 @@ abstract class AppLocalizations {
   /// No description provided for @verifyScanInstruction.
   ///
   /// In de, this message translates to:
-  /// **'Scanne den NFC-Tag oder QR-Code\ndes Meetup-Organisators.'**
+  /// **'Scanne den QR-Code\ndes Meetup-Organisators.'**
   String get verifyScanInstruction;
 
   /// No description provided for @verifyScanQrInstruction.
@@ -4813,7 +4813,7 @@ abstract class AppLocalizations {
   /// No description provided for @siBecomeOrgDesc.
   ///
   /// In de, this message translates to:
-  /// **'Automatische Beförderung ab genügend Trust Score. Dann eigene NFC-Tags und QR-Codes erstellen.'**
+  /// **'Automatische Beförderung ab genügend Trust Score. Dann eigene QR-Codes erstellen.'**
   String get siBecomeOrgDesc;
 
   /// No description provided for @siProgressLabel.
@@ -5107,7 +5107,7 @@ abstract class AppLocalizations {
   /// No description provided for @apHowStep2.
   ///
   /// In de, this message translates to:
-  /// **'2. Beschreibe danach NFC Tags oder zeige den QR-Code.\n'**
+  /// **'2. Zeige danach den QR-Code.\n'**
   String get apHowStep2;
 
   /// No description provided for @apHowStep4.
@@ -8119,8 +8119,8 @@ abstract class AppLocalizations {
   /// No description provided for @rsvpFailed.
   ///
   /// In de, this message translates to:
-  /// **'Zusage fehlgeschlagen'**
-  String get rsvpFailed;
+  /// **'Antwort nicht gespeichert: {msg}'**
+  String rsvpFailed(String msg);
 
   /// No description provided for @crsLoading.
   ///
@@ -9495,6 +9495,2544 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Meetups konnten nicht geladen werden. Später im Profil nachholen.'**
   String get idSetupMeetupLoadError;
+
+  /// No description provided for @rsInvalidUrl.
+  ///
+  /// In de, this message translates to:
+  /// **'Ungültige Adresse. Erwartet wird wss://host.tld ohne Pfad.'**
+  String get rsInvalidUrl;
+
+  /// No description provided for @rsRelayUnreachable.
+  ///
+  /// In de, this message translates to:
+  /// **'Relay nicht erreichbar. Adresse prüfen oder Internetverbindung kontrollieren.'**
+  String get rsRelayUnreachable;
+
+  /// No description provided for @rsRelayAlreadyAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Relay ist bereits eingetragen.'**
+  String get rsRelayAlreadyAdded;
+
+  /// No description provided for @rsTesting.
+  ///
+  /// In de, this message translates to:
+  /// **'Verbindung wird geprüft …'**
+  String get rsTesting;
+
+  /// No description provided for @rsRelayAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'Relay hinzugefügt und erreichbar.'**
+  String get rsRelayAdded;
+
+  /// No description provided for @rsEnabledHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Eingeschaltet — bedeutet nicht, dass das Relay gerade erreichbar ist.'**
+  String get rsEnabledHint;
+
+  /// No description provided for @wotNoRelayReachable.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.'**
+  String get wotNoRelayReachable;
+
+  /// No description provided for @newsWriteArticle.
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel schreiben'**
+  String get newsWriteArticle;
+
+  /// No description provided for @newsLike.
+  ///
+  /// In de, this message translates to:
+  /// **'Gefällt mir'**
+  String get newsLike;
+
+  /// No description provided for @newsShare.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get newsShare;
+
+  /// No description provided for @newsLikeFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Reaktion konnte nicht gesendet werden. Kein Relay hat sie angenommen.'**
+  String get newsLikeFailed;
+
+  /// No description provided for @newsZap.
+  ///
+  /// In de, this message translates to:
+  /// **'Zap'**
+  String get newsZap;
+
+  /// No description provided for @newsZapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sats an den Autor'**
+  String get newsZapTitle;
+
+  /// No description provided for @newsZapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle einen Betrag. Die Rechnung wird anschließend an deine Lightning-Wallet übergeben.'**
+  String get newsZapBody;
+
+  /// No description provided for @newsZapNoAddress.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Autor hat keine Lightning-Adresse im Profil hinterlegt.'**
+  String get newsZapNoAddress;
+
+  /// No description provided for @newsZapUnsupportedAddress.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Lightning-Adresse des Autors wird nicht unterstützt (nur Adressen der Form name@domain).'**
+  String get newsZapUnsupportedAddress;
+
+  /// No description provided for @newsZapAmountRange.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Betrag liegt außerhalb dessen, was der Autor annimmt.'**
+  String get newsZapAmountRange;
+
+  /// No description provided for @newsZapFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Zap fehlgeschlagen. Einzelheiten stehen im Diagnose-Log.'**
+  String get newsZapFailed;
+
+  /// No description provided for @newsZapNoWallet.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Lightning-Wallet gefunden'**
+  String get newsZapNoWallet;
+
+  /// No description provided for @newsZapCopyInvoice.
+  ///
+  /// In de, this message translates to:
+  /// **'Rechnung kopieren'**
+  String get newsZapCopyInvoice;
+
+  /// No description provided for @evBadgeCreate.
+  ///
+  /// In de, this message translates to:
+  /// **'Event-Badge erstellen'**
+  String get evBadgeCreate;
+
+  /// No description provided for @evBadgeCreateSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilnehmer können sich vor Ort ein Badge abholen.'**
+  String get evBadgeCreateSub;
+
+  /// No description provided for @evBadgeNotAllowed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Meetup-Organisatoren und Leader können Badges vergeben. Das Event kannst du trotzdem eintragen.'**
+  String get evBadgeNotAllowed;
+
+  /// No description provided for @evBadgeChecking.
+  ///
+  /// In de, this message translates to:
+  /// **'Berechtigung wird geprüft …'**
+  String get evBadgeChecking;
+
+  /// No description provided for @evBadgeImage.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild fürs Badge'**
+  String get evBadgeImage;
+
+  /// No description provided for @evBadgeImageHint.
+  ///
+  /// In de, this message translates to:
+  /// **'https://…/bild.png'**
+  String get evBadgeImageHint;
+
+  /// No description provided for @evBadgeLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort des Events'**
+  String get evBadgeLocation;
+
+  /// No description provided for @evBadgeLocationHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktuellen Standort übernehmen'**
+  String get evBadgeLocationHint;
+
+  /// No description provided for @evBadgeLocationInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges lassen sich nur in der Nähe dieser Koordinaten und nur am Tag des Events ausgeben.'**
+  String get evBadgeLocationInfo;
+
+  /// No description provided for @evBadgeNoLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.'**
+  String get evBadgeNoLocation;
+
+  /// No description provided for @evBadgeIssuers.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer darf Badges ausgeben?'**
+  String get evBadgeIssuers;
+
+  /// No description provided for @evBadgeIssuerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'npub1… einfügen'**
+  String get evBadgeIssuerHint;
+
+  /// No description provided for @evBadgeIssuerInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Du selbst darfst immer. Trage weitere Helfer ein, die vor Ort Badges verteilen sollen — sie brauchen keine eigene Organisatoren-Rolle.'**
+  String get evBadgeIssuerInfo;
+
+  /// No description provided for @evBadgeIssuerInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist kein gültiger npub. Erwartet wird npub1… oder ein 64-stelliger Hex-Schlüssel.'**
+  String get evBadgeIssuerInvalid;
+
+  /// No description provided for @evBadgeIssuerDuplicate.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Schlüssel steht bereits in der Liste.'**
+  String get evBadgeIssuerDuplicate;
+
+  /// No description provided for @evBadgeImageInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild aus der Galerie wählen — es wird hochgeladen, damit alle es sehen können. Eine fertige URL geht auch.'**
+  String get evBadgeImageInfo;
+
+  /// No description provided for @evBadgeUploading.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild wird hochgeladen …'**
+  String get evBadgeUploading;
+
+  /// No description provided for @evBadgeUploadFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Upload fehlgeschlagen: {msg}'**
+  String evBadgeUploadFailed(String msg);
+
+  /// No description provided for @evBadgeLocationPick.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf der Karte wählen'**
+  String get evBadgeLocationPick;
+
+  /// No description provided for @locPickTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort des Events'**
+  String get locPickTitle;
+
+  /// No description provided for @locPickHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf die Karte, um den Veranstaltungsort zu setzen.'**
+  String get locPickHint;
+
+  /// No description provided for @locPickHintDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe erneut, um den Punkt zu verschieben.'**
+  String get locPickHintDone;
+
+  /// No description provided for @locPickJumpToMe.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu meinem Standort'**
+  String get locPickJumpToMe;
+
+  /// No description provided for @locPickConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort übernehmen'**
+  String get locPickConfirm;
+
+  /// No description provided for @evBadgeAvailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier gibt es ein Badge'**
+  String get evBadgeAvailable;
+
+  /// No description provided for @evBadgeAvailableSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor Ort kannst du dir ein Badge abholen — am Tag des Events, in der Nähe des Veranstaltungsorts.'**
+  String get evBadgeAvailableSub;
+
+  /// No description provided for @evBadgeYouIssue.
+  ///
+  /// In de, this message translates to:
+  /// **'Du darfst hier Badges ausgeben'**
+  String get evBadgeYouIssue;
+
+  /// No description provided for @evBadgeYouIssueSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Am Tag des Events kannst du vor Ort eine Session starten und Badges verteilen.'**
+  String get evBadgeYouIssueSub;
+
+  /// No description provided for @evBadgeStartSession.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge-Session starten'**
+  String get evBadgeStartSession;
+
+  /// No description provided for @evSessionNoIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Nostr-Schlüssel vorhanden. Lege zuerst einen an.'**
+  String get evSessionNoIdentity;
+
+  /// No description provided for @evSessionNotIssuer.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist bei diesem Event nicht als Aussteller eingetragen.'**
+  String get evSessionNotIssuer;
+
+  /// No description provided for @evSessionOutsideWindow.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges gibt es nur am Tag des Events.'**
+  String get evSessionOutsideWindow;
+
+  /// No description provided for @evSessionNoEventLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Für dieses Event ist kein Ort hinterlegt. Ohne Koordinaten lässt sich nicht prüfen, ob du vor Ort bist.'**
+  String get evSessionNoEventLocation;
+
+  /// No description provided for @evSessionNoLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort nicht ermittelbar. Ortungsdienst und Berechtigung prüfen.'**
+  String get evSessionNoLocation;
+
+  /// No description provided for @evSessionTooFar.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist {km} km vom Veranstaltungsort entfernt. Badges lassen sich nur vor Ort ausgeben.'**
+  String evSessionTooFar(String km);
+
+  /// No description provided for @evSessionFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Session konnte nicht gestartet werden. Einzelheiten stehen im Diagnose-Log.'**
+  String get evSessionFailed;
+
+  /// No description provided for @mvEventIssuerOk.
+  ///
+  /// In de, this message translates to:
+  /// **'Event-Badge von „{event}“ — ausgegeben mit Erlaubnis von {creator}.'**
+  String mvEventIssuerOk(String event, String creator);
+
+  /// No description provided for @mvEventSignerNotListed.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung: Der Aussteller ist bei „{event}“ nicht als Helfer eingetragen.'**
+  String mvEventSignerNotListed(String event);
+
+  /// No description provided for @mvEventCreatorNotAuthorized.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung: Wer „{event}“ angelegt hat, ist kein eingetragener Organisator.'**
+  String mvEventCreatorNotAuthorized(String event);
+
+  /// No description provided for @mvEventHasNoBadge.
+  ///
+  /// In de, this message translates to:
+  /// **'Achtung: Für „{event}“ ist gar kein Badge vorgesehen.'**
+  String mvEventHasNoBadge(String event);
+
+  /// No description provided for @mvEventNotFound.
+  ///
+  /// In de, this message translates to:
+  /// **'Das zugehörige Event ist nicht auffindbar. Ohne Netz lässt sich die Berechtigung nicht prüfen.'**
+  String get mvEventNotFound;
+
+  /// No description provided for @evBadgeShowSession.
+  ///
+  /// In de, this message translates to:
+  /// **'QR anzeigen'**
+  String get evBadgeShowSession;
+
+  /// No description provided for @badgeShareTagline.
+  ///
+  /// In de, this message translates to:
+  /// **'Vor Ort dabei gewesen — bestätigt über Nostr.'**
+  String get badgeShareTagline;
+
+  /// No description provided for @shareCardCollectedBy.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesammelt von'**
+  String get shareCardCollectedBy;
+
+  /// No description provided for @shareCardBlock.
+  ///
+  /// In de, this message translates to:
+  /// **'Block'**
+  String get shareCardBlock;
+
+  /// No description provided for @shareCardScanned.
+  ///
+  /// In de, this message translates to:
+  /// **'Gescannt'**
+  String get shareCardScanned;
+
+  /// No description provided for @shareCardChecksum.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfsumme'**
+  String get shareCardChecksum;
+
+  /// No description provided for @shareCardPromo.
+  ///
+  /// In de, this message translates to:
+  /// **'Einundzwanzig-Meetup besucht? Sammle dein Badge — kryptographisch belegt, dass du vor Ort warst.'**
+  String get shareCardPromo;
+
+  /// No description provided for @backupPwShow.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort anzeigen'**
+  String get backupPwShow;
+
+  /// No description provided for @backupPwHide.
+  ///
+  /// In de, this message translates to:
+  /// **'Passwort verbergen'**
+  String get backupPwHide;
+
+  /// No description provided for @backupPwRuleLength.
+  ///
+  /// In de, this message translates to:
+  /// **'Mindestens {min} Zeichen — eine lange Passphrase ist besser als ein kurzes, kompliziertes Passwort.'**
+  String backupPwRuleLength(int min);
+
+  /// No description provided for @backupPwRuleMatch.
+  ///
+  /// In de, this message translates to:
+  /// **'Beide Eingaben stimmen überein'**
+  String get backupPwRuleMatch;
+
+  /// No description provided for @idSetupOtherWaySub.
+  ///
+  /// In de, this message translates to:
+  /// **'nsec, ncryptsec, Bunker oder Backup'**
+  String get idSetupOtherWaySub;
+
+  /// No description provided for @guideWelcomeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen!'**
+  String get guideWelcomeTitle;
+
+  /// No description provided for @guideWelcomeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Möchtest du eine kurze Tour durch die App? Wir zeigen dir die wichtigsten Funktionen.'**
+  String get guideWelcomeBody;
+
+  /// No description provided for @guideStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour starten'**
+  String get guideStart;
+
+  /// No description provided for @guideNoThanks.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, danke'**
+  String get guideNoThanks;
+
+  /// No description provided for @guideSkip.
+  ///
+  /// In de, this message translates to:
+  /// **'ÜBERSPRINGEN'**
+  String get guideSkip;
+
+  /// No description provided for @guideFinishTour.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour beenden'**
+  String get guideFinishTour;
+
+  /// No description provided for @guideBack.
+  ///
+  /// In de, this message translates to:
+  /// **'Zurück'**
+  String get guideBack;
+
+  /// No description provided for @guideOnboardWelcomeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Lass uns dein Profil einrichten'**
+  String get guideOnboardWelcomeTitle;
+
+  /// No description provided for @guideOnboardWelcomeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wir führen dich Schritt für Schritt durch die Einrichtung. Es dauert nur eine Minute.'**
+  String get guideOnboardWelcomeBody;
+
+  /// No description provided for @guideOnboardNicknameTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle einen Nickname'**
+  String get guideOnboardNicknameTitle;
+
+  /// No description provided for @guideOnboardNicknameBody.
+  ///
+  /// In de, this message translates to:
+  /// **'So werden dich andere Community-Mitglieder sehen. Wähle etwas Einprägsames!'**
+  String get guideOnboardNicknameBody;
+
+  /// No description provided for @guideOnboardMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle dein Home-Meetup'**
+  String get guideOnboardMeetupTitle;
+
+  /// No description provided for @guideOnboardMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Home-Meetup bestimmt, welche Badges du sammeln kannst und welche Events du zuerst siehst.'**
+  String get guideOnboardMeetupBody;
+
+  /// No description provided for @guideOnboardNostrTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Nostr-Schlüssel'**
+  String get guideOnboardNostrTitle;
+
+  /// No description provided for @guideOnboardNostrBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser kryptografische Schlüssel signiert deine Badges und verifiziert deine Reputation. Er wird nur auf deinem Gerät gespeichert.'**
+  String get guideOnboardNostrBody;
+
+  /// No description provided for @guideOnboardSaveTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil speichern'**
+  String get guideOnboardSaveTitle;
+
+  /// No description provided for @guideOnboardSaveBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe hier, wenn du fertig bist. Du kannst diese Einstellungen später jederzeit ändern.'**
+  String get guideOnboardSaveBody;
+
+  /// No description provided for @guideHomeMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Home Meetup'**
+  String get guideHomeMeetupTitle;
+
+  /// No description provided for @guideHomeMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Favoriten-Meetups und das nächste anstehende Event – direkt auf einen Blick.'**
+  String get guideHomeMeetupBody;
+
+  /// No description provided for @guideHomeTrustScoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Trust Score'**
+  String get guideHomeTrustScoreTitle;
+
+  /// No description provided for @guideHomeTrustScoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier siehst du deinen aktuellen Stand. Tippe darauf für die Aufschlüsselung nach Vielfalt, Aktivität & Qualität.'**
+  String get guideHomeTrustScoreBody;
+
+  /// No description provided for @guideHomeReputationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation'**
+  String get guideHomeReputationTitle;
+
+  /// No description provided for @guideHomeReputationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Prüfe deine Reputation oder verifiziere den Trust Score einer anderen Person.'**
+  String get guideHomeReputationBody;
+
+  /// No description provided for @guideHomeWotTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauensnetzwerk'**
+  String get guideHomeWotTitle;
+
+  /// No description provided for @guideHomeWotBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sieh, wie du mit anderen im Web of Trust verbunden bist.'**
+  String get guideHomeWotBody;
+
+  /// No description provided for @guideHomeCommunityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Community Portal'**
+  String get guideHomeCommunityTitle;
+
+  /// No description provided for @guideHomeCommunityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zugriff auf Podcast, Shoutouts, Merch und mehr.'**
+  String get guideHomeCommunityBody;
+
+  /// No description provided for @guideHomeUmrechnerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Umrechner'**
+  String get guideHomeUmrechnerTitle;
+
+  /// No description provided for @guideHomeUmrechnerBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Schnell zwischen EUR und Sats umrechnen.'**
+  String get guideHomeUmrechnerBody;
+
+  /// No description provided for @guideHomeBitcoinTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitcoin Kurs'**
+  String get guideHomeBitcoinTitle;
+
+  /// No description provided for @guideHomeBitcoinBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktueller Preis, Netzwerk-Stats und Blockhöhe.'**
+  String get guideHomeBitcoinBody;
+
+  /// No description provided for @guideHomeBadgeWalletTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge Wallet'**
+  String get guideHomeBadgeWalletTitle;
+
+  /// No description provided for @guideHomeBadgeWalletBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle gesammelten Badges – kryptographisch signiert und nur auf deinem Gerät gespeichert.'**
+  String get guideHomeBadgeWalletBody;
+
+  /// No description provided for @guideHomeScanTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge einfordern'**
+  String get guideHomeScanTitle;
+
+  /// No description provided for @guideHomeScanBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe hier, um beim Meetup den QR-Code des Organisators zu scannen oder dein Gerät per NFC anzuhalten.'**
+  String get guideHomeScanBody;
+
+  /// No description provided for @guideHomeSettingsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get guideHomeSettingsTitle;
+
+  /// No description provided for @guideHomeSettingsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguriere Backup, Sprache, Relays und mehr. Vergiss nicht, ein Backup zu erstellen!'**
+  String get guideHomeSettingsBody;
+
+  /// No description provided for @guideSettingsBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle ein Backup!'**
+  String get guideSettingsBackupTitle;
+
+  /// No description provided for @guideSettingsBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'WICHTIG: Erstelle ein Backup, um deinen Account zu schützen. Ohne Backup sind deine Badges und dein Profil verloren, wenn du dein Gerät verlierst.'**
+  String get guideSettingsBackupBody;
+
+  /// No description provided for @guideSettingsLanguageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get guideSettingsLanguageTitle;
+
+  /// No description provided for @guideSettingsLanguageBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wechsle zwischen Deutsch, Englisch und Spanisch.'**
+  String get guideSettingsLanguageBody;
+
+  /// No description provided for @guideSettingsRelaysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr Relays'**
+  String get guideSettingsRelaysTitle;
+
+  /// No description provided for @guideSettingsRelaysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Konfiguriere, mit welchen Nostr-Relays sich deine App verbindet.'**
+  String get guideSettingsRelaysBody;
+
+  /// No description provided for @guideSettingsHapticTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Haptisches Feedback'**
+  String get guideSettingsHapticTitle;
+
+  /// No description provided for @guideSettingsHapticBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktiviere oder deaktiviere Vibrationsfeedback.'**
+  String get guideSettingsHapticBody;
+
+  /// No description provided for @guideSettingsResetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'App zurücksetzen'**
+  String get guideSettingsResetTitle;
+
+  /// No description provided for @guideSettingsResetBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dies löscht dein Profil und alle Badges. Stelle sicher, dass du zuerst ein Backup hast!'**
+  String get guideSettingsResetBody;
+
+  /// No description provided for @guideEventsSearchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Events suchen'**
+  String get guideEventsSearchTitle;
+
+  /// No description provided for @guideEventsSearchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche nach Meetups nach Stadt oder Stichwort.'**
+  String get guideEventsSearchBody;
+
+  /// No description provided for @guideEventsCalendarTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kalender'**
+  String get guideEventsCalendarTitle;
+
+  /// No description provided for @guideEventsCalendarBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Durchsuche alle kommenden Meetup-Events.'**
+  String get guideEventsCalendarBody;
+
+  /// No description provided for @guideEventsCardTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Event Details'**
+  String get guideEventsCardTitle;
+
+  /// No description provided for @guideEventsCardBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf ein Event, um Details, Ort und Links zu sehen.'**
+  String get guideEventsCardBody;
+
+  /// No description provided for @guideEventsCreateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Event erstellen'**
+  String get guideEventsCreateTitle;
+
+  /// No description provided for @guideEventsCreateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Organisator kannst du hier neue Meetup-Events erstellen.'**
+  String get guideEventsCreateBody;
+
+  /// No description provided for @guidePortalShoutoutTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Shoutout senden'**
+  String get guidePortalShoutoutTitle;
+
+  /// No description provided for @guidePortalShoutoutBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sende einen öffentlichen Shoutout an die Community.'**
+  String get guidePortalShoutoutBody;
+
+  /// No description provided for @guidePortalPodcastTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Podcast'**
+  String get guidePortalPodcastTitle;
+
+  /// No description provided for @guidePortalPodcastBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Höre den Einundzwanzig Podcast direkt in der App.'**
+  String get guidePortalPodcastBody;
+
+  /// No description provided for @guidePortalSoundboardTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Soundboard'**
+  String get guidePortalSoundboardTitle;
+
+  /// No description provided for @guidePortalSoundboardBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Spiele Clips und Sounds aus dem Podcast ab.'**
+  String get guidePortalSoundboardBody;
+
+  /// No description provided for @guidePortalMerchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Shop'**
+  String get guidePortalMerchTitle;
+
+  /// No description provided for @guidePortalMerchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Durchsuche Merch und Bitcoin-Produkte.'**
+  String get guidePortalMerchBody;
+
+  /// No description provided for @guidePortalMembershipTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitglied werden'**
+  String get guidePortalMembershipTitle;
+
+  /// No description provided for @guidePortalMembershipBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterstütze den Verein, indem du Mitglied wirst.'**
+  String get guidePortalMembershipBody;
+
+  /// No description provided for @guidePortalMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup Karte'**
+  String get guidePortalMapTitle;
+
+  /// No description provided for @guidePortalMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Finde Meetups in deiner Nähe auf der Karte.'**
+  String get guidePortalMapBody;
+
+  /// No description provided for @guideWalletBadgesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Badges'**
+  String get guideWalletBadgesTitle;
+
+  /// No description provided for @guideWalletBadgesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle gesammelten Badges – kryptographisch signiert und nur auf deinem Gerät gespeichert.'**
+  String get guideWalletBadgesBody;
+
+  /// No description provided for @guideWalletShareQrTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'QR-Code teilen'**
+  String get guideWalletShareQrTitle;
+
+  /// No description provided for @guideWalletShareQrBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeige deinen Reputations-QR-Code zum Scannen vor Ort.'**
+  String get guideWalletShareQrBody;
+
+  /// No description provided for @guideWalletExportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Als JSON exportieren'**
+  String get guideWalletExportTitle;
+
+  /// No description provided for @guideWalletExportBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Signierter Export mit Schnorr-Beweis zur Verifizierung.'**
+  String get guideWalletExportBody;
+
+  /// No description provided for @guideWalletShareTextTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Text teilen'**
+  String get guideWalletShareTextTitle;
+
+  /// No description provided for @guideWalletShareTextBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile deine Reputation als lesbaren Text.'**
+  String get guideWalletShareTextBody;
+
+  /// No description provided for @guideReputationScoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Score'**
+  String get guideReputationScoreTitle;
+
+  /// No description provided for @guideReputationScoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Trust Score wird aus Badges, Vielfalt und Aktivität berechnet.'**
+  String get guideReputationScoreBody;
+
+  /// No description provided for @guideReputationLevelTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Level'**
+  String get guideReputationLevelTitle;
+
+  /// No description provided for @guideReputationLevelBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Von NEU bis VETERAN – dein Level wächst mit deiner Teilnahme.'**
+  String get guideReputationLevelBody;
+
+  /// No description provided for @guideReputationStatsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Statistiken'**
+  String get guideReputationStatsTitle;
+
+  /// No description provided for @guideReputationStatsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges, Meetups, Signer und gebundene Beweise auf einen Blick.'**
+  String get guideReputationStatsBody;
+
+  /// No description provided for @guideReputationShareTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation teilen'**
+  String get guideReputationShareTitle;
+
+  /// No description provided for @guideReputationShareBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Teile deine verifizierte Reputation per QR-Code oder Text.'**
+  String get guideReputationShareBody;
+
+  /// No description provided for @guideReputationUpdateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf Relays aktualisieren'**
+  String get guideReputationUpdateTitle;
+
+  /// No description provided for @guideReputationUpdateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Veröffentliche deine neueste Reputation im Nostr-Netzwerk.'**
+  String get guideReputationUpdateBody;
+
+  /// No description provided for @guideStepOf.
+  ///
+  /// In de, this message translates to:
+  /// **'Schritt {current} von {total}'**
+  String guideStepOf(int current, int total);
+
+  /// No description provided for @guideStepDone.
+  ///
+  /// In de, this message translates to:
+  /// **'Erledigt'**
+  String get guideStepDone;
+
+  /// No description provided for @guideHintNickname.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe ins Feld und gib deinen Nickname ein.'**
+  String get guideHintNickname;
+
+  /// No description provided for @guideHintOpenPicker.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf das Feld, um die Meetup-Auswahl zu öffnen.'**
+  String get guideHintOpenPicker;
+
+  /// No description provided for @guideHintSearchCity.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe die ersten Buchstaben deiner Stadt ein.'**
+  String get guideHintSearchCity;
+
+  /// No description provided for @guideHintStarMeetup.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf den Stern neben deinem Meetup.'**
+  String get guideHintStarMeetup;
+
+  /// No description provided for @guideHintConfirmSelection.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestätige deine Auswahl mit dem Knopf unten.'**
+  String get guideHintConfirmSelection;
+
+  /// No description provided for @guideHintNostrKey.
+  ///
+  /// In de, this message translates to:
+  /// **'Erstelle einen neuen Schlüssel oder importiere einen bestehenden.'**
+  String get guideHintNostrKey;
+
+  /// No description provided for @guideHintSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf PROFIL SPEICHERN.'**
+  String get guideHintSave;
+
+  /// No description provided for @guideOnboardMeetupSearchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Stadt suchen'**
+  String get guideOnboardMeetupSearchTitle;
+
+  /// No description provided for @guideOnboardMeetupSearchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe den Namen deiner Stadt ein — die Liste filtert sich sofort.'**
+  String get guideOnboardMeetupSearchBody;
+
+  /// No description provided for @guideOnboardMeetupPickTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetup markieren'**
+  String get guideOnboardMeetupPickTitle;
+
+  /// No description provided for @guideOnboardMeetupPickBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Setze den Stern bei deinem Meetup. Du kannst mehrere Favoriten wählen; der erste wird dein Home-Meetup.'**
+  String get guideOnboardMeetupPickBody;
+
+  /// No description provided for @guideOnboardMeetupConfirmTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Auswahl bestätigen'**
+  String get guideOnboardMeetupConfirmTitle;
+
+  /// No description provided for @guideOnboardMeetupConfirmBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Knopf zeigt, wie viele Favoriten du gewählt hast. Tippe darauf, um zurück zum Profil zu kommen.'**
+  String get guideOnboardMeetupConfirmBody;
+
+  /// No description provided for @guideOnboardPlatformsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattformen verknüpfen'**
+  String get guideOnboardPlatformsTitle;
+
+  /// No description provided for @guideOnboardPlatformsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier verbindest du Konten wie Telegram, X oder Kleinanzeigen mit deiner Nostr-Identität. Jede bestätigte Plattform zahlt auf deinen Trust Score ein und zeigt anderen, dass hinter dem Profil ein gewachsener Mensch steckt.'**
+  String get guideOnboardPlatformsBody;
+
+  /// No description provided for @guideHintPlatforms.
+  ///
+  /// In de, this message translates to:
+  /// **'Freiwillig — du kannst das jederzeit im Profil nachholen.'**
+  String get guideHintPlatforms;
+
+  /// No description provided for @guideOnboardHumanityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Proof of Humanity'**
+  String get guideOnboardHumanityTitle;
+
+  /// No description provided for @guideOnboardHumanityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein einmaliger Lightning-Zap belegt, dass du eine echte Wallet bedienst — der wirksamste Schutz gegen Bot-Konten im Vertrauensnetzwerk. Hast du schon gezappt, prüfst du es hier nach.'**
+  String get guideOnboardHumanityBody;
+
+  /// No description provided for @guideHintHumanity.
+  ///
+  /// In de, this message translates to:
+  /// **'Freiwillig — die App funktioniert auch ohne diesen Nachweis.'**
+  String get guideHintHumanity;
+
+  /// No description provided for @guideHomeEventsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Events'**
+  String get guideHomeEventsTitle;
+
+  /// No description provided for @guideHomeEventsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Kachel zeigt, ob heute etwas ansteht. Sie färbt sich orange, sobald ein Termin für den Tag eingetragen ist, und führt dich in den Kalender mit allen kommenden Treffen.'**
+  String get guideHomeEventsBody;
+
+  /// No description provided for @guideHomeShoutoutTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Shoutout'**
+  String get guideHomeShoutoutTitle;
+
+  /// No description provided for @guideHomeShoutoutBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Schick eine Nachricht an die Community — sie landet auf der Shoutout-Seite von Einundzwanzig. Die Kachel öffnet die Seite im Browser.'**
+  String get guideHomeShoutoutBody;
+
+  /// No description provided for @guideHomePodcastTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Podcast'**
+  String get guideHomePodcastTitle;
+
+  /// No description provided for @guideHomePodcastBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Einundzwanzig-Podcast, direkt aus der App heraus. Die Kachel öffnet die Folgenübersicht im Browser.'**
+  String get guideHomePodcastBody;
+
+  /// No description provided for @guideHomePortalConnectTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Portal-Verbindung'**
+  String get guideHomePortalConnectTitle;
+
+  /// No description provided for @guideHomePortalConnectBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Grün heißt verbunden, rot heißt getrennt. Mit der Verbindung zum Einundzwanzig-Portal siehst du Termine und Kurse, die dort gepflegt werden. Ein Tipp auf die Kachel schaltet um.'**
+  String get guideHomePortalConnectBody;
+
+  /// No description provided for @guideHomeNewsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'News'**
+  String get guideHomeNewsTitle;
+
+  /// No description provided for @guideHomeNewsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die jüngste Meldung aus der Community steht direkt auf der Kachel. Ein Tipp öffnet die vollständige Übersicht.'**
+  String get guideHomeNewsBody;
+
+  /// No description provided for @guideHomeMyMeetupsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get guideHomeMyMeetupsTitle;
+
+  /// No description provided for @guideHomeMyMeetupsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier verwaltest du die Termine deiner Meetups im Portal — anlegen, ändern, absagen. Nur sinnvoll, wenn du selbst organisierst.'**
+  String get guideHomeMyMeetupsBody;
+
+  /// No description provided for @guideHomeMoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Und noch mehr'**
+  String get guideHomeMoreTitle;
+
+  /// No description provided for @guideHomeMoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Vier weitere Kacheln warten auf dem Dashboard: SatoshiDuell für Quizrunden um Sats, PlebRap für Musik aus der Community, der Portal-Bereich mit Meetups, Events, Kursen und Karte, sowie die Nostr-Kachel mit den neuesten Notizen aus deinem Netzwerk. Jede lässt sich in den Einstellungen aus- oder wieder einblenden.'**
+  String get guideHomeMoreBody;
+
+  /// No description provided for @guideHomeNearbyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'In der Nähe'**
+  String get guideHomeNearbyTitle;
+
+  /// No description provided for @guideHomeNearbyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt Meetups in deiner Umgebung — praktisch auf Reisen oder wenn du ein zweites Treffen in der Region suchst. Der Bildschirm legt sich über die App, ein Zurück bringt dich hierher.'**
+  String get guideHomeNearbyBody;
+
+  /// No description provided for @guideHomeEventsTabTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Event-Bereich'**
+  String get guideHomeEventsTabTitle;
+
+  /// No description provided for @guideHomeEventsTabBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der vierte Knopf führt in den vollständigen Kalender: alle Termine, filterbar nach Ort und Zeitraum, mit Erinnerungsfunktion.'**
+  String get guideHomeEventsTabBody;
+
+  /// No description provided for @guideHomeSettingsBackupHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Geh gleich als Erstes ins Backup — ohne das ist dein Schlüssel bei Handyverlust weg.'**
+  String get guideHomeSettingsBackupHint;
+
+  /// No description provided for @guideHintBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Leg jetzt ein verschlüsseltes Backup an — es dauert eine Minute.'**
+  String get guideHintBackup;
+
+  /// No description provided for @guideEvBadgeSwitchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge für dein Event'**
+  String get guideEvBadgeSwitchTitle;
+
+  /// No description provided for @guideEvBadgeSwitchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Leg den Schalter um, wenn Teilnehmer sich vor Ort ein Badge abholen können sollen. Ohne ihn bleibt es ein reiner Termin.'**
+  String get guideEvBadgeSwitchBody;
+
+  /// No description provided for @guideEvBadgeSwitchHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wenn du für dieses Event kein Badge brauchst, tippe einfach auf Weiter.'**
+  String get guideEvBadgeSwitchHint;
+
+  /// No description provided for @guideEvBadgeImageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Bild'**
+  String get guideEvBadgeImageTitle;
+
+  /// No description provided for @guideEvBadgeImageBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wähle ein Bild aus deiner Galerie — es wird hochgeladen und erscheint später auf jedem Badge dieses Events. Ohne Bild trägt die generative Grafik die Karte allein.'**
+  String get guideEvBadgeImageBody;
+
+  /// No description provided for @guideEvBadgeLocationTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Ort zählt'**
+  String get guideEvBadgeLocationTitle;
+
+  /// No description provided for @guideEvBadgeLocationBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Setze den Punkt dort, wo das Event stattfindet — nicht dort, wo du gerade bist. Badges lassen sich nur in seiner Nähe und nur am Tag des Events ausgeben.'**
+  String get guideEvBadgeLocationBody;
+
+  /// No description provided for @guideEvBadgeIssuersTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Helfer'**
+  String get guideEvBadgeIssuersTitle;
+
+  /// No description provided for @guideEvBadgeIssuersBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Trage die npubs aller ein, die vor Ort Badges verteilen sollen. Sie brauchen keine Organisatoren-Rolle — die Erlaubnis steht im Termin und gilt nur für dieses Event. Du selbst darfst immer.'**
+  String get guideEvBadgeIssuersBody;
+
+  /// No description provided for @glTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachschlagen'**
+  String get glTitle;
+
+  /// No description provided for @glSearchHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Suchen — z. B. Badge, Trust Score, Backup'**
+  String get glSearchHint;
+
+  /// No description provided for @glNoResults.
+  ///
+  /// In de, this message translates to:
+  /// **'Dazu findet sich nichts. Versuch ein anderes Wort — gesucht wird auch im Text der Einträge.'**
+  String get glNoResults;
+
+  /// No description provided for @glCatStart.
+  ///
+  /// In de, this message translates to:
+  /// **'Erste Schritte'**
+  String get glCatStart;
+
+  /// No description provided for @glCatBadges.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges'**
+  String get glCatBadges;
+
+  /// No description provided for @glCatReputation.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation'**
+  String get glCatReputation;
+
+  /// No description provided for @glWhatIsAppTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was diese App tut'**
+  String get glWhatIsAppTitle;
+
+  /// No description provided for @glWhatIsAppBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sie belegt, dass du bei einem Bitcoin-Meetup wirklich vor Ort warst. Aus vielen solcher Belege entsteht mit der Zeit eine Reputation, die dir gehört und die niemand entziehen kann — sie liegt nicht auf einem Server von Einundzwanzig, sondern signiert im Nostr-Netzwerk.'**
+  String get glWhatIsAppBody;
+
+  /// No description provided for @glCollectTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie du ein Badge sammelst'**
+  String get glCollectTitle;
+
+  /// No description provided for @glCollectBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Geh zum Meetup und lass dir vom Organisator den QR-Code zeigen. Unten in der Leiste auf den runden Scan-Knopf tippen, Code erfassen — fertig. Das Badge liegt danach in deiner Badge-Wallet.'**
+  String get glCollectBody;
+
+  /// No description provided for @glHomeMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Home-Meetup'**
+  String get glHomeMeetupTitle;
+
+  /// No description provided for @glHomeMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Meetup, zu dem du regelmäßig gehst. Es bestimmt, welche Termine du zuerst siehst und welches Wappen auf deinen Badges erscheint. Du kannst mehrere Favoriten wählen — der erste gilt als Home-Meetup. Ändern lässt sich das jederzeit im Profil.'**
+  String get glHomeMeetupBody;
+
+  /// No description provided for @glOfflineTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was ohne Internet geht'**
+  String get glOfflineTitle;
+
+  /// No description provided for @glOfflineBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Scannen und Badge erhalten funktioniert offline — die Prüfung der Signatur rechnet dein Gerät selbst. Ohne Netz fehlen nur die Dinge, die von außen kommen: Blockhöhe, Kurs, Termine und die Prüfung, ob der Organisator eingetragen ist.'**
+  String get glOfflineBody;
+
+  /// No description provided for @glBadgeProofTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was ein Badge beweist'**
+  String get glBadgeProofTitle;
+
+  /// No description provided for @glBadgeProofBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dass du zu einer bestimmten Zeit an einem bestimmten Ort warst — bestätigt von jemandem, der dort ebenfalls war. Die Bestätigung ist eine Schnorr-Signatur nach BIP-340. Fälschen kann sie niemand, auch die Entwickler nicht, weil dafür der private Schlüssel des Organisators nötig wäre.'**
+  String get glBadgeProofBody;
+
+  /// No description provided for @glRollingQrTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Rolling QR'**
+  String get glRollingQrTitle;
+
+  /// No description provided for @glRollingQrBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Code des Organisators wechselt alle paar Sekunden. Ein Foto davon ist damit Minuten später wertlos — nur wer wirklich davorsteht, kann ihn erfassen. Genau deshalb lässt sich ein Badge nicht per Chat weiterreichen.'**
+  String get glRollingQrBody;
+
+  /// No description provided for @glOnSiteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Warum nur vor Ort'**
+  String get glOnSiteTitle;
+
+  /// No description provided for @glOnSiteBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Neben dem wechselnden Code prüft die App auch die Entfernung: Wer zu weit vom Meetup entfernt ist, bekommt kein Badge. Bei Meetups sind die Grenzen weit gefasst, weil manche Gruppen ganze Regionen abdecken; bei Sondereevents ist der Ort genau gesetzt und die Grenze eng.'**
+  String get glOnSiteBody;
+
+  /// No description provided for @glBadgeShareTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge teilen'**
+  String get glBadgeShareTitle;
+
+  /// No description provided for @glBadgeShareBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffne ein Badge und tippe oben rechts auf Teilen. Die App erzeugt daraus ein Bild mit Ort, Datum, Blockhöhe und Prüfsumme. Wer es sieht, kann die Angaben nachvollziehen — dein privater Schlüssel steckt nicht darin.'**
+  String get glBadgeShareBody;
+
+  /// No description provided for @glTrustScoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Trust Score'**
+  String get glTrustScoreTitle;
+
+  /// No description provided for @glTrustScoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine Zahl, die zusammenfasst, wie belastbar deine Anwesenheitsbelege sind. Es zählt nicht nur die Menge: Verschiedene Meetups, verschiedene Organisatoren und Regelmäßigkeit über die Zeit wiegen schwerer als zwanzig Besuche am selben Ort in derselben Woche.'**
+  String get glTrustScoreBody;
+
+  /// No description provided for @glLevelsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Stufen'**
+  String get glLevelsTitle;
+
+  /// No description provided for @glLevelsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit steigendem Trust Score erreichst du höhere Stufen. Ab einer bestimmten Stufe kannst du selbst Sessions starten und Badges ausgeben — das ist keine Auszeichnung, sondern eine Verantwortung: Deine Signatur steht dann unter den Badges anderer Leute.'**
+  String get glLevelsBody;
+
+  /// No description provided for @glHumanityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Proof of Humanity'**
+  String get glHumanityTitle;
+
+  /// No description provided for @glHumanityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein einmaliger Lightning-Zap belegt, dass hinter dem Profil jemand mit einer echten Wallet steht. Das ist der wirksamste Schutz gegen automatisch angelegte Konten im Vertrauensnetzwerk. Freiwillig — die App funktioniert auch ohne.'**
+  String get glHumanityBody;
+
+  /// No description provided for @glPlatformsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Plattform-Nachweise'**
+  String get glPlatformsTitle;
+
+  /// No description provided for @glPlatformsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst Konten wie Telegram oder X mit deiner Nostr-Identität verknüpfen. Jede bestätigte Plattform zahlt auf den Trust Score ein und zeigt anderen, dass hinter dem Profil eine gewachsene Person steht. Ebenfalls freiwillig.'**
+  String get glPlatformsBody;
+
+  /// No description provided for @guideHomeGlossaryTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Nachschlagen'**
+  String get guideHomeGlossaryTitle;
+
+  /// No description provided for @guideHomeGlossaryBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier steht alles nochmal in Ruhe erklärt — nach Themen sortiert und durchsuchbar. Wenn diese Tour vorbei ist und eine Frage bleibt, findest du die Antwort hier.'**
+  String get guideHomeGlossaryBody;
+
+  /// No description provided for @glCatNetwork.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauensnetzwerk'**
+  String get glCatNetwork;
+
+  /// No description provided for @glCatIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität & Schlüssel'**
+  String get glCatIdentity;
+
+  /// No description provided for @glCatEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Events'**
+  String get glCatEvents;
+
+  /// No description provided for @glCatNostr.
+  ///
+  /// In de, this message translates to:
+  /// **'Nostr'**
+  String get glCatNostr;
+
+  /// No description provided for @glEncounterTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Begegnungen'**
+  String get glEncounterTitle;
+
+  /// No description provided for @glEncounterBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer beim selben Organisator am selben Tag gescannt hat, gilt als einander begegnet. Daraus entsteht ein Geflecht aus Menschen, die sich tatsächlich im selben Raum aufgehalten haben — nicht aus Leuten, die einander im Netz folgen.'**
+  String get glEncounterBody;
+
+  /// No description provided for @glDegreesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Grade'**
+  String get glDegreesTitle;
+
+  /// No description provided for @glDegreesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersten Grades heißt: Ihr wart beim selben Organisator. Zweiten Grades: Jemand, den du getroffen hast, hat diese Person getroffen. Waren auf einem Meetup zwei Organisatoren im Einsatz, verbindet ihr gegenseitiges Scannen beide Gruppen — dann seid ihr zweiten Grades verbunden statt ersten.'**
+  String get glDegreesBody;
+
+  /// No description provided for @glVouchTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bürgschaften'**
+  String get glVouchTitle;
+
+  /// No description provided for @glVouchBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisatoren können füreinander bürgen. Eine Bürgschaft ist ein öffentliches, signiertes Votum — nach dem Publizieren sieht das ganze Netzwerk, für wen du stehst. Sie lässt sich jederzeit widerrufen, aber der Widerruf ist ebenso sichtbar.'**
+  String get glVouchBody;
+
+  /// No description provided for @glEventNetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk aus Events'**
+  String get glEventNetTitle;
+
+  /// No description provided for @glEventNetBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sondereevents werden getrennt gezählt. Auf einem Meetup mit fünfzehn Leuten trifft man jeden — auf einem Event mit fünfhundert nicht. Beides im selben Topf würde die Aussage des Netzwerks entwerten, deshalb hat es eine eigene Kategorie.'**
+  String get glEventNetBody;
+
+  /// No description provided for @glKeysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'nsec und npub'**
+  String get glKeysTitle;
+
+  /// No description provided for @glKeysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein npub ist deine öffentliche Adresse — die darfst und sollst du teilen. Der nsec ist der private Schlüssel und gehört niemandem sonst: Wer ihn hat, IST du. Ein Zurücksetzen gibt es nicht. Ist der nsec weg, ist die Identität samt Reputation verloren.'**
+  String get glKeysBody;
+
+  /// No description provided for @glPasswordTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die beiden Passwörter'**
+  String get glPasswordTitle;
+
+  /// No description provided for @glPasswordBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Einrichten legst du ein Passwort fest, das deinen Schlüssel auf dem Gerät verpackt. Beim Backup vergibst du ein zweites, das die Sicherungsdatei verschlüsselt. Sie dürfen gleich sein, sind aber unabhängig voneinander — und für beide gibt es kein Zurücksetzen.'**
+  String get glPasswordBody;
+
+  /// No description provided for @glSignerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Signer-Apps'**
+  String get glSignerTitle;
+
+  /// No description provided for @glSignerBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Statt den Schlüssel in dieser App zu halten, kannst du ihn einer Signer-App wie Amber anvertrauen oder über einen Bunker anbinden. Diese App fragt dann bei jeder Signatur dort nach und sieht den Schlüssel selbst nie.'**
+  String get glSignerBody;
+
+  /// No description provided for @glBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Backup'**
+  String get glBackupTitle;
+
+  /// No description provided for @glBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichert Schlüssel, Badges und Einstellungen in eine verschlüsselte Datei. Ohne sie ist bei Geräteverlust alles weg — Handy weg heißt sonst Reputation weg. Leg sie früh an, nicht erst wenn du sie brauchst, und bewahre die Datei getrennt vom Passwort auf.'**
+  String get glBackupBody;
+
+  /// No description provided for @glSpecialEventTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sondereevents'**
+  String get glSpecialEventTitle;
+
+  /// No description provided for @glSpecialEventBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Neben den regelmäßigen Meetups gibt es einmalige Veranstaltungen, für die eigene Badges vergeben werden. Sie zählen als Badge und für die Vielfalt der Aussteller, aber nicht als besuchtes Meetup — drei Großevents ersetzen keine lokale Gemeinschaft.'**
+  String get glSpecialEventBody;
+
+  /// No description provided for @glEventHelperTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Helfer beim Event'**
+  String get glEventHelperTitle;
+
+  /// No description provided for @glEventHelperBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer ein Event mit Badge anlegt, kann beliebige npubs als Aussteller eintragen. Diese Helfer brauchen keine Organisatoren-Rolle — die Erlaubnis steht im Termin und gilt nur für dieses eine Event. Jeder Helfer zeigt dabei seinen eigenen QR-Code.'**
+  String get glEventHelperBody;
+
+  /// No description provided for @glEventWindowTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ort und Zeitfenster'**
+  String get glEventWindowTitle;
+
+  /// No description provided for @glEventWindowBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Event-Badge lässt sich nur am Tag der Veranstaltung und nur in der Nähe des eingetragenen Orts ausgeben. Beides zusammen verhindert, dass jemand von zu Hause aus Badges für eine Veranstaltung verteilt, bei der er gar nicht ist.'**
+  String get glEventWindowBody;
+
+  /// No description provided for @glRelaysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Relays'**
+  String get glRelaysTitle;
+
+  /// No description provided for @glRelaysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Relays sind die Server, über die Nostr-Nachrichten laufen. Die App schreibt auf mehrere gleichzeitig, damit nichts verloren geht, wenn einer ausfällt. Du kannst in den Einstellungen eigene hinzufügen — sie werden vor dem Speichern auf Erreichbarkeit geprüft.'**
+  String get glRelaysBody;
+
+  /// No description provided for @glPublicTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was öffentlich ist'**
+  String get glPublicTitle;
+
+  /// No description provided for @glPublicBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges, Anwesenheiten und Bürgschaften liegen offen auf den Relays — jeder kann sie lesen und nachrechnen, das ist der Sinn der Sache. Nicht öffentlich sind dein privater Schlüssel, dein Backup-Passwort und dein genauer Standort.'**
+  String get glPublicBody;
+
+  /// No description provided for @glZapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zaps'**
+  String get glZapTitle;
+
+  /// No description provided for @glZapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Zap ist eine kleine Lightning-Zahlung mit einer Nostr-Quittung daran. In den News kannst du damit Autoren direkt etwas zukommen lassen; die Rechnung übergibt die App an deine Wallet. Ein einmaliger Zap dient außerdem als Proof of Humanity.'**
+  String get glZapBody;
+
+  /// No description provided for @guideEvBasicsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Titel und Ort'**
+  String get guideEvBasicsTitle;
+
+  /// No description provided for @guideEvBasicsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Titel steht später in der Terminliste und auf dem Badge, falls du eines vergibst. Der Ort ist die Anschrift zum Vorlesen — die Koordinaten für die Badge-Ausgabe setzt du weiter unten getrennt auf der Karte.'**
+  String get guideEvBasicsBody;
+
+  /// No description provided for @guideEvWhenWhereTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wann es stattfindet'**
+  String get guideEvWhenWhereTitle;
+
+  /// No description provided for @guideEvWhenWhereBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Start ist Pflicht, das Ende darfst du weglassen. Bei einem Event mit Badge zählt der Kalendertag: Badges lassen sich nur an diesem Tag ausgeben, von Mitternacht bis Mitternacht.'**
+  String get guideEvWhenWhereBody;
+
+  /// No description provided for @glCatApp.
+  ///
+  /// In de, this message translates to:
+  /// **'App & Bedienung'**
+  String get glCatApp;
+
+  /// No description provided for @glTilesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dashboard anpassen'**
+  String get glTilesTitle;
+
+  /// No description provided for @glTilesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Halte eine Kachel lange gedrückt, um sie zu verschieben oder auszublenden. Trust Score und Home-Meetup bleiben immer sichtbar, alles andere kannst du loslösen. Ausgeblendete Kacheln landen in der Verwaltung und lassen sich jederzeit zurückholen.'**
+  String get glTilesBody;
+
+  /// No description provided for @glLanguageTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get glLanguageTitle;
+
+  /// No description provided for @glLanguageBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App gibt es auf Deutsch, Englisch und Spanisch. Ohne eigene Wahl folgt sie der Systemsprache. Umstellen kannst du sie in den Einstellungen; die Änderung greift sofort, ein Neustart ist nicht nötig.'**
+  String get glLanguageBody;
+
+  /// No description provided for @glLogTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnose-Log'**
+  String get glLogTitle;
+
+  /// No description provided for @glLogBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein Protokoll dessen, was die App im Hintergrund tut — welche Relays geantwortet haben, warum ein Scan abgelehnt wurde. Wenn etwas klemmt, ist das die erste Anlaufstelle. Es bleibt auf dem Gerät und wird nirgends hochgeladen.'**
+  String get glLogBody;
+
+  /// No description provided for @glResetTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'App zurücksetzen'**
+  String get glResetTitle;
+
+  /// No description provided for @glResetBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Löscht Profil, Schlüssel und alle Badges vom Gerät — endgültig. Ohne Backup ist deine Identität danach weg, auch wenn die Badges auf den Relays weiterleben: Ohne den passenden Schlüssel kannst du sie niemandem mehr zuordnen. Mach vorher ein Backup.'**
+  String get glResetBody;
+
+  /// No description provided for @glNicknameTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Anzeigename'**
+  String get glNicknameTitle;
+
+  /// No description provided for @glNicknameBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Name, unter dem du im Netzwerk erscheinst. Er ist frei wählbar, muss nicht dein echter sein und lässt sich jederzeit ändern — deine Identität hängt am Schlüssel, nicht am Namen.'**
+  String get glNicknameBody;
+
+  /// No description provided for @glFindMeetupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups finden'**
+  String get glFindMeetupTitle;
+
+  /// No description provided for @glFindMeetupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Über die Meetup-Suche kommst du an alle eingetragenen Gruppen. In der Nähe zeigt dir stattdessen, was rund um deinen aktuellen Standort liegt — nützlich auf Reisen oder wenn du eine zweite Gruppe in der Region suchst.'**
+  String get glFindMeetupBody;
+
+  /// No description provided for @glBlockHeightTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Blockhöhe'**
+  String get glBlockHeightTitle;
+
+  /// No description provided for @glBlockHeightBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Jedes Badge trägt die Nummer des Bitcoin-Blocks, der beim Scan gerade aktuell war. Sie wirkt wie ein Zeitstempel, den niemand nachträglich verschieben kann — anders als die Uhr eines Handys, die sich beliebig stellen lässt.'**
+  String get glBlockHeightBody;
+
+  /// No description provided for @glChecksumTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Prüfsumme'**
+  String get glChecksumTitle;
+
+  /// No description provided for @glChecksumBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein kurzer Fingerabdruck über den gesamten Badge-Inhalt. Zwei Menschen können ihre Badges vom selben Meetup vergleichen: Stimmen die Prüfsummen überein, haben beide dieselben Daten erhalten. Sie steht in den Badge-Details und auf dem geteilten Bild.'**
+  String get glChecksumBody;
+
+  /// No description provided for @glWorldMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Badge-Weltkarte'**
+  String get glWorldMapTitle;
+
+  /// No description provided for @glWorldMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt deine gesammelten Badges dort, wo du sie bekommen hast. Aus einer Liste von Namen wird so eine Landkarte deiner Meetup-Besuche — praktisch, um zu sehen, wo noch weiße Flecken sind.'**
+  String get glWorldMapBody;
+
+  /// No description provided for @glDuplicateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Doppelte Badges'**
+  String get glDuplicateTitle;
+
+  /// No description provided for @glDuplicateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Pro Meetup und Tag gibt es genau ein Badge. Wer denselben Code zweimal scannt, bekommt kein zweites — das ist Absicht: Ein Badge steht für einen Besuch, nicht für einen Scan.'**
+  String get glDuplicateBody;
+
+  /// No description provided for @glVerifyPersonTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Jemanden prüfen'**
+  String get glVerifyPersonTitle;
+
+  /// No description provided for @glVerifyPersonBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Lass dir den Reputations-QR der anderen Person zeigen und scanne ihn. Die App rechnet nach, ob die Angaben zu den signierten Badges passen, und zeigt dir, wie ihr im Netzwerk verbunden seid. Nützlich vor einem Handel unter Fremden.'**
+  String get glVerifyPersonBody;
+
+  /// No description provided for @glRepCardTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Reputationskarte'**
+  String get glRepCardTitle;
+
+  /// No description provided for @glRepCardBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine teilbare Übersicht deiner Reputation als Bild — Stufe, Anzahl der Meetups, Zeitraum. Sie enthält keinen privaten Schlüssel und lässt sich bedenkenlos posten.'**
+  String get glRepCardBody;
+
+  /// No description provided for @glPublishTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Reputation veröffentlichen'**
+  String get glPublishTitle;
+
+  /// No description provided for @glPublishBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Damit andere deine Reputation prüfen können, muss sie auf den Relays liegen. Die App veröffentlicht sie signiert; ohne diesen Schritt sieht ein Gegenüber nur, was du ihm direkt zeigst.'**
+  String get glPublishBody;
+
+  /// No description provided for @glTrustPathTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Vertrauenspfad'**
+  String get glTrustPathTitle;
+
+  /// No description provided for @glTrustPathBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt die Kette, über die du mit einer anderen Person verbunden bist — wer wen wo getroffen hat. Aus einer abstrakten Zahl wird damit eine nachvollziehbare Aussage: nicht nur dass ihr verbunden seid, sondern worüber.'**
+  String get glTrustPathBody;
+
+  /// No description provided for @glDistrustTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meldungen und Suspendierung'**
+  String get glDistrustTitle;
+
+  /// No description provided for @glDistrustBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisatoren können Missbrauch melden. Häufen sich Meldungen gegen jemanden, wird er im Netzwerk als suspendiert markiert — seine Badges verschwinden nicht, aber sie tragen diese Warnung. Auch eine Meldung ist signiert und damit dem Melder zuzuordnen.'**
+  String get glDistrustBody;
+
+  /// No description provided for @glOrganizerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Organisator werden'**
+  String get glOrganizerTitle;
+
+  /// No description provided for @glOrganizerBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ab einem bestimmten Trust Score kannst du selbst Sessions starten. Zusätzlich brauchst du in der Regel Bürgschaften bestehender Organisatoren — die Rolle wird nicht vergeben, sie wächst aus dem Netzwerk.'**
+  String get glOrganizerBody;
+
+  /// No description provided for @glNcryptsecTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'ncryptsec'**
+  String get glNcryptsecTitle;
+
+  /// No description provided for @glNcryptsecBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein nsec, der mit einem Passwort verschlüsselt ist (NIP-49). Die Zeichenfolge beginnt mit ncryptsec1 und ist ohne Passwort wertlos — sie lässt sich also gefahrloser transportieren als ein blanker nsec. Genau so liegt dein Schlüssel auch auf dem Gerät.'**
+  String get glNcryptsecBody;
+
+  /// No description provided for @glPasskeyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Passkey'**
+  String get glPasskeyTitle;
+
+  /// No description provided for @glPasskeyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusätzlicher Schutz per Fingerabdruck oder Gesichtserkennung. Der Passkey ersetzt dein Passwort nicht, er legt sich davor. Freiwillig, und nur auf diesem Gerät — auf einem neuen brauchst du wieder Passwort oder Backup.'**
+  String get glPasskeyBody;
+
+  /// No description provided for @glNip05Title.
+  ///
+  /// In de, this message translates to:
+  /// **'NIP-05-Adresse'**
+  String get glNip05Title;
+
+  /// No description provided for @glNip05Body.
+  ///
+  /// In de, this message translates to:
+  /// **'Eine lesbare Adresse der Form name@domain, die auf deinen Schlüssel zeigt — wie ein Namensschild fürs Netzwerk. Sie beweist, dass jemand mit Zugriff auf diese Domain für dich bürgt, ersetzt aber keine der anderen Prüfungen.'**
+  String get glNip05Body;
+
+  /// No description provided for @glImportTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel mitbringen'**
+  String get glImportTitle;
+
+  /// No description provided for @glImportBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer schon eine Nostr-Identität hat, kann sie hier einsetzen — als nsec, als ncryptsec oder über einen Bunker. Deine bestehenden Kontakte und dein Profil bleiben dabei erhalten; die App legt nur Badges und Reputation dazu.'**
+  String get glImportBody;
+
+  /// No description provided for @glRestoreTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup einspielen'**
+  String get glRestoreTitle;
+
+  /// No description provided for @glRestoreBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Einrichten kannst du statt eines neuen Schlüssels ein Backup laden. Du brauchst die Datei UND das Passwort, mit dem sie verschlüsselt wurde — eines allein genügt nicht. Danach ist die Identität samt Badges wieder da.'**
+  String get glRestoreBody;
+
+  /// No description provided for @glCalendarSourcesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Woher die Termine kommen'**
+  String get glCalendarSourcesTitle;
+
+  /// No description provided for @glCalendarSourcesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Kalender führt zwei Quellen zusammen: Termine aus dem Einundzwanzig-Portal und Veranstaltungen, die jemand über Nostr eingetragen hat. Die Farbe unterscheidet sie — Portal-Meetups orange, Nostr-Termine türkis.'**
+  String get glCalendarSourcesBody;
+
+  /// No description provided for @glPortalTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Portal-Verbindung'**
+  String get glPortalTitle;
+
+  /// No description provided for @glPortalBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Mit deinem Nostr-Schlüssel kannst du dich am Einundzwanzig-Portal anmelden. Danach siehst du dort gepflegte Termine und Kurse und kannst als Leader eigene Termine anlegen. Ohne Verbindung funktioniert alles andere weiterhin.'**
+  String get glPortalBody;
+
+  /// No description provided for @glCreateEventTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin anlegen'**
+  String get glCreateEventTitle;
+
+  /// No description provided for @glCreateEventBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Jeder kann einen Termin eintragen — er wird signiert auf Nostr veröffentlicht und erscheint bei allen im Kalender. Ein Badge dazu vergeben dürfen allerdings nur Organisatoren und Leader.'**
+  String get glCreateEventBody;
+
+  /// No description provided for @glNostrBasicsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Was Nostr ist'**
+  String get glNostrBasicsTitle;
+
+  /// No description provided for @glNostrBasicsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Ein offenes Protokoll für Nachrichten, die ihr Absender selbst signiert. Es gibt kein Unternehmen dahinter und kein Konto, das gesperrt werden könnte — nur Schlüssel und Relays. Deine Identität aus dieser App funktioniert deshalb auch in anderen Nostr-Anwendungen.'**
+  String get glNostrBasicsBody;
+
+  /// No description provided for @glNewsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Der News-Bereich'**
+  String get glNewsTitle;
+
+  /// No description provided for @glNewsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Artikel stammen aus dem Einundzwanzig-Magazin und liegen als Nostr-Langtexte vor. Du kannst sie in der App lesen, mit einem Herz versehen, teilen und den Autoren Sats zappen — alles über dieselbe Identität.'**
+  String get glNewsBody;
+
+  /// No description provided for @glConverterTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Umrechner und Kurs'**
+  String get glConverterTitle;
+
+  /// No description provided for @glConverterBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Rechnet Euro in Sats um und zurück. Der Kurs und die Blockhöhe kommen von einer Mempool-Instanz; welche das ist, kannst du in den Einstellungen ändern — etwa auf deine eigene Node.'**
+  String get glConverterBody;
+
+  /// No description provided for @glCommunityTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Community-Bereich'**
+  String get glCommunityTitle;
+
+  /// No description provided for @glCommunityBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sammelpunkt für alles rund um Einundzwanzig, was nicht direkt mit Badges zu tun hat: Podcast, Shoutouts, PlebRap, SatoshiDuell und die Meetup-Karte. Vieles davon öffnet sich im Browser.'**
+  String get glCommunityBody;
+
+  /// No description provided for @settingsRestartGuide.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour wiederholen'**
+  String get settingsRestartGuide;
+
+  /// No description provided for @settingsRestartGuideSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Spotlight-Touren erneut anzeigen'**
+  String get settingsRestartGuideSub;
+
+  /// No description provided for @settingsGuideReset.
+  ///
+  /// In de, this message translates to:
+  /// **'Touren zurückgesetzt — sie starten beim nächsten Öffnen der Bereiche.'**
+  String get settingsGuideReset;
+
+  /// No description provided for @guideSettingsRestartTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour wiederholen'**
+  String get guideSettingsRestartTitle;
+
+  /// No description provided for @guideSettingsRestartBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Setzt alle Spotlight-Touren zurück. Sie starten dann wieder, sobald du den jeweiligen Bereich das nächste Mal öffnest — nützlich, wenn du etwas noch einmal sehen willst.'**
+  String get guideSettingsRestartBody;
+
+  /// No description provided for @guideWalletMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Weltkarte'**
+  String get guideWalletMapTitle;
+
+  /// No description provided for @guideWalletMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt deine Badges dort, wo du sie eingesammelt hast. Aus einer Liste wird eine Landkarte deiner Meetup-Besuche.'**
+  String get guideWalletMapBody;
+
+  /// No description provided for @guideWalletViewTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ansicht wechseln'**
+  String get guideWalletViewTitle;
+
+  /// No description provided for @guideWalletViewBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Umschalten zwischen großen Karten und einer kompakten Übersicht. Bei vielen Badges ist die kompakte Ansicht schneller zu überblicken.'**
+  String get guideWalletViewBody;
+
+  /// No description provided for @guideCommunityPortalTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Portal'**
+  String get guideCommunityPortalTitle;
+
+  /// No description provided for @guideCommunityPortalBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Zugang zu Meetups, Terminen, Kursen und der Karte auf einundzwanzig.space. Vieles davon öffnet sich im Browser.'**
+  String get guideCommunityPortalBody;
+
+  /// No description provided for @guideCommunityNewsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'News und Nostr'**
+  String get guideCommunityNewsTitle;
+
+  /// No description provided for @guideCommunityNewsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Artikel aus dem Einundzwanzig-Magazin und die neuesten Notizen aus deinem Nostr-Netzwerk — beides direkt in der App lesbar.'**
+  String get guideCommunityNewsBody;
+
+  /// No description provided for @guideCommunityFunTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Mitmachen'**
+  String get guideCommunityFunTitle;
+
+  /// No description provided for @guideCommunityFunBody.
+  ///
+  /// In de, this message translates to:
+  /// **'SatoshiDuell für Quizrunden um Sats und PlebRap für Musik aus der Community. Beides braucht nichts weiter als deine Identität.'**
+  String get guideCommunityFunBody;
+
+  /// No description provided for @guideMyMeetupsListTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Meetups'**
+  String get guideMyMeetupsListTitle;
+
+  /// No description provided for @guideMyMeetupsListBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Meetups, für die du im Portal eingetragen bist. Tippe eines an, um seine Termine zu sehen und zu pflegen — dort legst du mit dem Knopf unten auch neue an.'**
+  String get guideMyMeetupsListBody;
+
+  /// No description provided for @guideMyMeetupsCreateTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Termin anlegen'**
+  String get guideMyMeetupsCreateTitle;
+
+  /// No description provided for @guideMyMeetupsCreateBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Trägt einen neuen Termin im Portal ein. Er erscheint danach im Kalender aller, die dieses Meetup als Favorit haben.'**
+  String get guideMyMeetupsCreateBody;
+
+  /// No description provided for @guideWotTabsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die drei Ansichten'**
+  String get guideWotTabsTitle;
+
+  /// No description provided for @guideWotTabsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Netzwerk zeigt, wer mit wem verbunden ist. Bürgen zeigt, für wen du stehst und wer für dich. Meldungen sammelt die Warnungen aus dem Netzwerk.'**
+  String get guideWotTabsBody;
+
+  /// No description provided for @guideWotRefreshTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Neu laden'**
+  String get guideWotRefreshTitle;
+
+  /// No description provided for @guideWotRefreshBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Holt den aktuellen Stand von den Relays. Das Netzwerk wächst mit jedem Meetup — ohne Nachladen siehst du den Stand vom letzten Öffnen.'**
+  String get guideWotRefreshBody;
+
+  /// No description provided for @guideHomeCustomizeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Dashboard'**
+  String get guideHomeCustomizeTitle;
+
+  /// No description provided for @guideHomeCustomizeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Unter dieser Überschrift liegen die Kacheln, die du gerade nicht angeheftet hast — sie sind nicht weg, nur zurückgestellt. Halte eine Kachel lange gedrückt, um sie anzuheften, zu lösen oder zu verschieben. So bekommst du oben genau das, was du wirklich benutzt.'**
+  String get guideHomeCustomizeBody;
+
+  /// No description provided for @guidePaMeetupsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meetups und Termine'**
+  String get guidePaMeetupsTitle;
+
+  /// No description provided for @guidePaMeetupsBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Beide führen in den Kalender: das eine zu den Gruppen, das andere zu den nächsten Terminen. Was du dort siehst, hängt an deinen Favoriten — mit mehr Favoriten wird die Liste voller.'**
+  String get guidePaMeetupsBody;
+
+  /// No description provided for @guidePaCoursesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurse'**
+  String get guidePaCoursesTitle;
+
+  /// No description provided for @guidePaCoursesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Bildungsangebote von Einundzwanzig samt Dozenten — vom Einsteigerabend bis zur mehrteiligen Reihe. Ein Tipp auf einen Kurs zeigt Inhalt, Termine und wer ihn hält.'**
+  String get guidePaCoursesBody;
+
+  /// No description provided for @guidePaMapTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Karte'**
+  String get guidePaMapTitle;
+
+  /// No description provided for @guidePaMapBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeigt Meetups in deiner Umgebung auf einer Landkarte. Praktisch auf Reisen — oder wenn du wissen willst, was es außer deinem Home-Meetup noch in der Region gibt.'**
+  String get guidePaMapBody;
+
+  /// No description provided for @guidePaMineTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get guidePaMineTitle;
+
+  /// No description provided for @guidePaMineBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur für Organisatoren interessant: Hier pflegst du die Termine der Meetups, für die du im Portal eingetragen bist. Wer keines betreut, findet hier eine leere Liste.'**
+  String get guidePaMineBody;
+
+  /// No description provided for @guideSettingsProfileTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Profil und Schlüssel'**
+  String get guideSettingsProfileTitle;
+
+  /// No description provided for @guideSettingsProfileBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier änderst du deinen Namen und dein Home-Meetup — und hier liegen deine Nostr-Schlüssel. Ganz unten kannst du den npub kopieren und dir den nsec anzeigen lassen. Wenn die App dir einen Schlüssel erstellt hat, ist das der Ort, an dem du ihn findest.'**
+  String get guideSettingsProfileBody;
+
+  /// No description provided for @glFindKeysTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Wo finde ich meine Schlüssel?'**
+  String get glFindKeysTitle;
+
+  /// No description provided for @glFindKeysBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen → Profil, ganz unten. Dort kopierst du den npub mit einem Tipp und lässt dir den nsec anzeigen — letzteres nur nach einer Warnung, denn wer den nsec sieht, hat deine Identität. Nutzt du Amber, eine Browsererweiterung oder einen Bunker, gibt es hier keinen nsec: Der liegt dann dort und nicht in dieser App.'**
+  String get glFindKeysBody;
+
+  /// No description provided for @idSetupSecureTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Identität erstellt — jetzt sichern'**
+  String get idSetupSecureTitle;
+
+  /// No description provided for @idSetupSecureBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Es gibt zwei Arten zu sichern — sie können unterschiedliche Dinge. Am besten machst du beides.'**
+  String get idSetupSecureBody;
+
+  /// No description provided for @idSetupSecureBackup.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup erstellen'**
+  String get idSetupSecureBackup;
+
+  /// No description provided for @idSetupSecureCopy.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüssel in die Zwischenablage'**
+  String get idSetupSecureCopy;
+
+  /// No description provided for @idSetupSecureWhere.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Schlüssel findest du jederzeit unter Einstellungen → Profil.'**
+  String get idSetupSecureWhere;
+
+  /// No description provided for @idSetupSecureBackupTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup-Datei'**
+  String get idSetupSecureBackupTitle;
+
+  /// No description provided for @idSetupSecureBackupBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Enthält alles: Schlüssel, Badges, Reputation und Einstellungen. Damit steht deine App auf einem neuen Gerät wieder genau so da. Die Datei ist mit einem eigenen Passwort verschlüsselt.'**
+  String get idSetupSecureBackupBody;
+
+  /// No description provided for @idSetupSecureKeyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Verschlüsselter Schlüssel'**
+  String get idSetupSecureKeyTitle;
+
+  /// No description provided for @idSetupSecureKeyBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Schluss noch dein Nostr-Schlüssel allein, mit deinem Passwort verpackt (ncryptsec). Er rettet deine Identität, aber keine Badges — dafür veraltet er nie und passt in jeden Passwortmanager.'**
+  String get idSetupSecureKeyBody;
+
+  /// No description provided for @idSetupSecureRepeat.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederhole das Backup ab und zu unter Einstellungen → Backup. Eine Datei von heute kennt die Badges von morgen nicht — was danach dazukommt, wäre bei einem Geräteverlust weg.'**
+  String get idSetupSecureRepeat;
+
+  /// No description provided for @idSetupSecureKeySave.
+  ///
+  /// In de, this message translates to:
+  /// **'Als Datei speichern'**
+  String get idSetupSecureKeySave;
+
+  /// No description provided for @idSetupSecureKeySaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Schlüsseldatei gespeichert.'**
+  String get idSetupSecureKeySaved;
+
+  /// No description provided for @idSetupSecureSkip.
+  ///
+  /// In de, this message translates to:
+  /// **'Überspringen'**
+  String get idSetupSecureSkip;
+
+  /// No description provided for @idSetupSecureFileHeader.
+  ///
+  /// In de, this message translates to:
+  /// **'Einundzwanzig Meetup App — verschlüsselter Nostr-Schlüssel (ncryptsec, NIP-49). Ohne das zugehörige Passwort ist diese Datei wertlos. Bewahre beides getrennt auf.'**
+  String get idSetupSecureFileHeader;
+
+  /// No description provided for @chatRelayHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gruppen-Relay von Einundzwanzig'**
+  String get chatRelayHint;
+
+  /// No description provided for @chatEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Nachrichten. Schreib die erste — der Raum liegt offen auf dem Relay und ist auch aus anderen Nostr-Apps erreichbar.'**
+  String get chatEmpty;
+
+  /// No description provided for @chatPlaceholder.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht schreiben …'**
+  String get chatPlaceholder;
+
+  /// No description provided for @chatJoin.
+  ///
+  /// In de, this message translates to:
+  /// **'Dem Raum beitreten'**
+  String get chatJoin;
+
+  /// No description provided for @chatJoinHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Mitlesen kannst du hier ohne Weiteres. Zum Mitschreiben musst du dem Raum beitreten — die Mitgliederliste führt das Relay.'**
+  String get chatJoinHint;
+
+  /// No description provided for @chatJoinFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Beitritt abgelehnt: {msg}'**
+  String chatJoinFailed(String msg);
+
+  /// No description provided for @chatSendFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nachricht nicht angekommen: {msg}'**
+  String chatSendFailed(String msg);
+
+  /// No description provided for @chatSearching.
+  ///
+  /// In de, this message translates to:
+  /// **'Chatraum wird gesucht …'**
+  String get chatSearching;
+
+  /// No description provided for @chatNoRoom.
+  ///
+  /// In de, this message translates to:
+  /// **'Für {city} gibt es auf dem Gruppen-Relay noch keinen Chatraum. Einzelheiten stehen im Diagnose-Log.'**
+  String chatNoRoom(String city);
+
+  /// No description provided for @chatEventOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Chat zum Termin'**
+  String get chatEventOpen;
+
+  /// No description provided for @chatEventFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Chatraum konnte nicht geöffnet werden. Einzelheiten stehen im Diagnose-Log.'**
+  String get chatEventFailed;
+
+  /// No description provided for @btnChat.
+  ///
+  /// In de, this message translates to:
+  /// **'Chat'**
+  String get btnChat;
+
+  /// No description provided for @btnInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Info'**
+  String get btnInfo;
+
+  /// No description provided for @chatEventHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Beiträge zum Termin · öffentlich auf Nostr'**
+  String get chatEventHint;
+
+  /// No description provided for @chatEventEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nichts geschrieben. Teile hier Infos zum Termin — Treffpunkt, Änderungen, Fragen. Die Beiträge hängen am Termin selbst und sind aus jeder Nostr-App zu sehen.'**
+  String get chatEventEmpty;
+
+  /// No description provided for @chatMemberHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Beitritt setzt eine Mitgliedschaft im Einundzwanzig-Verein voraus. Ohne sie lehnt das Relay den Beitritt ab — du bleibst dann stiller Mitleser.'**
+  String get chatMemberHint;
+
+  /// No description provided for @chatMemberLink.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Verein'**
+  String get chatMemberLink;
+
+  /// No description provided for @walletSince.
+  ///
+  /// In de, this message translates to:
+  /// **'seit {month}'**
+  String walletSince(String month);
+
+  /// No description provided for @walletLastVisit.
+  ///
+  /// In de, this message translates to:
+  /// **'zuletzt {ago}'**
+  String walletLastVisit(String ago);
+
+  /// No description provided for @walletAgoToday.
+  ///
+  /// In de, this message translates to:
+  /// **'heute'**
+  String get walletAgoToday;
+
+  /// No description provided for @walletAgoYesterday.
+  ///
+  /// In de, this message translates to:
+  /// **'gestern'**
+  String get walletAgoYesterday;
+
+  /// No description provided for @walletAgoDays.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {days} Tagen'**
+  String walletAgoDays(int days);
+
+  /// No description provided for @walletAgoMonths.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {months} Monaten'**
+  String walletAgoMonths(int months);
+
+  /// No description provided for @walletAgoYears.
+  ///
+  /// In de, this message translates to:
+  /// **'vor {years} Jahren'**
+  String walletAgoYears(int years);
+
+  /// No description provided for @walletCollectionCount.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badges'**
+  String walletCollectionCount(int count);
+
+  /// No description provided for @rsvpYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich komme'**
+  String get rsvpYes;
+
+  /// No description provided for @rsvpNo.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich komme nicht'**
+  String get rsvpNo;
+
+  /// No description provided for @tileEventChats.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Termine'**
+  String get tileEventChats;
+
+  /// No description provided for @tileEventChatsSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusagen & Chats'**
+  String get tileEventChatsSub;
+
+  /// No description provided for @eventChatsTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Termine'**
+  String get eventChatsTitle;
+
+  /// No description provided for @eventChatsEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Hier stehen die nächsten Termine deiner Meetups und alle Veranstaltungen, für die du zugesagt hast. Wähle ein Meetup als Favorit oder sage im Kalender zu.'**
+  String get eventChatsEmpty;
+
+  /// No description provided for @tileEventChatsUnread.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} neue Nachrichten'**
+  String tileEventChatsUnread(int count);
+
+  /// No description provided for @chatYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get chatYou;
+
+  /// No description provided for @chatCopyNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'npub kopieren'**
+  String get chatCopyNpub;
+
+  /// No description provided for @chatNpubCopied.
+  ///
+  /// In de, this message translates to:
+  /// **'npub kopiert.'**
+  String get chatNpubCopied;
+
+  /// No description provided for @eventChatsMeetups.
+  ///
+  /// In de, this message translates to:
+  /// **'Meine Meetups'**
+  String get eventChatsMeetups;
+
+  /// No description provided for @eventChatsEvents.
+  ///
+  /// In de, this message translates to:
+  /// **'Zugesagte Veranstaltungen'**
+  String get eventChatsEvents;
+
+  /// No description provided for @tileEventChatsNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Nichts geplant'**
+  String get tileEventChatsNone;
+
+  /// No description provided for @rsvpAttendees.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} dabei'**
+  String rsvpAttendees(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -24,7 +24,6 @@
 import 'package:flutter/material.dart';
 import '../services/app_logger.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:nfc_manager/nfc_manager.dart';
 import 'package:nfc_manager_ndef/nfc_manager_ndef.dart';    // Ndef (cross-platform)
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -32,12 +31,13 @@ import 'package:nostr/nostr.dart';
 import '../theme.dart';
 import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
+import '../features.dart';
 import '../services/coattendance_service.dart';
+import '../services/event_badge_chain_service.dart';
 import '../services/meetup_location_service.dart';
 import '../services/meetup_service.dart';
 import '../models/badge.dart';
 import '../models/meetup.dart';
-import '../models/user.dart';
 import '../services/badge_security.dart';
 import '../services/badge_claim_service.dart';               // NEU: Claim-Binding
 import '../services/reputation_publisher.dart';              // NEU: Auto-Publish
@@ -96,6 +96,9 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   // Dialog angezeigt statt einen Fake-Badge zu erstellen.
   // =============================================
 
+  /// NFC-Lesen. Bleibt im Code, wird aber nicht mehr aufgerufen, solange
+  /// [kNfcEnabled] false ist — siehe lib/features.dart.
+  // ignore: unused_element
   void _startNfcRead() async {
     setState(() => _statusText = AppLocalizations.of(context).verifyCheckingNfc);
 
@@ -128,12 +131,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                 ? AppLocalizations.of(context).verifyNoNfcLong +
                   AppLocalizations.of(context).verifyUseQrInstead +
                   AppLocalizations.of(context).verifyToGetBadge
-                : AppLocalizations.of(context).nfcEnableHint +
-                  AppLocalizations.of(context).verifyToGetBadge +
-                  "\n\n" +
-                  AppLocalizations.of(context).nfcSettingsAndroid +
-                  "\n" +
-                  AppLocalizations.of(context).nfcSettingsIos,
+                : "${AppLocalizations.of(context).nfcEnableHint}${AppLocalizations.of(context).verifyToGetBadge}\n\n${AppLocalizations.of(context).nfcSettingsAndroid}\n${AppLocalizations.of(context).nfcSettingsIos}",
             style: const TextStyle(color: Colors.grey, height: 1.5),
           ),
           actions: [
@@ -336,10 +334,16 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
   }) async {
     if (!mounted) return;
 
+    // Uebersetzungen EINMAL vorab greifen. Danach folgen Netzabrufe
+    // (Blockhoehe, Admin-Pruefung, Badge-Bindung) von mehreren Sekunden;
+    // der Bildschirm kann in der Zeit geschlossen worden sein, und der
+    // fertige Meldungstext wird ohnehin erst am Ende zusammengesetzt.
+    final tr = AppLocalizations.of(context);
+
     // Kompakt-Format normalisieren
     final normalized = BadgeSecurity.normalize(tagData);
 
-    final String meetupName = normalized['meetup_name'] ?? AppLocalizations.of(context).verifyUnknownMeetup;
+    final String meetupName = normalized['meetup_name'] ?? tr.verifyUnknownMeetup;
     final String meetupCountry = normalized['meetup_country'] ?? '';
     final String meetupId = normalized['meetup_id'] ?? DateTime.now().toString();
 
@@ -446,9 +450,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         if (isSelfScan) {
           setState(() {
             _success = false;
-            _statusText = "✗ " +
-                AppLocalizations.of(context).verifyCantSelfBadge +
-                AppLocalizations.of(context).verifyAskScan;
+            _statusText = "✗ ${tr.verifyCantSelfBadge}${tr.verifyAskScan}";
           });
           return; // ← Abbruch, kein Badge wird gespeichert
         }
@@ -486,7 +488,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       // bleibt gueltig, es wird nur keine Anwesenheit veroeffentlicht —
       // besser keine Verknuepfung als eine falsche.
       final nameSlug = meetupName.trim().toLowerCase().replaceAll(' ', '-');
-      final unknownSlug = AppLocalizations.of(context)
+      final unknownSlug = tr
           .verifyUnknownMeetup
           .trim()
           .toLowerCase()
@@ -513,23 +515,52 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       bool isKnownAdmin = false;
       String adminCheckInfo = '';
 
+      // Event-Badge? Dann steht die Berechtigung nicht in der Registry,
+      // sondern im Kalender-Event. Die Adresse dafuer kommt aus dem
+      // signierten Payload.
+      final String? eventAddress = BadgeSecurity.eventAddressOf(normalized);
+
+      /// Bild des Event-Badges — kommt aus dem Kalender-Event und wandert
+      /// gleich mit ins Badge.
+      String eventBadgeImage = '';
+
       if (verifyResult != null && verifyResult.version >= 2 && adminPubkey.isNotEmpty) {
-        try {
-          final adminResult = await AdminRegistry.checkAdminByPubkey(adminPubkey);
-          isKnownAdmin = adminResult.isAdmin;
-          if (isKnownAdmin) {
-            final adminName = adminResult.name ?? adminResult.meetup ?? AppLocalizations.of(context).verifyVerifiedAdmin;
-            adminCheckInfo = AppLocalizations.of(context).mvKnownOrganizer(adminName);
-          } else {
-            adminCheckInfo = AppLocalizations.of(context).mvUnknownSigner;
+        if (eventAddress != null) {
+          final chain = await EventBadgeChainService.verify(
+            eventAddress: eventAddress,
+            signerPubkey: adminPubkey,
+          );
+          isKnownAdmin = chain.ok;
+          eventBadgeImage = chain.badgeImageUrl;
+          adminCheckInfo = switch (chain.status) {
+            EventChainStatus.verified => tr.mvEventIssuerOk(
+                chain.eventTitle, chain.creatorName ?? tr.verifyVerifiedAdmin),
+            EventChainStatus.signerNotListed =>
+              tr.mvEventSignerNotListed(chain.eventTitle),
+            EventChainStatus.creatorNotAuthorized =>
+              tr.mvEventCreatorNotAuthorized(chain.eventTitle),
+            EventChainStatus.eventHasNoBadge =>
+              tr.mvEventHasNoBadge(chain.eventTitle),
+            EventChainStatus.eventNotFound => tr.mvEventNotFound,
+          };
+        } else {
+          try {
+            final adminResult = await AdminRegistry.checkAdminByPubkey(adminPubkey);
+            isKnownAdmin = adminResult.isAdmin;
+            if (isKnownAdmin) {
+              final adminName = adminResult.name ?? adminResult.meetup ?? tr.verifyVerifiedAdmin;
+              adminCheckInfo = tr.mvKnownOrganizer(adminName);
+            } else {
+              adminCheckInfo = tr.mvUnknownSigner;
+            }
+          } catch (e) {
+            // Offline: Cache-Miss → Warnung anzeigen
+            adminCheckInfo = tr.mvAdminCheckFailed;
           }
-        } catch (e) {
-          // Offline: Cache-Miss → Warnung anzeigen
-          adminCheckInfo = AppLocalizations.of(context).mvAdminCheckFailed;
         }
       } else if (verifyResult != null && verifyResult.version == 1) {
         // Legacy v1: Shared Secret, per Definition nicht vertrauenswürdig
-        adminCheckInfo = AppLocalizations.of(context).mvLegacyBadge;
+        adminCheckInfo = tr.mvLegacyBadge;
       }
 
       // Originalen signierten Content für Re-Verifikation
@@ -561,7 +592,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
           claimEventId = claimResult.claimEventId;
           claimPubkey = claimResult.claimPubkey;
           claimTimestamp = claimResult.claimTimestamp;
-          claimInfo = AppLocalizations.of(context).mvBadgeBound;
+          claimInfo = tr.mvBadgeBound;
         } else {
           claimInfo = '⚠ Binding: ${claimResult.message}';
         }
@@ -594,13 +625,17 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
         claimPubkey: claimPubkey,
         claimTimestamp: claimTimestamp,
         isRetroactive: false,
+        // Event-Badge: wirkt im Trust Score und im Vertrauensnetzwerk
+        // anders als ein Meetup-Badge.
+        isEvent: eventAddress != null,
+        coverUrl: eventBadgeImage,
       );
 
-      msg = "${AppLocalizations.of(context).verifyBadgeFound}\n\n";
-      msg += "${AppLocalizations.of(context).verifyMsgLocation(fullName)}\n";
-      if (currentBlockHeight > 0) msg += "${AppLocalizations.of(context).verifyMsgBlock(currentBlockHeight)}\n";
-      if (tagData['_verified_by'] != null) msg += "${AppLocalizations.of(context).verifyMsgSignedBy(tagData['_verified_by'].toString())}\n";
-      if (sigVersion == 2) msg += "${AppLocalizations.of(context).verifyMsgProof}\n";
+      msg = "${tr.verifyBadgeFound}\n\n";
+      msg += "${tr.verifyMsgLocation(fullName)}\n";
+      if (currentBlockHeight > 0) msg += "${tr.verifyMsgBlock(currentBlockHeight)}\n";
+      if (tagData['_verified_by'] != null) msg += "${tr.verifyMsgSignedBy(tagData['_verified_by'].toString())}\n";
+      if (sigVersion == 2) msg += "${tr.verifyMsgProof}\n";
       if (claimInfo.isNotEmpty) msg += claimInfo;
 
       if (adminCheckInfo.isNotEmpty) {
@@ -608,14 +643,14 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       }
 
       final expiryStr = BadgeSecurity.expiryInfo(tagData);
-      if (expiryStr != AppLocalizations.of(context).verifyNoExpiry) msg += "\n\n${AppLocalizations.of(context).verifyMsgTagExpiry(expiryStr)}";
+      if (expiryStr != tr.verifyNoExpiry) msg += "\n\n${tr.verifyMsgTagExpiry(expiryStr)}";
 
       if (!isKnownAdmin && verifyResult != null && verifyResult.version >= 2 && adminPubkey.isNotEmpty) {
         _isUnknownSigner = true;
       }
 
     } else {
-      msg = AppLocalizations.of(context).verifyAlreadyToday(fullName);
+      msg = tr.verifyAlreadyToday(fullName);
       _pendingBadge = null;
       _pendingOrgLat = 0;
       _pendingOrgLng = 0;
@@ -1125,7 +1160,16 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                         border: Border.all(color: cOrange, width: 4),
                         boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 5)],
                       ),
-                      child: const Center(child: Icon(Icons.nfc, size: 80, color: Colors.white)),
+                      // Symbol folgt der Funktion: Ohne NFC wird hier nur
+                      // noch der QR gescannt, und ein NFC-Zeichen liesse
+                      // Leute nach einem Tag suchen, den es nicht gibt.
+                      child: Center(
+                          child: Icon(
+                              kNfcEnabled
+                                  ? Icons.nfc
+                                  : Icons.qr_code_scanner_rounded,
+                              size: 80,
+                              color: Colors.white)),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -1139,19 +1183,22 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
                   ),
                   const SizedBox(height: 40),
 
-                  // NFC Button
-                  SizedBox(
-                    width: 250, height: 56,
-                    child: ElevatedButton.icon(
-                      onPressed: _startNfcRead,
-                      icon: const Icon(Icons.nfc, color: Colors.white),
-                      label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+                  // NFC Button — abgeschaltet, siehe lib/features.dart
+                  if (kNfcEnabled) ...[
+                    SizedBox(
+                      width: 250, height: 56,
+                      child: ElevatedButton.icon(
+                        onPressed: _startNfcRead,
+                        icon: const Icon(Icons.nfc, color: Colors.white),
+                        label: Text(AppLocalizations.of(context).verifyScanNfc, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(backgroundColor: cOrange),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                  ],
 
-                  // QR Button
+                  // QR Button — ohne NFC der einzige Weg, deshalb gefuellt
+                  // statt umrandet.
                   SizedBox(
                     width: 250, height: 56,
                     child: OutlinedButton.icon(

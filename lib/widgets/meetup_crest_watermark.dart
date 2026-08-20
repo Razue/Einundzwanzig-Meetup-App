@@ -12,7 +12,7 @@ import '../services/meetup_calendar_service.dart';
 /// Bild nicht laedt oder man offline ist —, bleibt schlicht nichts uebrig
 /// und die generative Grafik darunter traegt die Karte allein. Niemals ein
 /// leerer Kasten oder ein kaputtes Bildsymbol.
-class MeetupCrestWatermark extends StatelessWidget {
+class MeetupCrestWatermark extends StatefulWidget {
   /// Meetup-Name aus dem Badge, Form "Stadt, LAND".
   final String meetupName;
 
@@ -22,32 +22,76 @@ class MeetupCrestWatermark extends StatelessWidget {
   /// Anteil der Kartenbreite, den das Wappen einnimmt.
   final double widthFactor;
 
+  /// Feste Bild-URL, die Vorrang vor der Wappen-Suche hat.
+  ///
+  /// Fuer EVENT-BADGES: Deren Bild kommt aus dem Kalender-Event und nicht
+  /// aus der Meetup-Liste des Portals. Die Suche nach "Blocktrainer Event"
+  /// haette dort nie etwas gefunden, und das hochgeladene Bild waere im
+  /// Badge nie aufgetaucht.
+  final String? imageUrl;
+
   const MeetupCrestWatermark({
     super.key,
     required this.meetupName,
     this.opacity = 0.20,
     this.widthFactor = 1.05,
+    this.imageUrl,
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Der Badge-Name traegt das Land hinten dran — fuer die Wappen-Suche
-    // zaehlt nur der Teil davor.
-    final city = meetupName.split(',').first.trim();
-    if (city.isEmpty) return const SizedBox.shrink();
+  State<MeetupCrestWatermark> createState() => _MeetupCrestWatermarkState();
+}
 
-    final url = MeetupCalendarService.absoluteImageUrl(
-      MeetupCalendarService.logoFor(city),
-    );
+class _MeetupCrestWatermarkState extends State<MeetupCrestWatermark> {
+  /// Laeuft gerade ein Nachladen? Statisch, damit nicht jede Badge-Karte
+  /// im Wallet ihren eigenen Abruf startet — bei zwanzig Badges waeren das
+  /// zwanzig gleiche Anfragen.
+  static Future<void>? _loading;
+
+  @override
+  void initState() {
+    super.initState();
+    _ensureLogos();
+  }
+
+  /// Die Wappen stehen in MeetupCalendarService.portalLogos, und die Karte
+  /// wird NUR beim Laden der Termine gefuellt. Wer die App oeffnet und
+  /// direkt in die Badge-Wallet geht, hat sie also leer — dann fehlten alle
+  /// Wappen, ohne dass etwas kaputt war. Deshalb holt das Widget sie selbst
+  /// nach, wenn sie fehlen.
+  Future<void> _ensureLogos() async {
+    if (MeetupCalendarService.portalLogos.isNotEmpty) return;
+    if ((widget.imageUrl ?? '').isNotEmpty) return; // feste URL, kein Bedarf
+
+    _loading ??= MeetupCalendarService().fetchMeetupsPortalFirst().then((_) {});
+    await _loading;
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Feste URL schlaegt die Suche.
+    String url = (widget.imageUrl ?? '').trim();
+
+    if (url.isEmpty) {
+      // Der Badge-Name traegt das Land hinten dran — fuer die Wappen-Suche
+      // zaehlt nur der Teil davor.
+      final city = widget.meetupName.split(',').first.trim();
+      if (city.isEmpty) return const SizedBox.shrink();
+
+      url = MeetupCalendarService.absoluteImageUrl(
+        MeetupCalendarService.logoFor(city),
+      );
+    }
     if (url.isEmpty) return const SizedBox.shrink();
 
     return LayoutBuilder(
       builder: (context, c) {
-        final side = c.maxWidth * widthFactor;
+        final side = c.maxWidth * widget.widthFactor;
         return Align(
           alignment: const Alignment(0.15, -0.25),
           child: Opacity(
-            opacity: opacity,
+            opacity: widget.opacity,
             // WEICH AUSLAUFENDE KANTEN: Ohne die Maske sass das Wappen als
             // hart begrenztes Rechteck auf der Karte und wirkte aufgeklebt.
             // Der radiale Verlauf laesst es zum Rand hin verschwinden, so

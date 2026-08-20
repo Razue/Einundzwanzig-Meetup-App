@@ -32,14 +32,11 @@ import '../services/meetup_service.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/trust_score_service.dart';
 import '../services/admin_registry.dart';
-import '../services/nostr_service.dart';
 import '../services/badge_claim_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/nostr_profile_service.dart';
-import 'meetup_verification.dart';
 import 'meetup_selection.dart';
-import 'badge_details.dart';
 import 'profile_edit.dart';
 import 'identity_setup_screen.dart';
 import 'intro.dart';
@@ -68,21 +65,28 @@ import '../services/widget_service.dart';
 import '../services/signing_service.dart';
 import '../services/satoshiduell_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:home_widget/home_widget.dart';
 import 'calendar_screen.dart';
 import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
 import '../services/promotion_claim_service.dart';
 import '../services/secure_key_store.dart';
 import '../services/local_key_vault.dart';
-import '../services/admin_status_verifier.dart';
-import '../services/platform_proof_service.dart';
 import '../services/humanity_proof_service.dart';
-import '../services/nip05_service.dart';
 import '../services/app_logger.dart';
 import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
+import '../services/chat_service.dart';
+import '../services/event_chat_service.dart';
+import '../services/event_rsvp_service.dart';
+import 'chat_screen.dart';
+import 'my_events_screen.dart';
+import 'package:provider/provider.dart';
+
+import '../services/guide_service.dart';
+import '../tours/home_tour.dart';
+import 'glossary_screen.dart';
+import '../tours/settings_tour.dart';
 import '../l10n/level_labels.dart';
 
 // ============================================================
@@ -111,10 +115,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   UserProfile _user = UserProfile();
   Meetup? _homeMeetup;
   TrustScore? _trustScore;
-  int _platformProofCount = 0;
-  bool _humanityVerified = false;
-  bool _nip05Verified = false;
-  List<String> _platformNames = [];
   MeetupSession? _activeSession;
   Timer? _sessionTimer;
   Timer? _midnightTimer; // Wechsel Heute/Morgen exakt um 0 Uhr
@@ -173,9 +173,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   List<String> _tileOrder = [];
   Set<String> _hiddenTiles = {};
   // Pflicht-Kacheln (nicht löschbar)
-  static const _requiredTiles = {'home_meetup', 'reputation'};
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
+  // WICHTIG: Jede neue Kachel muss hier stehen. _buildTileRows geht ueber
+  // diese Reihenfolge — was nicht drin ist, wird nie gezeichnet, egal was
+  // in _tileDefs steht. "event_chats" fehlte hier, deshalb blieb die Kachel
+  // "Meine Termine" unsichtbar, obwohl Zusagen vorlagen.
+  static const _defaultOrder = ['home_meetup', 'event_chats', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
 
   late List<_TileDef> _tileDefs;
@@ -213,6 +216,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // Handy über Nacht in der Tasche, morgens aufgeklappt -> stimmt sofort.
       _loadNextHomeMeetup();
       _scheduleMidnightRefresh();
+      // Laufende Session ebenfalls neu pruefen. Ohne diese Zeile erschien
+      // die Kachel erst beim naechsten KALTSTART: Wer die App nur in den
+      // Hintergrund schiebt — der Normalfall auf einem Event — kam zurueck
+      // und sah nichts, obwohl die Session lief.
+      _checkActiveSession();
+      _loadChatUnread();
     }
   }
 
@@ -329,6 +338,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'trust_score',  label: 'Trust Score',      span: 2, removable: false, builder: _buildTrustScoreTile),
       // countdown-Kachel wurde in Home Meetup integriert
       _TileDef(id: 'home_meetup',  label: 'Home Meetup',      span: 3, removable: false, builder: _buildHomeMeetupTile),
+      // Feste Kachel direkt darunter: "Was habe ich vor" gehoert neben
+      // "Wo gehoere ich hin". Nicht abwaehlbar und IMMER sichtbar — auch
+      // ohne Zusagen, denn dann erklaert sie, dass es sie gibt. Eine Kachel,
+      // die erst bei Inhalt erscheint, findet niemand.
+      _TileDef(id: 'event_chats',  label: 'Meine Termine',    span: 3, removable: false, builder: _buildMyEventsTile),
       _TileDef(id: 'reputation',   label: 'Reputation',       span: 1, builder: _buildReputationTile),
       // ── Optionale Kacheln (removable: true) ──
       _TileDef(id: 'community',    label: 'Community',        span: 2, builder: _buildCommunityTile),
@@ -393,7 +407,27 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (saved != null && saved.isNotEmpty) {
       // Merge: gespeicherte Reihenfolge + neue Tiles die noch nicht drin sind
       final known = saved.where((id) => _defaultOrder.contains(id)).toList();
-      for (final id in _defaultOrder) { if (!known.contains(id)) known.add(id); }
+
+      // Neue Kacheln an ihren VORGESEHENEN Platz einfuegen, nicht ans Ende.
+      //
+      // Vorher landete alles Neue hinter der letzten Kachel — bei jemandem
+      // mit siebzehn angehefteten Kacheln also ganz unten, wo es niemand
+      // sieht. Gesucht wird deshalb der naechste Vorgaenger aus der
+      // Standardreihenfolge, der beim Nutzer schon vorhanden ist; dahinter
+      // kommt die neue Kachel.
+      for (final id in _defaultOrder) {
+        if (known.contains(id)) continue;
+        final idx = _defaultOrder.indexOf(id);
+        var pos = 0;
+        for (var i = idx - 1; i >= 0; i--) {
+          final at = known.indexOf(_defaultOrder[i]);
+          if (at >= 0) {
+            pos = at + 1;
+            break;
+          }
+        }
+        known.insert(pos, id);
+      }
       if (mounted) setState(() { _tileOrder = known; _hiddenTiles = savedHidden; });
     } else {
       if (mounted) setState(() { _tileOrder = List.from(_defaultOrder); _hiddenTiles = Set.from(_defaultHidden); });
@@ -409,7 +443,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   @override
   void dispose() {
     _favPageCtrl.dispose(); WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _midnightTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
-  void refreshAfterScan() { _loadBadges(); _calculateTrustScore(); _loadNextHomeMeetup(); _checkPortalOrganizer(); _refreshPortalConnected(); }
+  /// Wird von der Huelle gerufen, sobald der Home-Reiter wieder vorne ist.
+  ///
+  /// Hier gehoeren die Zusagen mit hinein: Wer ueber die untere Leiste in den
+  /// Kalender geht, dort zusagt und zurueckwechselt, loest KEINE Rueckkehr
+  /// aus einer Route aus — das Dashboard blieb einfach stehen. Genau deshalb
+  /// erschien die Kachel erst nach dem Aktualisieren von Hand.
+  void refreshAfterScan() {
+    _loadBadges();
+    _calculateTrustScore();
+    _loadNextHomeMeetup();
+    _checkPortalOrganizer();
+    _refreshPortalConnected();
+    _loadMyEvents();
+  }
 
   bool _refreshing = false;
 
@@ -421,13 +468,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// - nächstes Home-Meetup + Portal-Verbindung aktualisieren
   /// So bekommt z.B. ein frisch im Portal ernannter Organisator oder ein
   /// per Nostr Verbürgter seine Rechte/Kachel, ohne die App neu zu starten.
-  Future<void> _refreshAll() async {
+  /// [fromGesture] unterdrueckt die Lauf-Meldung.
+  ///
+  /// Beim Ziehen sieht man den Kringel bereits — eine zusaetzliche Meldung
+  /// "wird aktualisiert" waere doppelt. Beim Knopf oben gibt es keine solche
+  /// Rueckmeldung, dort bleibt sie.
+  Future<void> _refreshAll({bool fromGesture = false}) async {
     if (_refreshing) return;
     setState(() => _refreshing = true);
     final t = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(t.refreshRunning), backgroundColor: cCard,
-        duration: const Duration(seconds: 2), behavior: SnackBarBehavior.floating));
+    if (!fromGesture) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.refreshRunning), backgroundColor: cCard,
+          duration: const Duration(seconds: 2), behavior: SnackBarBehavior.floating));
+    }
     try {
       await _loadUser(skipOrgCheck: true); // Org-Check unten kontrolliert
       await _loadBadges();
@@ -439,12 +493,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       await _checkPortalOrganizer();      // Portal-Weg (räumt ggf. Cache)
       await _reVerifyAdminStatus();       // WoT/Bürgen-Weg (sieht sauberen Cache)
       _loadNextHomeMeetup();              // void (feuert async intern)
+      // Zusagen und ungelesene Nachrichten gehoeren dazu: Wer aktualisiert,
+      // will den GANZEN Stand sehen, nicht nur Badges und Punkte.
+      _loadMyEvents();
+      _loadChatUnread();
     } catch (_) {/* einzelne Fehler ignorieren, Rest läuft */}
     if (!mounted) return;
     setState(() => _refreshing = false);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(t.refreshDone), backgroundColor: Colors.green.shade700,
-        behavior: SnackBarBehavior.floating));
+    if (!fromGesture) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t.refreshDone), backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating));
+    }
   }
 
   // ============================================================
@@ -454,7 +514,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     await _loadUser();
     if (_user.nickname == 'Anon' || _user.nickname.isEmpty) { if (mounted) { await Navigator.push(context, MaterialPageRoute(builder: (_) => const IdentitySetupScreen())); await _loadUser(); } }
     await _loadBadges(); await _calculateTrustScore(); await _reVerifyAdminStatus();
-    _loadIdentityData(); _checkActiveSession(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
+    _loadIdentityData(); _checkActiveSession(); _loadChatUnread(); _loadMyEvents(); _syncOrganicAdminsInBackground(); _checkDeviceIntegrity();
     _loadNextHomeMeetup(); _loadProfilePicture(); _checkNostrNew();
   }
 
@@ -580,7 +640,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Stadt matchte sonst den Favoriten "Frankfurt" — dessen Karte
         // zeigte dann den fremden Termin (dein 4-statt-6-Tage-Fall).
         return terms.any((term) =>
-            RegExp('\\b' + RegExp.escape(term) + '\\b').hasMatch(hay));
+            RegExp('\\b${RegExp.escape(term)}\\b').hasMatch(hay));
       }
 
       // KALENDERTAG-KULANZ: ein Meetup bleibt den ganzen Tag "naechstes".
@@ -589,16 +649,38 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
       // Je Favorit-Stadt das naechste Event bestimmen.
       final cards = <_FavCard>[];
-      for (final cityName in favs) {
-        final upcoming = events
-            .where((e) => !e.startTime.isBefore(todayStart) && matchesCity(e, cityName))
+      for (final favKey in favs) {
+        // Der gespeicherte Wert ist eine Portal-ID (oder bei Altbestand eine
+        // Stadt). Fuer die Terminsuche wird daraus der Ort, fuer die
+        // Aufschrift der Gruppenname, falls die Stadt mehrere Meetups hat.
+        final cityName = MeetupService.cityFor(favKey);
+        final label = MeetupService.labelFor(favKey);
+        final meetup = MeetupService.resolveFavorite(favKey);
+
+        // ZUERST ueber die Portal-ID zuordnen: Termine aus dem Portal tragen
+        // sie, und sie trifft genau EIN Meetup. Der Namensvergleich darunter
+        // ist der Rueckfall fuer Termine ohne ID (ICS, Nostr) — er kann bei
+        // mehreren Meetups einer Stadt nicht unterscheiden und wuerde
+        // BitcoinWalk Würzburg und Würzburg Meetup dieselben Termine geben.
+        final byId = meetup == null
+            ? const <CalendarEvent>[]
+            : events
+                .where((e) =>
+                    e.meetupId.isNotEmpty && e.meetupId == meetup.id)
+                .toList();
+
+        final upcoming = (byId.isNotEmpty
+                ? byId
+                : events.where((e) => matchesCity(e, cityName)))
+            .where((e) => !e.startTime.isBefore(todayStart))
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
         final chosen = upcoming.isNotEmpty ? upcoming.first : null;
         AppLogger.diag('HomeMeetup',
-            'Favorit "$cityName": ${upcoming.length} Termine, naechster = '
+            'Favorit "$label" ($favKey, ${byId.isNotEmpty ? "per ID" : "per Name"}): ${upcoming.length} Termine, naechster = '
             '${chosen == null ? "keiner" : "\"${chosen.title}\" am ${chosen.startTime.day}.${chosen.startTime.month}. (${_daysUntil(chosen.startTime)} Tage)"}');
-        cards.add(_FavCard(city: cityName, event: chosen));
+        cards.add(_FavCard(
+            key: favKey, label: label, city: cityName, event: chosen));
       }
 
       // Sortierung: Staedte MIT Termin nach Datum aufsteigend; Staedte OHNE
@@ -613,6 +695,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       if (mounted) {
         setState(() {
           _favCards = cards;
+
           // _nextHomeMeetup weiter fuer Kompatibilitaet (Widget/Routing) setzen:
           // das global naechste Event ueber alle Favoriten.
           _nextHomeMeetup = cards.isNotEmpty ? cards.first.event : null;
@@ -630,21 +713,32 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         countdown = days <= 0 ? 'Heute' : (days == 1 ? 'Morgen' : 'in $days Tagen');
       }
       WidgetService.updateMeetup(city: front?.city ?? '', countdown: countdown);
+
+      // Zusagen zu Meetup-Terminen im Hintergrund nachziehen. Hier, weil die
+      // Terminliste an dieser Stelle ohnehin vorliegt — ein zweiter Abruf
+      // waere reine Verschwendung.
+      _loadMeetupRsvps(events);
     } catch (_) { if (mounted) setState(() => _countdownLoading = false); }
   }
 
+  /// Haelt den Proof of Humanity aktuell.
+  ///
+  /// Frueher sammelte diese Methode zusaetzlich Plattform-Nachweise und
+  /// prueefte NIP-05 — beides nur, um vier Felder zu fuellen, die
+  /// ausschliesslich das Trust-Score-Sheet las. Mit dessen Wegfall waren die
+  /// Abfragen Arbeit ohne Wirkung: Relay-Verbindungen und eine
+  /// NIP-05-Aufloesung bei jedem Start, deren Ergebnis niemand ansah.
+  ///
+  /// Die Neupruefung bleibt, weil sie eine echte NEBENWIRKUNG hat: Sie
+  /// schreibt den bestaetigten Zustand in die Einstellungen zurueck. Wer sie
+  /// mitentfernt haette, haette einen abgelaufenen Nachweis nie wieder
+  /// aufgefrischt.
   void _loadIdentityData() async {
     try {
-      final proofs = await PlatformProofService.getSavedProofs();
-      var humanity = await HumanityProofService.getStatus();
-      if (humanity.needsReverification) { final r = await HumanityProofService.reverifyIfNeeded(); if (r) humanity = await HumanityProofService.getStatus(); }
-      bool nip05 = false;
-      if (_user.hasNostrKey && _user.nostrNpub.isNotEmpty) {
-        try { final relays = ['wss://relay.damus.io', 'wss://nos.lol']; final pk = Nip19.decodePubkey(_user.nostrNpub);
-          final n = await Nip05Service.fetchNip05FromProfile(pk, relays).timeout(const Duration(seconds: 8), onTimeout: () => null);
-          if (n != null && n.isNotEmpty) { final r = await Nip05Service.verify(n, pk); nip05 = r.valid; } } catch (_) {}
+      final humanity = await HumanityProofService.getStatus();
+      if (humanity.needsReverification) {
+        await HumanityProofService.reverifyIfNeeded();
       }
-      if (mounted) setState(() { _platformProofCount = proofs.length; _platformNames = proofs.map((p) => p.platform).toList(); _humanityVerified = humanity.verified; _nip05Verified = nip05; });
     } catch (_) {}
   }
 
@@ -893,6 +987,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (choice == null || choice == 'cancel') return;
 
     if (choice == 'backup') {
+      // Der Auswahldialog oben war ein await — erst pruefen, dann den
+      // Context weiterreichen.
+      if (!mounted) return;
       // Backup erstellen (gleiche Logik wie der manuelle Button)
       final ok = await BackupService.createBackup(context);
       if (!ok) return; // Backup abgebrochen/fehlgeschlagen -> NICHT zurücksetzen
@@ -945,7 +1042,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         MaterialPageRoute(builder: (_) => const IntroScreen()), (r) => false);
     }
   }
-  void _scanAnyMeetup() async { final d = Meetup(id: "global", city: "GLOBAL", country: "", telegramLink: "", lat: 0, lng: 0); await Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupVerificationScreen(meetup: d))); _loadBadges(); _calculateTrustScore(); }
   void _selectHomeMeetup() async {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => const MeetupSelectionScreen()));
     // WICHTIG: erst den User FERTIG laden (neue Favoritenliste!), DANN die
@@ -979,7 +1075,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         if (_deviceCompromised && !_dismissedIntegrityWarning) ...[_buildDeviceWarning(), const SizedBox(height: kTileGap)],
         if (_activeSession != null) ...[_buildActiveSessionTile(), const SizedBox(height: kTileGap)],
         // Fixe Home-Meetup-Kachel (immer gleiche Größe)
-        _buildHomeMeetupTile(),
+        //
+        // Der Tour-Schluessel haengt HIER und nicht in der _tourKeys-Tabelle:
+        // Diese Kachel wird als einzige nicht ueber _wrapEditable gezeichnet,
+        // also griff die Tabelle bei ihr nie. Die Dashboard-Tour wartete
+        // dadurch auf ein Ziel, das nie erschien, und startete nicht.
+        KeyedSubtree(
+            key: HomeTour.homeMeetupKey, child: _buildHomeMeetupTile()),
         const SizedBox(height: kTileGap),
         // Restlicher Raum: Der angeheftete Block fuellt weiterhin den
         // sichtbaren Bereich; die graue Reserve haengt darunter und wird
@@ -991,12 +1093,28 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                 _buildTileRows(excludeHomeMeetup: true, pinned: false).isNotEmpty;
             final pinnedHeight =
                 hasAvailable ? (c.maxHeight - 34).clamp(120.0, c.maxHeight) : c.maxHeight;
-            return SingleChildScrollView(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                _buildScaledTileBlock(pinnedHeight),
-                _buildAvailableSection(),
-                const SizedBox(height: 8),
-              ]),
+            // Ziehen zum Aktualisieren.
+            //
+            // Der Knopf oben bleibt — er ist der sichtbare Weg —, aber die
+            // Geste ist der erwartete. Wichtig dabei: Das Dashboard ist meist
+            // KUERZER als der Bildschirm und liesse sich dann gar nicht
+            // ziehen. Deshalb AlwaysScrollableScrollPhysics: Damit reagiert
+            // es auch ohne Ueberlaenge auf die Geste.
+            return RefreshIndicator(
+              onRefresh: () => _refreshAll(fromGesture: true),
+              color: cOrange,
+              backgroundColor: cCard,
+              // Etwas tiefer als ueblich, damit der Kringel unter der
+              // Kopfzeile erscheint und sie nicht ueberdeckt.
+              displacement: 28,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  _buildScaledTileBlock(pinnedHeight),
+                  _buildAvailableSection(),
+                  const SizedBox(height: 8),
+                ]),
+              ),
             );
           }),
         ),
@@ -1042,7 +1160,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   /// Huelle um jede Kachel: im Normalzustand nur ein Langdruck-Erkenner,
   /// im Bearbeiten-Modus Ziehen, Ablegen und Pinnadel.
+  /// Ordnet Kachel-Kennungen den Zielen der Dashboard-Tour zu.
+  ///
+  /// Bewusst EINE Tabelle statt eines Schluessels in jedem der dreizehn
+  /// Kachel-Bauer: Die Bauer geben teils ein _tile zurueck, teils einen
+  /// GestureDetector, teils einen ganzen Block — jeden einzeln zu umhuellen
+  /// waere dreizehnmal dieselbe Fehlerquelle. Hier haengt der Schluessel
+  /// dort, wo die Kachel ohnehin schon als Einheit vorliegt.
+  static final Map<String, GlobalKey> _tourKeys = {
+    'trust_score':   HomeTour.trustScoreKey,
+    'home_meetup':   HomeTour.homeMeetupKey,
+    'reputation':    HomeTour.reputationKey,
+    'trust_network': HomeTour.wotKey,
+    'community':     HomeTour.communityKey,
+    'events':        HomeTour.eventsKey,
+    'portal_connect':HomeTour.portalConnectKey,
+    'btc_dashboard': HomeTour.bitcoinKey,
+    'converter':     HomeTour.umrechnerKey,
+    'news':          HomeTour.newsKey,
+    'portal':        HomeTour.myMeetupsKey,
+    'shoutout':      HomeTour.shoutoutKey,
+    'podcast':       HomeTour.podcastKey,
+  };
+
   Widget _wrapEditable(_TileDef tile, Widget child) {
+    // Schluessel der Tour aussen anlegen, damit das Overlay die Kachel
+    // MITSAMT ihrer Umrandung misst.
+    final tourKey = _tourKeys[tile.id];
+    if (tourKey != null) child = KeyedSubtree(key: tourKey, child: child);
+
     final isEditing = _editTileId != null;
     final isSelected = _editTileId == tile.id;
     final isPinned = !_hiddenTiles.contains(tile.id);
@@ -1154,21 +1300,27 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Widget _buildAvailableSection() {
     final rows = _buildTileRows(excludeHomeMeetup: true, pinned: false);
     if (rows.isEmpty) return const SizedBox.shrink();
+    // Die Nostr-Kachel hat ein eigenes Icon-Layout und benoetigt etwas mehr
+    // Hoehe als die standardisierten Wert-Kacheln.
+    const double availableTileHeight = 124;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const SizedBox(height: kTileGap),
-      _sectionHeader(
-        AppLocalizations.of(context).tilesAvailable,
-        count: rows.length,
-        collapsed: _availableCollapsed,
-        onTap: () => setState(() => _availableCollapsed = !_availableCollapsed),
+      KeyedSubtree(
+        key: HomeTour.customizeKey,
+        child: _sectionHeader(
+          AppLocalizations.of(context).tilesAvailable,
+          count: rows.length,
+          collapsed: _availableCollapsed,
+          onTap: () => setState(() => _availableCollapsed = !_availableCollapsed),
+        ),
       ),
       if (!_availableCollapsed || _editTileId != null)
         for (int i = 0; i < rows.length; i++) ...[
           if (i > 0) const SizedBox(height: kTileGap),
           // Leicht gedaempft. Die eigentliche Abgrenzung leistet inzwischen
           // der Anstrich (schlicht statt gold), deshalb reicht ein Hauch.
-          Opacity(opacity: 0.8, child: SizedBox(height: 118, child: rows[i])),
+          Opacity(opacity: 0.8, child: SizedBox(height: availableTileHeight, child: rows[i])),
         ],
     ]);
   }
@@ -1227,7 +1379,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // pinned=false -> verfuegbare Kacheln (bisher "ausgeblendet"), grau
     final visibleTiles = _tileOrder
       .map((id) => _tileDefs.where((t) => t.id == id).firstOrNull)
-      .where((t) => t != null && t.visible() && (_hiddenTiles.contains(t!.id) != pinned))
+      .where((t) => t != null && t.visible() && (_hiddenTiles.contains(t.id) != pinned))
       .cast<_TileDef>()
       .where((t) => !excludeHomeMeetup || t.id != 'home_meetup')
       .toList();
@@ -1274,7 +1426,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     SvgPicture.asset('assets/images/einundzwanzig_logo.svg', height: 16),
     const Spacer(),
     _headerIcon(_refreshing ? Icons.hourglass_empty_rounded : Icons.refresh_rounded, _refreshing ? () {} : _refreshAll),
-    _headerIcon(Icons.settings_rounded, _showSettings),
+    // Nachschlagen steht LINKS vom Zahnrad: Wer nicht weiterweiss, sucht
+    // eher Hilfe als Einstellungen — und trifft sie so zuerst.
+    KeyedSubtree(
+        key: HomeTour.glossaryKey,
+        child: _headerIcon(
+            Icons.help_outline_rounded,
+            () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const GlossaryScreen())))),
+    KeyedSubtree(
+        key: HomeTour.settingsKey,
+        child: _headerIcon(Icons.settings_rounded, _showSettings)),
   ]);
 
   Widget _headerIcon(IconData icon, VoidCallback onTap) => GestureDetector(
@@ -1311,9 +1473,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                       ? NetworkImage(_localProfilePic!)
                       : FileImage(File(_localProfilePic!)),
                   fit: BoxFit.cover, width: 40, height: 40,
-                  errorBuilder: (_, __, ___) => _avatarFallback())
+                  errorBuilder: (_, _, _) => _avatarFallback())
               : _profilePicUrl != null
-                ? Image.network(_profilePicUrl!, fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, __, ___) => _avatarFallback())
+                ? Image.network(_profilePicUrl!, fit: BoxFit.cover, width: 40, height: 40, errorBuilder: (_, _, _) => _avatarFallback())
                 : _avatarFallback(),
           ),
         ),
@@ -1521,24 +1683,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     );
   }
 
-  Widget _buildCountdownTile() {
-    if (_countdownLoading) return _tile(accentColor: cCyan, child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Icon(Icons.hourglass_top_rounded, color: cCyan, size: 22), const Spacer(), const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: cCyan)), const SizedBox(height: 8), const Text('Lade...', style: TextStyle(color: cTextTertiary, fontSize: 11))]));
-    if (_nextHomeMeetup != null) {
-      final days = _daysUntil(_nextHomeMeetup!.startTime);
-      return _tile(accentColor: cCyan, opacity: 0.08, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: _user.homeMeetupId))),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Icon(Icons.event_available_rounded, color: cCyan, size: 22), const Spacer(),
-          days <= 0 ? const Text('Heute!', style: TextStyle(color: cCyan, fontSize: 26, fontWeight: FontWeight.w900, height: 1))
-            : Row(crossAxisAlignment: CrossAxisAlignment.end, children: [Text('$days', style: TextStyle(color: cText, fontSize: 32, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)), const SizedBox(width: 4),
-              Padding(padding: const EdgeInsets.only(bottom: 2), child: Text(days == 1 ? 'Tag' : 'Tage', style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)))]),
-          const SizedBox(height: 4), const Text('Nächstes Meetup', style: TextStyle(color: cText, fontSize: 11))]));
-    }
-    return _tile(accentColor: const Color(0xFF606068), opacity: 0.04, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen())),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-        const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 22), const Spacer(),
-        Text('--', style: TextStyle(color: cText, fontSize: 28, fontWeight: FontWeight.w900, fontFamily: fontMono, height: 1)), const SizedBox(height: 4),
-        Text(_user.homeMeetupId.isNotEmpty ? 'Kein Termin in Sicht.\nWird Zeit, das zu ändern!' : 'Erst Home Meetup\nwählen!', style: const TextStyle(color: cTextSecondary, fontSize: 10, height: 1.3))]));
-  }
 
   /// MEETUP-WAPPEN im "Cover-Flow"-Stil (iTunes): quadratisches Wappen,
   /// linke Kante fest, kippt perspektivisch nach rechts hinten und blendet
@@ -1546,14 +1690,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// CoverFlow-Wappen fuer EINE Stadt (parametrisiert, damit jede
   /// Favoriten-Karte ihr eigenes Wappen zeigt).
   Widget _crestCoverFlow(String city, Meetup? meetup, {double size = 56}) {
-    String url = MeetupCalendarService.logoFor(city);
-    if (url.isEmpty && meetup != null) {
-      // Fallback: Wappen aus /api/meetups — Pfade dort koennen RELATIV
-      // sein, deshalb normalisieren (sonst laedt Image.network still nichts
-      // und das Wappen fehlt, z.B. Darmstadt/Wiesbaden ohne Termin-Logo).
+    // Das EIGENE Wappen des Meetups hat Vorrang.
+    //
+    // MeetupCalendarService.logoFor() sucht ueber den Namen und liefert bei
+    // zwei Meetups derselben Stadt beiden dasselbe Bild. Liegt das Meetup-
+    // Objekt vor — seit der Umstellung auf die Portal-ID ist das der
+    // Normalfall —, nehmen wir dessen Logo.
+    String url = '';
+    if (meetup != null) {
       url = MeetupCalendarService.absoluteImageUrl(
           meetup.logoUrl.isNotEmpty ? meetup.logoUrl : meetup.coverImagePath);
     }
+    // Rueckfall: das ueber den Namen gefundene Termin-Logo. Greift bei
+    // Favoriten aus aelteren Fassungen, zu denen kein Meetup-Objekt
+    // aufloest.
+    if (url.isEmpty) url = MeetupCalendarService.logoFor(city);
     if (url.isEmpty) return const SizedBox.shrink();
     return SizedBox(
       width: size * 1.12, height: size,
@@ -1574,11 +1725,292 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+                errorBuilder: (_, _, _) => const SizedBox.shrink()),
           ),
         ),
       ),
     );
+  }
+
+  /// Ungelesene Nachrichten je gespeichertem Favoriten. Leer, solange
+  /// nichts geladen wurde.
+  final Map<String, int> _chatUnread = {};
+
+  /// Kachel "Meine Termine".
+  ///
+  /// Erscheint nur, wenn ueberhaupt etwas zugesagt ist — eine Kachel, die
+  /// dauerhaft "0" zeigt, ist verschenkte Flaeche. Ausblenden laesst sie sich
+  /// wie jede andere per Langdruck.
+  Widget _buildMyEventsTile() => Container(
+        child: _tile(
+          accentColor: cNostr,
+          watermark: Icons.event_available_rounded,
+          onTap: () async {
+            await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => MyEventsScreen(
+                    events: _myEvents,
+                    meetupDates: _favMeetupDates
+                        .map((m) => MyMeetupDate(
+                            favKey: m.favKey,
+                            label: m.label,
+                            event: m.event,
+                            attendees: m.attendees))
+                        .toList(),
+                    onOpenMeetupChat: _openMeetupChat,
+                  ),
+                ));
+            // Zurueck: Lesestaende koennen sich geaendert haben.
+            if (mounted) _loadMyEvents();
+          },
+          child: _heroContent(
+            icon: Icons.event_available_rounded,
+            accent: cNostr,
+            label: AppLocalizations.of(context).tileEventChats,
+            // Die ZAHL traegt die Kachel: zugesagte Veranstaltungen PLUS die
+            // naechsten Termine der Favoriten-Meetups. Beides ist "was ich
+            // vorhabe" — die Unterscheidung, ob dahinter eine Zusage oder ein
+            // Favorit steht, interessiert erst eine Ebene tiefer.
+            value: '${_myEvents.length + _favMeetupDates.length}',
+            // Die Farbe der ZAHL macht den Unterschied: orange, wenn etwas
+            // Neues in einem der Chats steht. Ein zusaetzliches Abzeichen
+            // waere auf einer Kachel dieser Groesse Zierrat.
+            valueColor: _myEventsUnread > 0 ? cOrange : null,
+            sub: _myEvents.isEmpty && _favMeetupDates.isEmpty
+                ? AppLocalizations.of(context).tileEventChatsNone
+                : _myEventsUnread > 0
+                ? AppLocalizations.of(context).tileEventChatsUnread(_myEventsUnread)
+                : AppLocalizations.of(context).tileEventChatsSub,
+          ),
+        ),
+      );
+
+  /// Zugesagte, noch bevorstehende Veranstaltungen — Grundlage der Kachel.
+  List<NostrCalendarEvent> _myEvents = [];
+
+  /// Meetup-Termine, fuer die man im Portal ZUGESAGT hat.
+  ///
+  /// Das Portal fuehrt Zu- und Absagen je Termin unter einer eigenen Nummer
+  /// (`portalEventId`) — samt Teilnehmerzahl. Anfangs hatte ich angenommen,
+  /// es gaebe das nicht, und den Favoriten als Aussage genommen. Das war
+  /// falsch: Ein Favorit heisst "das ist mein Meetup", eine Zusage heisst
+  /// "ich komme am 20." — zwei verschiedene Dinge.
+  List<_MeetupDateEntry> _favMeetupDates = [];
+
+  /// Ungelesene Beitraege ueber ALLE zugesagten Termine zusammen.
+  int _myEventsUnread = 0;
+
+  /// Sammelt Meetup-Termine, fuer die im Portal zugesagt wurde.
+  ///
+  /// Gefragt wird nur fuer Termine der EIGENEN Favoriten und nur fuer die
+  /// naechsten drei Monate — eine Abfrage je Termin ueber alle 158 Termine
+  /// des Portals waere unverhaeltnismaessig fuer eine Kachel.
+  Future<void> _loadMeetupRsvps(List<CalendarEvent> allEvents) async {
+    final favKeys = <String>{
+      if (_user.homeMeetupId.isNotEmpty) _user.homeMeetupId,
+      ..._user.favoriteMeetupIds,
+    };
+    if (favKeys.isEmpty) {
+      if (mounted) setState(() => _favMeetupDates = []);
+      return;
+    }
+
+    final now = DateTime.now();
+    final horizon = now.add(const Duration(days: 90));
+    final candidates = allEvents.where((e) {
+      if (e.portalEventId == null) return false;
+      if (e.startTime.isBefore(now.subtract(const Duration(days: 1)))) {
+        return false;
+      }
+      if (e.startTime.isAfter(horizon)) return false;
+      // Nur Termine der eigenen Favoriten.
+      //
+      // Zuerst ueber die Meetup-ID. Liefert das Portal sie fuer einen Termin
+      // nicht mit — was vorkommt —, bliebe die Liste sonst leer; dann wird
+      // ueber Titel und Ort verglichen, so wie es die Favoriten-Karten
+      // ohnehin tun.
+      for (final k in favKeys) {
+        final m = MeetupService.resolveFavorite(k);
+        if (e.meetupId.isNotEmpty && (m?.id == e.meetupId || k == e.meetupId)) {
+          return true;
+        }
+        final city = (m?.city ?? k).toLowerCase().trim();
+        if (city.length >= 3 &&
+            '${e.title} ${e.location}'.toLowerCase().contains(city)) {
+          return true;
+        }
+      }
+      return false;
+    }).toList();
+
+    final out = <_MeetupDateEntry>[];
+    for (final e in candidates) {
+      final r = await PortalApiService.getRsvpCached(e.portalEventId!);
+      if (!PortalApiService.isGoing(r)) continue;
+      // Denselben Weg rueckwaerts: erst ID, dann Ortsname.
+      final favKey = favKeys.firstWhere(
+        (k) {
+          final m = MeetupService.resolveFavorite(k);
+          if (e.meetupId.isNotEmpty && m?.id == e.meetupId) return true;
+          final city = (m?.city ?? k).toLowerCase().trim();
+          return city.length >= 3 &&
+              '${e.title} ${e.location}'.toLowerCase().contains(city);
+        },
+        orElse: () => e.meetupId,
+      );
+      out.add(_MeetupDateEntry(
+        favKey: favKey,
+        label: MeetupService.labelFor(favKey),
+        event: e,
+        attendees: (r?['attendees'] ?? r?['count'] ?? -1) is int
+            ? (r?['attendees'] ?? r?['count'] ?? -1) as int
+            : -1,
+      ));
+    }
+    out.sort((a, b) => a.event.startTime.compareTo(b.event.startTime));
+
+    if (mounted) setState(() => _favMeetupDates = out);
+    AppLogger.diag('Events',
+        '${candidates.length} Termine der Favoriten geprueft, ${out.length} davon zugesagt.');
+  }
+
+  /// Laedt Zusagen und die dazugehoerigen Termine.
+  ///
+  /// Zwei Abfragen: erst die eigenen Antworten (eine je Nutzer), dann die
+  /// Termine dazu. Vergangenes faellt weg — eine Kachel soll zeigen, was
+  /// ansteht, nicht was war.
+  Future<void> _loadMyEvents() async {
+    try {
+      final rsvps = await EventRsvpService.loadMine();
+      final accepted = rsvps.entries
+          .where((e) => e.value == RsvpStatus.accepted)
+          .map((e) => e.key)
+          .toList();
+      if (accepted.isEmpty) {
+        if (mounted) {
+          setState(() {
+            _myEvents = [];
+            _myEventsUnread = 0;
+          });
+        }
+        return;
+      }
+
+      final events = <NostrCalendarEvent>[];
+      for (final address in accepted) {
+        final ev = await CalendarEventService.fetchByAddress(address);
+        if (ev == null) continue;
+        // Termine von gestern interessieren niemanden mehr; der Chat dazu
+        // bleibt ueber den Kalender erreichbar.
+        if (ev.start.isBefore(
+            DateTime.now().subtract(const Duration(days: 1)))) {
+          continue;
+        }
+        events.add(ev);
+      }
+      events.sort((a, b) => a.start.compareTo(b.start));
+
+      final counts = events.isEmpty
+          ? <String, int>{}
+          : await EventChatService.unreadCounts(
+              events.map((e) => e.address).toList());
+
+      if (!mounted) return;
+      setState(() {
+        _myEvents = events;
+        _myEventsUnread =
+            counts.values.fold<int>(0, (sum, v) => sum + v);
+      });
+    } catch (e) {
+      AppLogger.debug('Events', 'Zusagen konnten nicht geladen werden: $e');
+    }
+  }
+
+  /// Findet den Raum zu einem gespeicherten Favoriten.
+  ///
+  /// Zuerst ueber die PORTAL-ID — das ist die exakte Zuordnung und der
+  /// einzige Weg, bei mehreren Meetups einer Stadt das richtige zu treffen.
+  /// Nur wenn der Favorit noch aus einer aelteren Fassung stammt und einen
+  /// Stadtnamen enthaelt, greift die alte Namenssuche.
+  Future<ChatRoom?> _findRoomFor(String favKey) async {
+    final meetup = MeetupService.resolveFavorite(favKey);
+    if (meetup != null) {
+      final byId = await ChatService.findRoomForMeetupId(meetup.id);
+      if (byId != null) return byId;
+    }
+    return ChatService.findRoomForCity(MeetupService.cityFor(favKey));
+  }
+
+  /// Prueft fuer alle Favoriten, ob im jeweiligen Chatraum etwas Neues liegt.
+  ///
+  /// Laeuft im Hintergrund und ohne Ladeanzeige: Das Dashboard soll nicht auf
+  /// das Relay warten. Kommt nichts zurueck, bleibt die Leiste eben ohne
+  /// Punkt — das ist besser als ein Dashboard, das haengt.
+  Future<void> _loadChatUnread() async {
+    // Mengen-Literal statt Liste plus toSet(): Doppelte fallen direkt weg,
+    // ohne dass eine Zwischenliste entsteht. Home-Meetup steht zuerst und
+    // bleibt es auch — Mengen-Literale behalten die Einfuegereihenfolge.
+    final favKeys = <String>{
+      if (_user.homeMeetupId.isNotEmpty) _user.homeMeetupId,
+      ..._user.favoriteMeetupIds,
+    }.toList();
+    if (favKeys.isEmpty) return;
+
+    try {
+      // Erst Favorit -> Raum, dann eine einzige Abfrage fuer alle Raeume.
+      final byRoom = <String, String>{};
+      for (final favKey in favKeys) {
+        final room = await _findRoomFor(favKey);
+        if (room != null) byRoom[room.h] = favKey;
+      }
+      if (byRoom.isEmpty || !mounted) return;
+
+      final counts = await ChatService.unreadCounts(byRoom.keys.toList());
+      if (!mounted) return;
+      setState(() {
+        for (final e in counts.entries) {
+          final favKey = byRoom[e.key];
+          if (favKey != null) _chatUnread[favKey] = e.value;
+        }
+      });
+    } catch (e) {
+      AppLogger.debug('Chat', 'Ungelesen-Abfrage fehlgeschlagen: $e');
+    }
+  }
+
+  /// Oeffnet den Chat-Raum eines Meetups.
+  ///
+  /// Die Suche laeuft ueber das Relay und dauert einen Moment — deshalb ein
+  /// Ladehinweis, sonst wirkt der Knopf tot.
+  Future<void> _openMeetupChat(String favKey, String label) async {
+    final t = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    messenger.showSnackBar(SnackBar(
+        content: Text(t.chatSearching),
+        duration: const Duration(seconds: 4),
+        backgroundColor: cCard));
+
+    final room = await _findRoomFor(favKey);
+    if (!mounted) return;
+    messenger.hideCurrentSnackBar();
+
+    if (room == null) {
+      // Vier Sekunden statt der ueblichen zwei: Der Satz nennt einen Grund
+      // und einen Ort zum Nachsehen — den liest niemand im Vorbeigehen.
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.chatNoRoom(label)),
+          duration: const Duration(seconds: 4),
+          backgroundColor: cCard));
+      return;
+    }
+    await navigator.push(
+        MaterialPageRoute(builder: (_) => ChatScreen.room(room)));
+    // Zurueck aus dem Raum: Der Lesestand hat sich geaendert, also neu
+    // zaehlen — sonst bliebe der Punkt stehen, obwohl alles gelesen ist.
+    if (mounted) _loadChatUnread();
   }
 
   Widget _buildHomeMeetupTile() {
@@ -1619,7 +2051,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Hoehe fix, damit der PageView im Grid nicht springt.
     final cards = _favCards.isNotEmpty
         ? _favCards
-        : [ _FavCard(city: _user.homeMeetupId, event: _nextHomeMeetup) ];
+        : [
+            _FavCard(
+                key: _user.homeMeetupId,
+                label: MeetupService.labelFor(_user.homeMeetupId),
+                city: MeetupService.cityFor(_user.homeMeetupId),
+                event: _nextHomeMeetup)
+          ];
 
     return GestureDetector(
       onLongPress: _showReorderSheet,
@@ -1659,14 +2097,29 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// EINE Favoriten-Karte: CoverFlow-Wappen, Stadt, Countdown, Events/Info.
   /// Bekommt ihre Daten als [card] — kein Zugriff mehr auf _homeMeetup/
   /// _nextHomeMeetup, damit jede Seite ihr eigenes Meetup zeigt.
+  /// Die Favoriten-Kachel.
+  ///
+  /// Aufbau (Entwurf A): Kopfbereich mit Wappen, Ort und naechstem Termin,
+  /// darunter eine Aktionsleiste aus drei gleich breiten Feldern.
+  ///
+  /// Vorher lagen die Handlungen in einer 88 Punkte schmalen Spalte rechts —
+  /// ein beschrifteter Knopf und darunter zwei winzige Symbolknoepfe. Drei
+  /// Handlungen in drei verschiedenen Formaten auf engstem Raum; mit dem
+  /// Chat als drittem kippte es. Jetzt haben alle drei dieselbe Form, gleiche
+  /// Breite und rund dreimal so grosse Trefferflaechen.
+  ///
+  /// Der naechste Termin ist nach OBEN gewandert: Er beschreibt das Meetup,
+  /// er ist keine Handlung — unten stehen nur noch Handlungen.
   Widget _favCardContent(_FavCard card) {
     final cityName = card.city;
     final event = card.event;
-    // Meetup-Objekt (fuer Land, Info-Screen, Wappen) zur Stadt aufloesen.
-    final meetup = _meetupForCity(cityName);
+    // Ueber die gespeicherte Kennung aufloesen, nicht ueber die Stadt: Nur
+    // so trifft es bei mehreren Meetups derselben Stadt das richtige.
+    final meetup =
+        MeetupService.resolveFavorite(card.key) ?? _meetupForCity(cityName);
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(kTileRadius),
         gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight,
@@ -1676,102 +2129,215 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 5))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-          _crestCoverFlow(cityName, meetup, size: 68),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
-              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
-                child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
-              const SizedBox(width: 8),
-              Text(meetup?.country ?? 'DE',
-                style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
-            ]),
-            const SizedBox(height: 6),
-            // Der Ortsname wird NICHT mehr abgeschnitten: Bei laengeren
-            // Namen schrumpft die Schrift und darf auf zwei Zeilen umbrechen
-            // ("3 Länder Eck Hessen BaWü Baye"). Die Staffelung ist bewusst
-            // grob — feinere Abstufungen bringen optisch nichts.
-            Text(cityName.toUpperCase(),
-              maxLines: 2,
-              softWrap: true,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  color: cText,
-                  // Feiner gestaffelt als zuvor: Bei ~188 px nutzbarer Breite
-                  // passen in 22 pt nur rund zehn Grossbuchstaben. "ASCHAFFENBURG"
-                  // (13) brach deshalb trotz Staffelung noch um.
-                  fontSize: cityName.length > 20
-                      ? 13
-                      : cityName.length > 15
-                          ? 15
-                          : cityName.length > 10
-                              ? 17
-                              : 22,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                  height: 1.05)),
-          ])),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 88,
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: cityName))),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 9),
-                  decoration: BoxDecoration(gradient: gradientOrange, borderRadius: BorderRadius.circular(9),
-                    boxShadow: [BoxShadow(color: cOrange.withValues(alpha: 0.22), blurRadius: 8, offset: const Offset(0, 2))]),
-                  child: Center(child: Text(AppLocalizations.of(context).btnEvents, style: const TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.6)))),
-              ),
-              if (meetup != null) ...[
-                const SizedBox(height: 7),
-                GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: meetup))),
-                  child: Container(width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 7),
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(9)),
-                    child: const Icon(Icons.info_outline_rounded, color: cTextSecondary, size: 16)),
-                ),
-              ],
-            ]),
-          ),
-        ]),
-
-        const SizedBox(height: 12),
-
-        // Naechster Termin dieser Stadt
-        if (_countdownLoading)
-          const SizedBox(height: 16, child: LinearProgressIndicator(color: cOrange, backgroundColor: Colors.transparent))
-        else if (event != null) Builder(builder: (_) {
-          final days = _daysUntil(event.startTime);
-          return Row(children: [
-            const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 15),
-            const SizedBox(width: 7),
-            Text(
-              days <= 0 ? AppLocalizations.of(context).homeMeetupToday : days == 1 ? AppLocalizations.of(context).homeMeetupTomorrow : AppLocalizations.of(context).homeMeetupInDays(days),
-              style: TextStyle(
-                color: days <= 0 ? cOrange : days <= 3 ? cOrange.withValues(alpha: 0.8) : cTextSecondary,
-                fontSize: 14, fontWeight: FontWeight.w800)),
-            const SizedBox(width: 5),
-            Expanded(child: Text(
-              '· ${event.startTime.day}.${event.startTime.month}.${event.startTime.year}',
-              style: const TextStyle(color: cTextTertiary, fontSize: 13))),
-          ]);
-        })
-        else
-          Row(children: [
-            const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 15),
-            const SizedBox(width: 7),
-            Text(AppLocalizations.of(context).homeMeetupNoDate, style: const TextStyle(color: cTextTertiary, fontSize: 13)),
+        Expanded(
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            _crestCoverFlow(cityName, meetup, size: 60),
+            const SizedBox(width: 14),
+            Expanded(child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.20), borderRadius: BorderRadius.circular(6)),
+                    child: Text(AppLocalizations.of(context).homeMeetupLabel, style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1.1))),
+                  const SizedBox(width: 8),
+                  Text(meetup?.country ?? 'DE',
+                    style: const TextStyle(color: cTextSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+                ]),
+                const SizedBox(height: 5),
+                // Der Ortsname wird NICHT abgeschnitten: Bei laengeren Namen
+                // schrumpft die Schrift und darf auf zwei Zeilen umbrechen.
+                // Die Staffelung ist bewusst grob — feinere Abstufungen
+                // bringen optisch nichts.
+                Text(card.label.toUpperCase(),
+                  maxLines: 2,
+                  softWrap: true,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: cText,
+                      fontSize: card.label.length > 20
+                          ? 13
+                          : card.label.length > 15
+                              ? 15
+                              : card.label.length > 10
+                                  ? 17
+                                  : 22,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      height: 1.05)),
+                const SizedBox(height: 5),
+                _favNextEvent(event),
+              ])),
           ]),
+        ),
+        _favActions(card, meetup),
       ]),
     );
-
   }
 
-  Widget _miniAct(IconData i, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(width: 32, height: 32, decoration: BoxDecoration(color: cSurface, borderRadius: BorderRadius.circular(6), border: Border.all(color: cTileBorder, width: 0.5)), child: Icon(i, color: cTextTertiary, size: 15)));
+  /// Zeile mit dem naechsten Termin — kompakt, damit sie in den Kopfbereich
+  /// passt.
+  Widget _favNextEvent(CalendarEvent? event) {
+    if (_countdownLoading) {
+      return const SizedBox(
+          height: 14,
+          width: 90,
+          child: LinearProgressIndicator(
+              color: cOrange, backgroundColor: Colors.transparent));
+    }
+    if (event == null) {
+      return Row(children: [
+        const Icon(Icons.event_busy_rounded, color: cTextTertiary, size: 13),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(AppLocalizations.of(context).homeMeetupNoDate,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+        ),
+      ]);
+    }
+
+    final days = _daysUntil(event.startTime);
+    final label = days <= 0
+        ? AppLocalizations.of(context).homeMeetupToday
+        : days == 1
+            ? AppLocalizations.of(context).homeMeetupTomorrow
+            : AppLocalizations.of(context).homeMeetupInDays(days);
+
+    return Row(children: [
+      const Icon(Icons.event_available_rounded, color: cTextTertiary, size: 13),
+      const SizedBox(width: 6),
+      Text(label,
+          style: TextStyle(
+              color: days <= 0
+                  ? cOrange
+                  : days <= 3
+                      ? cOrange.withValues(alpha: 0.8)
+                      : cTextSecondary,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w800)),
+      const SizedBox(width: 5),
+      Expanded(
+        child: Text(
+            '· ${event.startTime.day}.${event.startTime.month}.${event.startTime.year}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+      ),
+    ]);
+  }
+
+  /// Die Aktionsleiste: Termine, Chat, Info — drei gleich breite Felder,
+  /// getrennt durch Haarlinien.
+  ///
+  /// Gleiche Breite ist Absicht: Keine der drei Handlungen ist wichtiger als
+  /// die anderen, und gleiche Felder lassen sich blind treffen.
+  Widget _favActions(_FavCard card, Meetup? meetup) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: cTileBorder, width: 0.5)),
+      ),
+      child: Row(children: [
+        Expanded(
+          child: _favAction(
+            icon: Icons.event_rounded,
+            label: AppLocalizations.of(context).btnEvents,
+            accent: cOrange,
+            onTap: () => Navigator.push(context,
+                MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: card.city))),
+          ),
+        ),
+        Container(width: 0.5, height: 26, color: cTileBorder),
+        Expanded(
+          child: _favAction(
+            icon: Icons.forum_rounded,
+            label: AppLocalizations.of(context).btnChat,
+            accent: cNostr,
+            badge: _chatUnread[card.key] ?? 0,
+            onTap: () => _openMeetupChat(card.key, card.label),
+          ),
+        ),
+        Container(width: 0.5, height: 26, color: cTileBorder),
+        Expanded(
+          child: _favAction(
+            icon: Icons.info_outline_rounded,
+            label: AppLocalizations.of(context).btnInfo,
+            accent: cTextSecondary,
+            // Ohne Meetup-Datensatz gibt es nichts zu zeigen — dann bleibt
+            // das Feld sichtbar, aber blass und ohne Wirkung. So bleibt die
+            // Leiste bei allen Favoriten gleich breit.
+            onTap: meetup == null
+                ? null
+                : () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => MeetupDetailsScreen(meetup: meetup))),
+          ),
+        ),
+      ]),
+    );
+  }
+
+  /// [badge] > 0 setzt einen Zaehler ans Symbol.
+  Widget _favAction({
+    required IconData icon,
+    required String label,
+    required Color accent,
+    int badge = 0,
+    VoidCallback? onTap,
+  }) {
+    final enabled = onTap != null;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          // Stack statt einer zusaetzlichen Zeile: Der Zaehler sitzt AM
+          // Symbol und veraendert die Breite des Feldes nicht — sonst
+          // wuerden die drei Felder ungleich breit, sobald etwas ungelesen
+          // ist.
+          Stack(clipBehavior: Clip.none, children: [
+            Icon(icon,
+                color: enabled ? accent : cTextTertiary.withValues(alpha: 0.5),
+                size: 15),
+            if (badge > 0)
+              Positioned(
+                right: -6,
+                top: -5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  constraints: const BoxConstraints(minWidth: 13),
+                  decoration: BoxDecoration(
+                    color: cOrange,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: Text(badge > 99 ? '99+' : '$badge',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w900,
+                          height: 1.3)),
+                ),
+              ),
+          ]),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: enabled ? accent : cTextTertiary.withValues(alpha: 0.5),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2)),
+          ),
+        ]),
+      ),
+    );
+  }
+
   /// WERT-KACHEL: kleines Etikett oben, grosser Wert darunter, Zusatz klein.
   ///
   /// Der Unterschied zur bisherigen Bauform ist inhaltlich, nicht kosmetisch:
@@ -1809,7 +2375,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     color: accent, fontSize: 12, letterSpacing: 1.1, fontWeight: FontWeight.w800)),
           ),
         ),
-        if (trailing != null) trailing,
+        ?trailing,
       ]),
       const SizedBox(height: 7),
       Text(value,
@@ -1872,10 +2438,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     return _tile(
       accentColor: hasToday ? cOrange : cTextTertiary,
       watermark: Icons.event_rounded,
-      onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (_) => EventCalendarScreen(initialDay: DateTime.now()))),
+      // Nach der Rueckkehr die Session pruefen: Im Kalender laesst sich
+      // inzwischen eine Event-Badge-Session starten, und ohne diese Zeile
+      // erschiene die laufende Session erst beim naechsten Aktualisieren
+      // des Dashboards.
+      onTap: () async {
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => EventCalendarScreen(initialDay: DateTime.now())));
+        _checkActiveSession();
+        // Im Kalender kann man zugesagt haben — dann gehoert die Kachel
+        // "Meine Termine" sofort her, nicht erst beim naechsten Start.
+        _loadMyEvents();
+      },
       child: _heroContent(
         icon: Icons.event_rounded,
         accent: hasToday ? cOrange : cTextSecondary,
@@ -2046,7 +2622,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     watermark: Icons.graphic_eq_rounded,
     child: ValueListenableBuilder<int?>(
       valueListenable: PlebrapAudio.index,
-      builder: (_, idx, __) {
+      builder: (_, idx, _) {
         final song = idx != null ? kPlebSongs[idx] : null;
         return Row(children: [
           Expanded(child: _heroContent(
@@ -2063,7 +2639,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           // Play/Pause — Spinner waehrend des Ladens
           ValueListenableBuilder<bool>(
             valueListenable: PlebrapAudio.loading,
-            builder: (_, busy, __) => StreamBuilder<PlayerState>(
+            builder: (_, busy, _) => StreamBuilder<PlayerState>(
               stream: PlebrapAudio.player.playerStateStream,
               builder: (_, snap) {
                 final playing = snap.data?.playing ?? false;
@@ -2247,38 +2823,38 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     ),
   );
 
-  Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, __) => GestureDetector(
+  /// Kachel fuer die laufende Session.
+  ///
+  /// Sie fuehrt direkt zum QR — auf einem Event will man die App oeffnen und
+  /// den Code zeigen, nicht erst durch den Kalender navigieren. Event- und
+  /// Meetup-Sessions unterscheiden sich nur im Symbol; alles andere ist
+  /// gleich, weil auch die Handlung dieselbe ist.
+  Widget _buildActiveSessionTile() => AnimatedBuilder(animation: _pulseController, builder: (_, _) => GestureDetector(
     onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => const RollingQRScreen())); _checkActiveSession(); },
     child: Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cGreen.withValues(alpha: 0.25), width: 0.5)),
     child: Row(children: [Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.green.withValues(alpha: 0.5 + _pulseController.value * 0.5), boxShadow: [BoxShadow(color: Colors.green.withValues(alpha: 0.3 * _pulseController.value), blurRadius: 8)])),
       const SizedBox(width: 14), Container(padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: Text(AppLocalizations.of(context).statusLive, style: TextStyle(color: Colors.green.shade300, fontSize: 9, fontWeight: FontWeight.w800))),
-      const SizedBox(width: 10), Expanded(child: Text(_activeSession!.meetupName.isNotEmpty ? _activeSession!.meetupName : AppLocalizations.of(context).statusMeetupActive, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
+      const SizedBox(width: 10),
+      // Ordenssymbol bei Event-Sessions: Auf dem Dashboard soll erkennbar
+      // sein, WOFUER der Code gerade laeuft — Meetup oder Sondereevent.
+      if (_activeSession!.meetupId.startsWith('evt:')) ...[
+        const Icon(Icons.military_tech_rounded, color: cOrange, size: 15),
+        const SizedBox(width: 6),
+      ],
+      Expanded(child: Text(_activeSession!.meetupName.isNotEmpty ? _activeSession!.meetupName : AppLocalizations.of(context).statusMeetupActive, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis)),
       const SizedBox(width: 8), Text(_sessionTimeLeft, style: TextStyle(color: cTextTertiary, fontSize: 11, fontFamily: fontMono)), const SizedBox(width: 8), Icon(Icons.arrow_forward_ios_rounded, color: Colors.green.withValues(alpha: 0.4), size: 14)]))));
 
   Widget _buildDeviceWarning() => Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: cCard, borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withValues(alpha: 0.3), width: 0.5)),
     child: Row(children: [const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 18), const SizedBox(width: 10), Expanded(child: Text(DeviceIntegrityService.warningMessage, style: TextStyle(color: Colors.orange.shade200, fontSize: 11))),
       GestureDetector(onTap: () => setState(() => _dismissedIntegrityWarning = true), child: Icon(Icons.close_rounded, color: Colors.orange.shade300, size: 16))]));
 
-  // ============================================================
-  // BOTTOM SHEETS (Help, Settings, Score Info) — wie in v4.2
-  // Hier nur gekürzt, identische Logik
-  // ============================================================
-  void _showHelpSheet() { showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))), builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.5, expand: false, builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 24),
-    const Text("SO FUNKTIONIERT'S", style: TextStyle(color: cOrange, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 20),
-    _helpI(Icons.military_tech, cOrange, "BADGES SAMMELN", "Geh zu einem Meetup und scanne den NFC-Tag oder Rolling-QR-Code. Jeder Besuch = ein kryptographisch signiertes Badge."),
-    _helpI(Icons.workspace_premium, Colors.amber, "REPUTATION AUFBAUEN", "Dein Trust Score steigt mit jedem Badge. Verschiedene Meetups, Organisatoren und Regelmäßigkeit zählen."),
-    _helpI(Icons.admin_panel_settings, Colors.green, "ORGANISATOR WERDEN", "Ab genügend Trust Score wirst du automatisch befördert und kannst eigene NFC-Tags und QR-Codes erstellen."),
-    _helpI(Icons.verified_user, cCyan, "KRYPTOGRAPHISCHE SICHERHEIT", "BIP-340 Schnorr-Signaturen. Niemand kann Badges fälschen — auch wir nicht."),
-    _helpI(Icons.qr_code_scanner, cPurple, "REPUTATION PRÜFEN", "Teile deinen QR-Code. Andere sehen dein Trust Level — kryptographisch verifiziert."),
-    _helpI(Icons.upload, Colors.blue, "BACKUP", "Sichere deinen Account über die Einstellungen. Enthält Nostr-Key und alle Badges."),
-    const Divider(color: cBorder), const SizedBox(height: 8),
-    Row(children: [const Icon(Icons.lock_outline_rounded, color: cTextTertiary, size: 14), const SizedBox(width: 8), Expanded(child: Text("Alle Daten auf deinem Gerät. Kein Server, kein Tracking.", style: TextStyle(color: cTextTertiary, fontSize: 10)))]),
-  ])))); }
 
-  Widget _helpI(IconData i, Color c, String t, String d) => Padding(padding: const EdgeInsets.only(bottom: 18), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 20), const SizedBox(width: 14), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 4), Text(d, style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.5))]))]));
 
   void _showSettings() async {
+    // Guide VOR dem Sheet holen: Danach zeigt der Context auf eine andere
+    // Route.
+    final guide = context.read<GuideService>();
+
     final prefs = await SharedPreferences.getInstance();
     bool haptic = prefs.getBool('haptic_enabled') ?? true;
     if (!mounted) return;
@@ -2331,26 +2907,35 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                   children: [
                     // ACCOUNT
                     _sGroup(AppLocalizations.of(context).settingsSecAccount, [
-                      _sRow(Icons.person_rounded, cOrange,
-                        AppLocalizations.of(context).settingsProfile,
-                        AppLocalizations.of(context).settingsProfileSub,
-                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+                      KeyedSubtree(
+                        key: SettingsTour.profileKey,
+                        child: _sRow(Icons.person_rounded, cOrange,
+                          AppLocalizations.of(context).settingsProfile,
+                          AppLocalizations.of(context).settingsProfileSub,
+                          () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())); }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // DATEN & SICHERHEIT
                     _sGroup(AppLocalizations.of(context).settingsSecData, [
-                      _sRow(Icons.cloud_upload_rounded, cCyan,
-                        AppLocalizations.of(context).settingsBackup,
-                        AppLocalizations.of(context).settingsBackupSub,
-                        () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+                      KeyedSubtree(
+                        key: SettingsTour.backupKey,
+                        child: _sRow(Icons.cloud_upload_rounded, cCyan,
+                          AppLocalizations.of(context).settingsBackup,
+                          AppLocalizations.of(context).settingsBackupSub,
+                          () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // NETZWERK
                     _sGroup(AppLocalizations.of(context).settingsSecNetwork, [
-                      _sRow(Icons.hub_rounded, cPurple,
-                        AppLocalizations.of(context).settingsRelays,
-                        AppLocalizations.of(context).settingsRelaysSub,
-                        () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                      KeyedSubtree(
+                        key: SettingsTour.relaysKey,
+                        child: _sRow(Icons.hub_rounded, cPurple,
+                          AppLocalizations.of(context).settingsRelays,
+                          AppLocalizations.of(context).settingsRelaysSub,
+                          () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const RelaySettingsScreen())); }),
+                      ),
                       _sDivider(),
                       // Mempool-Datenquelle (Clearnet / Tor-Onion / eigene Instanz)
                       _sRow(Icons.dns_rounded, cOrange,
@@ -2362,9 +2947,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     // APP
                     _sGroup(AppLocalizations.of(context).settingsSecApp, [
                       // Sprache
-                      ValueListenableBuilder<Locale?>(
+                      KeyedSubtree(
+                        key: SettingsTour.languageKey,
+                        child: ValueListenableBuilder<Locale?>(
                         valueListenable: LocaleController.locale,
-                        builder: (_, current, __) => _sRowCustom(
+                        builder: (_, current, _) => _sRowCustom(
                           Icons.language_rounded, cGreen,
                           AppLocalizations.of(context).settingsLanguageTitle,
                           '${_flagFor(current)}  ${LocaleController.displayName(current)}',
@@ -2372,14 +2959,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                           onTap: () => _showLanguagePopup(ctx),
                         ),
                       ),
+                      ),
                       _sDivider(),
                       // Haptik
-                      _sRowCustom(
+                      KeyedSubtree(
+                        key: SettingsTour.hapticKey,
+                        child: _sRowCustom(
                         Icons.vibration_rounded, cGreen,
                         AppLocalizations.of(context).settingsHaptic,
                         haptic ? AppLocalizations.of(context).settingsHapticOn : AppLocalizations.of(context).settingsHapticOff,
-                        trailing: Switch(value: haptic, activeColor: cOrange,
+                        trailing: Switch(value: haptic, activeThumbColor: cOrange,
                           onChanged: (v) async { await prefs.setBool('haptic_enabled', v); ss(() => haptic = v); }),
+                      ),
                       ),
                       _sDivider(),
                       // Diagnose-Log
@@ -2387,6 +2978,26 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         AppLocalizations.of(context).settingsLogTitle,
                         AppLocalizations.of(context).settingsLogSub,
                         () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const LogScreen())); }),
+                      _sDivider(),
+                      // Tour wiederholen — der einzige Weg, die Spotlights
+                      // ein zweites Mal zu sehen. Ohne ihn liesse sich der
+                      // Guide nur durch Zuruecksetzen der App testen.
+                      KeyedSubtree(
+                        key: SettingsTour.restartKey,
+                        child: _sRow(Icons.replay_rounded, cOrange,
+                          AppLocalizations.of(context).settingsRestartGuide,
+                          AppLocalizations.of(context).settingsRestartGuideSub,
+                          () async {
+                            // Text und Messenger vor dem await greifen — nach
+                            // Navigator.pop ist der Sheet-Context weg.
+                            final messenger = ScaffoldMessenger.of(context);
+                            final msg = AppLocalizations.of(context).settingsGuideReset;
+                            Navigator.pop(ctx);
+                            await guide.resetAllTours();
+                            messenger.showSnackBar(SnackBar(
+                                content: Text(msg), backgroundColor: cOrange));
+                          }),
+                      ),
                     ]),
                     const SizedBox(height: 18),
                     // UNTERSTÜTZEN (V4V)
@@ -2399,10 +3010,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                     const SizedBox(height: 18),
                     // GEFAHRENZONE
                     _sGroup(AppLocalizations.of(context).settingsSecDanger, [
-                      _sRow(Icons.delete_forever_rounded, cRed,
-                        AppLocalizations.of(context).settingsReset,
-                        AppLocalizations.of(context).settingsResetSub,
-                        () { Navigator.pop(ctx); _resetApp(); }, danger: true),
+                      KeyedSubtree(
+                        key: SettingsTour.resetKey,
+                        child: _sRow(Icons.delete_forever_rounded, cRed,
+                          AppLocalizations.of(context).settingsReset,
+                          AppLocalizations.of(context).settingsResetSub,
+                          () { Navigator.pop(ctx); _resetApp(); }, danger: true),
+                      ),
                     ]),
                     const SizedBox(height: 20),
                     // Versionsanzeige (dezent, unten)
@@ -2420,7 +3034,18 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           ),
         ),
       ),
-    );
+    ).whenComplete(() {
+      // Sheet zu, Tour raus. Sonst suchte das Overlay Ziele, die es nicht
+      // mehr gibt, und arbeitete die Restschritte unsichtbar ab.
+      if (guide.activeTour == GuideTour.settings) guide.finishTour();
+    });
+
+    // Erst starten, wenn das Sheet oben steht — vorher sind die Ziele noch
+    // nicht im Baum.
+    Future.delayed(const Duration(milliseconds: 650), () {
+      if (!mounted) return;
+      guide.startTour(GuideTour.settings, SettingsTour.steps());
+    });
   }
 
   /// Eine Gruppe: Label + Karten-Container mit den Items.
@@ -2470,7 +3095,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               Text(s, style: const TextStyle(color: cTextTertiary, fontSize: 11)),
             ]),
           ),
-          if (trailing != null) trailing,
+          ?trailing,
         ]),
       ),
     );
@@ -2496,7 +3121,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       context: context,
       builder: (dialogCtx) => ValueListenableBuilder<Locale?>(
         valueListenable: LocaleController.locale,
-        builder: (_, current, __) => Dialog(
+        builder: (_, current, _) => Dialog(
           backgroundColor: cCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -2544,62 +3169,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
 
-  void _showScoreInfoSheet() {
-    final score = _trustScore; final idCount = _platformProofCount + (_humanityVerified ? 1 : 0) + (_nip05Verified ? 1 : 0);
-    showModalBottomSheet(context: context, isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => DraggableScrollableSheet(initialChildSize: 0.85, maxChildSize: 0.95, minChildSize: 0.4, expand: false,
-        builder: (_, sc) => SingleChildScrollView(controller: sc, padding: const EdgeInsets.fromLTRB(24, 12, 24, 40), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: cTextTertiary, borderRadius: BorderRadius.circular(2)))), const SizedBox(height: 20),
-          Text(AppLocalizations.of(context).siTitle, style: const TextStyle(color: cOrange, fontSize: 17, fontWeight: FontWeight.w800)), const SizedBox(height: 6),
-          Text(AppLocalizations.of(context).siIntro, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)),
-          // IDENTITY LAYER
-          const SizedBox(height: 24), Text(AppLocalizations.of(context).siIdentityLayer, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
-          Text(AppLocalizations.of(context).siLinksActive(idCount), style: const TextStyle(color: cTextTertiary, fontSize: 11)), const SizedBox(height: 12),
-          _idR(Icons.bolt_rounded, "Proof of Humanity", AppLocalizations.of(context).siHumanitySub, _humanityVerified, Colors.amber),
-          _idR(Icons.alternate_email, "NIP-05", AppLocalizations.of(context).siNip05Sub, _nip05Verified, cCyan),
-          ..._platformNames.map((n) => _idR(Icons.link_rounded, {'telegram': 'Telegram', 'twitter': 'X / Twitter', 'kleinanzeigen': 'Kleinanzeigen'}[n.toLowerCase()] ?? n, AppLocalizations.of(context).siPlatformActive, true, Colors.green)),
-          if (_platformProofCount == 0) _idR(Icons.link_off_rounded, AppLocalizations.of(context).siPlatforms, AppLocalizations.of(context).siNoneLinked, false, cTextTertiary),
-          // TRUST LEVEL
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siTrustLevel, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _lvl(Icons.fiber_new, localizedLevel(context, 'NEU'), "< 3", Colors.grey, AppLocalizations.of(context).siLvlNew, score?.level == 'NEU'),
-          _lvl(Icons.eco, localizedLevel(context, 'STARTER'), "3–9", cOrange, AppLocalizations.of(context).siLvlStarter, score?.level == 'STARTER'),
-          _lvl(Icons.local_fire_department, localizedLevel(context, 'AKTIV'), "10–19", cCyan, AppLocalizations.of(context).siLvlActive, score?.level == 'AKTIV'),
-          _lvl(Icons.shield, localizedLevel(context, 'ETABLIERT'), "20–39", Colors.green, AppLocalizations.of(context).siLvlEstablished, score?.level == 'ETABLIERT'),
-          _lvl(Icons.bolt, localizedLevel(context, 'VETERAN'), "40+", Colors.amber, AppLocalizations.of(context).siLvlVeteran, score?.level == 'VETERAN'),
-          // BERECHNUNG
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siCalculation, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _fac(Icons.military_tech, cOrange, AppLocalizations.of(context).siFacBadges, AppLocalizations.of(context).siFacBadgesDesc),
-          _fac(Icons.location_on, cCyan, AppLocalizations.of(context).siFacDiversity, AppLocalizations.of(context).siFacDiversityDesc),
-          _fac(Icons.people_outline, cPurple, AppLocalizations.of(context).siFacSigners, AppLocalizations.of(context).siFacSignersDesc),
-          _fac(Icons.schedule, Colors.green, AppLocalizations.of(context).siFacMaturity, AppLocalizations.of(context).siFacMaturityDesc),
-          _fac(Icons.speed, cRed, AppLocalizations.of(context).siFacFrequency, AppLocalizations.of(context).siFacFrequencyDesc),
-          // ORGANISATOR
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siBecomeOrganizer, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 8),
-          Text(AppLocalizations.of(context).siBecomeOrgDesc, style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.5)), const SizedBox(height: 14),
-          if (score != null && !score.meetsPromotionThreshold)
-            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: cOrange.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: cOrange.withValues(alpha: 0.2))),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(AppLocalizations.of(context).siProgressLabel(score.activeThresholds.name), style: const TextStyle(color: cOrange, fontSize: 10, fontWeight: FontWeight.w800)), const SizedBox(height: 10), ...score.progress.entries.map((e) => _pRow(e.value))]))
-          else if (score != null)
-            Container(width: double.infinity, padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.06), borderRadius: BorderRadius.circular(kTileRadius), border: Border.all(color: Colors.green.withValues(alpha: 0.2))),
-              child: Row(children: [const Icon(Icons.verified, color: Colors.green, size: 20), const SizedBox(width: 10), Expanded(child: Text(AppLocalizations.of(context).siAlreadyOrganizer, style: TextStyle(color: Colors.green.shade300, fontSize: 12)))])),
-          // TIPPS
-          const SizedBox(height: 20), const Divider(color: cBorder), const SizedBox(height: 16),
-          Text(AppLocalizations.of(context).siIncreaseScore, style: const TextStyle(color: cText, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)), const SizedBox(height: 12),
-          _tip(Icons.event, AppLocalizations.of(context).siTip1), _tip(Icons.explore, AppLocalizations.of(context).siTip2),
-          _tip(Icons.group_add, AppLocalizations.of(context).siTip3), _tip(Icons.bolt, AppLocalizations.of(context).siTip4),
-          _tip(Icons.alternate_email, AppLocalizations.of(context).siTip5), _tip(Icons.link, AppLocalizations.of(context).siTip6),
-          const SizedBox(height: 20),
-        ]))));
-  }
 
-  Widget _idR(IconData i, String l, String d, bool a, Color c) => Padding(padding: const EdgeInsets.only(bottom: 10), child: Row(children: [Icon(i, color: a ? c : cTextTertiary.withValues(alpha: 0.5), size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(l, style: TextStyle(color: a ? cText : cTextTertiary, fontSize: 12, fontWeight: FontWeight.w600)), Text(d, style: TextStyle(color: a ? cTextSecondary : cTextTertiary.withValues(alpha: 0.5), fontSize: 10))])), Icon(a ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, color: a ? c : cTextTertiary.withValues(alpha: 0.3), size: 18)]));
-  Widget _lvl(IconData i, String n, String r, Color c, String d, bool a) => Container(margin: const EdgeInsets.only(bottom: 8), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: a ? c.withValues(alpha: 0.06) : Colors.transparent, borderRadius: BorderRadius.circular(10), border: a ? Border.all(color: c.withValues(alpha: 0.2)) : null), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: 32, height: 32, decoration: BoxDecoration(color: c.withValues(alpha: a ? 0.15 : 0.06), shape: BoxShape.circle), child: Icon(i, color: a ? c : c.withValues(alpha: 0.3), size: 16)), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Text(n, style: TextStyle(color: a ? c : cTextSecondary, fontSize: 12, fontWeight: FontWeight.w700)), const SizedBox(width: 8), Text(r, style: const TextStyle(color: cTextTertiary, fontSize: 10)), if (a) ...[const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: c.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)), child: Text('DU', style: TextStyle(color: c, fontSize: 8, fontWeight: FontWeight.w800)))]]), const SizedBox(height: 3), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 10, height: 1.3))]))]));
-  Widget _fac(IconData i, Color c, String t, String d) => Padding(padding: const EdgeInsets.only(bottom: 12), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: c, size: 18), const SizedBox(width: 12), Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(t, style: const TextStyle(color: cText, fontSize: 12, fontWeight: FontWeight.w600)), const SizedBox(height: 2), Text(d, style: const TextStyle(color: cTextTertiary, fontSize: 11, height: 1.4))]))]));
-  Widget _tip(IconData i, String t) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(i, color: cOrange.withValues(alpha: 0.6), size: 16), const SizedBox(width: 10), Expanded(child: Text(t, style: const TextStyle(color: cTextSecondary, fontSize: 11, height: 1.4)))]));
-  Widget _pRow(PromotionProgress p) => Padding(padding: const EdgeInsets.only(bottom: 8), child: Row(children: [Icon(p.met ? Icons.check_circle : Icons.radio_button_unchecked, color: p.met ? Colors.green : cTextTertiary, size: 16), const SizedBox(width: 8), Expanded(child: Text(AppLocalizations.of(context).siProgressRow(p.label, p.current, p.required), style: TextStyle(color: p.met ? Colors.green.shade300 : cTextSecondary, fontSize: 11, fontWeight: p.met ? FontWeight.w600 : FontWeight.normal))), SizedBox(width: 40, height: 4, child: ClipRRect(borderRadius: BorderRadius.circular(2), child: LinearProgressIndicator(value: p.percentage, backgroundColor: cSurface, valueColor: AlwaysStoppedAnimation(p.met ? Colors.green : cOrange))))]));
 }
 
 // ============================================================
@@ -2652,20 +3222,6 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
     }
   }
 
-  Color _colorFor(String id) {
-    switch (id) {
-      case 'trust_score': return Colors.amber;
-      case 'home_meetup': return const Color(0xFFF7931A);
-      case 'reputation': return Colors.amber;
-      case 'community': return const Color(0xFF00B4CF);
-      case 'events': return const Color(0xFF8090A0);
-      case 'shoutout': return const Color(0xFFF7931A);
-      case 'podcast': return const Color(0xFFA915FF);
-      case 'organisator': return const Color(0xFFA915FF);
-      case 'wot_dashboard': return const Color(0xFF00B4CF);
-      default: return const Color(0xFF9A9AA0);
-    }
-  }
 
   void _hide(String id) => setState(() => _hidden.add(id));
   void _show(String id) => setState(() => _hidden.remove(id));
@@ -2716,9 +3272,13 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: visibleTiles.length,
-                onReorder: (oldI, newI) {
+                // onReorderItem statt onReorder: Der neue Rueckruf rechnet den
+                // newIndex bereits um das entnommene Element zurueck. Die
+                // frueher noetige Korrektur "if (newI > oldI) newI--;" faellt
+                // deshalb ersatzlos weg — bliebe sie stehen, saesse jede
+                // Kachel nach dem Verschieben eine Position zu weit oben.
+                onReorderItem: (oldI, newI) {
                   setState(() {
-                    if (newI > oldI) newI--;
                     final oldOrderIdx = _order.indexOf(visibleTiles[oldI]);
                     final newOrderIdx = _order.indexOf(visibleTiles[newI]);
                     final item = _order.removeAt(oldOrderIdx);
@@ -2773,7 +3333,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
           ? const Icon(Icons.lock_outline_rounded, color: cTextTertiary, size: 13)
           : Switch(
               value: true,
-              activeColor: cOrange,
+              activeThumbColor: cOrange,
               onChanged: (_) => _hide(id),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
@@ -2791,7 +3351,7 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
       Expanded(child: Text(_labelFor(id), style: const TextStyle(color: cTextTertiary, fontSize: 13, fontWeight: FontWeight.w500))),
       Switch(
         value: false,
-        activeColor: cOrange,
+        activeThumbColor: cOrange,
         onChanged: (_) => _show(id),
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
@@ -2919,11 +3479,40 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
   }
 }
 
-/// Eine Favoriten-Karte: Stadt + deren naechstes Event (oder null).
+/// Eine Favoriten-Karte.
+///
+/// [key] ist der GESPEICHERTE Wert — seit dem Umbau die Portal-ID, bei
+/// Altbestand noch ein Stadtname. [city] ist der daraus aufgeloeste Ort
+/// fuer Terminsuche und Wappen, [label] die Aufschrift: bei mehreren
+/// Meetups in einer Stadt der Gruppenname, sonst die Stadt.
+/// Ein Meetup-Termin, fuer den man zugesagt hat.
+class _MeetupDateEntry {
+  final String favKey;
+  final String label;
+  final CalendarEvent event;
+
+  /// Teilnehmerzahl laut Portal, -1 wenn unbekannt.
+  final int attendees;
+
+  const _MeetupDateEntry({
+    required this.favKey,
+    required this.label,
+    required this.event,
+    required this.attendees,
+  });
+}
+
 class _FavCard {
+  final String key;
+  final String label;
   final String city;
   final CalendarEvent? event;
-  const _FavCard({required this.city, required this.event});
+  const _FavCard({
+    required this.key,
+    required this.label,
+    required this.city,
+    required this.event,
+  });
 }
 
 /// Gestrichelter Platzhalter an der Stelle, von der eine Kachel gerade

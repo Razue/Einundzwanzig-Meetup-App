@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'services/guide_service.dart';
+import 'widgets/guide_overlay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'l10n/app_localizations.dart';
@@ -11,7 +14,6 @@ import 'screens/intro.dart';
 import 'screens/app_shell.dart';
 import 'models/user.dart';
 import 'services/secure_key_store.dart';
-import 'services/promotion_claim_service.dart';
 import 'services/locale_controller.dart';
 import 'services/widget_service.dart';
 import 'services/app_logger.dart';
@@ -185,7 +187,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<Locale?>(
+    // GuideService liegt UEBER der MaterialApp: Die Spotlight-Tour muss
+    // ueber jeder Route liegen koennen, auch ueber Dialogen und Sheets.
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GuideService()),
+      ],
+      child: ValueListenableBuilder<Locale?>(
       valueListenable: LocaleController.locale,
       builder: (context, locale, _) {
         return MaterialApp(
@@ -199,21 +207,24 @@ class MyApp extends StatelessWidget {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) {
-            return Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 420),
-                decoration: BoxDecoration(
-                  border: Border.symmetric(
-                    vertical: BorderSide(color: cBorder, width: 0.5),
+            return GuideOverlay(
+              child: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  decoration: BoxDecoration(
+                    border: Border.symmetric(
+                      vertical: BorderSide(color: cBorder, width: 0.5),
+                    ),
                   ),
+                  child: child,
                 ),
-                child: child,
               ),
             );
           },
           home: const SplashScreen(),
         );
       },
+      ),
     );
   }
 }
@@ -268,9 +279,9 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => nextScreen,
+        pageBuilder: (_, _, _) => nextScreen,
         transitionDuration: const Duration(milliseconds: 500),
-        transitionsBuilder: (_, animation, __, child) =>
+        transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),
     );

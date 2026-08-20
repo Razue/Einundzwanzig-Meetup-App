@@ -36,6 +36,54 @@ class NostrCalendarEvent {
   final int kind;
   final bool fromApp; // true, wenn via dieser App erstellt (client-Tag)
 
+  // =============================================
+  // EVENT-BADGE (Zusatz-Tags, NIP-52 erlaubt beliebige weitere Tags —
+  // fremde Clients ignorieren sie einfach)
+  // =============================================
+
+  /// Soll es fuer dieses Event ein Badge geben? Tag ['badge','true'].
+  final bool badgeEnabled;
+
+  /// Bild fuers Badge. Tag `['badge_image','<url>']`.
+  final String badgeImageUrl;
+
+  /// Koordinaten des Veranstaltungsorts. Tag `['g','<lat>','<lng>']`.
+  /// 0/0 bedeutet "nicht hinterlegt" — dann kann die Ortspruefung beim
+  /// Sessionstart nicht greifen.
+  final double lat;
+  final double lng;
+
+  /// Wer darf fuer dieses Event Badges ausstellen? Je ein Tag
+  /// `['p','<pubkey-hex>','','issuer']`. Hex, nicht npub — so verlangt es
+  /// NIP-01 fuer p-Tags, und andere Clients zeigen die Leute dann als
+  /// Beteiligte an.
+  final List<String> issuers;
+
+  /// Darf [pubkeyHex] fuer dieses Event Badges ausstellen?
+  ///
+  /// Der Ersteller selbst zaehlt immer dazu — er hat das Event signiert und
+  /// muss sich nicht zusaetzlich selbst eintragen.
+  bool isIssuer(String pubkeyHex) {
+    if (pubkeyHex.isEmpty) return false;
+    final k = pubkeyHex.toLowerCase();
+    return k == pubkey.toLowerCase() ||
+        issuers.any((i) => i.toLowerCase() == k);
+  }
+
+  /// Laeuft das Zeitfenster gerade? Badges gibt es nur am Termintag —
+  /// sonst waere ein einmal angelegtes Event ein Badge-Automat auf Dauer.
+  bool get isBadgeWindowOpen {
+    if (!badgeEnabled) return false;
+    final now = DateTime.now();
+    final from = DateTime(start.year, start.month, start.day);
+    final until = (end ?? start).add(const Duration(days: 1));
+    final to = DateTime(until.year, until.month, until.day);
+    return !now.isBefore(from) && now.isBefore(to);
+  }
+
+  /// Adresse des Events fuer Verweise aus Badges: `<kind>:<pubkey>:<d>`.
+  String get address => '$kind:$pubkey:$dTag';
+
   NostrCalendarEvent({
     required this.id,
     required this.pubkey,
@@ -48,6 +96,11 @@ class NostrCalendarEvent {
     required this.allDay,
     required this.kind,
     this.fromApp = false,
+    this.badgeEnabled = false,
+    this.badgeImageUrl = '',
+    this.lat = 0,
+    this.lng = 0,
+    this.issuers = const [],
   });
 
   /// Tag (ohne Uhrzeit) für die Kalender-Gruppierung.
@@ -91,6 +144,26 @@ class NostrCalendarEvent {
       final client = tagVal('client');
       final fromApp = client == 'einundzwanzig-meetup-app';
 
+      // --- Event-Badge-Tags ---
+      final badgeEnabled = tagVal('badge').toLowerCase() == 'true';
+      final badgeImageUrl = tagVal('badge_image');
+
+      double lat = 0, lng = 0;
+      final geo = tags.firstWhere((x) => x.isNotEmpty && x[0] == 'g',
+          orElse: () => const []);
+      if (geo.length >= 3) {
+        lat = double.tryParse(geo[1]) ?? 0;
+        lng = double.tryParse(geo[2]) ?? 0;
+      }
+
+      // Nur p-Tags mit der Rolle "issuer" — ein blosses p-Tag heisst bei
+      // NIP-52 lediglich "beteiligt" und darf keine Badge-Berechtigung sein.
+      final issuers = tags
+          .where((x) => x.length >= 4 && x[0] == 'p' && x[3] == 'issuer')
+          .map((x) => x[1])
+          .where((x) => x.length == 64)
+          .toList();
+
       return NostrCalendarEvent(
         id: (e['id'] ?? '').toString(),
         pubkey: (e['pubkey'] ?? '').toString(),
@@ -103,6 +176,11 @@ class NostrCalendarEvent {
         allDay: allDay,
         kind: kind,
         fromApp: fromApp,
+        badgeEnabled: badgeEnabled,
+        badgeImageUrl: badgeImageUrl,
+        lat: lat,
+        lng: lng,
+        issuers: issuers,
       );
     } catch (_) {
       return null;
@@ -145,6 +223,84 @@ class CalendarEventService {
 
     final all = byKey.values.toList()..sort((a, b) => a.start.compareTo(b.start));
     return all;
+  }
+
+  /// Holt EIN Kalender-Event ueber seine Adresse `<kind>:<pubkey>:<dTag>`.
+  ///
+  /// Gebraucht beim Scannen eines Event-Badges: Der Payload nennt nur die
+  /// Adresse; wer ausstellen darf und wer das Event angelegt hat, steht im
+  /// Event selbst. Ohne diesen Abruf waere die Ausstellerliste nicht
+  /// pruefbar.
+  ///
+  /// Sucht auf ALLEN aktiven Relays, nicht nur auf dem Community-Relay: Ein
+  /// Event kann von woanders stammen, und ein Badge abzulehnen, weil man am
+  /// falschen Ort gesucht hat, waere das schlechteste Ergebnis.
+  static Future<NostrCalendarEvent?> fetchByAddress(String address) async {
+    final parts = address.split(':');
+    if (parts.length < 3) return null;
+    final kind = int.tryParse(parts[0]);
+    final author = parts[1];
+    final dTag = parts.sublist(2).join(':');
+    if (kind == null || author.length != 64 || dTag.isEmpty) return null;
+
+    final relays = <String>{
+      kCommunityRelay,
+      ...await RelayConfig.getActiveRelays(),
+    };
+
+    NostrCalendarEvent? newest;
+    for (final relayUrl in relays) {
+      RelaySocket? ws;
+      try {
+        ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
+        final completer = Completer<void>();
+        final random = Random.secure();
+        final subId = 'cal1-${List.generate(6, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+
+        ws.listen((data) {
+          try {
+            final msg = jsonDecode(data as String) as List<dynamic>;
+            if (msg.length >= 3 && msg[0] == 'EVENT') {
+              final ev = NostrCalendarEvent.fromEvent(msg[2] as Map<String, dynamic>);
+              // Ersetzbare Events: Die neueste Fassung gewinnt.
+              if (ev != null && (newest == null || ev.start.isAfter(newest!.start))) {
+                newest = ev;
+              }
+            } else if (msg.isNotEmpty && msg[0] == 'EOSE') {
+              if (!completer.isCompleted) completer.complete();
+            }
+          } catch (_) {}
+        }, onError: (_) {
+          if (!completer.isCompleted) completer.complete();
+        }, onDone: () {
+          if (!completer.isCompleted) completer.complete();
+        });
+
+        ws.add(jsonEncode([
+          'REQ',
+          subId,
+          {
+            'kinds': [kind],
+            'authors': [author],
+            '#d': [dTag],
+            'limit': 1,
+          }
+        ]));
+        await completer.future.timeout(_timeout, onTimeout: () {});
+      } catch (e) {
+        AppLogger.debug(_tag, 'fetchByAddress $relayUrl: $e');
+      } finally {
+        try {
+          ws?.close();
+        } catch (_) {}
+      }
+      // Gefunden reicht — weitere Relays wuerden dasselbe liefern.
+      if (newest != null) break;
+    }
+
+    AppLogger.debug(_tag,
+        'fetchByAddress $address -> ${newest == null ? "nicht gefunden" : "gefunden"}');
+    return newest;
   }
 
   static Future<List<NostrCalendarEvent>?> _fetchFromRelay(String relayUrl, int limit) async {
@@ -198,10 +354,29 @@ class CalendarEventService {
     required DateTime start,
     DateTime? end,
     bool allDay = false,
+    // --- Event-Badge (optional) ---
+    bool badgeEnabled = false,
+    String badgeImageUrl = '',
+    double lat = 0,
+    double lng = 0,
+    List<String> issuers = const [],
   }) async {
     try {
       final random = Random.secure();
       final dTag = List.generate(16, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
+
+      // Die Badge-Tags sind fuer beide Event-Arten gleich. Sie stehen hier
+      // einmal, damit sie nicht in zwei Zweigen auseinanderlaufen koennen.
+      final badgeTags = <List<String>>[
+        if (badgeEnabled) ['badge', 'true'],
+        if (badgeEnabled && badgeImageUrl.trim().isNotEmpty)
+          ['badge_image', badgeImageUrl.trim()],
+        if (badgeEnabled && (lat != 0 || lng != 0))
+          ['g', lat.toStringAsFixed(6), lng.toStringAsFixed(6)],
+        if (badgeEnabled)
+          for (final hex in issuers)
+            if (hex.length == 64) ['p', hex, '', 'issuer'],
+      ];
 
       final List<List<String>> tags;
       final int kind;
@@ -215,6 +390,7 @@ class CalendarEventService {
           if (end != null) ['end', ymd(end)],
           if (location.trim().isNotEmpty) ['location', location.trim()],
           ['client', 'einundzwanzig-meetup-app'],
+          ...badgeTags,
         ];
       } else {
         kind = kTimeEventKind;
@@ -226,6 +402,7 @@ class CalendarEventService {
           if (end != null) ['end', (end.toUtc().millisecondsSinceEpoch ~/ 1000).toString()],
           if (location.trim().isNotEmpty) ['location', location.trim()],
           ['client', 'einundzwanzig-meetup-app'],
+          ...badgeTags,
         ];
       }
 
