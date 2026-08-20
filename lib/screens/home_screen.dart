@@ -174,7 +174,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Set<String> _hiddenTiles = {};
   // Pflicht-Kacheln (nicht löschbar)
   // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
-  static const _defaultOrder = ['home_meetup', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
+  // WICHTIG: Jede neue Kachel muss hier stehen. _buildTileRows geht ueber
+  // diese Reihenfolge — was nicht drin ist, wird nie gezeichnet, egal was
+  // in _tileDefs steht. "event_chats" fehlte hier, deshalb blieb die Kachel
+  // "Meine Termine" unsichtbar, obwohl Zusagen vorlagen.
+  static const _defaultOrder = ['home_meetup', 'event_chats', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
   static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
 
   late List<_TileDef> _tileDefs;
@@ -2274,6 +2278,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             MaterialPageRoute(
                 builder: (_) => EventCalendarScreen(initialDay: DateTime.now())));
         _checkActiveSession();
+        // Im Kalender kann man zugesagt haben — dann gehoert die Kachel
+        // "Meine Termine" sofort her, nicht erst beim naechsten Start.
+        _loadMyEvents();
       },
       child: _heroContent(
         icon: Icons.event_rounded,

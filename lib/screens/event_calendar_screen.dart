@@ -259,7 +259,10 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   /// Bewusst KEIN dritter fuer "vielleicht". Das Protokoll kennt ihn, aber
   /// eine dritte Wahl macht die Zeile breiter und die Aussage schwaecher —
   /// wer unsicher ist, sagt einfach noch gar nichts.
-  Widget _rsvpRow(AppLocalizations t, NostrCalendarEvent event) {
+  /// [setSheet] zeichnet das Blatt neu — der Kalender-State erreicht es
+  /// nicht.
+  Widget _rsvpRow(
+      AppLocalizations t, NostrCalendarEvent event, StateSetter setSheet) {
     final current = _rsvps[event.address];
     final busy = _rsvpBusy == event.address;
 
@@ -272,7 +275,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       final fg = active ? Colors.black : cTextSecondary;
       return Expanded(
         child: OutlinedButton.icon(
-          onPressed: busy ? null : () => _setRsvp(event, status),
+          onPressed: busy ? null : () => _setRsvp(event, status, setSheet),
           icon: Icon(icon, size: 17, color: fg),
           style: OutlinedButton.styleFrom(
             backgroundColor: active ? color : Colors.transparent,
@@ -299,7 +302,8 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     ]);
   }
 
-  Future<void> _setRsvp(NostrCalendarEvent event, RsvpStatus status) async {
+  Future<void> _setRsvp(NostrCalendarEvent event, RsvpStatus status,
+      StateSetter setSheet) async {
     final t = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -307,10 +311,14 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     // die Relay-Antwort zu warten, bevor sich etwas ruehrt, faende
     // niemand angemessen. Schlaegt es fehl, wird zurueckgesetzt.
     final previous = _rsvps[event.address];
+    // BEIDE neu zeichnen: setState fuer den Kalender darunter, setSheet fuer
+    // das Blatt darueber. Die Daten liegen im Kalender-State, gezeigt werden
+    // sie im Blatt — eines allein genuegt nicht.
     setState(() {
       _rsvps[event.address] = status;
       _rsvpBusy = event.address;
     });
+    setSheet(() {});
 
     final err = await EventRsvpService.setStatus(
       eventAddress: event.address,
@@ -329,6 +337,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
         }
       }
     });
+    setSheet(() {});
     if (err != null) {
       messenger.showSnackBar(SnackBar(
           content: Text(t.rsvpFailed(err)), backgroundColor: cRed));
@@ -1040,7 +1049,12 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
       backgroundColor: cCard,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => DraggableScrollableSheet(
+      // StatefulBuilder um das Blatt: Es haengt in einer EIGENEN Route und
+      // zeichnet sich NICHT neu, wenn der Kalender setState aufruft. Deshalb
+      // faerbte sich "Ich komme" erst, wenn man das Blatt schloss und wieder
+      // oeffnete — die Zusage war laengst gespeichert, nur sah man es nicht.
+      builder: (_) => StatefulBuilder(
+        builder: (_, setSheet) => DraggableScrollableSheet(
         expand: false, initialChildSize: 0.55, maxChildSize: 0.9, minChildSize: 0.35,
         builder: (_, scroll) => SingleChildScrollView(
           controller: scroll,
@@ -1086,7 +1100,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             // Meetups haben keine.
             if (e.nostr != null) ...[
               const SizedBox(height: 14),
-              _rsvpRow(t, e.nostr!),
+              _rsvpRow(t, e.nostr!, setSheet),
             ],
             // Chat zum Termin. Nur fuer Nostr-Termine: Portal-Meetups haben
             // ihren eigenen Meetup-Raum, ein zweiter Raum daneben wuerde die
@@ -1157,6 +1171,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             ),
           ]),
         ),
+      ),
       ),
     );
   }
