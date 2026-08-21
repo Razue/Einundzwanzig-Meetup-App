@@ -1014,7 +1014,7 @@
     }
   },
   "mvUnknownSigner": "✗ ¡FIRMANTE DESCONOCIDO!\nEsta pubkey no está en el registro de admins.",
-  "mvAdminCheckFailed": "! No se pudo verificar el estado de admin (¿sin conexión?)",
+  "mvAdminCheckFailed": "! No verificable: el registro de organizadores no estaba accesible. La insignia es válida; la firma es correcta.",
   "mvLegacyBadge": "! Insignia antigua (v1) — firmante no verificable",
   "mvBadgeBound": "🔗 Insignia vinculada",
   "nwSelectHomeMeetup": "❌ ¡Primero selecciona un meetup principal en tu perfil!",

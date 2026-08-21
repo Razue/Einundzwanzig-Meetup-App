@@ -4231,7 +4231,7 @@ abstract class AppLocalizations {
   /// No description provided for @mvAdminCheckFailed.
   ///
   /// In de, this message translates to:
-  /// **'! Admin-Status konnte nicht geprüft werden (offline?)'**
+  /// **'! Nicht prüfbar — die Organisatoren-Liste war gerade nicht erreichbar. Das Badge selbst ist gültig; die Signatur stimmt.'**
   String get mvAdminCheckFailed;
 
   /// No description provided for @mvLegacyBadge.

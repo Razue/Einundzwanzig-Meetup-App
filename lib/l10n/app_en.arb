@@ -1014,7 +1014,7 @@
     }
   },
   "mvUnknownSigner": "✗ UNKNOWN SIGNER!\nThis pubkey is not in the admin registry.",
-  "mvAdminCheckFailed": "! Admin status could not be verified (offline?)",
+  "mvAdminCheckFailed": "! Cannot verify — the organiser registry was unreachable. The badge itself is valid; the signature checks out.",
   "mvLegacyBadge": "! Legacy badge (v1) — signer not verifiable",
   "mvBadgeBound": "🔗 Badge bound",
   "nwSelectHomeMeetup": "❌ Please select a home meetup in your profile first!",

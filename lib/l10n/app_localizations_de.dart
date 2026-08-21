@@ -2275,7 +2275,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mvAdminCheckFailed =>
-      '! Admin-Status konnte nicht geprüft werden (offline?)';
+      '! Nicht prüfbar — die Organisatoren-Liste war gerade nicht erreichbar. Das Badge selbst ist gültig; die Signatur stimmt.';
 
   @override
   String get mvLegacyBadge => '! Legacy-Badge (v1) — Signer nicht prüfbar';

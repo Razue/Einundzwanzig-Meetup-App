@@ -2260,7 +2260,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mvAdminCheckFailed =>
-      '! Admin status could not be verified (offline?)';
+      '! Cannot verify — the organiser registry was unreachable. The badge itself is valid; the signature checks out.';
 
   @override
   String get mvLegacyBadge => '! Legacy badge (v1) — signer not verifiable';

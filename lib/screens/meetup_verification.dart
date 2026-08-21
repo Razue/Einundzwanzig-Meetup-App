@@ -550,6 +550,11 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
             if (isKnownAdmin) {
               final adminName = adminResult.name ?? adminResult.meetup ?? tr.verifyVerifiedAdmin;
               adminCheckInfo = tr.mvKnownOrganizer(adminName);
+            } else if (adminResult.source == 'unavailable') {
+              // Die Registry war nicht erreichbar. Das ist eine Aussage ueber
+              // das NETZ, nicht ueber die Person — und muss anders klingen
+              // als ein Fremder.
+              adminCheckInfo = tr.mvAdminCheckFailed;
             } else {
               adminCheckInfo = tr.mvUnknownSigner;
             }

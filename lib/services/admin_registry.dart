@@ -194,8 +194,20 @@ class AdminRegistry {
     }
 
     // 4. Kein Cache-Treffer → Relay fragen (blockierend, mit Timeout)
+    //
+    // WICHTIG: Zwischen "nicht eingetragen" und "konnte nicht nachsehen"
+    // unterscheiden. Beides sah bisher gleich aus — der Scanner meldete
+    // "UNBEKANNTER SIGNER", auch wenn die Relays nur nicht erreichbar
+    // waren. Das ist ein Vorwurf gegen eine Person, der auf einer
+    // Netzstoerung beruht, und genau so kam es in der Praxis vor.
+    var lookupFailed = false;
     try {
       final relayList = await fetchFromRelays();
+      if (relayList == null || relayList.isEmpty) {
+        // Leere Antwort heisst NICHT "es gibt keine Organisatoren" — es
+        // heisst, dass wir keine Auskunft bekommen haben.
+        lookupFailed = true;
+      }
       if (relayList != null && relayList.isNotEmpty) {
         await _saveToCache(relayList);
 
@@ -214,7 +226,13 @@ class AdminRegistry {
       }
     } catch (e) {
       AppLogger.warn('AdminRegistry', 'Relay-Fetch Fehler: $e');
+      lookupFailed = true;
+    }
 
+    if (lookupFailed) {
+      AppLogger.warn('AdminRegistry',
+          'Registry nicht abrufbar — Signierer bleibt UNGEPRUEFT, nicht unbekannt.');
+      return AdminCheckResult(isAdmin: false, source: 'unavailable');
     }
 
     return AdminCheckResult(isAdmin: false, source: 'not_found');

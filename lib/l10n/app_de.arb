@@ -1036,7 +1036,7 @@
     }
   },
   "mvUnknownSigner": "✗ UNBEKANNTER SIGNER!\nDieser Pubkey ist nicht in der Admin-Registry.",
-  "mvAdminCheckFailed": "! Admin-Status konnte nicht geprüft werden (offline?)",
+  "mvAdminCheckFailed": "! Nicht prüfbar — die Organisatoren-Liste war gerade nicht erreichbar. Das Badge selbst ist gültig; die Signatur stimmt.",
   "mvLegacyBadge": "! Legacy-Badge (v1) — Signer nicht prüfbar",
   "mvBadgeBound": "🔗 Badge gebunden",
   "nwSelectHomeMeetup": "❌ Bitte erst ein Home-Meetup im Profil auswählen!",

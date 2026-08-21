@@ -2275,7 +2275,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mvAdminCheckFailed =>
-      '! No se pudo verificar el estado de admin (¿sin conexión?)';
+      '! No verificable: el registro de organizadores no estaba accesible. La insignia es válida; la firma es correcta.';
 
   @override
   String get mvLegacyBadge =>
