@@ -439,7 +439,11 @@ class _ChatScreenState extends State<ChatScreen> {
     return '${d.day}.${d.month}. $time';
   }
 
-  /// Absender antippen: npub zum Kopieren.
+  /// Absender antippen: Name gross, npub klein zum Kopieren.
+  ///
+  /// Der Name steht vorn, weil man ihn kennt. Der npub gehoert daneben, nicht
+  /// an seine Stelle: Vorher stand nur die lange Zeichenkette da — richtig,
+  /// aber unlesbar, und niemand erkennt daran, mit wem er spricht.
   void _showAuthor(String pubkey, String? name) {
     final t = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
@@ -449,6 +453,8 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {
       npub = pubkey;
     }
+    final display = (name != null && name.isNotEmpty) ? name : _shortKey(pubkey);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: cCard,
@@ -457,35 +463,48 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       builder: (ctx) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
           child: Column(mainAxisSize: MainAxisSize.min, children: [
-            if (name != null && name.isNotEmpty)
-              Text(name,
-                  style: const TextStyle(
-                      color: cText, fontSize: 17, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 10),
-            SelectableText(npub,
+            NostrAvatar(
+                pubkeyHex: pubkey,
+                radius: 26,
+                fallbackText: display.substring(0, 1).toUpperCase()),
+            const SizedBox(height: 12),
+            Text(display,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    color: cTextSecondary,
-                    fontSize: 11.5,
-                    fontFamily: 'monospace')),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: npub));
-                  Navigator.pop(ctx);
-                  messenger.showSnackBar(
-                      SnackBar(content: Text(t.chatNpubCopied)));
-                },
-                icon: const Icon(Icons.copy_rounded,
-                    color: Colors.black, size: 18),
-                style: ElevatedButton.styleFrom(backgroundColor: cOrange),
-                label: Text(t.chatCopyNpub,
-                    style: const TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.w700)),
+                    color: cText, fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 10),
+
+            // npub klein daneben, mit Kopiersymbol — antippbar als Ganzes.
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: npub));
+                Navigator.pop(ctx);
+                messenger
+                    .showSnackBar(SnackBar(content: Text(t.chatNpubCopied)));
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: cSurface,
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(color: cTileBorder, width: 0.5),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Flexible(
+                    child: Text(_shortNpub(npub),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: cTextSecondary,
+                            fontSize: 12,
+                            fontFamily: 'monospace')),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.copy_rounded, color: cOrange, size: 15),
+                ]),
               ),
             ),
           ]),
@@ -493,6 +512,12 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+
+  /// npub gekuerzt: Anfang und Ende. Die vollen 63 Zeichen liest niemand,
+  /// wiedererkennen kann man jemanden aber an beiden Enden.
+  String _shortNpub(String npub) => npub.length > 20
+      ? '${npub.substring(0, 12)}…${npub.substring(npub.length - 6)}'
+      : npub;
 
   Widget _footer(AppLocalizations t) {
     // Solange geladen wird, steht unten NICHTS.

@@ -129,6 +129,49 @@ class CoAttendanceService {
   /// Zweitens gehoert es zur Sache: Ein Event IST ein Event, egal bei
   /// welchem Helfer man gescannt hat. Ohne diese Zusammenfassung zerfiele
   /// eine Veranstaltung in so viele Gruppen, wie Helfer im Einsatz waren.
+  /// Gemeinsame Kennungen zweier Teilnehmer.
+  ///
+  /// Nicht einfach `intersection`, weil ZWEI FORMATE nebeneinander im Netz
+  /// liegen:
+  ///
+  ///   aschaffenburg-2026-06-03                 (alt, ohne Signierer)
+  ///   aschaffenburg-2026-06-03@u8qf5q534jzc    (neu, mit Signierer)
+  ///
+  /// Der Anhang kam spaeter dazu, um zwei Organisatoren am selben Abend
+  /// auseinanderzuhalten. Aeltere Badges tragen keinen Signierer, und ein
+  /// exakter Vergleich laesst beide Formate aneinander vorbeilaufen — genau
+  /// deshalb blieb das Netzwerk bei Bestaenden aus der Zeit davor leer.
+  ///
+  /// Regel: Gleich ist gleich. Fehlt EINER Seite der Anhang, entscheidet der
+  /// Teil davor. Haben BEIDE einen Anhang, muss er uebereinstimmen — sonst
+  /// waren es verschiedene Sessions, und die Unterscheidung bliebe wertlos.
+  static Set<String> sharedKeys(Set<String> a, Set<String> b) {
+    if (a.isEmpty || b.isEmpty) return <String>{};
+
+    String base(String k) {
+      final i = k.indexOf('@');
+      return i < 0 ? k : k.substring(0, i);
+    }
+
+    final out = <String>{};
+    for (final x in a) {
+      final xb = base(x);
+      final xHasSigner = x.length != xb.length;
+      for (final y in b) {
+        if (x == y) {
+          out.add(x);
+          continue;
+        }
+        final yb = base(y);
+        if (xb != yb) continue;
+        // Nur wenn mindestens eine Seite aus der Zeit ohne Anhang stammt.
+        final yHasSigner = y.length != yb.length;
+        if (!xHasSigner || !yHasSigner) out.add(xb);
+      }
+    }
+    return out;
+  }
+
   static String attendanceKey(
     String meetupEventId,
     String signerNpub, {
@@ -348,7 +391,7 @@ class CoAttendanceService {
     final targetMeetups = targetNode?.meetups ?? <String>{};
 
     // Gemeinsame Meetups (ich + Ziel)
-    final shared = myMeetups.intersection(targetMeetups);
+    final shared = sharedKeys(myMeetups, targetMeetups);
 
     // Gemeinsame Kontakte: andere npubs, die mit BEIDEN je ein Meetup teilen
     final mutual = <String>[];
@@ -356,8 +399,8 @@ class CoAttendanceService {
       final npub = entry.key;
       if (npub == myNpub || npub == targetNpub) continue;
       final m = entry.value.meetups;
-      final withMe = m.intersection(myMeetups).isNotEmpty;
-      final withTarget = m.intersection(targetMeetups).isNotEmpty;
+      final withMe = sharedKeys(m, myMeetups).isNotEmpty;
+      final withTarget = sharedKeys(m, targetMeetups).isNotEmpty;
       if (withMe && withTarget) mutual.add(npub);
     }
 
@@ -365,7 +408,7 @@ class CoAttendanceService {
     final targetContacts = <String>{};
     for (final entry in nodes.entries) {
       if (entry.key == targetNpub) continue;
-      if (entry.value.meetups.intersection(targetMeetups).isNotEmpty) {
+      if (sharedKeys(entry.value.meetups, targetMeetups).isNotEmpty) {
         targetContacts.add(entry.key);
       }
     }
@@ -400,7 +443,7 @@ class CoAttendanceService {
 
     final myMeetups = nodes[myNpub]?.meetups ?? <String>{};
     final targetMeetups = nodes[targetNpub]?.meetups ?? <String>{};
-    final sharedMeetups = myMeetups.intersection(targetMeetups);
+    final sharedMeetups = sharedKeys(myMeetups, targetMeetups);
 
     // Sonderfall: man selbst
     if (myNpub == targetNpub) {
@@ -419,7 +462,7 @@ class CoAttendanceService {
     final entries = nodes.entries.toList();
     for (int i = 0; i < entries.length; i++) {
       for (int j = i + 1; j < entries.length; j++) {
-        if (entries[i].value.meetups.intersection(entries[j].value.meetups).isNotEmpty) {
+        if (sharedKeys(entries[i].value.meetups, entries[j].value.meetups).isNotEmpty) {
           adj.putIfAbsent(entries[i].key, () => <String>{}).add(entries[j].key);
           adj.putIfAbsent(entries[j].key, () => <String>{}).add(entries[i].key);
         }
@@ -585,7 +628,7 @@ class CoAttendanceService {
       for (int j = i + 1; j < entries.length; j++) {
         final a = entries[i];
         final b = entries[j];
-        if (a.value.meetups.intersection(b.value.meetups).isNotEmpty) {
+        if (sharedKeys(a.value.meetups, b.value.meetups).isNotEmpty) {
           adj.putIfAbsent(a.key, () => <String>{}).add(b.key);
           adj.putIfAbsent(b.key, () => <String>{}).add(a.key);
         }
@@ -635,7 +678,7 @@ class CoAttendanceService {
 
       Set<String> shared = <String>{};
       if (deg == 1) {
-        shared = (nodes[npub]?.meetups ?? <String>{}).intersection(myMeetups);
+        shared = sharedKeys(nodes[npub]?.meetups ?? <String>{}, myMeetups);
       }
 
       byDegree.putIfAbsent(deg, () => []).add(NetworkContact(
@@ -653,6 +696,12 @@ class CoAttendanceService {
     AppLogger.diag('Netzwerk',
         'Eigene Meetup-Kennungen (${myMeetups.length}): '
         '${myMeetups.join(", ")}');
+    // Zaehlt mit, ob ueberhaupt fremde Teilnahmen ankamen. Ohne diese Zahl
+    // sieht ein leeres Netzwerk gleich aus, egal ob die Relays nichts
+    // lieferten oder ob die Kennungen nicht zusammenpassten.
+    AppLogger.diag('Netzwerk',
+        '${nodes.length} Teilnehmer aus den Relays, davon ${(byDegree[1] ?? const []).length} im 1. Grad, '
+        '${(byDegree[2] ?? const []).length} im 2. Grad.');
     for (final c in (byDegree[1] ?? const <NetworkContact>[])) {
       AppLogger.diag('Netzwerk',
           '1. Grad ${c.npub.substring(0, c.npub.length > 16 ? 16 : c.npub.length)}… '
