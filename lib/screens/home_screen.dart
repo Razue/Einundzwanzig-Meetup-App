@@ -66,7 +66,6 @@ import '../services/signing_service.dart';
 import '../services/satoshiduell_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'calendar_screen.dart';
-import 'wot_dashboard.dart';
 import '../services/backup_service.dart';
 import '../services/promotion_claim_service.dart';
 import '../services/secure_key_store.dart';
@@ -173,13 +172,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   List<String> _tileOrder = [];
   Set<String> _hiddenTiles = {};
   // Pflicht-Kacheln (nicht löschbar)
-  // Standard-Reihenfolge (alle optionalen Tiles sind sichtbar by default, wot_dashboard versteckt)
+  // Standard-Reihenfolge (alle optionalen Kacheln sind zunaechst sichtbar)
   // WICHTIG: Jede neue Kachel muss hier stehen. _buildTileRows geht ueber
   // diese Reihenfolge — was nicht drin ist, wird nie gezeichnet, egal was
   // in _tileDefs steht. "event_chats" fehlte hier, deshalb blieb die Kachel
   // "Meine Termine" unsichtbar, obwohl Zusagen vorlagen.
-  static const _defaultOrder = ['home_meetup', 'event_chats', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator', 'wot_dashboard'];
-  static const _defaultHidden = {'wot_dashboard', 'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
+  static const _defaultOrder = ['home_meetup', 'event_chats', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator'];
+  static const _defaultHidden = {'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
 
   late List<_TileDef> _tileDefs;
   String _appVersion = ''; // wird in initState aus package_info geladen
@@ -363,7 +362,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'portal',       label: 'Meine Meetups',    span: 2, builder: _buildPortalTile),
       _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin),
       // ── Admin-optionale Kacheln ──
-      _TileDef(id: 'wot_dashboard', label: 'WoT Dashboard',  span: 3, builder: _buildWotDashboardTile, visible: () => _user.isAdmin),
     ];
   }
 
@@ -909,14 +907,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Status für Dritte sichtbar; kein manuelles Register nötig.
         final meetupName = (meetups.first['name'] ?? _user.homeMeetupId).toString();
         try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: meetupName.isNotEmpty ? meetupName : 'Unbekannt'); } catch (_) {}
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppLocalizations.of(context).organizerPromoted),
-            backgroundColor: Colors.green.shade700,
-            duration: const Duration(seconds: 5),
-            behavior: SnackBarBehavior.floating,
-          ));
-        }
+        // Keine Meldung mehr.
+        //
+        // Die Pruefung laeuft bei jedem Start und bei jedem Aktualisieren —
+        // die Einblendung erschien also nicht bei einer VERAENDERUNG, sondern
+        // jedes Mal aufs Neue. Wer laengst Organisator ist, bekam dauernd
+        // gesagt, dass er es jetzt geworden sei. Den Status zeigt die
+        // Organisator-Kachel, und die ist der ruhigere Ort dafuer.
+        AppLogger.info('Portal', 'Organisator-Status bestaetigt (Portal).');
       } else if (meetups.isEmpty && _user.adminViaPortal) {
         // ENTZIEHEN: nur das Portal-Flag löschen. Bleibt der Nutzer über
         // WoT-Bürgschaft/Seed berechtigt, behält er isAdmin (abgeleitet).
@@ -936,7 +934,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     } catch (_) {/* still: beim nächsten Start erneut */}
   }
 
-  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).organizerPromoted), backgroundColor: Colors.green.shade700, duration: const Duration(seconds: 5), behavior: SnackBarBehavior.floating)); } } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
+  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} AppLogger.info('Admin', 'Organisator-Status bestaetigt (${v.source}).'); } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
   void _resetApp() async {
     final t = AppLocalizations.of(context);
     // 1. Erste Bestätigung (wie bisher)
@@ -2808,20 +2806,6 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
     ));
 
-  Widget _buildWotDashboardTile() => _tile(
-    accentColor: cOrange,
-    watermark: Icons.account_tree_rounded,
-    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WotDashboardScreen())),
-    child: _heroContent(
-      icon: Icons.account_tree_rounded,
-      accent: cGreen,
-      label: AppLocalizations.of(context).tileActNetwork,
-      value: AppLocalizations.of(context).tileWot,
-      valueSize: 17,
-      sub: AppLocalizations.of(context).tileWotSubtitle,
-      trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 16),
-    ),
-  );
 
   /// Kachel fuer die laufende Session.
   ///
@@ -3217,7 +3201,6 @@ class _CustomizeSheetState extends State<_CustomizeSheet> {
       case 'shoutout': return Icons.campaign_rounded;
       case 'podcast': return Icons.podcasts_rounded;
       case 'organisator': return Icons.admin_panel_settings_rounded;
-      case 'wot_dashboard': return Icons.account_tree_rounded;
       default: return Icons.widgets_rounded;
     }
   }

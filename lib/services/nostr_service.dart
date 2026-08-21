@@ -71,7 +71,11 @@ class NostrService {
     try {
       // 1. nsec → privater Schlüssel (Hex)
       final privateKeyHex = Nip19.decodePrivkey(nsec);
-      return importPrivHex(privateKeyHex);
+      // await, obwohl das Ergebnis direkt zurueckgeht: Ohne await liefe ein
+      // Fehler aus importPrivHex AM catch VORBEI — er entstuende erst,
+      // nachdem der try-Block laengst verlassen ist. Dann kaeme statt der
+      // lesbaren Meldung unten die rohe Ausnahme beim Aufrufer an.
+      return await importPrivHex(privateKeyHex);
     } catch (e) {
       throw FormatException('Ungültiger nsec Key: $e');
     }
