@@ -68,17 +68,36 @@ class MyEventsScreen extends StatefulWidget {
 class _MyEventsScreenState extends State<MyEventsScreen> {
   Map<String, int> _unread = {};
 
+  /// Eigene, veraenderbare Kopie der Liste.
+  ///
+  /// Die uebergebene Liste gehoert dem Dashboard. Nach einer Absage soll der
+  /// Termin SOFORT verschwinden — ohne dass dieser Bildschirm geschlossen und
+  /// neu aufgebaut werden muss. Deshalb eine eigene Kopie, die hier gepflegt
+  /// wird; das Dashboard erfaehrt es ueber onChanged und laedt fuer sich neu.
+  late List<NostrCalendarEvent> _events;
+
   @override
   void initState() {
     super.initState();
+    _events = List.of(widget.events);
     _loadUnread();
   }
 
   Future<void> _loadUnread() async {
-    if (widget.events.isEmpty) return;
+    if (_events.isEmpty) return;
     final counts = await EventChatService.unreadCounts(
-        widget.events.map((e) => e.address).toList());
+        _events.map((e) => e.address).toList());
     if (mounted) setState(() => _unread = counts);
+  }
+
+  @override
+  void didUpdateWidget(MyEventsScreen old) {
+    super.didUpdateWidget(old);
+    // Kommt eine neue Liste von aussen, uebernehmen — sonst zeigte dieser
+    // Bildschirm nach einem Neuladen des Dashboards weiter den alten Stand.
+    if (!identical(old.events, widget.events)) {
+      _events = List.of(widget.events);
+    }
   }
 
   @override
@@ -101,7 +120,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
         onRefresh: _loadUnread,
         color: cOrange,
         backgroundColor: cCard,
-        child: widget.events.isEmpty && widget.meetupDates.isEmpty
+        child: _events.isEmpty && widget.meetupDates.isEmpty
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
@@ -130,9 +149,9 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                   _sectionLabel(t.eventChatsMeetups),
                   ...widget.meetupDates.map((m) => _meetupCard(t, m)),
                 ],
-                if (widget.events.isNotEmpty) ...[
+                if (_events.isNotEmpty) ...[
                   _sectionLabel(t.eventChatsEvents),
-                  ...widget.events.map((e) => _card(t, e)),
+                  ..._events.map((e) => _card(t, e)),
                 ],
               ],
             ),
@@ -189,8 +208,14 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
           content: Text(t.rsvpFailed(err)), backgroundColor: cRed));
       return;
     }
+    // Aus der eigenen Liste nehmen statt den Bildschirm zu schliessen.
+    //
+    // Vorher wurde hier zurueckgesprungen — das ergab ein schwarzes Bild,
+    // weil zugleich das Dashboard neu lud und die Route darunter wegzog. Und
+    // es war auch als Bedienung falsch: Wer zwei Termine absagen will,
+    // muesste den Bildschirm zweimal oeffnen.
+    setState(() => _events.removeWhere((e) => e.address == event.address));
     widget.onChanged();
-    if (mounted) Navigator.pop(context);
   }
 
   Widget _sectionLabel(String text) => Padding(
