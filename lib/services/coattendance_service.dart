@@ -702,6 +702,23 @@ class CoAttendanceService {
     AppLogger.diag('Netzwerk',
         '${nodes.length} Teilnehmer aus den Relays, davon ${(byDegree[1] ?? const []).length} im 1. Grad, '
         '${(byDegree[2] ?? const []).length} im 2. Grad.');
+
+    // Bei NULL Treffern eine Stichprobe der FREMDEN Kennungen ausgeben.
+    //
+    // Ohne sie sieht man nur, dass nichts passt — nicht warum. Und der
+    // Vergleich der beiden Formate nebeneinander beantwortet die Frage
+    // sofort: gleiche Meetups mit anderem Anhang, andere Schreibweise, oder
+    // schlicht andere Meetups.
+    if ((byDegree[1] ?? const []).isEmpty && nodes.isNotEmpty) {
+      final fremde = <String>{};
+      for (final e in nodes.entries) {
+        if (e.key == myNpub) continue;
+        fremde.addAll(e.value.meetups);
+        if (fremde.length >= 15) break;
+      }
+      AppLogger.diag('Netzwerk',
+          'Keine Treffer. Fremde Kennungen (Stichprobe): ${fremde.take(15).join(", ")}');
+    }
     for (final c in (byDegree[1] ?? const <NetworkContact>[])) {
       AppLogger.diag('Netzwerk',
           '1. Grad ${c.npub.substring(0, c.npub.length > 16 ? 16 : c.npub.length)}… '

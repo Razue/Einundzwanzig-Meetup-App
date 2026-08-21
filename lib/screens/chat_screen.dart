@@ -189,7 +189,9 @@ class _ChatScreenState extends State<ChatScreen> {
   /// weil der Zeitstempel des Relays vom lokalen abweichen kann — und weil
   /// niemand denselben Satz zufaellig zweimal in zwei Minuten schreibt.
   bool _isDuplicate(ChatMessage m) {
-    if (m.pubkey != _myPubkey) return false;
+    // Nur eigene Nachrichten koennen doppelt entstehen — fremde kommen nur
+    // ueber einen Weg herein.
+    if (m.pubkey.isEmpty || m.pubkey != _myPubkey) return false;
     return _messages.any((x) =>
         x.pubkey == m.pubkey &&
         x.content == m.content &&
@@ -281,11 +283,21 @@ class _ChatScreenState extends State<ChatScreen> {
         content: text,
         createdAt: DateTime.now(),
       );
-      setState(() {
-        _messages.add(mine);
-        _seenIds.add(mine.id);
-      });
-      _scrollToEnd();
+
+      // Nur hinzufuegen, wenn das Relay sie nicht SCHON zurueckgespiegelt hat.
+      //
+      // Ein Wettlauf: send() wartet auf die Bestaetigung des Relays. In
+      // dieser Zeit kann derselbe Server die Nachricht bereits ueber das
+      // Live-Abo zurueckschicken — dann liegt sie im Bildschirm, bevor diese
+      // Kopie entsteht. Die Pruefung beim Empfang half nicht, weil es zu dem
+      // Zeitpunkt noch nichts gab, womit sie haette vergleichen koennen.
+      if (!_isDuplicate(mine)) {
+        setState(() {
+          _messages.add(mine);
+          _seenIds.add(mine.id);
+        });
+        _scrollToEnd();
+      }
     } else {
       messenger.showSnackBar(SnackBar(
           content: Text(t.chatSendFailed(err)), backgroundColor: cRed));
