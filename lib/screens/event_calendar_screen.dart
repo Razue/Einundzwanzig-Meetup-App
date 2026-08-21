@@ -182,6 +182,15 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     final iAmIssuer =
         _myPubkey != null && (e.nostr?.isIssuer(_myPubkey!) ?? false);
 
+    // Termine aus aelteren Fassungen koennen ein Badge tragen, ohne dass
+    // Koordinaten hinterlegt sind. Beim Anlegen wird das inzwischen
+    // verhindert; die bereits veroeffentlichten bleiben aber im Umlauf, und
+    // dort gibt es kein Badge — die Ausgabe prueft den Abstand zum
+    // Veranstaltungsort. Das gehoert in den Kasten, nicht erst auf den
+    // Knopf: Wer hinfaehrt, soll es vorher wissen.
+    final noLocation =
+        (e.nostr?.lat ?? 0) == 0 && (e.nostr?.lng ?? 0) == 0;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -201,14 +210,19 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
                     color: cText, fontSize: 14, fontWeight: FontWeight.w700)),
             const SizedBox(height: 3),
             Text(
-                iAmIssuer
-                    ? t.evBadgeYouIssueSub
-                    : t.evBadgeAvailableSub,
-                style: const TextStyle(
-                    color: cTextSecondary, fontSize: 12, height: 1.45)),
+                noLocation
+                    ? t.evBadgeNoLocationSet
+                    : (iAmIssuer
+                        ? t.evBadgeYouIssueSub
+                        : t.evBadgeAvailableSub),
+                style: TextStyle(
+                    color: noLocation ? cRed : cTextSecondary,
+                    fontSize: 12,
+                    height: 1.45)),
             // Der Knopf erscheint NUR am Termintag. Ihn ganzjaehrig zu
             // zeigen und dann abzulehnen waere eine Einladung ins Leere.
-            if (iAmIssuer && (e.nostr?.isBadgeWindowOpen ?? false)) ...[
+            // Ohne Ort kein Knopf: Er wuerde nur die Ablehnung ausloesen.
+            if (iAmIssuer && !noLocation && (e.nostr?.isBadgeWindowOpen ?? false)) ...[
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -1425,6 +1439,20 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
     final t = AppLocalizations.of(context);
     if (_titleCtrl.text.trim().isEmpty) { _snack(t.calNeedTitle, cRed); return; }
     if (_start == null) { _snack(t.calNeedStart, cRed); return; }
+
+    // Badge OHNE Koordinaten geht nicht — und das muss HIER auffallen.
+    //
+    // Die Ausgabe prueft den Abstand zum Veranstaltungsort; fehlt der Punkt,
+    // laesst sich keine Session starten. Bisher merkte man das erst am Tag
+    // des Events, vor Ort, mit wartenden Leuten: Der Termin liess sich mit
+    // Badge anlegen, und der Knopf verweigerte dann die Auskunft "kein Ort
+    // hinterlegt". Es ist kein Sicherheitsloch — aber ein Fehler, der zum
+    // denkbar schlechtesten Zeitpunkt sichtbar wurde.
+    if (_badgeEnabled && _mayCreateBadge && _lat == 0 && _lng == 0) {
+      _snack(t.evBadgeNeedLocation, cRed);
+      return;
+    }
+
     setState(() => _publishing = true);
     // Badge nur mitsenden, wenn es angehakt UND erlaubt ist. Die zweite
     // Bedingung ist kein Zierrat: Der Schalter koennte durch einen spaeteren

@@ -11073,6 +11073,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Absagen'**
   String get rsvpWithdrawConfirm;
+
+  /// No description provided for @evBadgeNeedLocation.
+  ///
+  /// In de, this message translates to:
+  /// **'Für ein Badge braucht der Termin einen Ort auf der Karte — daran wird geprüft, wer vor Ort ist.'**
+  String get evBadgeNeedLocation;
+
+  /// No description provided for @evBadgeNoLocationSet.
+  ///
+  /// In de, this message translates to:
+  /// **'Für diesen Termin ist kein Ort auf der Karte hinterlegt — dadurch lässt sich hier kein Badge ausgeben oder abholen.'**
+  String get evBadgeNoLocationSet;
 }
 
 class _AppLocalizationsDelegate

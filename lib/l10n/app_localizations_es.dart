@@ -6125,4 +6125,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get rsvpWithdrawConfirm => 'Cancelar asistencia';
+
+  @override
+  String get evBadgeNeedLocation =>
+      'Una insignia necesita la ubicación del evento en el mapa: con ella se comprueba quién está allí.';
+
+  @override
+  String get evBadgeNoLocationSet =>
+      'Este evento no tiene ubicación en el mapa, así que aquí no se puede emitir ni recoger ninguna insignia.';
 }

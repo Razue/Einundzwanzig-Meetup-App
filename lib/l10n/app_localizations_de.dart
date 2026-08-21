@@ -6135,4 +6135,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get rsvpWithdrawConfirm => 'Absagen';
+
+  @override
+  String get evBadgeNeedLocation =>
+      'Für ein Badge braucht der Termin einen Ort auf der Karte — daran wird geprüft, wer vor Ort ist.';
+
+  @override
+  String get evBadgeNoLocationSet =>
+      'Für diesen Termin ist kein Ort auf der Karte hinterlegt — dadurch lässt sich hier kein Badge ausgeben oder abholen.';
 }

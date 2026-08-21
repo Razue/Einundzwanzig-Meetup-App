@@ -6091,4 +6091,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rsvpWithdrawConfirm => 'Decline';
+
+  @override
+  String get evBadgeNeedLocation =>
+      'A badge needs the event\'s location on the map — that is what proves who is on site.';
+
+  @override
+  String get evBadgeNoLocationSet =>
+      'This event has no location on the map — so no badge can be issued or collected here.';
 }
