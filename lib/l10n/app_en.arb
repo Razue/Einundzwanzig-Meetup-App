@@ -566,241 +566,6 @@
       }
     }
   },
-  "wotTitle": "WEB OF TRUST",
-  "wotActiveOrganizers": "ACTIVE ORGANIZERS",
-  "wotActiveOrganizer": "ACTIVE ORGANIZER",
-  "wotActiveWarnings": "ACTIVE WARNINGS",
-  "wotActiveWarning": "Active warning",
-  "wotMyStatus": "YOUR STATUS",
-  "wotMyVouches": "YOUR VOUCHES",
-  "wotWhoYouVouchFor": "WHO YOU VOUCH FOR",
-  "wotWhoVouchesForYou": "WHO VOUCHES FOR YOU",
-  "wotWeightedReporting": "WEIGHTED REPORTING SYSTEM",
-  "wotRestore": "RESTORE",
-  "wotRevokeAll": "REVOKE ALL",
-  "wotPublishNostr": "PUBLISH TO NOSTR",
-  "wotVouch": "VOUCH",
-  "wotVouchVerb": "VOUCH",
-  "wotReportNpub": "REPORT NPUB",
-  "wotScanNpub": "SCAN NPUB",
-  "wotPublishRevocation": "PUBLISH REVOCATION",
-  "wotSigningPublishing": "SIGNING & PUBLISHING...",
-  "wotSyncNetwork": "Sync network",
-  "wotBootstrapPhase": "Bootstrap phase",
-  "wotDecentralized": "Decentralized (Web of Trust)",
-  "wotMinVouches": "Min. vouchers",
-  "wotDistrustThreshold": "Distrust threshold",
-  "wotNotEnoughVouchers": "NOT ENOUGH VOUCHERS YET",
-  "wotVouchers": "Vouchers",
-  "wotNoVouchersYet": "No vouchers yet",
-  "wotNobodyYet": "Nobody yet",
-  "wotNotSuspendedWatch": "Not suspended yet, but you should watch out.",
-  "wotNoReports": "No reports",
-  "wotNoActiveAdmins": "No active admins",
-  "wotNoCleanNetwork": "There are currently no open warnings\nin the network. All clean.",
-  "wotNoOrganizersEnough": "The network has no organizers with enough vouches yet.",
-  "wotNoVouchesFound": "No published vouches found on the relays.",
-  "wotTapPlusFirst": "Tap + to give your first vouch.",
-  "wotAskOthersVouch": "Ask other organizers to vouch for you.\n",
-  "wotNoDataLoaded": "Network data could not be loaded.\nPull down to refresh.",
-  "wotNoRelay": "No relay reachable — try again later.",
-  "wotRevokeAllTitle": "REVOKE ALL VOUCHES?",
-  "wotRevokeVouchTitle": "WITHDRAW VOUCH?",
-  "wotWithdrawVouch": "Withdraw vouch",
-  "wotVouchWithdrawn": "Vouch withdrawn. Don't forget to publish.",
-  "wotVouchGiven": "Vouch given! Don't forget to publish.",
-  "wotAllRevoked": "All vouches have been revoked in the network.",
-  "wotReasonRequired": "Reason (required)",
-  "wotNpubRequired": "npub (required)",
-  "wotNameAlias": "Name / alias (optional)",
-  "wotMeetupExample": "Meetup (e.g. Munich)",
-  "wotReasonExample": "e.g. Forges badges, no real meetup...",
-  "wotNpubReasonRequired": "npub and reason are required.",
-  "wotScanInstruction": "Scan the Nostr QR code (npub)\nof the organizer.",
-  "wotVouchExplain": "You vouch for this organizer with your own reputation.",
-  "wotEachVouchPersonal": "Each vouch is your personal vote of trust — ",
-  "wotAfterPublishAll": "after publishing, the whole network sees who you stand for.",
-  "wotWhoYouVouchExplain": "Here you see who YOU vouch for. ",
-  "wotPublishUpdated": "Then publish your updated list ",
-  "wotSoNetworkKnows": "so the network finds out.",
-  "wotSingleReportNoWeight": "A single report has no weight — ",
-  "wotOnlyMultipleIndep": "only when several independent organizers ",
-  "wotWarnSuspend": "warn, someone gets suspended. ",
-  "wotNobodyAlonePower": "Nobody alone has power over others.",
-  "wotYourReportAlone": "Your report alone has no weight. Only when ",
-  "wotOrgsWarnSuspended": "organizers warn, the npub gets suspended.",
-  "wotRevokeAllBody": "This publishes an empty list on Nostr, revoking ALL ",
-  "wotFromOtherOrgs": "from other organizers.",
-  "wotRestoreExplain": "Vouches are signed on Nostr. \"Restore\" fetches ",
-  "wotRestoreListBack": "your list back after a reinstall or backup change.",
-  "wotVouchesSignedOnNostr": "your vouches in the network — even ones no longer ",
-  "wotVisibleLocally": "visible locally.\n\nUse this if, after a reinstall, you ",
-  "wotCantResolveOld": "can no longer resolve your old vouches.",
-  "wotRemovedFromList": "will be removed from your vouching list.\n\n",
-  "wotSuspendedByNetwork": "suspended by the network. Check your vouches.",
-  "wotErrorLoading": "Error loading: {msg}",
-  "@wotErrorLoading": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotSyncFailed": "Sync failed: {msg}",
-  "@wotSyncFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotRevocationFailed": "Revocation failed: {msg}",
-  "@wotRevocationFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotRestoreFailed": "Restore failed: {msg}",
-  "@wotRestoreFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVouchesRestored": "{count} vouches restored from Nostr.",
-  "@wotVouchesRestored": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotNetworkHealth": "NETWORK {label}",
-  "@wotNetworkHealth": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVouchProgress": "{count} / {total} vouchers",
-  "@wotVouchProgress": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotReportsCount": "{count} reports",
-  "@wotReportsCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotNeedMoreVouches": "You still need {count} more vouches ",
-  "@wotNeedMoreVouches": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotVouchesRequired": "{count} / {total} required",
-  "@wotVouchesRequired": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotSuspensionProgress": "{count} / {total} suspension",
-  "@wotSuspensionProgress": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotLiability": "LIABILITY: {count} suspended",
-  "@wotLiability": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotWarningCount": "WARNING: {count} reported",
-  "@wotWarningCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotYourNpub": "Your npub: {npub}",
-  "@wotYourNpub": {
-    "placeholders": {
-      "npub": {
-        "type": "String"
-      }
-    }
-  },
-  "wotLiabilityBody": "You vouch for {names} — these npubs are suspended by the network. Check your vouches.",
-  "@wotLiabilityBody": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "wotWarningBody": "There are reports for {names}. ",
-  "@wotWarningBody": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVotes": "Votes",
-  "wotSuspended": "Suspended",
-  "wotReportNoWeightThreshold": "Your report alone has no weight. Only when {count} independent organizers warn does the npub get suspended.",
-  "@wotReportNoWeightThreshold": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotPublishedLive": "Your Web of Trust is live ({count} relays)!",
-  "@wotPublishedLive": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotReportPublished": "Report published to {count} relays.",
-  "@wotReportPublished": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
   "wotErrorShort": "Error: {msg}",
   "@wotErrorShort": {
     "placeholders": {
@@ -809,13 +574,6 @@
       }
     }
   },
-  "wotOffline": "Offline",
-  "wotActive": "Active",
-  "wotPhase": "Phase",
-  "wotPhaseDecentralized": "Decentralized",
-  "wotPhaseBootstrap": "Bootstrap",
-  "wotReportsLabel": "Reports",
-  "wotVouchersLabel": "VOUCHERS:",
   "writerTagTooSmall": "Tag too small! Data: {data}B, tag: {max}B.\n",
   "@writerTagTooSmall": {
     "placeholders": {
@@ -906,58 +664,13 @@
   "writerNoHomeMeetup": "⚠️ No home meetup set",
   "writerHomeMeetupNotFound": "⚠️ Home meetup not found",
   "writerNoActiveSession": "❌ No active meetup session found. Please restart the meetup.",
-  "admMyWebOfTrust": "MY WEB OF TRUST",
-  "admMyDelegations": "YOUR DELEGATIONS",
-  "admCoAdminKnight": "KNIGHT CO-ADMIN",
-  "admKnighthood": "KNIGHTHOOD",
-  "admRemove": "REMOVE",
-  "admCancel": "CANCEL",
-  "admRevokeTrust": "WITHDRAW TRUST?",
-  "admRevokeTrustShort": "Withdraw trust",
-  "admSyncWot": "Sync Web of Trust",
-  "admNobodyDelegated": "You haven't delegated anyone yet.",
-  "admTapKnighthood": "Tap 'KNIGHTHOOD' below\nto extend trust to a new organizer\nin your meetup.",
-  "admVouchNewExplain": "You vouch for this new organizer with your own reputation.",
-  "admScanNewOrg": "Scan the new organizer's Nostr QR code (npub).",
-  "admNetworkLearnsKnight": "The network only learns of your new co-admins\nonce you publish your signature on Nostr.",
-  "admMustRepublish": "You must republish the list afterwards so the network finds out.",
-  "admPublishEmptyRevoke": "Publish an empty list to revoke all delegations\nin the network.",
-  "admRestoreListBack": "your list after a reinstall.",
-  "admSigningSending": "Signing and sending to Nostr...",
-  "admRestoringVouches": "Restoring my vouches from Nostr...",
-  "admSyncingWot": "Syncing Web of Trust...",
-  "admRevokingAll": "Revoking all vouches...",
-  "admRevokeTrustBody": "Do you want to withdraw trust as admin for {meetup} from {name}?\n\n",
-  "@admRevokeTrustBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "meetup": {
-        "type": "String"
-      }
-    }
-  },
-  "admRestoreExplain": "Vouches are signed on Nostr. \"Restore\" fetches ",
-  "admVouchedCount": "You have vouched for {count} organizers.",
-  "@admVouchedCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admCoAdminAdded": "✅ Co-admin added! Don't forget to publish.",
   "apMeetupSession": "MEETUP SESSION",
   "apSessionRunning": "SESSION RUNNING",
   "apOpenActiveMeetup": "OPEN ACTIVE MEETUP",
   "apStartMeetup": "START MEETUP",
   "apEndMeetupEarly": "End meetup early",
-  "apNetwork": "NETWORK",
   "apOrganizer": "ORGANIZER",
-  "apWebOfTrust": "WEB OF TRUST",
   "apHowItWorks": "HOW IT WORKS",
-  "apManageVouches": "Manage vouches, network status, reports",
   "apNewMeetupQ": "Start new meetup?",
   "apSessionEndQ": "End session?",
   "apCancel": "Cancel",
@@ -1212,11 +925,6 @@
       }
     }
   },
-  "wotTabNetwork": "NETWORK",
-  "wotTabReports": "REPORTS",
-  "wotHealthGood": "HEALTHY",
-  "wotHealthBuilding": "BUILDING",
-  "wotHealthCritical": "CRITICAL",
   "badgeUnknown": "unknown",
   "badgeBlockAtScan": "₿ Block height at scan",
   "mwStartMeetup": "START MEETUP",
@@ -1287,34 +995,6 @@
       }
     }
   },
-  "admWotLive": "✅ Your Web of Trust is live ({count} relays)!",
-  "@admWotLive": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admDelegationSigned": "✅ Your delegation was cryptographically signed and published to the network!",
-  "admWotCurrent": "✅ Web of Trust up to date ({count} admins verified)",
-  "@admWotCurrent": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoVouchesFound": "✅ No published vouches found on the relays",
-  "admVouchesRestored": "✅ {count} vouches restored",
-  "@admVouchesRestored": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoRelayReachable": "⚠️ No relay reachable — try again later",
-  "admAllVouchesRevoked": "✅ All vouches have been revoked in the network",
   "apHowStep3": "3. Each scan = one badge for the participant\n",
   "badgeSchnorrSig": "Schnorr (Nostr v2) ✓",
   "msHomeMeetupSet": "✅ {city} set as home meetup",
@@ -1353,15 +1033,6 @@
   "ppHowStep2": "2. The app creates a cryptographic proof\n",
   "ppHowStep3": "3. The proof is automatically embedded in your reputation QR\n",
   "ppHowStep4": "4. Others scan your QR and see the verified link",
-  "admErrorEmoji": "❌ Error: {msg}",
-  "@admErrorEmoji": {
-    "placeholders": {
-      "msg": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoNewUpdates": "⚠️ No new updates found",
   "homeImageLoadError": "Image could not be loaded: {msg}",
   "@homeImageLoadError": {
     "placeholders": {
@@ -1713,31 +1384,6 @@
   "rcLabelAge": "Days active",
   "rcMember": "Einundzwanzig member",
   "rcNoData": "No reputation yet. Collect badges at meetups!",
-  "tpTitle": "Trust Path",
-  "tpSubtitle": "Who connects you to this person?",
-  "tpEnterNpub": "Enter person's npub",
-  "tpScan": "Scan npub",
-  "tpFind": "Find path",
-  "tpSearching": "Searching network...",
-  "tpFound": "Connected through {count} hops",
-  "@tpFound": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "tpDirect": "Directly connected",
-  "tpYou": "You",
-  "tpTarget": "Target",
-  "tpVouchesFor": "vouches for",
-  "tpNoPath": "No trust path found",
-  "tpNoPathSelf": "You're not in the vouching network yet. Get vouched by admins to see paths.",
-  "tpNoPathTarget": "This person isn't in the vouching network (yet).",
-  "tpNoPathBetween": "There's currently no known vouching chain between you.",
-  "tpInvalidNpub": "Invalid npub",
-  "tpUnknown": "Unknown",
-  "tpHint": "Based on the public vouching network (Web of Trust). Only shows connections via vouching members.",
   "caOptInTitle": "Contribute to trust network?",
   "caOptInBody": "You can confirm your attendance at this meetup in the public trust network. Others will then see that your npub was at this meetup — and how you're connected through shared meetups.\n\nThis is optional. You get your badge regardless.",
   "caOptInPrivacy": "Public & permanent on Nostr relays. Reveals a movement and contact pattern. Consider carefully.",
@@ -1775,8 +1421,6 @@
   "tileTrustNetworkSub": "Check connections",
   "tnHubTitle": "Trust network",
   "tnHubIntro": "Check how trustworthy a person is in the Einundzwanzig network — through vouches and shared meetups.",
-  "tnHubPathTitle": "Trust path",
-  "tnHubPathSub": "Who connects you to a person? (vouching chain)",
   "tnHubNetTitle": "Network analysis",
   "tnHubNetSub": "A person's shared meetups & contacts",
   "orgBadgeCreated": "Organizer attendance recorded",
@@ -2128,7 +1772,7 @@
   "rsvpYouGo": "You're going ✓",
   "rsvpCount": "going",
   "rsvpNeedLogin": "Please sign in to the portal first (My meetups).",
-  "rsvpFailed": "RSVP failed",
+  "rsvpFailed": "Response not saved: {msg}",
   "crsLoading": "Loading courses …",
   "crsNone": "No courses found.",
   "crsCourses": "Courses",
@@ -2361,7 +2005,6 @@
   "reputationUnsigned": "Unsigned",
   "portalConnectForOrganizer": "Not connected to the portal — your organizer status cannot be detected.",
   "npubCopied": "npub copied",
-
   "idSetupTitle": "Identity",
   "idSetupSubtitle": "How do you want to start?",
   "idSetupNewCard": "New here",
@@ -2415,7 +2058,6 @@
   "idSetupBackupBody": "Copy the encrypted key into your password manager. Without the password it is useless.",
   "idSetupBackupCopy": "Copy",
   "idSetupBackupLater": "Later",
-
   "idSetupMeetupTitle": "Your meetup",
   "idSetupMeetupHint": "Which meetup is yours? You can add more later.",
   "idSetupMeetupPick": "Choose meetup",
@@ -2429,7 +2071,6 @@
   "rsTesting": "Testing connection …",
   "rsRelayAdded": "Relay added and reachable.",
   "rsEnabledHint": "Enabled — this does not mean the relay is reachable right now.",
-  "wotNoRelayReachable": "No relay reachable. Are you online? Details are in the diagnostics log.",
   "newsWriteArticle": "Write an article",
   "newsLike": "Like",
   "newsShare": "Share",
@@ -2463,9 +2104,9 @@
   "evBadgeUploadFailed": "Upload failed: {msg}",
   "@evBadgeUploadFailed": {
     "placeholders": {
-        "msg": {
-            "type": "String"
-        }
+      "msg": {
+        "type": "String"
+      }
     }
   },
   "evBadgeLocationPick": "Pick on the map",
@@ -2636,14 +2277,14 @@
   "guideStepOf": "Step {current} of {total}",
   "@guideStepOf": {
     "placeholders": {
-        "current": {
-            "type": "int"
-        },
-        "total": {
-            "type": "int"
-        }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
-},
+  },
   "guideStepDone": "Done",
   "guideHintNickname": "Tap the field and enter your nickname.",
   "guideHintOpenPicker": "Tap the field to open the meetup picker.",
@@ -2959,7 +2600,6 @@
   },
   "rsvpYes": "I'm coming",
   "rsvpNo": "Not coming",
-  "rsvpFailed": "Response not saved: {msg}",
   "@rsvpFailed": {
     "placeholders": {
       "msg": {

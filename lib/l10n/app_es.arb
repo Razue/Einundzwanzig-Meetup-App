@@ -566,241 +566,6 @@
       }
     }
   },
-  "wotTitle": "WEB OF TRUST",
-  "wotActiveOrganizers": "ORGANIZADORES ACTIVOS",
-  "wotActiveOrganizer": "ORGANIZADOR ACTIVO",
-  "wotActiveWarnings": "AVISOS ACTIVOS",
-  "wotActiveWarning": "Aviso activo",
-  "wotMyStatus": "TU ESTADO",
-  "wotMyVouches": "TUS AVALES",
-  "wotWhoYouVouchFor": "POR QUIÉN AVALAS",
-  "wotWhoVouchesForYou": "QUIÉN TE AVALA",
-  "wotWeightedReporting": "SISTEMA DE DENUNCIAS PONDERADO",
-  "wotRestore": "RESTAURAR",
-  "wotRevokeAll": "REVOCAR TODO",
-  "wotPublishNostr": "PUBLICAR EN NOSTR",
-  "wotVouch": "AVALAR",
-  "wotVouchVerb": "AVALAR",
-  "wotReportNpub": "DENUNCIAR NPUB",
-  "wotScanNpub": "ESCANEAR NPUB",
-  "wotPublishRevocation": "PUBLICAR REVOCACIÓN",
-  "wotSigningPublishing": "FIRMANDO Y PUBLICANDO...",
-  "wotSyncNetwork": "Sincronizar red",
-  "wotBootstrapPhase": "Fase de arranque",
-  "wotDecentralized": "Descentralizado (Web of Trust)",
-  "wotMinVouches": "Avaladores mín.",
-  "wotDistrustThreshold": "Umbral de desconfianza",
-  "wotNotEnoughVouchers": "AÚN SIN AVALES SUFICIENTES",
-  "wotVouchers": "Avaladores",
-  "wotNoVouchersYet": "Aún sin avaladores",
-  "wotNobodyYet": "Nadie todavía",
-  "wotNotSuspendedWatch": "Aún no suspendido, pero deberías estar atento.",
-  "wotNoReports": "Sin denuncias",
-  "wotNoActiveAdmins": "Sin admins activos",
-  "wotNoCleanNetwork": "Actualmente no hay avisos abiertos\nen la red. Todo limpio.",
-  "wotNoOrganizersEnough": "La red aún no tiene organizadores con avales suficientes.",
-  "wotNoVouchesFound": "No se encontraron avales publicados en los relays.",
-  "wotTapPlusFirst": "Toca + para dar tu primer aval.",
-  "wotAskOthersVouch": "Pide a otros organizadores que te avalen.\n",
-  "wotNoDataLoaded": "No se pudieron cargar los datos de la red.\nDesliza hacia abajo para actualizar.",
-  "wotNoRelay": "Ningún relay accesible — inténtalo más tarde.",
-  "wotRevokeAllTitle": "¿REVOCAR TODOS LOS AVALES?",
-  "wotRevokeVouchTitle": "¿RETIRAR AVAL?",
-  "wotWithdrawVouch": "Retirar aval",
-  "wotVouchWithdrawn": "Aval retirado. No olvides publicar.",
-  "wotVouchGiven": "¡Aval otorgado! No olvides publicar.",
-  "wotAllRevoked": "Todos los avales han sido revocados en la red.",
-  "wotReasonRequired": "Motivo (obligatorio)",
-  "wotNpubRequired": "npub (obligatorio)",
-  "wotNameAlias": "Nombre / alias (opcional)",
-  "wotMeetupExample": "Meetup (p. ej. Múnich)",
-  "wotReasonExample": "p. ej. Falsifica insignias, sin meetup real...",
-  "wotNpubReasonRequired": "npub y motivo son obligatorios.",
-  "wotScanInstruction": "Escanea el código QR Nostr (npub)\ndel organizador.",
-  "wotVouchExplain": "Avalas a este organizador con tu propia reputación.",
-  "wotEachVouchPersonal": "Cada aval es tu voto personal de confianza — ",
-  "wotAfterPublishAll": "tras publicar, toda la red ve por quién respondes.",
-  "wotWhoYouVouchExplain": "Aquí ves por quién avalas TÚ. ",
-  "wotPublishUpdated": "Luego publica tu lista actualizada ",
-  "wotSoNetworkKnows": "para que la red se entere.",
-  "wotSingleReportNoWeight": "Una sola denuncia no tiene peso — ",
-  "wotOnlyMultipleIndep": "solo cuando varios organizadores independientes ",
-  "wotWarnSuspend": "advierten, alguien queda suspendido. ",
-  "wotNobodyAlonePower": "Nadie tiene poder sobre otros por sí solo.",
-  "wotYourReportAlone": "Tu denuncia sola no tiene peso. Solo cuando ",
-  "wotOrgsWarnSuspended": "organizadores advierten, el npub queda suspendido.",
-  "wotRevokeAllBody": "Esto publica una lista vacía en Nostr y revoca TODOS ",
-  "wotFromOtherOrgs": "de otros organizadores.",
-  "wotRestoreExplain": "Los avales están firmados en Nostr. «Restaurar» recupera ",
-  "wotRestoreListBack": "tu lista tras una reinstalación o un cambio de copia de seguridad.",
-  "wotVouchesSignedOnNostr": "tus avales en la red — incluso los que ya no son ",
-  "wotVisibleLocally": "visibles localmente.\n\nUsa esto si, tras una reinstalación, ",
-  "wotCantResolveOld": "ya no puedes resolver tus avales antiguos.",
-  "wotRemovedFromList": "será eliminado de tu lista de avales.\n\n",
-  "wotSuspendedByNetwork": "suspendido por la red. Revisa tus avales.",
-  "wotErrorLoading": "Error al cargar: {msg}",
-  "@wotErrorLoading": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotSyncFailed": "Sincronización fallida: {msg}",
-  "@wotSyncFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotRevocationFailed": "Revocación fallida: {msg}",
-  "@wotRevocationFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotRestoreFailed": "Restauración fallida: {msg}",
-  "@wotRestoreFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVouchesRestored": "{count} avales restaurados desde Nostr.",
-  "@wotVouchesRestored": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotNetworkHealth": "RED {label}",
-  "@wotNetworkHealth": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVouchProgress": "{count} / {total} avales",
-  "@wotVouchProgress": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotReportsCount": "{count} denuncias",
-  "@wotReportsCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotNeedMoreVouches": "Aún necesitas {count} avales más ",
-  "@wotNeedMoreVouches": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotVouchesRequired": "{count} / {total} necesarios",
-  "@wotVouchesRequired": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotSuspensionProgress": "{count} / {total} suspensión",
-  "@wotSuspensionProgress": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotLiability": "RESPONSABILIDAD: {count} suspendidos",
-  "@wotLiability": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotWarningCount": "AVISO: {count} denunciados",
-  "@wotWarningCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotYourNpub": "Tu npub: {npub}",
-  "@wotYourNpub": {
-    "placeholders": {
-      "npub": {
-        "type": "String"
-      }
-    }
-  },
-  "wotLiabilityBody": "Avalas a {names} — estos npubs están suspendidos por la red. Revisa tus avales.",
-  "@wotLiabilityBody": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "wotWarningBody": "Hay denuncias para {names}. ",
-  "@wotWarningBody": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVotes": "Votos",
-  "wotSuspended": "Suspendidos",
-  "wotReportNoWeightThreshold": "Tu denuncia sola no tiene peso. Solo cuando {count} organizadores independientes advierten, el npub queda suspendido.",
-  "@wotReportNoWeightThreshold": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotPublishedLive": "¡Tu Web of Trust está activo ({count} relays)!",
-  "@wotPublishedLive": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotReportPublished": "Denuncia publicada en {count} relays.",
-  "@wotReportPublished": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
   "wotErrorShort": "Error: {msg}",
   "@wotErrorShort": {
     "placeholders": {
@@ -809,13 +574,6 @@
       }
     }
   },
-  "wotOffline": "Sin conexión",
-  "wotActive": "Activos",
-  "wotPhase": "Fase",
-  "wotPhaseDecentralized": "Descentralizado",
-  "wotPhaseBootstrap": "Arranque",
-  "wotReportsLabel": "Denuncias",
-  "wotVouchersLabel": "AVALADORES:",
   "writerTagTooSmall": "¡Etiqueta demasiado pequeña! Datos: {data}B, etiqueta: {max}B.\n",
   "@writerTagTooSmall": {
     "placeholders": {
@@ -906,58 +664,13 @@
   "writerNoHomeMeetup": "⚠️ Sin meetup principal definido",
   "writerHomeMeetupNotFound": "⚠️ Meetup principal no encontrado",
   "writerNoActiveSession": "❌ No se encontró sesión de meetup activa. Reinicia el meetup.",
-  "admMyWebOfTrust": "MI WEB OF TRUST",
-  "admMyDelegations": "TUS DELEGACIONES",
-  "admCoAdminKnight": "NOMBRAR CO-ADMIN",
-  "admKnighthood": "NOMBRAMIENTO",
-  "admRemove": "ELIMINAR",
-  "admCancel": "CANCELAR",
-  "admRevokeTrust": "¿RETIRAR CONFIANZA?",
-  "admRevokeTrustShort": "Retirar confianza",
-  "admSyncWot": "Sincronizar Web of Trust",
-  "admNobodyDelegated": "Aún no has delegado a nadie.",
-  "admTapKnighthood": "Toca 'NOMBRAMIENTO' abajo\npara dar confianza a un nuevo organizador\nen tu meetup.",
-  "admVouchNewExplain": "Avalas a este nuevo organizador con tu propia reputación.",
-  "admScanNewOrg": "Escanea el código QR Nostr (npub) del nuevo organizador.",
-  "admNetworkLearnsKnight": "La red solo conoce a tus nuevos co-admins\ncuando publicas tu firma en Nostr.",
-  "admMustRepublish": "Debes volver a publicar la lista después para que la red se entere.",
-  "admPublishEmptyRevoke": "Publica una lista vacía para revocar todas las delegaciones\nen la red.",
-  "admRestoreListBack": "tu lista tras una reinstalación.",
-  "admSigningSending": "Firmando y enviando a Nostr...",
-  "admRestoringVouches": "Restaurando mis avales desde Nostr...",
-  "admSyncingWot": "Sincronizando Web of Trust...",
-  "admRevokingAll": "Revocando todos los avales...",
-  "admRevokeTrustBody": "¿Quieres retirar la confianza como admin para {meetup} a {name}?\n\n",
-  "@admRevokeTrustBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "meetup": {
-        "type": "String"
-      }
-    }
-  },
-  "admRestoreExplain": "Los avales están firmados en Nostr. «Restaurar» recupera ",
-  "admVouchedCount": "Has avalado a {count} organizadores.",
-  "@admVouchedCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admCoAdminAdded": "✅ ¡Co-admin añadido! No olvides publicar.",
   "apMeetupSession": "SESIÓN DE MEETUP",
   "apSessionRunning": "SESIÓN ACTIVA",
   "apOpenActiveMeetup": "ABRIR MEETUP ACTIVO",
   "apStartMeetup": "INICIAR MEETUP",
   "apEndMeetupEarly": "Finalizar meetup antes",
-  "apNetwork": "RED",
   "apOrganizer": "ORGANIZADOR",
-  "apWebOfTrust": "WEB OF TRUST",
   "apHowItWorks": "CÓMO FUNCIONA",
-  "apManageVouches": "Gestionar avales, estado de red, denuncias",
   "apNewMeetupQ": "¿Iniciar nuevo meetup?",
   "apSessionEndQ": "¿Finalizar sesión?",
   "apCancel": "Cancelar",
@@ -1212,11 +925,6 @@
       }
     }
   },
-  "wotTabNetwork": "RED",
-  "wotTabReports": "DENUNCIAS",
-  "wotHealthGood": "SALUDABLE",
-  "wotHealthBuilding": "EN DESARROLLO",
-  "wotHealthCritical": "CRÍTICO",
   "badgeUnknown": "desconocido",
   "badgeBlockAtScan": "₿ Altura de bloque al escanear",
   "mwStartMeetup": "INICIAR MEETUP",
@@ -1287,34 +995,6 @@
       }
     }
   },
-  "admWotLive": "✅ ¡Tu Web of Trust está activo ({count} relays)!",
-  "@admWotLive": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admDelegationSigned": "✅ ¡Tu delegación fue firmada criptográficamente y publicada en la red!",
-  "admWotCurrent": "✅ Web of Trust actualizado ({count} admins verificados)",
-  "@admWotCurrent": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoVouchesFound": "✅ No se encontraron avales publicados en los relays",
-  "admVouchesRestored": "✅ {count} avales restaurados",
-  "@admVouchesRestored": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoRelayReachable": "⚠️ Ningún relay accesible — inténtalo más tarde",
-  "admAllVouchesRevoked": "✅ Todos los avales han sido revocados en la red",
   "apHowStep3": "3. Cada escaneo = una insignia para el participante\n",
   "badgeSchnorrSig": "Schnorr (Nostr v2) ✓",
   "msHomeMeetupSet": "✅ {city} establecido como meetup principal",
@@ -1353,15 +1033,6 @@
   "ppHowStep2": "2. La app crea una prueba criptográfica\n",
   "ppHowStep3": "3. La prueba se incrusta automáticamente en tu QR de reputación\n",
   "ppHowStep4": "4. Otros escanean tu QR y ven el vínculo verificado",
-  "admErrorEmoji": "❌ Error: {msg}",
-  "@admErrorEmoji": {
-    "placeholders": {
-      "msg": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoNewUpdates": "⚠️ No se encontraron actualizaciones",
   "homeImageLoadError": "No se pudo cargar la imagen: {msg}",
   "@homeImageLoadError": {
     "placeholders": {
@@ -1713,31 +1384,6 @@
   "rcLabelAge": "Días activo",
   "rcMember": "Miembro de Einundzwanzig",
   "rcNoData": "Aún no hay reputación. ¡Consigue badges en los meetups!",
-  "tpTitle": "Ruta de confianza",
-  "tpSubtitle": "¿Quién te conecta con esta persona?",
-  "tpEnterNpub": "Introduce el npub de la persona",
-  "tpScan": "Escanear npub",
-  "tpFind": "Buscar ruta",
-  "tpSearching": "Buscando en la red...",
-  "tpFound": "Conectado a través de {count} pasos",
-  "@tpFound": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "tpDirect": "Conectado directamente",
-  "tpYou": "Tú",
-  "tpTarget": "Destino",
-  "tpVouchesFor": "avala a",
-  "tpNoPath": "No se encontró ruta de confianza",
-  "tpNoPathSelf": "Aún no estás en la red de avales. Consigue avales de admins para ver rutas.",
-  "tpNoPathTarget": "Esta persona no está (aún) en la red de avales.",
-  "tpNoPathBetween": "Actualmente no hay cadena de avales conocida entre vosotros.",
-  "tpInvalidNpub": "npub no válido",
-  "tpUnknown": "Desconocido",
-  "tpHint": "Basado en la red pública de avales (Web of Trust). Solo muestra conexiones a través de miembros que avalan.",
   "caOptInTitle": "¿Contribuir a la red de confianza?",
   "caOptInBody": "Puedes confirmar tu asistencia a este meetup en la red pública de confianza. Otros verán que tu npub estuvo en este meetup — y cómo estáis conectados por meetups en común.\n\nEs voluntario. Recibes tu badge igualmente.",
   "caOptInPrivacy": "Público y permanente en relays Nostr. Revela un patrón de movimiento y contactos. Piénsalo bien.",
@@ -1775,8 +1421,6 @@
   "tileTrustNetworkSub": "Comprobar conexiones",
   "tnHubTitle": "Red de confianza",
   "tnHubIntro": "Comprueba la confiabilidad de una persona en la red Einundzwanzig — mediante avales y meetups en común.",
-  "tnHubPathTitle": "Ruta de confianza",
-  "tnHubPathSub": "¿Quién te conecta con una persona? (cadena de avales)",
   "tnHubNetTitle": "Análisis de red",
   "tnHubNetSub": "Meetups y contactos en común de una persona",
   "orgBadgeCreated": "Asistencia de organizador registrada",
@@ -2128,7 +1772,7 @@
   "rsvpYouGo": "Has confirmado ✓",
   "rsvpCount": "asistentes",
   "rsvpNeedLogin": "Inicia sesión en el portal primero.",
-  "rsvpFailed": "Error al confirmar",
+  "rsvpFailed": "Respuesta no guardada: {msg}",
   "crsLoading": "Cargando cursos …",
   "crsNone": "No hay cursos.",
   "crsCourses": "Cursos",
@@ -2361,7 +2005,6 @@
   "reputationUnsigned": "Sin firmar",
   "portalConnectForOrganizer": "No conectado al portal: no se puede detectar tu estado de organizador.",
   "npubCopied": "npub copiado",
-
   "idSetupTitle": "Identidad",
   "idSetupSubtitle": "¿Cómo quieres empezar?",
   "idSetupNewCard": "Soy nuevo",
@@ -2415,7 +2058,6 @@
   "idSetupBackupBody": "Copia la clave cifrada en tu gestor de contraseñas. Sin la contraseña no sirve de nada.",
   "idSetupBackupCopy": "Copiar",
   "idSetupBackupLater": "Más tarde",
-
   "idSetupMeetupTitle": "Tu meetup",
   "idSetupMeetupHint": "¿Cuál es tu meetup? Puedes añadir más después.",
   "idSetupMeetupPick": "Elegir meetup",
@@ -2429,7 +2071,6 @@
   "rsTesting": "Comprobando la conexión …",
   "rsRelayAdded": "Relé añadido y accesible.",
   "rsEnabledHint": "Activado: no significa que el relé esté accesible en este momento.",
-  "wotNoRelayReachable": "Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico.",
   "newsWriteArticle": "Escribir un artículo",
   "newsLike": "Me gusta",
   "newsShare": "Compartir",
@@ -2463,9 +2104,9 @@
   "evBadgeUploadFailed": "Error al subir: {msg}",
   "@evBadgeUploadFailed": {
     "placeholders": {
-        "msg": {
-            "type": "String"
-        }
+      "msg": {
+        "type": "String"
+      }
     }
   },
   "evBadgeLocationPick": "Elegir en el mapa",
@@ -2636,14 +2277,14 @@
   "guideStepOf": "Paso {current} de {total}",
   "@guideStepOf": {
     "placeholders": {
-        "current": {
-            "type": "int"
-        },
-        "total": {
-            "type": "int"
-        }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
-},
+  },
   "guideStepDone": "Hecho",
   "guideHintNickname": "Toca el campo e introduce tu apodo.",
   "guideHintOpenPicker": "Toca el campo para abrir la selección de meetups.",
@@ -2959,7 +2600,6 @@
   },
   "rsvpYes": "Voy a ir",
   "rsvpNo": "No voy",
-  "rsvpFailed": "Respuesta no guardada: {msg}",
   "@rsvpFailed": {
     "placeholders": {
       "msg": {

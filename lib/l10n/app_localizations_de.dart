@@ -1525,373 +1525,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get wotTitle => 'WEB OF TRUST';
-
-  @override
-  String get wotActiveOrganizers => 'AKTIVE ORGANISATOREN';
-
-  @override
-  String get wotActiveOrganizer => 'AKTIVER ORGANISATOR';
-
-  @override
-  String get wotActiveWarnings => 'AKTIVE WARNUNGEN';
-
-  @override
-  String get wotActiveWarning => 'Aktive Warnung';
-
-  @override
-  String get wotMyStatus => 'DEIN STATUS';
-
-  @override
-  String get wotMyVouches => 'DEINE BÜRGSCHAFTEN';
-
-  @override
-  String get wotWhoYouVouchFor => 'FÜR WEN DU BÜRGST';
-
-  @override
-  String get wotWhoVouchesForYou => 'WER BÜRGT FÜR DICH';
-
-  @override
-  String get wotWeightedReporting => 'GEWICHTETES MELDESYSTEM';
-
-  @override
-  String get wotRestore => 'WIEDERHERSTELLEN';
-
-  @override
-  String get wotRevokeAll => 'ALLE WIDERRUFEN';
-
-  @override
-  String get wotPublishNostr => 'AUF NOSTR PUBLISHEN';
-
-  @override
-  String get wotVouch => 'BÜRGEN';
-
-  @override
-  String get wotVouchVerb => 'VERBÜRGEN';
-
-  @override
-  String get wotReportNpub => 'NPUB MELDEN';
-
-  @override
-  String get wotScanNpub => 'NPUB SCANNEN';
-
-  @override
-  String get wotPublishRevocation => 'WIDERRUF PUBLISHEN';
-
-  @override
-  String get wotSigningPublishing => 'SIGNIERE & PUBLIZIERE...';
-
-  @override
-  String get wotSyncNetwork => 'Netzwerk synchronisieren';
-
-  @override
-  String get wotBootstrapPhase => 'Bootstrap-Phase';
-
-  @override
-  String get wotDecentralized => 'Dezentral (Web of Trust)';
-
-  @override
-  String get wotMinVouches => 'Min. Bürgen';
-
-  @override
-  String get wotDistrustThreshold => 'Distrust-Schwelle';
-
-  @override
-  String get wotNotEnoughVouchers => 'NOCH NICHT GENUG BÜRGEN';
-
-  @override
-  String get wotVouchers => 'Bürgen';
-
-  @override
-  String get wotNoVouchersYet => 'Noch keine Bürgen';
-
-  @override
-  String get wotNobodyYet => 'Noch niemand';
-
-  @override
-  String get wotNotSuspendedWatch =>
-      'Noch nicht suspendiert, aber du solltest aufpassen.';
-
-  @override
-  String get wotNoReports => 'Keine Meldungen';
-
-  @override
-  String get wotNoActiveAdmins => 'Keine aktiven Admins';
-
-  @override
-  String get wotNoCleanNetwork =>
-      'Aktuell gibt es keine offenen Warnungen\nim Netzwerk. Alles sauber.';
-
-  @override
-  String get wotNoOrganizersEnough =>
-      'Das Netzwerk hat noch keine Organisatoren mit genug Bürgschaften.';
-
-  @override
-  String get wotNoVouchesFound =>
-      'Keine publizierten Bürgschaften auf den Relays gefunden.';
-
-  @override
-  String get wotTapPlusFirst =>
-      'Tippe auf + um deinen ersten Ritterschlag\nzu vergeben.';
-
-  @override
-  String get wotAskOthersVouch =>
-      'Bitte andere Organisatoren, für dich zu bürgen.\n';
-
-  @override
-  String get wotNoDataLoaded =>
-      'Netzwerk-Daten konnten nicht geladen werden.\nZiehe zum Aktualisieren nach unten.';
-
-  @override
-  String get wotNoRelay => 'Kein Relay erreichbar — später erneut versuchen.';
-
-  @override
-  String get wotRevokeAllTitle => 'ALLE BÜRGSCHAFTEN WIDERRUFEN?';
-
-  @override
-  String get wotRevokeVouchTitle => 'BÜRGSCHAFT ENTZIEHEN?';
-
-  @override
-  String get wotWithdrawVouch => 'Bürgschaft entziehen';
-
-  @override
-  String get wotVouchWithdrawn =>
-      'Bürgschaft entzogen. Vergiss nicht zu publishen.';
-
-  @override
-  String get wotVouchGiven =>
-      'Ritterschlag vergeben! Vergiss nicht zu publishen.';
-
-  @override
-  String get wotAllRevoked =>
-      'Alle Bürgschaften wurden im Netzwerk widerrufen.';
-
-  @override
-  String get wotReasonRequired => 'Grund (Pflicht)';
-
-  @override
-  String get wotNpubRequired => 'npub (Pflicht)';
-
-  @override
-  String get wotNameAlias => 'Name / Alias (optional)';
-
-  @override
-  String get wotMeetupExample => 'Meetup (z.B. München)';
-
-  @override
-  String get wotReasonExample => 'z.B. Fälscht Badges, kein echtes Meetup...';
-
-  @override
-  String get wotNpubReasonRequired => 'npub und Grund sind Pflicht.';
-
-  @override
-  String get wotScanInstruction =>
-      'Scanne den Nostr-QR-Code (npub)\ndes Organisators.';
-
-  @override
-  String get wotVouchExplain =>
-      'Du bürgst mit deiner eigenen Reputation für diesen Organisator.';
-
-  @override
-  String get wotEachVouchPersonal =>
-      'Jede Bürgschaft ist dein persönliches Vertrauens-Votum — ';
-
-  @override
-  String get wotAfterPublishAll =>
-      'nach dem Publishen sieht das gesamte Netzwerk, für wen du stehst.';
-
-  @override
-  String get wotWhoYouVouchExplain => 'Hier siehst du, für wen DU bürgst. ';
-
-  @override
-  String get wotPublishUpdated => 'Publishe danach deine aktualisierte Liste, ';
-
-  @override
-  String get wotSoNetworkKnows => 'damit das Netzwerk davon erfährt.';
-
-  @override
-  String get wotSingleReportNoWeight =>
-      'Eine einzelne Meldung hat kein Gewicht — ';
-
-  @override
-  String get wotOnlyMultipleIndep =>
-      'erst wenn mehrere unabhängige Organisatoren ';
-
-  @override
-  String get wotWarnSuspend => 'warnen, wird jemand suspendiert. ';
-
-  @override
-  String get wotNobodyAlonePower => 'Niemand hat allein Macht über andere.';
-
-  @override
-  String get wotYourReportAlone =>
-      'Deine Meldung allein hat kein Gewicht. Erst wenn ';
-
-  @override
-  String get wotOrgsWarnSuspended =>
-      'Organisatoren warnen, wird der npub suspendiert.';
-
-  @override
-  String get wotRevokeAllBody =>
-      'Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE ';
-
-  @override
-  String get wotFromOtherOrgs => 'von anderen Organisatoren.';
-
-  @override
-  String get wotRestoreExplain =>
-      'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ';
-
-  @override
-  String get wotRestoreListBack =>
-      'deine Liste nach einer Neuinstallation oder einem Backup-Wechsel zurück.';
-
-  @override
-  String get wotVouchesSignedOnNostr =>
-      'deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr ';
-
-  @override
-  String get wotVisibleLocally =>
-      'sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine ';
-
-  @override
-  String get wotCantResolveOld =>
-      'alten Bürgschaften nicht mehr auflösen kannst.';
-
-  @override
-  String get wotRemovedFromList =>
-      'wird von deiner Vouching-Liste entfernt.\n\n';
-
-  @override
-  String get wotSuspendedByNetwork =>
-      'durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.';
-
-  @override
-  String wotErrorLoading(String msg) {
-    return 'Fehler beim Laden: $msg';
-  }
-
-  @override
-  String wotSyncFailed(String msg) {
-    return 'Sync fehlgeschlagen: $msg';
-  }
-
-  @override
-  String wotRevocationFailed(String msg) {
-    return 'Widerruf fehlgeschlagen: $msg';
-  }
-
-  @override
-  String wotRestoreFailed(String msg) {
-    return 'Wiederherstellung fehlgeschlagen: $msg';
-  }
-
-  @override
-  String wotVouchesRestored(Object count) {
-    return '$count Bürgschaften von Nostr wiederhergestellt.';
-  }
-
-  @override
-  String wotNetworkHealth(String label) {
-    return 'NETZWERK $label';
-  }
-
-  @override
-  String wotVouchProgress(Object count, Object total) {
-    return '$count / $total Bürgen';
-  }
-
-  @override
-  String wotReportsCount(Object count) {
-    return '$count Meldungen';
-  }
-
-  @override
-  String wotNeedMoreVouches(Object count) {
-    return 'Du brauchst noch $count Bürgschaften ';
-  }
-
-  @override
-  String wotVouchesRequired(Object count, Object total) {
-    return '$count / $total benötigt';
-  }
-
-  @override
-  String wotSuspensionProgress(Object count, Object total) {
-    return '$count / $total Suspendierung';
-  }
-
-  @override
-  String wotLiability(Object count) {
-    return 'HAFTUNG: $count suspendiert';
-  }
-
-  @override
-  String wotWarningCount(Object count) {
-    return 'WARNUNG: $count gemeldet';
-  }
-
-  @override
-  String wotYourNpub(String npub) {
-    return 'Dein npub: $npub';
-  }
-
-  @override
-  String wotLiabilityBody(String names) {
-    return 'Du bürgst für $names — diese npubs sind durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.';
-  }
-
-  @override
-  String wotWarningBody(String names) {
-    return 'Für $names gibt es Meldungen. ';
-  }
-
-  @override
-  String get wotVotes => 'Stimmen';
-
-  @override
-  String get wotSuspended => 'Suspendiert';
-
-  @override
-  String wotReportNoWeightThreshold(Object count) {
-    return 'Deine Meldung allein hat kein Gewicht. Erst wenn $count unabhängige Organisatoren warnen, wird der npub suspendiert.';
-  }
-
-  @override
-  String wotPublishedLive(Object count) {
-    return 'Dein Web of Trust ist live ($count Relays)!';
-  }
-
-  @override
-  String wotReportPublished(Object count) {
-    return 'Meldung publiziert an $count Relays.';
-  }
-
-  @override
   String wotErrorShort(String msg) {
     return 'Fehler: $msg';
   }
-
-  @override
-  String get wotOffline => 'Offline';
-
-  @override
-  String get wotActive => 'Aktive';
-
-  @override
-  String get wotPhase => 'Phase';
-
-  @override
-  String get wotPhaseDecentralized => 'Dezentral';
-
-  @override
-  String get wotPhaseBootstrap => 'Bootstrap';
-
-  @override
-  String get wotReportsLabel => 'Meldungen';
-
-  @override
-  String get wotVouchersLabel => 'BÜRGEN:';
 
   @override
   String writerTagTooSmall(Object data, Object max) {
@@ -1964,95 +1600,6 @@ class AppLocalizationsDe extends AppLocalizations {
       '❌ Keine aktive Meetup-Session gefunden. Bitte starte das Meetup neu.';
 
   @override
-  String get admMyWebOfTrust => 'MEIN WEB OF TRUST';
-
-  @override
-  String get admMyDelegations => 'DEINE DELEGATIONEN';
-
-  @override
-  String get admCoAdminKnight => 'CO-ADMIN RITTERN';
-
-  @override
-  String get admKnighthood => 'RITTERSCHLAG';
-
-  @override
-  String get admRemove => 'ENTFERNEN';
-
-  @override
-  String get admCancel => 'ABBRECHEN';
-
-  @override
-  String get admRevokeTrust => 'VERTRAUEN ENTZIEHEN?';
-
-  @override
-  String get admRevokeTrustShort => 'Vertrauen entziehen';
-
-  @override
-  String get admSyncWot => 'Web of Trust synchronisieren';
-
-  @override
-  String get admNobodyDelegated => 'Du hast noch niemanden delegiert.';
-
-  @override
-  String get admTapKnighthood =>
-      'Tippe unten auf \'RITTERSCHLAG\',\num einem neuen Organisator in deinem\nMeetup das Vertrauen auszusprechen.';
-
-  @override
-  String get admVouchNewExplain =>
-      'Du bürgst mit deiner eigenen Reputation für diesen neuen Organisator.';
-
-  @override
-  String get admScanNewOrg =>
-      'Scanne den Nostr-QR-Code (npub) des neuen Organisators.';
-
-  @override
-  String get admNetworkLearnsKnight =>
-      'Das Netzwerk erfährt erst von deinen neuen Co-Admins,\nwenn du deine Signatur auf Nostr veröffentlichst.';
-
-  @override
-  String get admMustRepublish =>
-      'Du musst die Liste danach neu publishen, damit das Netzwerk davon erfährt.';
-
-  @override
-  String get admPublishEmptyRevoke =>
-      'Publiziere eine leere Liste um alle Delegationen\nim Netzwerk zu widerrufen.';
-
-  @override
-  String get admRestoreListBack =>
-      'deine Liste nach einer Neuinstallation zurück.';
-
-  @override
-  String get admSigningSending => 'Signiere und sende an Nostr...';
-
-  @override
-  String get admRestoringVouches =>
-      'Stelle meine Bürgschaften von Nostr wieder her...';
-
-  @override
-  String get admSyncingWot => 'Synchronisiere Web of Trust...';
-
-  @override
-  String get admRevokingAll => 'Widerrufe alle Bürgschaften...';
-
-  @override
-  String admRevokeTrustBody(String name, String meetup) {
-    return 'Möchtest du $name das Vertrauen als Admin für $meetup entziehen?\n\n';
-  }
-
-  @override
-  String get admRestoreExplain =>
-      'Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ';
-
-  @override
-  String admVouchedCount(Object count) {
-    return 'Du hast dich für $count Organisatoren verbürgt.';
-  }
-
-  @override
-  String get admCoAdminAdded =>
-      '✅ Co-Admin hinzugefügt! Vergiss nicht zu publishen.';
-
-  @override
   String get apMeetupSession => 'MEETUP SESSION';
 
   @override
@@ -2068,20 +1615,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get apEndMeetupEarly => 'Meetup vorzeitig beenden';
 
   @override
-  String get apNetwork => 'NETZWERK';
-
-  @override
   String get apOrganizer => 'ORGANISATOR';
 
   @override
-  String get apWebOfTrust => 'WEB OF TRUST';
-
-  @override
   String get apHowItWorks => 'SO FUNKTIONIERT\'S';
-
-  @override
-  String get apManageVouches =>
-      'Bürgschaften verwalten, Netzwerk-Status, Meldungen';
 
   @override
   String get apNewMeetupQ => 'Neues Meetup starten?';
@@ -2656,21 +2193,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get wotTabNetwork => 'NETZWERK';
-
-  @override
-  String get wotTabReports => 'MELDUNGEN';
-
-  @override
-  String get wotHealthGood => 'GESUND';
-
-  @override
-  String get wotHealthBuilding => 'AUFBAU';
-
-  @override
-  String get wotHealthCritical => 'KRITISCH';
-
-  @override
   String get badgeUnknown => 'unbekannt';
 
   @override
@@ -2730,37 +2252,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String homeCouldNotOpen(Object url) {
     return 'Konnte $url nicht öffnen';
   }
-
-  @override
-  String admWotLive(Object count) {
-    return '✅ Dein Web of Trust ist live ($count Relays)!';
-  }
-
-  @override
-  String get admDelegationSigned =>
-      '✅ Deine Delegation wurde kryptografisch signiert und im Netzwerk veröffentlicht!';
-
-  @override
-  String admWotCurrent(Object count) {
-    return '✅ Web of Trust aktuell ($count Admins verifiziert)';
-  }
-
-  @override
-  String get admNoVouchesFound =>
-      '✅ Keine publizierten Bürgschaften auf den Relays gefunden';
-
-  @override
-  String admVouchesRestored(Object count) {
-    return '✅ $count Bürgschaften wiederhergestellt';
-  }
-
-  @override
-  String get admNoRelayReachable =>
-      '⚠️ Kein Relay erreichbar — später erneut versuchen';
-
-  @override
-  String get admAllVouchesRevoked =>
-      '✅ Alle Bürgschaften wurden im Netzwerk widerrufen';
 
   @override
   String get apHowStep3 => '3. Jeder Scan = ein Badge für den Teilnehmer\n';
@@ -2826,14 +2317,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get ppHowStep4 =>
       '4. Andere scannen deinen QR und sehen die verifizierte Verknüpfung';
-
-  @override
-  String admErrorEmoji(Object msg) {
-    return '❌ Fehler: $msg';
-  }
-
-  @override
-  String get admNoNewUpdates => '⚠️ Keine neuen Updates gefunden';
 
   @override
   String homeImageLoadError(Object msg) {
@@ -3388,66 +2871,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get rcNoData => 'Noch keine Reputation. Sammle Badges auf Meetups!';
 
   @override
-  String get tpTitle => 'Vertrauenspfad';
-
-  @override
-  String get tpSubtitle => 'Über wen bist du mit dieser Person verbunden?';
-
-  @override
-  String get tpEnterNpub => 'npub der Person eingeben';
-
-  @override
-  String get tpScan => 'npub scannen';
-
-  @override
-  String get tpFind => 'Pfad finden';
-
-  @override
-  String get tpSearching => 'Netzwerk wird durchsucht...';
-
-  @override
-  String tpFound(Object count) {
-    return 'Verbunden über $count Stationen';
-  }
-
-  @override
-  String get tpDirect => 'Direkt verbunden';
-
-  @override
-  String get tpYou => 'Du';
-
-  @override
-  String get tpTarget => 'Zielperson';
-
-  @override
-  String get tpVouchesFor => 'bürgt für';
-
-  @override
-  String get tpNoPath => 'Kein Vertrauenspfad gefunden';
-
-  @override
-  String get tpNoPathSelf =>
-      'Du bist noch nicht im Bürgschafts-Netz. Lass dich von Admins bestätigen, um Pfade zu sehen.';
-
-  @override
-  String get tpNoPathTarget =>
-      'Diese Person ist (noch) nicht im Bürgschafts-Netz erfasst.';
-
-  @override
-  String get tpNoPathBetween =>
-      'Es gibt aktuell keine bekannte Bürgschaftskette zwischen euch.';
-
-  @override
-  String get tpInvalidNpub => 'Ungültiger npub';
-
-  @override
-  String get tpUnknown => 'Unbekannt';
-
-  @override
-  String get tpHint =>
-      'Basiert auf dem öffentlichen Bürgschafts-Netz (Web of Trust). Zeigt nur Verbindungen über bürgende Mitglieder.';
-
-  @override
   String get caOptInTitle => 'Zum Vertrauensnetzwerk beitragen?';
 
   @override
@@ -3545,13 +2968,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get tnHubIntro =>
       'Prüfe, wie vertrauenswürdig eine Person im Einundzwanzig-Netzwerk ist — über Bürgschaften und gemeinsame Meetups.';
-
-  @override
-  String get tnHubPathTitle => 'Vertrauenspfad';
-
-  @override
-  String get tnHubPathSub =>
-      'Über wen bist du mit einer Person verbunden? (Bürgschaftskette)';
 
   @override
   String get tnHubNetTitle => 'Netzwerk-Analyse';
@@ -5243,10 +4659,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get rsEnabledHint =>
       'Eingeschaltet — bedeutet nicht, dass das Relay gerade erreichbar ist.';
-
-  @override
-  String get wotNoRelayReachable =>
-      'Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.';
 
   @override
   String get newsWriteArticle => 'Artikel schreiben';

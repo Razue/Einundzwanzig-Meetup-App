@@ -588,241 +588,6 @@
       }
     }
   },
-  "wotTitle": "WEB OF TRUST",
-  "wotActiveOrganizers": "AKTIVE ORGANISATOREN",
-  "wotActiveOrganizer": "AKTIVER ORGANISATOR",
-  "wotActiveWarnings": "AKTIVE WARNUNGEN",
-  "wotActiveWarning": "Aktive Warnung",
-  "wotMyStatus": "DEIN STATUS",
-  "wotMyVouches": "DEINE BÜRGSCHAFTEN",
-  "wotWhoYouVouchFor": "FÜR WEN DU BÜRGST",
-  "wotWhoVouchesForYou": "WER BÜRGT FÜR DICH",
-  "wotWeightedReporting": "GEWICHTETES MELDESYSTEM",
-  "wotRestore": "WIEDERHERSTELLEN",
-  "wotRevokeAll": "ALLE WIDERRUFEN",
-  "wotPublishNostr": "AUF NOSTR PUBLISHEN",
-  "wotVouch": "BÜRGEN",
-  "wotVouchVerb": "VERBÜRGEN",
-  "wotReportNpub": "NPUB MELDEN",
-  "wotScanNpub": "NPUB SCANNEN",
-  "wotPublishRevocation": "WIDERRUF PUBLISHEN",
-  "wotSigningPublishing": "SIGNIERE & PUBLIZIERE...",
-  "wotSyncNetwork": "Netzwerk synchronisieren",
-  "wotBootstrapPhase": "Bootstrap-Phase",
-  "wotDecentralized": "Dezentral (Web of Trust)",
-  "wotMinVouches": "Min. Bürgen",
-  "wotDistrustThreshold": "Distrust-Schwelle",
-  "wotNotEnoughVouchers": "NOCH NICHT GENUG BÜRGEN",
-  "wotVouchers": "Bürgen",
-  "wotNoVouchersYet": "Noch keine Bürgen",
-  "wotNobodyYet": "Noch niemand",
-  "wotNotSuspendedWatch": "Noch nicht suspendiert, aber du solltest aufpassen.",
-  "wotNoReports": "Keine Meldungen",
-  "wotNoActiveAdmins": "Keine aktiven Admins",
-  "wotNoCleanNetwork": "Aktuell gibt es keine offenen Warnungen\nim Netzwerk. Alles sauber.",
-  "wotNoOrganizersEnough": "Das Netzwerk hat noch keine Organisatoren mit genug Bürgschaften.",
-  "wotNoVouchesFound": "Keine publizierten Bürgschaften auf den Relays gefunden.",
-  "wotTapPlusFirst": "Tippe auf + um deinen ersten Ritterschlag\nzu vergeben.",
-  "wotAskOthersVouch": "Bitte andere Organisatoren, für dich zu bürgen.\n",
-  "wotNoDataLoaded": "Netzwerk-Daten konnten nicht geladen werden.\nZiehe zum Aktualisieren nach unten.",
-  "wotNoRelay": "Kein Relay erreichbar — später erneut versuchen.",
-  "wotRevokeAllTitle": "ALLE BÜRGSCHAFTEN WIDERRUFEN?",
-  "wotRevokeVouchTitle": "BÜRGSCHAFT ENTZIEHEN?",
-  "wotWithdrawVouch": "Bürgschaft entziehen",
-  "wotVouchWithdrawn": "Bürgschaft entzogen. Vergiss nicht zu publishen.",
-  "wotVouchGiven": "Ritterschlag vergeben! Vergiss nicht zu publishen.",
-  "wotAllRevoked": "Alle Bürgschaften wurden im Netzwerk widerrufen.",
-  "wotReasonRequired": "Grund (Pflicht)",
-  "wotNpubRequired": "npub (Pflicht)",
-  "wotNameAlias": "Name / Alias (optional)",
-  "wotMeetupExample": "Meetup (z.B. München)",
-  "wotReasonExample": "z.B. Fälscht Badges, kein echtes Meetup...",
-  "wotNpubReasonRequired": "npub und Grund sind Pflicht.",
-  "wotScanInstruction": "Scanne den Nostr-QR-Code (npub)\ndes Organisators.",
-  "wotVouchExplain": "Du bürgst mit deiner eigenen Reputation für diesen Organisator.",
-  "wotEachVouchPersonal": "Jede Bürgschaft ist dein persönliches Vertrauens-Votum — ",
-  "wotAfterPublishAll": "nach dem Publishen sieht das gesamte Netzwerk, für wen du stehst.",
-  "wotWhoYouVouchExplain": "Hier siehst du, für wen DU bürgst. ",
-  "wotPublishUpdated": "Publishe danach deine aktualisierte Liste, ",
-  "wotSoNetworkKnows": "damit das Netzwerk davon erfährt.",
-  "wotSingleReportNoWeight": "Eine einzelne Meldung hat kein Gewicht — ",
-  "wotOnlyMultipleIndep": "erst wenn mehrere unabhängige Organisatoren ",
-  "wotWarnSuspend": "warnen, wird jemand suspendiert. ",
-  "wotNobodyAlonePower": "Niemand hat allein Macht über andere.",
-  "wotYourReportAlone": "Deine Meldung allein hat kein Gewicht. Erst wenn ",
-  "wotOrgsWarnSuspended": "Organisatoren warnen, wird der npub suspendiert.",
-  "wotRevokeAllBody": "Dies publiziert eine leere Liste auf Nostr und widerruft damit ALLE ",
-  "wotFromOtherOrgs": "von anderen Organisatoren.",
-  "wotRestoreExplain": "Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ",
-  "wotRestoreListBack": "deine Liste nach einer Neuinstallation oder einem Backup-Wechsel zurück.",
-  "wotVouchesSignedOnNostr": "deine Bürgschaften im Netzwerk — auch solche, die lokal nicht mehr ",
-  "wotVisibleLocally": "sichtbar sind.\n\nNutze das, wenn du nach einer Neuinstallation deine ",
-  "wotCantResolveOld": "alten Bürgschaften nicht mehr auflösen kannst.",
-  "wotRemovedFromList": "wird von deiner Vouching-Liste entfernt.\n\n",
-  "wotSuspendedByNetwork": "durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.",
-  "wotErrorLoading": "Fehler beim Laden: {msg}",
-  "@wotErrorLoading": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotSyncFailed": "Sync fehlgeschlagen: {msg}",
-  "@wotSyncFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotRevocationFailed": "Widerruf fehlgeschlagen: {msg}",
-  "@wotRevocationFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotRestoreFailed": "Wiederherstellung fehlgeschlagen: {msg}",
-  "@wotRestoreFailed": {
-    "placeholders": {
-      "msg": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVouchesRestored": "{count} Bürgschaften von Nostr wiederhergestellt.",
-  "@wotVouchesRestored": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotNetworkHealth": "NETZWERK {label}",
-  "@wotNetworkHealth": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVouchProgress": "{count} / {total} Bürgen",
-  "@wotVouchProgress": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotReportsCount": "{count} Meldungen",
-  "@wotReportsCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotNeedMoreVouches": "Du brauchst noch {count} Bürgschaften ",
-  "@wotNeedMoreVouches": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotVouchesRequired": "{count} / {total} benötigt",
-  "@wotVouchesRequired": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotSuspensionProgress": "{count} / {total} Suspendierung",
-  "@wotSuspensionProgress": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      },
-      "total": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotLiability": "HAFTUNG: {count} suspendiert",
-  "@wotLiability": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotWarningCount": "WARNUNG: {count} gemeldet",
-  "@wotWarningCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotYourNpub": "Dein npub: {npub}",
-  "@wotYourNpub": {
-    "placeholders": {
-      "npub": {
-        "type": "String"
-      }
-    }
-  },
-  "wotLiabilityBody": "Du bürgst für {names} — diese npubs sind durch das Netzwerk suspendiert. Überprüfe deine Bürgschaften.",
-  "@wotLiabilityBody": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "wotWarningBody": "Für {names} gibt es Meldungen. ",
-  "@wotWarningBody": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "wotVotes": "Stimmen",
-  "wotSuspended": "Suspendiert",
-  "wotReportNoWeightThreshold": "Deine Meldung allein hat kein Gewicht. Erst wenn {count} unabhängige Organisatoren warnen, wird der npub suspendiert.",
-  "@wotReportNoWeightThreshold": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotPublishedLive": "Dein Web of Trust ist live ({count} Relays)!",
-  "@wotPublishedLive": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "wotReportPublished": "Meldung publiziert an {count} Relays.",
-  "@wotReportPublished": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
   "wotErrorShort": "Fehler: {msg}",
   "@wotErrorShort": {
     "placeholders": {
@@ -831,13 +596,6 @@
       }
     }
   },
-  "wotOffline": "Offline",
-  "wotActive": "Aktive",
-  "wotPhase": "Phase",
-  "wotPhaseDecentralized": "Dezentral",
-  "wotPhaseBootstrap": "Bootstrap",
-  "wotReportsLabel": "Meldungen",
-  "wotVouchersLabel": "BÜRGEN:",
   "writerTagTooSmall": "Tag zu klein! Daten: {data}B, Tag: {max}B.\n",
   "@writerTagTooSmall": {
     "placeholders": {
@@ -928,58 +686,13 @@
   "writerNoHomeMeetup": "⚠️ Kein Home-Meetup gesetzt",
   "writerHomeMeetupNotFound": "⚠️ Home-Meetup nicht gefunden",
   "writerNoActiveSession": "❌ Keine aktive Meetup-Session gefunden. Bitte starte das Meetup neu.",
-  "admMyWebOfTrust": "MEIN WEB OF TRUST",
-  "admMyDelegations": "DEINE DELEGATIONEN",
-  "admCoAdminKnight": "CO-ADMIN RITTERN",
-  "admKnighthood": "RITTERSCHLAG",
-  "admRemove": "ENTFERNEN",
-  "admCancel": "ABBRECHEN",
-  "admRevokeTrust": "VERTRAUEN ENTZIEHEN?",
-  "admRevokeTrustShort": "Vertrauen entziehen",
-  "admSyncWot": "Web of Trust synchronisieren",
-  "admNobodyDelegated": "Du hast noch niemanden delegiert.",
-  "admTapKnighthood": "Tippe unten auf 'RITTERSCHLAG',\num einem neuen Organisator in deinem\nMeetup das Vertrauen auszusprechen.",
-  "admVouchNewExplain": "Du bürgst mit deiner eigenen Reputation für diesen neuen Organisator.",
-  "admScanNewOrg": "Scanne den Nostr-QR-Code (npub) des neuen Organisators.",
-  "admNetworkLearnsKnight": "Das Netzwerk erfährt erst von deinen neuen Co-Admins,\nwenn du deine Signatur auf Nostr veröffentlichst.",
-  "admMustRepublish": "Du musst die Liste danach neu publishen, damit das Netzwerk davon erfährt.",
-  "admPublishEmptyRevoke": "Publiziere eine leere Liste um alle Delegationen\nim Netzwerk zu widerrufen.",
-  "admRestoreListBack": "deine Liste nach einer Neuinstallation zurück.",
-  "admSigningSending": "Signiere und sende an Nostr...",
-  "admRestoringVouches": "Stelle meine Bürgschaften von Nostr wieder her...",
-  "admSyncingWot": "Synchronisiere Web of Trust...",
-  "admRevokingAll": "Widerrufe alle Bürgschaften...",
-  "admRevokeTrustBody": "Möchtest du {name} das Vertrauen als Admin für {meetup} entziehen?\n\n",
-  "@admRevokeTrustBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "meetup": {
-        "type": "String"
-      }
-    }
-  },
-  "admRestoreExplain": "Bürgschaften liegen signiert auf Nostr. „Wiederherstellen\" holt ",
-  "admVouchedCount": "Du hast dich für {count} Organisatoren verbürgt.",
-  "@admVouchedCount": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admCoAdminAdded": "✅ Co-Admin hinzugefügt! Vergiss nicht zu publishen.",
   "apMeetupSession": "MEETUP SESSION",
   "apSessionRunning": "SESSION LÄUFT",
   "apOpenActiveMeetup": "AKTIVES MEETUP ÖFFNEN",
   "apStartMeetup": "MEETUP STARTEN",
   "apEndMeetupEarly": "Meetup vorzeitig beenden",
-  "apNetwork": "NETZWERK",
   "apOrganizer": "ORGANISATOR",
-  "apWebOfTrust": "WEB OF TRUST",
   "apHowItWorks": "SO FUNKTIONIERT'S",
-  "apManageVouches": "Bürgschaften verwalten, Netzwerk-Status, Meldungen",
   "apNewMeetupQ": "Neues Meetup starten?",
   "apSessionEndQ": "Session beenden?",
   "apCancel": "Abbrechen",
@@ -1234,11 +947,6 @@
       }
     }
   },
-  "wotTabNetwork": "NETZWERK",
-  "wotTabReports": "MELDUNGEN",
-  "wotHealthGood": "GESUND",
-  "wotHealthBuilding": "AUFBAU",
-  "wotHealthCritical": "KRITISCH",
   "badgeUnknown": "unbekannt",
   "badgeBlockAtScan": "₿ Blockhöhe beim Scan",
   "mwStartMeetup": "MEETUP STARTEN",
@@ -1309,34 +1017,6 @@
       }
     }
   },
-  "admWotLive": "✅ Dein Web of Trust ist live ({count} Relays)!",
-  "@admWotLive": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admDelegationSigned": "✅ Deine Delegation wurde kryptografisch signiert und im Netzwerk veröffentlicht!",
-  "admWotCurrent": "✅ Web of Trust aktuell ({count} Admins verifiziert)",
-  "@admWotCurrent": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoVouchesFound": "✅ Keine publizierten Bürgschaften auf den Relays gefunden",
-  "admVouchesRestored": "✅ {count} Bürgschaften wiederhergestellt",
-  "@admVouchesRestored": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoRelayReachable": "⚠️ Kein Relay erreichbar — später erneut versuchen",
-  "admAllVouchesRevoked": "✅ Alle Bürgschaften wurden im Netzwerk widerrufen",
   "apHowStep3": "3. Jeder Scan = ein Badge für den Teilnehmer\n",
   "badgeSchnorrSig": "Schnorr (Nostr v2) ✓",
   "msHomeMeetupSet": "✅ {city} als Home-Meetup gesetzt",
@@ -1375,15 +1055,6 @@
   "ppHowStep2": "2. Die App erstellt einen kryptographischen Beweis\n",
   "ppHowStep3": "3. Der Beweis wird automatisch in deinen Reputation-QR eingebettet\n",
   "ppHowStep4": "4. Andere scannen deinen QR und sehen die verifizierte Verknüpfung",
-  "admErrorEmoji": "❌ Fehler: {msg}",
-  "@admErrorEmoji": {
-    "placeholders": {
-      "msg": {
-        "type": "Object"
-      }
-    }
-  },
-  "admNoNewUpdates": "⚠️ Keine neuen Updates gefunden",
   "homeImageLoadError": "Bild konnte nicht geladen werden: {msg}",
   "@homeImageLoadError": {
     "placeholders": {
@@ -1735,31 +1406,6 @@
   "rcLabelAge": "Tage dabei",
   "rcMember": "Einundzwanzig Mitglied",
   "rcNoData": "Noch keine Reputation. Sammle Badges auf Meetups!",
-  "tpTitle": "Vertrauenspfad",
-  "tpSubtitle": "Über wen bist du mit dieser Person verbunden?",
-  "tpEnterNpub": "npub der Person eingeben",
-  "tpScan": "npub scannen",
-  "tpFind": "Pfad finden",
-  "tpSearching": "Netzwerk wird durchsucht...",
-  "tpFound": "Verbunden über {count} Stationen",
-  "@tpFound": {
-    "placeholders": {
-      "count": {
-        "type": "Object"
-      }
-    }
-  },
-  "tpDirect": "Direkt verbunden",
-  "tpYou": "Du",
-  "tpTarget": "Zielperson",
-  "tpVouchesFor": "bürgt für",
-  "tpNoPath": "Kein Vertrauenspfad gefunden",
-  "tpNoPathSelf": "Du bist noch nicht im Bürgschafts-Netz. Lass dich von Admins bestätigen, um Pfade zu sehen.",
-  "tpNoPathTarget": "Diese Person ist (noch) nicht im Bürgschafts-Netz erfasst.",
-  "tpNoPathBetween": "Es gibt aktuell keine bekannte Bürgschaftskette zwischen euch.",
-  "tpInvalidNpub": "Ungültiger npub",
-  "tpUnknown": "Unbekannt",
-  "tpHint": "Basiert auf dem öffentlichen Bürgschafts-Netz (Web of Trust). Zeigt nur Verbindungen über bürgende Mitglieder.",
   "caOptInTitle": "Zum Vertrauensnetzwerk beitragen?",
   "caOptInBody": "Du kannst deine Teilnahme an diesem Meetup im öffentlichen Vertrauensnetzwerk bestätigen. Andere sehen dann, dass dein npub bei diesem Meetup war — und über gemeinsame Meetups, wie ihr vernetzt seid.\n\nDas ist freiwillig. Dein Badge bekommst du auch ohne Teilnahme am Netzwerk.",
   "caOptInPrivacy": "Öffentlich & dauerhaft auf Nostr-Relays. Zeigt ein Bewegungs- und Kontaktmuster. Überleg es dir gut.",
@@ -1797,8 +1443,6 @@
   "tileTrustNetworkSub": "Vernetzung prüfen",
   "tnHubTitle": "Vertrauensnetzwerk",
   "tnHubIntro": "Prüfe, wie vertrauenswürdig eine Person im Einundzwanzig-Netzwerk ist — über Bürgschaften und gemeinsame Meetups.",
-  "tnHubPathTitle": "Vertrauenspfad",
-  "tnHubPathSub": "Über wen bist du mit einer Person verbunden? (Bürgschaftskette)",
   "tnHubNetTitle": "Netzwerk-Analyse",
   "tnHubNetSub": "Gemeinsame Meetups & Kontakte einer Person",
   "orgBadgeCreated": "Organisator-Teilnahme erfasst",
@@ -2150,7 +1794,7 @@
   "rsvpYouGo": "Du hast zugesagt ✓",
   "rsvpCount": "Zusagen",
   "rsvpNeedLogin": "Zum Zusagen bitte zuerst im Portal anmelden (Meine Meetups).",
-  "rsvpFailed": "Zusage fehlgeschlagen",
+  "rsvpFailed": "Antwort nicht gespeichert: {msg}",
   "crsLoading": "Lade Kurse …",
   "crsNone": "Keine Kurse gefunden.",
   "crsCourses": "Kurse",
@@ -2383,7 +2027,6 @@
   "reputationUnsigned": "Nicht signiert",
   "portalConnectForOrganizer": "Nicht mit dem Portal verbunden — dein Organisator-Status kann dadurch nicht erkannt werden.",
   "npubCopied": "npub kopiert",
-
   "idSetupTitle": "Identität",
   "idSetupSubtitle": "Wie möchtest du starten?",
   "idSetupNewCard": "Neu hier",
@@ -2437,7 +2080,6 @@
   "idSetupBackupBody": "Kopiere den verschlüsselten Schlüssel in deinen Passwortmanager. Ohne Passwort ist er wertlos.",
   "idSetupBackupCopy": "Kopieren",
   "idSetupBackupLater": "Später",
-
   "idSetupMeetupTitle": "Dein Meetup",
   "idSetupMeetupHint": "Welches Meetup ist deins? Du kannst später weitere hinzufügen.",
   "idSetupMeetupPick": "Meetup wählen",
@@ -2451,7 +2093,6 @@
   "rsTesting": "Verbindung wird geprüft …",
   "rsRelayAdded": "Relay hinzugefügt und erreichbar.",
   "rsEnabledHint": "Eingeschaltet — bedeutet nicht, dass das Relay gerade erreichbar ist.",
-  "wotNoRelayReachable": "Kein Relay erreichbar. Bist du online? Einzelheiten stehen im Diagnose-Log.",
   "newsWriteArticle": "Artikel schreiben",
   "newsLike": "Gefällt mir",
   "newsShare": "Teilen",
@@ -2485,9 +2126,9 @@
   "evBadgeUploadFailed": "Upload fehlgeschlagen: {msg}",
   "@evBadgeUploadFailed": {
     "placeholders": {
-        "msg": {
-            "type": "String"
-        }
+      "msg": {
+        "type": "String"
+      }
     }
   },
   "evBadgeLocationPick": "Auf der Karte wählen",
@@ -2658,14 +2299,14 @@
   "guideStepOf": "Schritt {current} von {total}",
   "@guideStepOf": {
     "placeholders": {
-        "current": {
-            "type": "int"
-        },
-        "total": {
-            "type": "int"
-        }
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
-},
+  },
   "guideStepDone": "Erledigt",
   "guideHintNickname": "Tippe ins Feld und gib deinen Nickname ein.",
   "guideHintOpenPicker": "Tippe auf das Feld, um die Meetup-Auswahl zu öffnen.",
@@ -2981,7 +2622,6 @@
   },
   "rsvpYes": "Ich komme",
   "rsvpNo": "Ich komme nicht",
-  "rsvpFailed": "Antwort nicht gespeichert: {msg}",
   "@rsvpFailed": {
     "placeholders": {
       "msg": {

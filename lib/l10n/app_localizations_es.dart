@@ -1522,367 +1522,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get wotTitle => 'WEB OF TRUST';
-
-  @override
-  String get wotActiveOrganizers => 'ORGANIZADORES ACTIVOS';
-
-  @override
-  String get wotActiveOrganizer => 'ORGANIZADOR ACTIVO';
-
-  @override
-  String get wotActiveWarnings => 'AVISOS ACTIVOS';
-
-  @override
-  String get wotActiveWarning => 'Aviso activo';
-
-  @override
-  String get wotMyStatus => 'TU ESTADO';
-
-  @override
-  String get wotMyVouches => 'TUS AVALES';
-
-  @override
-  String get wotWhoYouVouchFor => 'POR QUIÉN AVALAS';
-
-  @override
-  String get wotWhoVouchesForYou => 'QUIÉN TE AVALA';
-
-  @override
-  String get wotWeightedReporting => 'SISTEMA DE DENUNCIAS PONDERADO';
-
-  @override
-  String get wotRestore => 'RESTAURAR';
-
-  @override
-  String get wotRevokeAll => 'REVOCAR TODO';
-
-  @override
-  String get wotPublishNostr => 'PUBLICAR EN NOSTR';
-
-  @override
-  String get wotVouch => 'AVALAR';
-
-  @override
-  String get wotVouchVerb => 'AVALAR';
-
-  @override
-  String get wotReportNpub => 'DENUNCIAR NPUB';
-
-  @override
-  String get wotScanNpub => 'ESCANEAR NPUB';
-
-  @override
-  String get wotPublishRevocation => 'PUBLICAR REVOCACIÓN';
-
-  @override
-  String get wotSigningPublishing => 'FIRMANDO Y PUBLICANDO...';
-
-  @override
-  String get wotSyncNetwork => 'Sincronizar red';
-
-  @override
-  String get wotBootstrapPhase => 'Fase de arranque';
-
-  @override
-  String get wotDecentralized => 'Descentralizado (Web of Trust)';
-
-  @override
-  String get wotMinVouches => 'Avaladores mín.';
-
-  @override
-  String get wotDistrustThreshold => 'Umbral de desconfianza';
-
-  @override
-  String get wotNotEnoughVouchers => 'AÚN SIN AVALES SUFICIENTES';
-
-  @override
-  String get wotVouchers => 'Avaladores';
-
-  @override
-  String get wotNoVouchersYet => 'Aún sin avaladores';
-
-  @override
-  String get wotNobodyYet => 'Nadie todavía';
-
-  @override
-  String get wotNotSuspendedWatch =>
-      'Aún no suspendido, pero deberías estar atento.';
-
-  @override
-  String get wotNoReports => 'Sin denuncias';
-
-  @override
-  String get wotNoActiveAdmins => 'Sin admins activos';
-
-  @override
-  String get wotNoCleanNetwork =>
-      'Actualmente no hay avisos abiertos\nen la red. Todo limpio.';
-
-  @override
-  String get wotNoOrganizersEnough =>
-      'La red aún no tiene organizadores con avales suficientes.';
-
-  @override
-  String get wotNoVouchesFound =>
-      'No se encontraron avales publicados en los relays.';
-
-  @override
-  String get wotTapPlusFirst => 'Toca + para dar tu primer aval.';
-
-  @override
-  String get wotAskOthersVouch => 'Pide a otros organizadores que te avalen.\n';
-
-  @override
-  String get wotNoDataLoaded =>
-      'No se pudieron cargar los datos de la red.\nDesliza hacia abajo para actualizar.';
-
-  @override
-  String get wotNoRelay => 'Ningún relay accesible — inténtalo más tarde.';
-
-  @override
-  String get wotRevokeAllTitle => '¿REVOCAR TODOS LOS AVALES?';
-
-  @override
-  String get wotRevokeVouchTitle => '¿RETIRAR AVAL?';
-
-  @override
-  String get wotWithdrawVouch => 'Retirar aval';
-
-  @override
-  String get wotVouchWithdrawn => 'Aval retirado. No olvides publicar.';
-
-  @override
-  String get wotVouchGiven => '¡Aval otorgado! No olvides publicar.';
-
-  @override
-  String get wotAllRevoked => 'Todos los avales han sido revocados en la red.';
-
-  @override
-  String get wotReasonRequired => 'Motivo (obligatorio)';
-
-  @override
-  String get wotNpubRequired => 'npub (obligatorio)';
-
-  @override
-  String get wotNameAlias => 'Nombre / alias (opcional)';
-
-  @override
-  String get wotMeetupExample => 'Meetup (p. ej. Múnich)';
-
-  @override
-  String get wotReasonExample =>
-      'p. ej. Falsifica insignias, sin meetup real...';
-
-  @override
-  String get wotNpubReasonRequired => 'npub y motivo son obligatorios.';
-
-  @override
-  String get wotScanInstruction =>
-      'Escanea el código QR Nostr (npub)\ndel organizador.';
-
-  @override
-  String get wotVouchExplain =>
-      'Avalas a este organizador con tu propia reputación.';
-
-  @override
-  String get wotEachVouchPersonal =>
-      'Cada aval es tu voto personal de confianza — ';
-
-  @override
-  String get wotAfterPublishAll =>
-      'tras publicar, toda la red ve por quién respondes.';
-
-  @override
-  String get wotWhoYouVouchExplain => 'Aquí ves por quién avalas TÚ. ';
-
-  @override
-  String get wotPublishUpdated => 'Luego publica tu lista actualizada ';
-
-  @override
-  String get wotSoNetworkKnows => 'para que la red se entere.';
-
-  @override
-  String get wotSingleReportNoWeight => 'Una sola denuncia no tiene peso — ';
-
-  @override
-  String get wotOnlyMultipleIndep =>
-      'solo cuando varios organizadores independientes ';
-
-  @override
-  String get wotWarnSuspend => 'advierten, alguien queda suspendido. ';
-
-  @override
-  String get wotNobodyAlonePower =>
-      'Nadie tiene poder sobre otros por sí solo.';
-
-  @override
-  String get wotYourReportAlone =>
-      'Tu denuncia sola no tiene peso. Solo cuando ';
-
-  @override
-  String get wotOrgsWarnSuspended =>
-      'organizadores advierten, el npub queda suspendido.';
-
-  @override
-  String get wotRevokeAllBody =>
-      'Esto publica una lista vacía en Nostr y revoca TODOS ';
-
-  @override
-  String get wotFromOtherOrgs => 'de otros organizadores.';
-
-  @override
-  String get wotRestoreExplain =>
-      'Los avales están firmados en Nostr. «Restaurar» recupera ';
-
-  @override
-  String get wotRestoreListBack =>
-      'tu lista tras una reinstalación o un cambio de copia de seguridad.';
-
-  @override
-  String get wotVouchesSignedOnNostr =>
-      'tus avales en la red — incluso los que ya no son ';
-
-  @override
-  String get wotVisibleLocally =>
-      'visibles localmente.\n\nUsa esto si, tras una reinstalación, ';
-
-  @override
-  String get wotCantResolveOld => 'ya no puedes resolver tus avales antiguos.';
-
-  @override
-  String get wotRemovedFromList => 'será eliminado de tu lista de avales.\n\n';
-
-  @override
-  String get wotSuspendedByNetwork =>
-      'suspendido por la red. Revisa tus avales.';
-
-  @override
-  String wotErrorLoading(String msg) {
-    return 'Error al cargar: $msg';
-  }
-
-  @override
-  String wotSyncFailed(String msg) {
-    return 'Sincronización fallida: $msg';
-  }
-
-  @override
-  String wotRevocationFailed(String msg) {
-    return 'Revocación fallida: $msg';
-  }
-
-  @override
-  String wotRestoreFailed(String msg) {
-    return 'Restauración fallida: $msg';
-  }
-
-  @override
-  String wotVouchesRestored(Object count) {
-    return '$count avales restaurados desde Nostr.';
-  }
-
-  @override
-  String wotNetworkHealth(String label) {
-    return 'RED $label';
-  }
-
-  @override
-  String wotVouchProgress(Object count, Object total) {
-    return '$count / $total avales';
-  }
-
-  @override
-  String wotReportsCount(Object count) {
-    return '$count denuncias';
-  }
-
-  @override
-  String wotNeedMoreVouches(Object count) {
-    return 'Aún necesitas $count avales más ';
-  }
-
-  @override
-  String wotVouchesRequired(Object count, Object total) {
-    return '$count / $total necesarios';
-  }
-
-  @override
-  String wotSuspensionProgress(Object count, Object total) {
-    return '$count / $total suspensión';
-  }
-
-  @override
-  String wotLiability(Object count) {
-    return 'RESPONSABILIDAD: $count suspendidos';
-  }
-
-  @override
-  String wotWarningCount(Object count) {
-    return 'AVISO: $count denunciados';
-  }
-
-  @override
-  String wotYourNpub(String npub) {
-    return 'Tu npub: $npub';
-  }
-
-  @override
-  String wotLiabilityBody(String names) {
-    return 'Avalas a $names — estos npubs están suspendidos por la red. Revisa tus avales.';
-  }
-
-  @override
-  String wotWarningBody(String names) {
-    return 'Hay denuncias para $names. ';
-  }
-
-  @override
-  String get wotVotes => 'Votos';
-
-  @override
-  String get wotSuspended => 'Suspendidos';
-
-  @override
-  String wotReportNoWeightThreshold(Object count) {
-    return 'Tu denuncia sola no tiene peso. Solo cuando $count organizadores independientes advierten, el npub queda suspendido.';
-  }
-
-  @override
-  String wotPublishedLive(Object count) {
-    return '¡Tu Web of Trust está activo ($count relays)!';
-  }
-
-  @override
-  String wotReportPublished(Object count) {
-    return 'Denuncia publicada en $count relays.';
-  }
-
-  @override
   String wotErrorShort(String msg) {
     return 'Error: $msg';
   }
-
-  @override
-  String get wotOffline => 'Sin conexión';
-
-  @override
-  String get wotActive => 'Activos';
-
-  @override
-  String get wotPhase => 'Fase';
-
-  @override
-  String get wotPhaseDecentralized => 'Descentralizado';
-
-  @override
-  String get wotPhaseBootstrap => 'Arranque';
-
-  @override
-  String get wotReportsLabel => 'Denuncias';
-
-  @override
-  String get wotVouchersLabel => 'AVALADORES:';
 
   @override
   String writerTagTooSmall(Object data, Object max) {
@@ -1955,92 +1597,6 @@ class AppLocalizationsEs extends AppLocalizations {
       '❌ No se encontró sesión de meetup activa. Reinicia el meetup.';
 
   @override
-  String get admMyWebOfTrust => 'MI WEB OF TRUST';
-
-  @override
-  String get admMyDelegations => 'TUS DELEGACIONES';
-
-  @override
-  String get admCoAdminKnight => 'NOMBRAR CO-ADMIN';
-
-  @override
-  String get admKnighthood => 'NOMBRAMIENTO';
-
-  @override
-  String get admRemove => 'ELIMINAR';
-
-  @override
-  String get admCancel => 'CANCELAR';
-
-  @override
-  String get admRevokeTrust => '¿RETIRAR CONFIANZA?';
-
-  @override
-  String get admRevokeTrustShort => 'Retirar confianza';
-
-  @override
-  String get admSyncWot => 'Sincronizar Web of Trust';
-
-  @override
-  String get admNobodyDelegated => 'Aún no has delegado a nadie.';
-
-  @override
-  String get admTapKnighthood =>
-      'Toca \'NOMBRAMIENTO\' abajo\npara dar confianza a un nuevo organizador\nen tu meetup.';
-
-  @override
-  String get admVouchNewExplain =>
-      'Avalas a este nuevo organizador con tu propia reputación.';
-
-  @override
-  String get admScanNewOrg =>
-      'Escanea el código QR Nostr (npub) del nuevo organizador.';
-
-  @override
-  String get admNetworkLearnsKnight =>
-      'La red solo conoce a tus nuevos co-admins\ncuando publicas tu firma en Nostr.';
-
-  @override
-  String get admMustRepublish =>
-      'Debes volver a publicar la lista después para que la red se entere.';
-
-  @override
-  String get admPublishEmptyRevoke =>
-      'Publica una lista vacía para revocar todas las delegaciones\nen la red.';
-
-  @override
-  String get admRestoreListBack => 'tu lista tras una reinstalación.';
-
-  @override
-  String get admSigningSending => 'Firmando y enviando a Nostr...';
-
-  @override
-  String get admRestoringVouches => 'Restaurando mis avales desde Nostr...';
-
-  @override
-  String get admSyncingWot => 'Sincronizando Web of Trust...';
-
-  @override
-  String get admRevokingAll => 'Revocando todos los avales...';
-
-  @override
-  String admRevokeTrustBody(String name, String meetup) {
-    return '¿Quieres retirar la confianza como admin para $meetup a $name?\n\n';
-  }
-
-  @override
-  String get admRestoreExplain =>
-      'Los avales están firmados en Nostr. «Restaurar» recupera ';
-
-  @override
-  String admVouchedCount(Object count) {
-    return 'Has avalado a $count organizadores.';
-  }
-
-  @override
-  String get admCoAdminAdded => '✅ ¡Co-admin añadido! No olvides publicar.';
-
-  @override
   String get apMeetupSession => 'SESIÓN DE MEETUP';
 
   @override
@@ -2056,19 +1612,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get apEndMeetupEarly => 'Finalizar meetup antes';
 
   @override
-  String get apNetwork => 'RED';
-
-  @override
   String get apOrganizer => 'ORGANIZADOR';
 
   @override
-  String get apWebOfTrust => 'WEB OF TRUST';
-
-  @override
   String get apHowItWorks => 'CÓMO FUNCIONA';
-
-  @override
-  String get apManageVouches => 'Gestionar avales, estado de red, denuncias';
 
   @override
   String get apNewMeetupQ => '¿Iniciar nuevo meetup?';
@@ -2645,21 +2192,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get wotTabNetwork => 'RED';
-
-  @override
-  String get wotTabReports => 'DENUNCIAS';
-
-  @override
-  String get wotHealthGood => 'SALUDABLE';
-
-  @override
-  String get wotHealthBuilding => 'EN DESARROLLO';
-
-  @override
-  String get wotHealthCritical => 'CRÍTICO';
-
-  @override
   String get badgeUnknown => 'desconocido';
 
   @override
@@ -2719,37 +2251,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String homeCouldNotOpen(Object url) {
     return 'No se pudo abrir $url';
   }
-
-  @override
-  String admWotLive(Object count) {
-    return '✅ ¡Tu Web of Trust está activo ($count relays)!';
-  }
-
-  @override
-  String get admDelegationSigned =>
-      '✅ ¡Tu delegación fue firmada criptográficamente y publicada en la red!';
-
-  @override
-  String admWotCurrent(Object count) {
-    return '✅ Web of Trust actualizado ($count admins verificados)';
-  }
-
-  @override
-  String get admNoVouchesFound =>
-      '✅ No se encontraron avales publicados en los relays';
-
-  @override
-  String admVouchesRestored(Object count) {
-    return '✅ $count avales restaurados';
-  }
-
-  @override
-  String get admNoRelayReachable =>
-      '⚠️ Ningún relay accesible — inténtalo más tarde';
-
-  @override
-  String get admAllVouchesRevoked =>
-      '✅ Todos los avales han sido revocados en la red';
 
   @override
   String get apHowStep3 =>
@@ -2816,14 +2317,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get ppHowStep4 =>
       '4. Otros escanean tu QR y ven el vínculo verificado';
-
-  @override
-  String admErrorEmoji(Object msg) {
-    return '❌ Error: $msg';
-  }
-
-  @override
-  String get admNoNewUpdates => '⚠️ No se encontraron actualizaciones';
 
   @override
   String homeImageLoadError(Object msg) {
@@ -3377,66 +2870,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Aún no hay reputación. ¡Consigue badges en los meetups!';
 
   @override
-  String get tpTitle => 'Ruta de confianza';
-
-  @override
-  String get tpSubtitle => '¿Quién te conecta con esta persona?';
-
-  @override
-  String get tpEnterNpub => 'Introduce el npub de la persona';
-
-  @override
-  String get tpScan => 'Escanear npub';
-
-  @override
-  String get tpFind => 'Buscar ruta';
-
-  @override
-  String get tpSearching => 'Buscando en la red...';
-
-  @override
-  String tpFound(Object count) {
-    return 'Conectado a través de $count pasos';
-  }
-
-  @override
-  String get tpDirect => 'Conectado directamente';
-
-  @override
-  String get tpYou => 'Tú';
-
-  @override
-  String get tpTarget => 'Destino';
-
-  @override
-  String get tpVouchesFor => 'avala a';
-
-  @override
-  String get tpNoPath => 'No se encontró ruta de confianza';
-
-  @override
-  String get tpNoPathSelf =>
-      'Aún no estás en la red de avales. Consigue avales de admins para ver rutas.';
-
-  @override
-  String get tpNoPathTarget =>
-      'Esta persona no está (aún) en la red de avales.';
-
-  @override
-  String get tpNoPathBetween =>
-      'Actualmente no hay cadena de avales conocida entre vosotros.';
-
-  @override
-  String get tpInvalidNpub => 'npub no válido';
-
-  @override
-  String get tpUnknown => 'Desconocido';
-
-  @override
-  String get tpHint =>
-      'Basado en la red pública de avales (Web of Trust). Solo muestra conexiones a través de miembros que avalan.';
-
-  @override
   String get caOptInTitle => '¿Contribuir a la red de confianza?';
 
   @override
@@ -3534,13 +2967,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tnHubIntro =>
       'Comprueba la confiabilidad de una persona en la red Einundzwanzig — mediante avales y meetups en común.';
-
-  @override
-  String get tnHubPathTitle => 'Ruta de confianza';
-
-  @override
-  String get tnHubPathSub =>
-      '¿Quién te conecta con una persona? (cadena de avales)';
 
   @override
   String get tnHubNetTitle => 'Análisis de red';
@@ -5226,10 +4652,6 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get rsEnabledHint =>
       'Activado: no significa que el relé esté accesible en este momento.';
-
-  @override
-  String get wotNoRelayReachable =>
-      'Ningún relé accesible. ¿Estás en línea? Los detalles están en el registro de diagnóstico.';
 
   @override
   String get newsWriteArticle => 'Escribir un artículo';

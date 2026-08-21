@@ -1515,365 +1515,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get wotTitle => 'WEB OF TRUST';
-
-  @override
-  String get wotActiveOrganizers => 'ACTIVE ORGANIZERS';
-
-  @override
-  String get wotActiveOrganizer => 'ACTIVE ORGANIZER';
-
-  @override
-  String get wotActiveWarnings => 'ACTIVE WARNINGS';
-
-  @override
-  String get wotActiveWarning => 'Active warning';
-
-  @override
-  String get wotMyStatus => 'YOUR STATUS';
-
-  @override
-  String get wotMyVouches => 'YOUR VOUCHES';
-
-  @override
-  String get wotWhoYouVouchFor => 'WHO YOU VOUCH FOR';
-
-  @override
-  String get wotWhoVouchesForYou => 'WHO VOUCHES FOR YOU';
-
-  @override
-  String get wotWeightedReporting => 'WEIGHTED REPORTING SYSTEM';
-
-  @override
-  String get wotRestore => 'RESTORE';
-
-  @override
-  String get wotRevokeAll => 'REVOKE ALL';
-
-  @override
-  String get wotPublishNostr => 'PUBLISH TO NOSTR';
-
-  @override
-  String get wotVouch => 'VOUCH';
-
-  @override
-  String get wotVouchVerb => 'VOUCH';
-
-  @override
-  String get wotReportNpub => 'REPORT NPUB';
-
-  @override
-  String get wotScanNpub => 'SCAN NPUB';
-
-  @override
-  String get wotPublishRevocation => 'PUBLISH REVOCATION';
-
-  @override
-  String get wotSigningPublishing => 'SIGNING & PUBLISHING...';
-
-  @override
-  String get wotSyncNetwork => 'Sync network';
-
-  @override
-  String get wotBootstrapPhase => 'Bootstrap phase';
-
-  @override
-  String get wotDecentralized => 'Decentralized (Web of Trust)';
-
-  @override
-  String get wotMinVouches => 'Min. vouchers';
-
-  @override
-  String get wotDistrustThreshold => 'Distrust threshold';
-
-  @override
-  String get wotNotEnoughVouchers => 'NOT ENOUGH VOUCHERS YET';
-
-  @override
-  String get wotVouchers => 'Vouchers';
-
-  @override
-  String get wotNoVouchersYet => 'No vouchers yet';
-
-  @override
-  String get wotNobodyYet => 'Nobody yet';
-
-  @override
-  String get wotNotSuspendedWatch =>
-      'Not suspended yet, but you should watch out.';
-
-  @override
-  String get wotNoReports => 'No reports';
-
-  @override
-  String get wotNoActiveAdmins => 'No active admins';
-
-  @override
-  String get wotNoCleanNetwork =>
-      'There are currently no open warnings\nin the network. All clean.';
-
-  @override
-  String get wotNoOrganizersEnough =>
-      'The network has no organizers with enough vouches yet.';
-
-  @override
-  String get wotNoVouchesFound => 'No published vouches found on the relays.';
-
-  @override
-  String get wotTapPlusFirst => 'Tap + to give your first vouch.';
-
-  @override
-  String get wotAskOthersVouch => 'Ask other organizers to vouch for you.\n';
-
-  @override
-  String get wotNoDataLoaded =>
-      'Network data could not be loaded.\nPull down to refresh.';
-
-  @override
-  String get wotNoRelay => 'No relay reachable — try again later.';
-
-  @override
-  String get wotRevokeAllTitle => 'REVOKE ALL VOUCHES?';
-
-  @override
-  String get wotRevokeVouchTitle => 'WITHDRAW VOUCH?';
-
-  @override
-  String get wotWithdrawVouch => 'Withdraw vouch';
-
-  @override
-  String get wotVouchWithdrawn => 'Vouch withdrawn. Don\'t forget to publish.';
-
-  @override
-  String get wotVouchGiven => 'Vouch given! Don\'t forget to publish.';
-
-  @override
-  String get wotAllRevoked => 'All vouches have been revoked in the network.';
-
-  @override
-  String get wotReasonRequired => 'Reason (required)';
-
-  @override
-  String get wotNpubRequired => 'npub (required)';
-
-  @override
-  String get wotNameAlias => 'Name / alias (optional)';
-
-  @override
-  String get wotMeetupExample => 'Meetup (e.g. Munich)';
-
-  @override
-  String get wotReasonExample => 'e.g. Forges badges, no real meetup...';
-
-  @override
-  String get wotNpubReasonRequired => 'npub and reason are required.';
-
-  @override
-  String get wotScanInstruction =>
-      'Scan the Nostr QR code (npub)\nof the organizer.';
-
-  @override
-  String get wotVouchExplain =>
-      'You vouch for this organizer with your own reputation.';
-
-  @override
-  String get wotEachVouchPersonal =>
-      'Each vouch is your personal vote of trust — ';
-
-  @override
-  String get wotAfterPublishAll =>
-      'after publishing, the whole network sees who you stand for.';
-
-  @override
-  String get wotWhoYouVouchExplain => 'Here you see who YOU vouch for. ';
-
-  @override
-  String get wotPublishUpdated => 'Then publish your updated list ';
-
-  @override
-  String get wotSoNetworkKnows => 'so the network finds out.';
-
-  @override
-  String get wotSingleReportNoWeight => 'A single report has no weight — ';
-
-  @override
-  String get wotOnlyMultipleIndep =>
-      'only when several independent organizers ';
-
-  @override
-  String get wotWarnSuspend => 'warn, someone gets suspended. ';
-
-  @override
-  String get wotNobodyAlonePower => 'Nobody alone has power over others.';
-
-  @override
-  String get wotYourReportAlone =>
-      'Your report alone has no weight. Only when ';
-
-  @override
-  String get wotOrgsWarnSuspended =>
-      'organizers warn, the npub gets suspended.';
-
-  @override
-  String get wotRevokeAllBody =>
-      'This publishes an empty list on Nostr, revoking ALL ';
-
-  @override
-  String get wotFromOtherOrgs => 'from other organizers.';
-
-  @override
-  String get wotRestoreExplain =>
-      'Vouches are signed on Nostr. \"Restore\" fetches ';
-
-  @override
-  String get wotRestoreListBack =>
-      'your list back after a reinstall or backup change.';
-
-  @override
-  String get wotVouchesSignedOnNostr =>
-      'your vouches in the network — even ones no longer ';
-
-  @override
-  String get wotVisibleLocally =>
-      'visible locally.\n\nUse this if, after a reinstall, you ';
-
-  @override
-  String get wotCantResolveOld => 'can no longer resolve your old vouches.';
-
-  @override
-  String get wotRemovedFromList =>
-      'will be removed from your vouching list.\n\n';
-
-  @override
-  String get wotSuspendedByNetwork =>
-      'suspended by the network. Check your vouches.';
-
-  @override
-  String wotErrorLoading(String msg) {
-    return 'Error loading: $msg';
-  }
-
-  @override
-  String wotSyncFailed(String msg) {
-    return 'Sync failed: $msg';
-  }
-
-  @override
-  String wotRevocationFailed(String msg) {
-    return 'Revocation failed: $msg';
-  }
-
-  @override
-  String wotRestoreFailed(String msg) {
-    return 'Restore failed: $msg';
-  }
-
-  @override
-  String wotVouchesRestored(Object count) {
-    return '$count vouches restored from Nostr.';
-  }
-
-  @override
-  String wotNetworkHealth(String label) {
-    return 'NETWORK $label';
-  }
-
-  @override
-  String wotVouchProgress(Object count, Object total) {
-    return '$count / $total vouchers';
-  }
-
-  @override
-  String wotReportsCount(Object count) {
-    return '$count reports';
-  }
-
-  @override
-  String wotNeedMoreVouches(Object count) {
-    return 'You still need $count more vouches ';
-  }
-
-  @override
-  String wotVouchesRequired(Object count, Object total) {
-    return '$count / $total required';
-  }
-
-  @override
-  String wotSuspensionProgress(Object count, Object total) {
-    return '$count / $total suspension';
-  }
-
-  @override
-  String wotLiability(Object count) {
-    return 'LIABILITY: $count suspended';
-  }
-
-  @override
-  String wotWarningCount(Object count) {
-    return 'WARNING: $count reported';
-  }
-
-  @override
-  String wotYourNpub(String npub) {
-    return 'Your npub: $npub';
-  }
-
-  @override
-  String wotLiabilityBody(String names) {
-    return 'You vouch for $names — these npubs are suspended by the network. Check your vouches.';
-  }
-
-  @override
-  String wotWarningBody(String names) {
-    return 'There are reports for $names. ';
-  }
-
-  @override
-  String get wotVotes => 'Votes';
-
-  @override
-  String get wotSuspended => 'Suspended';
-
-  @override
-  String wotReportNoWeightThreshold(Object count) {
-    return 'Your report alone has no weight. Only when $count independent organizers warn does the npub get suspended.';
-  }
-
-  @override
-  String wotPublishedLive(Object count) {
-    return 'Your Web of Trust is live ($count relays)!';
-  }
-
-  @override
-  String wotReportPublished(Object count) {
-    return 'Report published to $count relays.';
-  }
-
-  @override
   String wotErrorShort(String msg) {
     return 'Error: $msg';
   }
-
-  @override
-  String get wotOffline => 'Offline';
-
-  @override
-  String get wotActive => 'Active';
-
-  @override
-  String get wotPhase => 'Phase';
-
-  @override
-  String get wotPhaseDecentralized => 'Decentralized';
-
-  @override
-  String get wotPhaseBootstrap => 'Bootstrap';
-
-  @override
-  String get wotReportsLabel => 'Reports';
-
-  @override
-  String get wotVouchersLabel => 'VOUCHERS:';
 
   @override
   String writerTagTooSmall(Object data, Object max) {
@@ -1946,91 +1590,6 @@ class AppLocalizationsEn extends AppLocalizations {
       '❌ No active meetup session found. Please restart the meetup.';
 
   @override
-  String get admMyWebOfTrust => 'MY WEB OF TRUST';
-
-  @override
-  String get admMyDelegations => 'YOUR DELEGATIONS';
-
-  @override
-  String get admCoAdminKnight => 'KNIGHT CO-ADMIN';
-
-  @override
-  String get admKnighthood => 'KNIGHTHOOD';
-
-  @override
-  String get admRemove => 'REMOVE';
-
-  @override
-  String get admCancel => 'CANCEL';
-
-  @override
-  String get admRevokeTrust => 'WITHDRAW TRUST?';
-
-  @override
-  String get admRevokeTrustShort => 'Withdraw trust';
-
-  @override
-  String get admSyncWot => 'Sync Web of Trust';
-
-  @override
-  String get admNobodyDelegated => 'You haven\'t delegated anyone yet.';
-
-  @override
-  String get admTapKnighthood =>
-      'Tap \'KNIGHTHOOD\' below\nto extend trust to a new organizer\nin your meetup.';
-
-  @override
-  String get admVouchNewExplain =>
-      'You vouch for this new organizer with your own reputation.';
-
-  @override
-  String get admScanNewOrg => 'Scan the new organizer\'s Nostr QR code (npub).';
-
-  @override
-  String get admNetworkLearnsKnight =>
-      'The network only learns of your new co-admins\nonce you publish your signature on Nostr.';
-
-  @override
-  String get admMustRepublish =>
-      'You must republish the list afterwards so the network finds out.';
-
-  @override
-  String get admPublishEmptyRevoke =>
-      'Publish an empty list to revoke all delegations\nin the network.';
-
-  @override
-  String get admRestoreListBack => 'your list after a reinstall.';
-
-  @override
-  String get admSigningSending => 'Signing and sending to Nostr...';
-
-  @override
-  String get admRestoringVouches => 'Restoring my vouches from Nostr...';
-
-  @override
-  String get admSyncingWot => 'Syncing Web of Trust...';
-
-  @override
-  String get admRevokingAll => 'Revoking all vouches...';
-
-  @override
-  String admRevokeTrustBody(String name, String meetup) {
-    return 'Do you want to withdraw trust as admin for $meetup from $name?\n\n';
-  }
-
-  @override
-  String get admRestoreExplain =>
-      'Vouches are signed on Nostr. \"Restore\" fetches ';
-
-  @override
-  String admVouchedCount(Object count) {
-    return 'You have vouched for $count organizers.';
-  }
-
-  @override
-  String get admCoAdminAdded => '✅ Co-admin added! Don\'t forget to publish.';
-
-  @override
   String get apMeetupSession => 'MEETUP SESSION';
 
   @override
@@ -2046,19 +1605,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get apEndMeetupEarly => 'End meetup early';
 
   @override
-  String get apNetwork => 'NETWORK';
-
-  @override
   String get apOrganizer => 'ORGANIZER';
 
   @override
-  String get apWebOfTrust => 'WEB OF TRUST';
-
-  @override
   String get apHowItWorks => 'HOW IT WORKS';
-
-  @override
-  String get apManageVouches => 'Manage vouches, network status, reports';
 
   @override
   String get apNewMeetupQ => 'Start new meetup?';
@@ -2628,21 +2178,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get wotTabNetwork => 'NETWORK';
-
-  @override
-  String get wotTabReports => 'REPORTS';
-
-  @override
-  String get wotHealthGood => 'HEALTHY';
-
-  @override
-  String get wotHealthBuilding => 'BUILDING';
-
-  @override
-  String get wotHealthCritical => 'CRITICAL';
-
-  @override
   String get badgeUnknown => 'unknown';
 
   @override
@@ -2702,35 +2237,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String homeCouldNotOpen(Object url) {
     return 'Could not open $url';
   }
-
-  @override
-  String admWotLive(Object count) {
-    return '✅ Your Web of Trust is live ($count relays)!';
-  }
-
-  @override
-  String get admDelegationSigned =>
-      '✅ Your delegation was cryptographically signed and published to the network!';
-
-  @override
-  String admWotCurrent(Object count) {
-    return '✅ Web of Trust up to date ($count admins verified)';
-  }
-
-  @override
-  String get admNoVouchesFound => '✅ No published vouches found on the relays';
-
-  @override
-  String admVouchesRestored(Object count) {
-    return '✅ $count vouches restored';
-  }
-
-  @override
-  String get admNoRelayReachable => '⚠️ No relay reachable — try again later';
-
-  @override
-  String get admAllVouchesRevoked =>
-      '✅ All vouches have been revoked in the network';
 
   @override
   String get apHowStep3 => '3. Each scan = one badge for the participant\n';
@@ -2793,14 +2299,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ppHowStep4 => '4. Others scan your QR and see the verified link';
-
-  @override
-  String admErrorEmoji(Object msg) {
-    return '❌ Error: $msg';
-  }
-
-  @override
-  String get admNoNewUpdates => '⚠️ No new updates found';
 
   @override
   String homeImageLoadError(Object msg) {
@@ -3353,66 +2851,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rcNoData => 'No reputation yet. Collect badges at meetups!';
 
   @override
-  String get tpTitle => 'Trust Path';
-
-  @override
-  String get tpSubtitle => 'Who connects you to this person?';
-
-  @override
-  String get tpEnterNpub => 'Enter person\'s npub';
-
-  @override
-  String get tpScan => 'Scan npub';
-
-  @override
-  String get tpFind => 'Find path';
-
-  @override
-  String get tpSearching => 'Searching network...';
-
-  @override
-  String tpFound(Object count) {
-    return 'Connected through $count hops';
-  }
-
-  @override
-  String get tpDirect => 'Directly connected';
-
-  @override
-  String get tpYou => 'You';
-
-  @override
-  String get tpTarget => 'Target';
-
-  @override
-  String get tpVouchesFor => 'vouches for';
-
-  @override
-  String get tpNoPath => 'No trust path found';
-
-  @override
-  String get tpNoPathSelf =>
-      'You\'re not in the vouching network yet. Get vouched by admins to see paths.';
-
-  @override
-  String get tpNoPathTarget =>
-      'This person isn\'t in the vouching network (yet).';
-
-  @override
-  String get tpNoPathBetween =>
-      'There\'s currently no known vouching chain between you.';
-
-  @override
-  String get tpInvalidNpub => 'Invalid npub';
-
-  @override
-  String get tpUnknown => 'Unknown';
-
-  @override
-  String get tpHint =>
-      'Based on the public vouching network (Web of Trust). Only shows connections via vouching members.';
-
-  @override
   String get caOptInTitle => 'Contribute to trust network?';
 
   @override
@@ -3509,12 +2947,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tnHubIntro =>
       'Check how trustworthy a person is in the Einundzwanzig network — through vouches and shared meetups.';
-
-  @override
-  String get tnHubPathTitle => 'Trust path';
-
-  @override
-  String get tnHubPathSub => 'Who connects you to a person? (vouching chain)';
 
   @override
   String get tnHubNetTitle => 'Network analysis';
@@ -5196,10 +4628,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get rsEnabledHint =>
       'Enabled — this does not mean the relay is reachable right now.';
-
-  @override
-  String get wotNoRelayReachable =>
-      'No relay reachable. Are you online? Details are in the diagnostics log.';
 
   @override
   String get newsWriteArticle => 'Write an article';
