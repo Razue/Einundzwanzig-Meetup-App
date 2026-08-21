@@ -6114,4 +6114,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String rsvpAttendees(int count) {
     return '$count asisten';
   }
+
+  @override
+  String get rsvpWithdrawTitle => '¿Retirar tu confirmación?';
+
+  @override
+  String rsvpWithdrawBody(String title) {
+    return '«$title» desaparecerá de tus fechas. El organizador verá una cancelación; el chat sigue accesible desde el calendario.';
+  }
+
+  @override
+  String get rsvpWithdrawConfirm => 'Cancelar asistencia';
 }

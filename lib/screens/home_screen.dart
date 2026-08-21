@@ -1757,6 +1757,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                             attendees: m.attendees))
                         .toList(),
                     onOpenMeetupChat: _openMeetupChat,
+                    onChanged: _loadMyEvents,
                   ),
                 ));
             // Zurueck: Lesestaende koennen sich geaendert haben.

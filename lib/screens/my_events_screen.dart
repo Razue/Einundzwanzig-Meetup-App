@@ -15,6 +15,7 @@ import '../l10n/app_localizations.dart';
 import '../models/calendar_event.dart';
 import '../services/calendar_event_service.dart';
 import '../services/event_chat_service.dart';
+import '../services/event_rsvp_service.dart';
 import '../theme.dart';
 import 'chat_screen.dart';
 
@@ -47,11 +48,17 @@ class MyEventsScreen extends StatefulWidget {
   /// ueber das Gruppen-Relay laeuft und das Dashboard sie ohnehin kennt.
   final Future<void> Function(String favKey, String label) onOpenMeetupChat;
 
+  /// Meldet dem Dashboard, dass sich die Zusagen geaendert haben — dieser
+  /// Bildschirm bekommt seine Liste von dort und kann sie nicht selbst
+  /// nachladen.
+  final VoidCallback onChanged;
+
   const MyEventsScreen({
     super.key,
     required this.events,
     required this.meetupDates,
     required this.onOpenMeetupChat,
+    required this.onChanged,
   });
 
   @override
@@ -131,6 +138,59 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
             ),
       ),
     );
+  }
+
+  /// Fragt nach, bevor die Zusage zurueckgenommen wird.
+  Future<void> _confirmWithdraw(
+      AppLocalizations t, NostrCalendarEvent event) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: cTileBorder, width: 0.5)),
+        title: Text(t.rsvpWithdrawTitle,
+            style: const TextStyle(
+                color: cText, fontSize: 17, fontWeight: FontWeight.w700)),
+        content: Text(t.rsvpWithdrawBody(event.title),
+            style: const TextStyle(
+                color: cTextSecondary, fontSize: 14, height: 1.45)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.actionCancel,
+                style: const TextStyle(color: cTextSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: cRed),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.rsvpWithdrawConfirm,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    // "declined" statt loeschen: Nostr kennt kein Loeschen, nur Ersetzen.
+    // Eine Absage ist ohnehin die ehrlichere Auskunft an den Veranstalter
+    // als ein spurloses Verschwinden.
+    final err = await EventRsvpService.setStatus(
+      eventAddress: event.address,
+      eventAuthorPubkey: event.pubkey,
+      status: RsvpStatus.declined,
+    );
+    if (!mounted) return;
+    if (err != null) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.rsvpFailed(err)), backgroundColor: cRed));
+      return;
+    }
+    widget.onChanged();
+    if (mounted) Navigator.pop(context);
   }
 
   Widget _sectionLabel(String text) => Padding(
@@ -213,6 +273,13 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
+        // Langdruck: Zusage zuruecknehmen. Damit verschwindet der Termin aus
+        // dieser Liste — er ist der einzige Grund, warum er hier steht.
+        //
+        // Kein Wisch-Loeschen: Ein Wisch ist eine schnelle Bewegung, und die
+        // Zusage ist eine Aussage gegenueber dem Veranstalter. Sie soll man
+        // nicht im Vorbeigehen zuruecknehmen.
+        onLongPress: () => _confirmWithdraw(t, event),
         onTap: () async {
           await Navigator.push(
             context,

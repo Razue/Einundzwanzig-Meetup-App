@@ -2632,5 +2632,15 @@
         "type": "int"
       }
     }
+  },
+  "rsvpWithdrawTitle": "¿Retirar tu confirmación?",
+  "rsvpWithdrawBody": "«{title}» desaparecerá de tus fechas. El organizador verá una cancelación; el chat sigue accesible desde el calendario.",
+  "rsvpWithdrawConfirm": "Cancelar asistencia",
+  "@rsvpWithdrawBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

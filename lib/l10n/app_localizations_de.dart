@@ -6124,4 +6124,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String rsvpAttendees(int count) {
     return '$count dabei';
   }
+
+  @override
+  String get rsvpWithdrawTitle => 'Zusage zurücknehmen?';
+
+  @override
+  String rsvpWithdrawBody(String title) {
+    return '„$title“ verschwindet dann aus deinen Terminen. Der Veranstalter sieht eine Absage — der Chat bleibt über den Kalender erreichbar.';
+  }
+
+  @override
+  String get rsvpWithdrawConfirm => 'Absagen';
 }

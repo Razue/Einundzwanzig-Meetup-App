@@ -11055,6 +11055,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} dabei'**
   String rsvpAttendees(int count);
+
+  /// No description provided for @rsvpWithdrawTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusage zurücknehmen?'**
+  String get rsvpWithdrawTitle;
+
+  /// No description provided for @rsvpWithdrawBody.
+  ///
+  /// In de, this message translates to:
+  /// **'„{title}“ verschwindet dann aus deinen Terminen. Der Veranstalter sieht eine Absage — der Chat bleibt über den Kalender erreichbar.'**
+  String rsvpWithdrawBody(String title);
+
+  /// No description provided for @rsvpWithdrawConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Absagen'**
+  String get rsvpWithdrawConfirm;
 }
 
 class _AppLocalizationsDelegate

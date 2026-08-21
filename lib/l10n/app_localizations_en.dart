@@ -6080,4 +6080,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String rsvpAttendees(int count) {
     return '$count attending';
   }
+
+  @override
+  String get rsvpWithdrawTitle => 'Withdraw your RSVP?';
+
+  @override
+  String rsvpWithdrawBody(String title) {
+    return '“$title” will disappear from your events. The organiser sees a decline — the chat stays reachable through the calendar.';
+  }
+
+  @override
+  String get rsvpWithdrawConfirm => 'Decline';
 }

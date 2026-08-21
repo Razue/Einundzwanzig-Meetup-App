@@ -2632,5 +2632,15 @@
         "type": "int"
       }
     }
+  },
+  "rsvpWithdrawTitle": "Withdraw your RSVP?",
+  "rsvpWithdrawBody": "“{title}” will disappear from your events. The organiser sees a decline — the chat stays reachable through the calendar.",
+  "rsvpWithdrawConfirm": "Decline",
+  "@rsvpWithdrawBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
   }
 }

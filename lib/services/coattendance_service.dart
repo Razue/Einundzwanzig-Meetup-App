@@ -299,12 +299,54 @@ class CoAttendanceService {
     return false;
   }
 
-  static Future<Map<String, CoAttNode>> _loadAllNodes() async {
+  /// Holt die EIGENEN Kennungen — gefiltert nach dem eigenen Schluessel.
+  ///
+  /// Erster von zwei Schritten. Die eigenen Teilnahmen sind wenige und ueber
+  /// den `authors`-Filter exakt zu bekommen; erst mit ihnen in der Hand
+  /// laesst sich im zweiten Schritt gezielt nach den passenden fremden
+  /// fragen. Vorher lief beides in einem Abruf ohne Filter — und der
+  /// lieferte bei einem gewachsenen Netzwerk irgendwelche Meetups, nur
+  /// nicht die eigenen.
+  static Future<Set<String>> _fetchMyKeys(String myNpub) async {
+    final String myHex;
+    try {
+      myHex = Nip19.decodePubkey(myNpub);
+    } catch (_) {
+      return <String>{};
+    }
+
+    final relays = await RelayConfig.getActiveRelays();
+    final keys = <String>{};
+    for (final relayUrl in relays) {
+      final records = await _fetchFromRelay(relayUrl, authorsHex: [myHex]);
+      if (records == null) continue;
+      for (final r in records) {
+        if (_isDegenerateEventId(r.meetupEventId)) continue;
+        keys.add(r.meetupEventId);
+      }
+    }
+    AppLogger.diag('Netzwerk', '${keys.length} eigene Kennungen vom Relay.');
+    return keys;
+  }
+
+  /// [myKeys] schraenkt die Abfrage auf die EIGENEN Kennungen ein.
+  ///
+  /// Ohne sie holte die App alle Teilnahmen der Welt und siebte hinterher
+  /// selbst — bei einem Limit von 500 und einem wachsenden Netzwerk kamen
+  /// dann irgendwelche fremden Meetups an, aber nicht die eigenen. Genau das
+  /// war zu sehen: Westerwald, Bonn, Schärding, Passau — kein Aschaffenburg,
+  /// obwohl dort ein Dutzend Teilnahmen liegen.
+  ///
+  /// Die Kennung steht im `d`-Tag, also laesst sich gezielt danach fragen.
+  /// Aus "alles holen und hoffen" wird "genau das holen, was zaehlt".
+  static Future<Map<String, CoAttNode>> _loadAllNodes({
+    Set<String>? myKeys,
+  }) async {
     final relays = await RelayConfig.getActiveRelays();
     final nodes = <String, CoAttNode>{};
 
     for (final relayUrl in relays) {
-      final records = await _fetchFromRelay(relayUrl);
+      final records = await _fetchFromRelay(relayUrl, myKeys: myKeys);
       if (records == null) continue;
       for (final r in records) {
         // Fehl-Kennungen ueberspringen — sonst entstehen Verknuepfungen
@@ -321,7 +363,11 @@ class CoAttendanceService {
     return nodes;
   }
 
-  static Future<List<CoAttendanceRecord>?> _fetchFromRelay(String relayUrl) async {
+  static Future<List<CoAttendanceRecord>?> _fetchFromRelay(
+    String relayUrl, {
+    Set<String>? myKeys,
+    List<String>? authorsHex,
+  }) async {
     RelaySocket? ws;
     final tally = RelayParseTally('CoAttendance', 'Co-Attendance von $relayUrl');
     final out = <CoAttendanceRecord>[];
@@ -360,7 +406,26 @@ class CoAttendanceService {
         onError: (_) { if (!completer.isCompleted) completer.complete(null); },
       );
 
-      ws.add(jsonEncode(['REQ', subId, {'kinds': [kind]}]));
+      // Gezielt nach den eigenen Kennungen fragen — und nach denen OHNE
+      // Signierer-Anhang gleich mit, weil aeltere Teilnahmen in dem Format
+      // veroeffentlicht wurden und sonst durchs Raster fielen.
+      final filter = <String, dynamic>{'kinds': [kind]};
+      if (authorsHex != null && authorsHex.isNotEmpty) {
+        filter['authors'] = authorsHex;
+        filter['limit'] = 500;
+      } else if (myKeys != null && myKeys.isNotEmpty) {
+        final wanted = <String>{};
+        for (final k in myKeys) {
+          wanted.add(k);
+          final i = k.indexOf('@');
+          if (i > 0) wanted.add(k.substring(0, i));
+        }
+        filter['#d'] = wanted.toList();
+        // Grosszuegiges Limit: Bei einem gut besuchten Meetup kommen leicht
+        // dreissig Teilnahmen je Termin zusammen.
+        filter['limit'] = 1000;
+      }
+      ws.add(jsonEncode(['REQ', subId, filter]));
 
       final res = await completer.future.timeout(
         _timeout,
@@ -382,7 +447,7 @@ class CoAttendanceService {
     required String myNpub,
     required String targetNpub,
   }) async {
-    final nodes = await _loadAllNodes();
+    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
 
     final myNode = nodes[myNpub];
     final targetNode = nodes[targetNpub];
@@ -439,7 +504,7 @@ class CoAttendanceService {
     required String targetNpub,
     int maxDepth = 6,
   }) async {
-    final nodes = await _loadAllNodes();
+    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
 
     final myMeetups = nodes[myNpub]?.meetups ?? <String>{};
     final targetMeetups = nodes[targetNpub]?.meetups ?? <String>{};
@@ -619,7 +684,7 @@ class CoAttendanceService {
     required String myNpub,
     int maxDepth = 3,
   }) async {
-    final nodes = await _loadAllNodes();
+    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
 
     // Ungerichtete Adjazenz: A--B wenn sie >=1 Meetup teilen
     final adj = <String, Set<String>>{};
