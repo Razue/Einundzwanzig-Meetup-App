@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Datenschutz – Einundzwanzig Meetup App</title>
+  <style>
+    body { font-family: -apple-system, system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1.2rem; line-height: 1.5; color: #111; }
+    h1, h2 { line-height: 1.2; }
+    a { color: #c47a12; }
+  </style>
+</head>
+<body>
+  <h1>Datenschutz</h1>
+  <p>Einundzwanzig Meetup App (iOS-Bundle-ID <code>dev.einundzwanzig.einundzwanzigMeetupApp</code>)</p>
+  <p>Stand: 16. September 2026</p>
+
+  <h2>Grundsatz</h2>
+  <p>Die App hat keinen eigenen Account-Server und kein Tracking. Schlüssel, Badges und der Trust Score liegen auf dem Gerät. Es gibt keine Werbung und keine Analyse-SDKs.</p>
+
+  <h2>Daten auf dem Gerät</h2>
+  <ul>
+    <li>Nostr-Schlüssel im iOS-Schlüsselbund</li>
+    <li>Badges, Profilname, Profilbild, Einstellungen</li>
+    <li>optionale Kalendereinträge, die du selbst anlegst</li>
+  </ul>
+
+  <h2>Daten, die die App anfragt</h2>
+  <ul>
+    <li><strong>Kamera</strong> – nur zum Scannen von Meetup- und Badge-QR-Codes. Es wird kein Video gespeichert.</li>
+    <li><strong>Standort (während der Nutzung)</strong> – nur um Meetups in der Nähe zu sortieren. Der Standort wird nicht an uns gesendet und nicht auf Relays veröffentlicht.</li>
+    <li><strong>Fotos</strong> – nur wenn du ein Profilbild aus der Mediathek wählst.</li>
+    <li><strong>Kalender</strong> – nur wenn du einen Meetup-Termin einträgst.</li>
+    <li><strong>Mikrofon</strong> – die App nimmt nichts auf. Das Audio-Framework für den PlebRap-Player enthält die API; ein Zugriff findet nicht statt.</li>
+  </ul>
+
+  <h2>Netzwerk</h2>
+  <p>Wenn du die App nutzt, verbindet sie sich mit öffentlichen <strong>Nostr-Relays</strong> (unter anderem nostr.einundzwanzig.space). Was du veröffentlichst (Profil, Badges, Claims), ist dort öffentlich und von uns nicht löschbar. Meetup-Listen und Portal-Inhalte kommen von <a href="https://einundzwanzig.space">einundzwanzig.space</a> bzw. portal.einundzwanzig.space.</p>
+  <p>Der Entwickler dieser iOS-Distribution (ShelfShot UG) speichert diese Inhalte nicht auf eigenen Servern.</p>
+
+  <h2>Weitergabe, Tracking, Verkauf</h2>
+  <p>Keine Weitergabe an Werbenetze, kein Tracking über Apps hinweg, kein Verkauf von Daten.</p>
+
+  <h2>Speicherdauer und Löschen</h2>
+  <p>Lokale Daten bleiben, bis du sie in der App löschst oder die App deinstallierst. Öffentliche Nostr-Events bleiben auf den Relays, bis deren Betreiber sie löschen; das steuern wir nicht.</p>
+
+  <h2>Kontakt</h2>
+  <p>Fragen zum Datenschutz: über die <a href="support.html">Support-Seite</a> oder die Issues des Projekts<br>
+  <a href="https://github.com/louisthecat86/Einundzwanzig-Meetup-App/issues">github.com/louisthecat86/Einundzwanzig-Meetup-App/issues</a></p>
+</body>
+</html>
