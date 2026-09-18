@@ -1,0 +1,65 @@
+{
+  "name": "Einundzwanzig",
+  "subtitle": "Meetup-Badges & Web of Trust",
+  "description": "Apps des Einundzwanzig-Vereins für die deutschsprachige Bitcoin-Community. Meetup-Teilnahme per QR-Code erfassen, kryptographisch signierte Badges sammeln und daraus eine verifizierbare Reputation aufbauen – ohne Server, ohne KYC.",
+  "iconURL": "https://razue.github.io/Einundzwanzig-Meetup-App/icons/Icon-512.png",
+  "website": "https://razue.github.io/Einundzwanzig-Meetup-App/",
+  "tintColor": "#F7931A",
+  "featuredApps": [
+    "dev.einundzwanzig.einundzwanzigMeetupApp"
+  ],
+  "apps": [
+    {
+      "name": "Einundzwanzig Meetup App",
+      "bundleIdentifier": "dev.einundzwanzig.einundzwanzigMeetupApp",
+      "marketplaceID": "6805633440",
+      "developerName": "Einundzwanzig",
+      "subtitle": "Meetup-Badges mit Schnorr-Signatur",
+      "localizedDescription": "Die Einundzwanzig Meetup App erfasst deine Teilnahme an Bitcoin-Meetups über Rolling-QR-Codes und versiegelt jedes Badge mit einer Schnorr-Signatur (BIP-340) des Organisators. Aus den Badges entsteht ein dezentraler Trust Score, den du bei P2P-Trades per QR-Code vorzeigen kannst – dein Gegenüber prüft die Echtheit in Sekunden.\n\n• Meetups in deiner Nähe finden und Termine in den Kalender übernehmen\n• Badges sammeln, lokal auf dem Gerät gespeichert\n• Reputation als QR-Code teilen und verifizieren\n• Nostr-Identität (npub) und Web of Trust\n• Kein Server, kein Account, kein KYC – alles Open Source (MIT)",
+      "iconURL": "https://razue.github.io/Einundzwanzig-Meetup-App/icons/Icon-512.png",
+      "tintColor": "#F7931A",
+      "category": "social",
+      "screenshots": [
+        "https://razue.github.io/Einundzwanzig-Meetup-App/altstore/screenshots/01.png",
+        "https://razue.github.io/Einundzwanzig-Meetup-App/altstore/screenshots/02.png"
+      ],
+      "versions": [
+        {
+          "version": "1.6.2",
+          "buildVersion": "25",
+          "marketingVersion": "1.6.2 (25)",
+          "date": "2026-09-19",
+          "localizedDescription": "Erste Version für AltStore PAL: Meetup-Badges per Rolling-QR, Nearby-Meetups, Bitcoin-Dashboard.",
+          "downloadURL": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/manifest.json",
+          "size": 12594826,
+          "assetURLs": {
+            "manifest": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/manifest.json",
+            "signature": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/signature",
+            "0bacef8b-9b8c-3755-bf23-d2325aab8f61": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/0bacef8b-9b8c-3755-bf23-d2325aab8f61.ipa",
+            "0c72fb36-fba0-33a1-acd9-875ffe0f5e7d": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/0c72fb36-fba0-33a1-acd9-875ffe0f5e7d.ipa",
+            "35c78738-e1fb-39c9-b14b-caddaeb0f5a9": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/35c78738-e1fb-39c9-b14b-caddaeb0f5a9.ipa",
+            "4950f717-6cfe-33a9-9966-cdf834c6d5d1": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/4950f717-6cfe-33a9-9966-cdf834c6d5d1.ipa",
+            "4d711db2-51d7-3832-ace6-b6feb6b9ca8d": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/4d711db2-51d7-3832-ace6-b6feb6b9ca8d.ipa",
+            "8281703a-18e1-3e08-bec3-2bc63c90e4a8": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/8281703a-18e1-3e08-bec3-2bc63c90e4a8.ipa",
+            "e4101499-5816-3543-871d-3dd61a6d00d9": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/e4101499-5816-3543-871d-3dd61a6d00d9.ipa",
+            "e86fea0a-dff9-305f-9974-8edd83ad6251": "https://github.com/Razue/Einundzwanzig-Meetup-App/releases/download/ios-1.6.2-25/e86fea0a-dff9-305f-9974-8edd83ad6251.ipa"
+          },
+          "minOSVersion": "15.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {
+          "NSCalendarsUsageDescription": "Diese App kann Meetup-Termine in deinen Kalender eintragen.",
+          "NSCameraUsageDescription": "Diese App nutzt die Kamera, um Meetup- und Badge-QR-Codes zu scannen.",
+          "NSCalendarsFullAccessUsageDescription": "Diese App kann Meetup-Termine in deinen Kalender eintragen.",
+          "NSMicrophoneUsageDescription": "Die App spielt Audio (PlebRap) über ein Audio-Framework ab, das Mikrofon-APIs enthält. Die App nimmt nichts auf und greift nicht auf das Mikrofon zu.",
+          "NSLocationAlwaysAndWhenInUseUsageDescription": "Diese App nutzt deinen Standort, um Meetups in deiner Nähe anzuzeigen. Der Standort wird nur verwendet, während die App geöffnet ist.",
+          "NSPhotoLibraryUsageDescription": "Diese App nutzt deine Fotomediathek, um Profilbilder auszuwählen.",
+          "NSLocationWhenInUseUsageDescription": "Diese App nutzt deinen Standort, um Meetups in deiner Nähe anzuzeigen."
+        }
+      }
+    }
+  ],
+  "news": []
+}
