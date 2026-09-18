@@ -172,7 +172,12 @@ class MeetupService {
             logoUrl: json['logo'] ?? "",
             description: json['intro'] ?? "",
             website: json['website'] ?? "",
-            portalLink: json['portalLink'] ?? "",
+            // Mobile meetups supply a slug; calendar events carry the URL.
+            portalLink: (json['portalLink']?.toString().trim().isNotEmpty ?? false)
+                ? json['portalLink'].toString()
+                : (json['slug']?.toString().trim().isNotEmpty ?? false)
+                    ? 'https://portal.einundzwanzig.space/de/meetup/${Uri.encodeComponent(json['slug'].toString().trim())}'
+                    : '',
             twitterUsername: json['twitter_username'] ?? "",
             nostrNpub: json['nostr'] ?? "",
             // ROBUST gegen beide Portal-Feldnamen: die API nutzt teils
