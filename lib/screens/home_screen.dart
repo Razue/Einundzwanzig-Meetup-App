@@ -616,6 +616,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     });
   }
 
+  bool _eventMatchesFavorite(CalendarEvent event, String key) {
+    final meetup = MeetupService.resolveFavorite(key);
+    return meetup != null
+        ? MeetupEventMatcher.resolve(event, MeetupService.cached)?.id == meetup.id
+        : MeetupEventMatcher.matchesCity(event, key);
+  }
+
   void _loadNextHomeMeetup() async {
     final favs = _user.favoriteMeetupIds.isNotEmpty
         ? _user.favoriteMeetupIds
@@ -637,11 +644,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Aufschrift der Gruppenname, falls die Stadt mehrere Meetups hat.
         final cityName = MeetupService.cityFor(favKey);
         final label = MeetupService.labelFor(favKey);
-        final meetup = MeetupService.resolveFavorite(favKey);
-
-        final upcoming = events.where((e) => meetup != null
-                ? MeetupEventMatcher.resolve(e, MeetupService.cached)?.id == meetup.id
-                : MeetupEventMatcher.matchesCity(e, cityName))
+        final upcoming = events.where((e) => _eventMatchesFavorite(e, favKey))
             .where((e) => !e.startTime.isBefore(todayStart))
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
@@ -1795,35 +1798,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         return false;
       }
       if (e.startTime.isAfter(horizon)) return false;
-      // Nur Termine der eigenen Favoriten.
-      //
-      // Zuerst ueber die Meetup-ID. Liefert das Portal sie fuer einen Termin
-      // nicht mit — was vorkommt —, bliebe die Liste sonst leer; dann wird
-      // ueber Titel und Ort verglichen, so wie es die Favoriten-Karten
-      // ohnehin tun.
-      for (final k in favKeys) {
-        final m = MeetupService.resolveFavorite(k);
-        if (m != null
-            ? MeetupEventMatcher.resolve(e, MeetupService.cached)?.id == m.id
-            : MeetupEventMatcher.matchesCity(e, k)) {
-          return true;
-        }
-      }
-      return false;
+      // Use the same identity rules as the Home cards.
+      return favKeys.any((key) => _eventMatchesFavorite(e, key));
     }).toList();
 
     final out = <_MeetupDateEntry>[];
     for (final e in candidates) {
       final r = await PortalApiService.getRsvpCached(e.portalEventId!);
       if (!PortalApiService.isGoing(r)) continue;
-      // Denselben Weg rueckwaerts: erst ID, dann Ortsname.
+      // Recover the saved favorite using the same rule as the filter above.
       final favKey = favKeys.firstWhere(
-        (k) {
-          final m = MeetupService.resolveFavorite(k);
-          return m != null
-              ? MeetupEventMatcher.resolve(e, MeetupService.cached)?.id == m.id
-              : MeetupEventMatcher.matchesCity(e, k);
-        },
+        (key) => _eventMatchesFavorite(e, key),
         orElse: () => e.meetupId,
       );
       out.add(_MeetupDateEntry(

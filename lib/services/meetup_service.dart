@@ -163,6 +163,13 @@ class MeetupService {
             image = json['logo'];
           }
 
+          // Mobile meetups supply a slug; calendar events carry the URL.
+          var portalLink = json['portalLink']?.toString().trim() ?? '';
+          final slug = json['slug']?.toString().trim() ?? '';
+          if (portalLink.isEmpty && slug.isNotEmpty) {
+            portalLink = 'https://portal.einundzwanzig.space/de/meetup/${Uri.encodeComponent(slug)}';
+          }
+
           return Meetup(
             id: json['id']?.toString() ?? json['name'] ?? "unknown",
             name: json['name']?.toString() ?? "",
@@ -172,12 +179,7 @@ class MeetupService {
             logoUrl: json['logo'] ?? "",
             description: json['intro'] ?? "",
             website: json['website'] ?? "",
-            // Mobile meetups supply a slug; calendar events carry the URL.
-            portalLink: (json['portalLink']?.toString().trim().isNotEmpty ?? false)
-                ? json['portalLink'].toString()
-                : (json['slug']?.toString().trim().isNotEmpty ?? false)
-                    ? 'https://portal.einundzwanzig.space/de/meetup/${Uri.encodeComponent(json['slug'].toString().trim())}'
-                    : '',
+            portalLink: portalLink,
             twitterUsername: json['twitter_username'] ?? "",
             nostrNpub: json['nostr'] ?? "",
             // ROBUST gegen beide Portal-Feldnamen: die API nutzt teils
