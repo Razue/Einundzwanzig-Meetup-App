@@ -108,6 +108,9 @@ class _IntroScreenState extends State<IntroScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // The backup dialog handles keyboard insets on its own route. Keep the
+      // intro behind it full-height so its fixed logo and buttons don't overflow.
+      resizeToAvoidBottomInset: false,
       backgroundColor: cDark,
       body: Stack(
         children: [
@@ -376,4 +379,3 @@ class _IntroScreenState extends State<IntroScreen>
     );
   }
 }
-
