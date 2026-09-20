@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../services/meetup_calendar_service.dart';
 import '../services/meetup_service.dart';
+import '../services/meetup_event_matcher.dart';
 import '../services/portal_api_service.dart';
 import '../models/calendar_event.dart';
 import '../models/meetup.dart';
@@ -14,18 +15,17 @@ import '../l10n/app_localizations.dart';
 class CalendarScreen extends StatefulWidget {
   // Wir erlauben einen optionalen Suchbegriff beim Start (z.B. vom Dashboard kommend)
   final String? initialSearch;
+  final String? initialMeetupId;
 
-  const CalendarScreen({super.key, this.initialSearch});
+  const CalendarScreen({super.key, this.initialSearch, this.initialMeetupId});
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  // FAVORITEN-STERNE: Set der favorisierten Staedte + bekannte Stadtnamen
-  // (zum Zuordnen Event -> Stadt). Beim Start geladen.
+  // Stored favorites: portal IDs, or city names from older app versions.
   Set<String> _favCities = {};
-  List<String> _knownCities = [];
 
   final MeetupCalendarService _calendarService = MeetupCalendarService();
   
@@ -76,6 +76,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             location: (e['location'] ?? '').toString(),
             startTime: start,
             url: link.isNotEmpty ? link : mv('portalLink'),
+            meetupId: mv('id'),
+            meetupPortalLink: mv('portalLink'),
+            portalEventId: e['id'] is int ? e['id'] as int : null,
           );
           events.add(ev);
           final logo = mv('logo');
@@ -347,30 +350,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Future<void> _loadFavs() async {
     final u = await UserProfile.load();
-    final ms = await MeetupService.fetchMeetups();
+    await MeetupService.fetchMeetups();
     if (!mounted) return;
     setState(() {
       _favCities = u.favoriteMeetupIds.toSet();
-      _knownCities = ms.map((m) => m.city).toList()
-        ..sort((a, b) => b.length.compareTo(a.length)); // laengste zuerst
     });
-  }
-
-  /// Ordnet einem Event die Meetup-Stadt zu: laengster bekannter Stadtname,
-  /// der in Titel oder Ort vorkommt. null, wenn keine Zuordnung moeglich.
-  String? _cityForEvent(CalendarEvent e) {
-    final hay = '${e.title} ${e.location}'.toLowerCase();
-    for (final c in _knownCities) {
-      if (c.length >= 3 && hay.contains(c.toLowerCase())) return c;
-    }
-    return null;
+    _filterEvents();
   }
 
   Future<void> _toggleFav(String favKey) async {
     final u = await UserProfile.load();
     final favs = List<String>.from(u.favoriteMeetupIds);
-    final added = !favs.contains(favKey);
-    if (added) { favs.add(favKey); } else { favs.remove(favKey); }
+    bool sameMeetup(String key) => key == favKey ||
+        MeetupService.resolveFavorite(key)?.id == favKey;
+    final added = !favs.any(sameMeetup);
+    if (added) { favs.add(favKey); } else { favs.removeWhere(sameMeetup); }
     u.favoriteMeetupIds = favs;
     u.homeMeetupId = favs.isNotEmpty ? favs.first : '';
     await u.save();
@@ -457,6 +451,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredEvents = _allEvents.where((event) {
+        // Keep the Home meetup selection exact until the user edits the search.
+        if (widget.initialMeetupId != null &&
+            query == (widget.initialSearch ?? '').toLowerCase()) {
+          return MeetupEventMatcher.resolve(event, MeetupService.cached)?.id ==
+              widget.initialMeetupId;
+        }
         final title = event.title.toLowerCase();
         final location = event.location.toLowerCase();
         return title.contains(query) || location.contains(query);
@@ -695,17 +695,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     // markieren -> erscheint als swipebare Karte
                                     // auf dem Dashboard.
                                     Builder(builder: (_) {
-                                      final favCity = _cityForEvent(event);
-                                      if (favCity == null) return const Icon(Icons.chevron_right, color: Colors.grey);
-                                      // Der Termin traegt seit dem Umbau die
-                                      // Portal-ID. Damit landet in den
-                                      // Favoriten GENAU dieses Meetup und
-                                      // nicht jedes der Stadt; ohne ID bleibt
-                                      // der Stadtname als Rueckfall.
-                                      final favKey = event.meetupId.isNotEmpty
-                                          ? event.meetupId
-                                          : favCity;
-                                      final isFav = _favCities.contains(favKey);
+                                      final meetup = MeetupEventMatcher.resolve(event, MeetupService.cached);
+                                      if (meetup == null) return const Icon(Icons.chevron_right, color: Colors.grey);
+                                      // Store the resolved identity, never a guessed city.
+                                      final favKey = meetup.id;
+                                      final isFav = _favCities.any((key) =>
+                                          MeetupService.resolveFavorite(key)?.id == favKey);
                                       return Row(mainAxisSize: MainAxisSize.min, children: [
                                         GestureDetector(
                                           behavior: HitTestBehavior.opaque,
@@ -735,5 +730,3 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 }
-
-
