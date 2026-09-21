@@ -114,6 +114,9 @@ final ThemeData appTheme = ThemeData(
     type: BottomNavigationBarType.fixed, elevation: 0),
   snackBarTheme: SnackBarThemeData(
     backgroundColor: cCard,
+    // Material defaults use dark text for an inverse (light) surface.
+    // Our snackbar background is dark, so set its foreground explicitly.
+    contentTextStyle: TextStyle(fontFamily: _rajdhani, fontSize: 13, color: cText, height: 1.5),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kTileRadius)),
     behavior: SnackBarBehavior.floating, elevation: 0),
   dialogTheme: DialogThemeData(

@@ -92,6 +92,9 @@ class RecurrenceExpander {
       location: base.location,
       startTime: newStart,
       url: base.url,
+      meetupId: base.meetupId,
+      meetupPortalLink: base.meetupPortalLink,
+      portalEventId: base.portalEventId,
     );
   }
 

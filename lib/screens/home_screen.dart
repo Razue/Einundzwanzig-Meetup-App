@@ -76,6 +76,7 @@ import '../services/device_integrity_service.dart';
 import '../services/locale_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../services/chat_service.dart';
+import '../services/meetup_event_matcher.dart';
 import '../services/event_chat_service.dart';
 import '../services/event_rsvp_service.dart';
 import 'chat_screen.dart';
@@ -251,7 +252,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Vorderste Favoriten-Karte = global naechstes Meetup (Widget zeigt sie).
         final frontCity = _favCards.isNotEmpty ? _favCards.first.city : _homeMeetup?.city;
         if (frontCity != null && frontCity.isNotEmpty) {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: frontCity)));
+          final key = _favCards.isNotEmpty ? _favCards.first.key : _user.homeMeetupId;
+          Navigator.push(context, MaterialPageRoute(builder: (_) => CalendarScreen(
+              initialSearch: frontCity,
+              initialMeetupId: MeetupService.resolveFavorite(key)?.id)));
         } else {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarScreen()));
         }
@@ -612,6 +616,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     });
   }
 
+  bool _eventMatchesFavorite(CalendarEvent event, String key) {
+    final meetup = MeetupService.resolveFavorite(key);
+    return meetup != null
+        ? MeetupEventMatcher.resolve(event, MeetupService.cached)?.id == meetup.id
+        : MeetupEventMatcher.matchesCity(event, key);
+  }
+
   void _loadNextHomeMeetup() async {
     final favs = _user.favoriteMeetupIds.isNotEmpty
         ? _user.favoriteMeetupIds
@@ -619,27 +630,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (favs.isEmpty) { if (mounted) setState(() { _favCards = []; _countdownLoading = false; }); return; }
     try {
       final events = await MeetupCalendarService().fetchMeetupsPortalFirst();
-
-      // Match-Begriffe fuer EINE Stadt (Titel/Ort/Beschreibung, Teilwoerter).
-      bool matchesCity(CalendarEvent e, String cityName) {
-        final city = cityName.toLowerCase().trim();
-        // Generische Woerter duerfen NIE als Suchbegriff dienen — sonst
-        // wuerde z.B. ein Favorit "Einundzwanzig Hildesheim" ueber das
-        // Wort "einundzwanzig" JEDES Event der Liste matchen.
-        const stop = {'einundzwanzig', 'bitcoin', 'meetup', 'stammtisch'};
-        var terms = <String>{city, ...city.split(RegExp(r'[\s,/-]+'))}
-            .where((s) => s.length >= 3 && !stop.contains(s));
-        if (terms.isEmpty) terms = {city}; // Notanker: ganze Angabe
-        // Nur Titel + Ort matchen. Die Beschreibung ist NICHT verlaesslich
-        // (ein Event kann andere Staedte erwaehnen -> Fehlzuordnung, die ein
-        // spaeteres Event einer Stadt als deren "naechstes" ausweist).
-        final hay = '${e.title} ${e.location}'.toLowerCase();
-        // WORTGRENZEN statt contains: "Frankfurter Str." in irgendeiner
-        // Stadt matchte sonst den Favoriten "Frankfurt" — dessen Karte
-        // zeigte dann den fremden Termin (dein 4-statt-6-Tage-Fall).
-        return terms.any((term) =>
-            RegExp('\\b${RegExp.escape(term)}\\b').hasMatch(hay));
-      }
+      if (MeetupService.cached.isEmpty) await MeetupService.fetchMeetups();
 
       // KALENDERTAG-KULANZ: ein Meetup bleibt den ganzen Tag "naechstes".
       final now = DateTime.now();
@@ -653,29 +644,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         // Aufschrift der Gruppenname, falls die Stadt mehrere Meetups hat.
         final cityName = MeetupService.cityFor(favKey);
         final label = MeetupService.labelFor(favKey);
-        final meetup = MeetupService.resolveFavorite(favKey);
-
-        // ZUERST ueber die Portal-ID zuordnen: Termine aus dem Portal tragen
-        // sie, und sie trifft genau EIN Meetup. Der Namensvergleich darunter
-        // ist der Rueckfall fuer Termine ohne ID (ICS, Nostr) — er kann bei
-        // mehreren Meetups einer Stadt nicht unterscheiden und wuerde
-        // BitcoinWalk Würzburg und Würzburg Meetup dieselben Termine geben.
-        final byId = meetup == null
-            ? const <CalendarEvent>[]
-            : events
-                .where((e) =>
-                    e.meetupId.isNotEmpty && e.meetupId == meetup.id)
-                .toList();
-
-        final upcoming = (byId.isNotEmpty
-                ? byId
-                : events.where((e) => matchesCity(e, cityName)))
+        final upcoming = events.where((e) => _eventMatchesFavorite(e, favKey))
             .where((e) => !e.startTime.isBefore(todayStart))
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
         final chosen = upcoming.isNotEmpty ? upcoming.first : null;
         AppLogger.diag('HomeMeetup',
-            'Favorit "$label" ($favKey, ${byId.isNotEmpty ? "per ID" : "per Name"}): ${upcoming.length} Termine, naechster = '
+            'Favorit "$label" ($favKey): ${upcoming.length} Termine, naechster = '
             '${chosen == null ? "keiner" : "\"${chosen.title}\" am ${chosen.startTime.day}.${chosen.startTime.month}. (${_daysUntil(chosen.startTime)} Tage)"}');
         cards.add(_FavCard(
             key: favKey, label: label, city: cityName, event: chosen));
@@ -1823,39 +1798,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         return false;
       }
       if (e.startTime.isAfter(horizon)) return false;
-      // Nur Termine der eigenen Favoriten.
-      //
-      // Zuerst ueber die Meetup-ID. Liefert das Portal sie fuer einen Termin
-      // nicht mit — was vorkommt —, bliebe die Liste sonst leer; dann wird
-      // ueber Titel und Ort verglichen, so wie es die Favoriten-Karten
-      // ohnehin tun.
-      for (final k in favKeys) {
-        final m = MeetupService.resolveFavorite(k);
-        if (e.meetupId.isNotEmpty && (m?.id == e.meetupId || k == e.meetupId)) {
-          return true;
-        }
-        final city = (m?.city ?? k).toLowerCase().trim();
-        if (city.length >= 3 &&
-            '${e.title} ${e.location}'.toLowerCase().contains(city)) {
-          return true;
-        }
-      }
-      return false;
+      // Use the same identity rules as the Home cards.
+      return favKeys.any((key) => _eventMatchesFavorite(e, key));
     }).toList();
 
     final out = <_MeetupDateEntry>[];
     for (final e in candidates) {
       final r = await PortalApiService.getRsvpCached(e.portalEventId!);
       if (!PortalApiService.isGoing(r)) continue;
-      // Denselben Weg rueckwaerts: erst ID, dann Ortsname.
+      // Recover the saved favorite using the same rule as the filter above.
       final favKey = favKeys.firstWhere(
-        (k) {
-          final m = MeetupService.resolveFavorite(k);
-          if (e.meetupId.isNotEmpty && m?.id == e.meetupId) return true;
-          final city = (m?.city ?? k).toLowerCase().trim();
-          return city.length >= 3 &&
-              '${e.title} ${e.location}'.toLowerCase().contains(city);
-        },
+        (key) => _eventMatchesFavorite(e, key),
         orElse: () => e.meetupId,
       );
       out.add(_MeetupDateEntry(
@@ -2245,7 +2198,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             label: AppLocalizations.of(context).btnEvents,
             accent: cOrange,
             onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => CalendarScreen(initialSearch: card.city))),
+                MaterialPageRoute(builder: (_) => CalendarScreen(
+                    initialSearch: card.city, initialMeetupId: meetup?.id))),
           ),
         ),
         Container(width: 0.5, height: 26, color: cTileBorder),
