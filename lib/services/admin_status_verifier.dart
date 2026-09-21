@@ -24,8 +24,6 @@ import 'admin_registry.dart';
 import 'nostr_service.dart';
 import 'signing_service.dart';
 import 'trust_score_service.dart';
-import 'vouching_service.dart';
-import 'app_logger.dart';
 
 class AdminVerification {
   final bool isAdmin;
@@ -90,43 +88,19 @@ class AdminStatusVerifier {
       }
     }
 
-    // --- CHECK 2b: Web-of-Trust-Bürgschaften (empfangene Vouches) ---
-    // Dieser Pfad FEHLTE bisher komplett: Admins publizieren Bürgschaften
-    // ins Nostr-Netzwerk (kind 30078), aber die App des Begünstigten hat
-    // nie geprüft, ob der EIGENE npub im Netzwerk-Konsens genug
-    // Bürgschaften hat. Deshalb bekam niemand per Bürgschaft den
-    // Organisator-Button. Es gilt der Schwellenwert des Netzwerks
-    // (minVouches, größenabhängig) — eine einzelne Bürgschaft reicht in
-    // der Regel bewusst NICHT (Sybil-Schutz, siehe Security Audit H3).
-    final ownNpub = await NostrService.getNpub();
-    if (ownNpub != null && ownNpub.isNotEmpty) {
-      try {
-        final consensus = await VouchingService.calculateConsensus();
-        if (consensus.totalVoters > 0) {
-          VouchingStatus? me;
-          for (final a in consensus.effectiveAdmins) {
-            if (a.npub == ownNpub) { me = a; break; }
-          }
-          if (me != null) {
-            AppLogger.diag('Admin', 'Bürgschafts-Konsens: eigener npub ist effektiver Admin (${me.vouchCount}/${consensus.minVouches} Vouches).');
-            return AdminVerification(
-              isAdmin: true,
-              source: 'vouch_consensus',
-              reason: 'WoT-Bürgschaften: ${me.vouchCount} Vouches '
-                  '(Schwelle ${consensus.minVouches}).',
-            );
-          } else {
-            AppLogger.diag('Admin', 'Bürgschafts-Konsens: eigener npub NICHT unter effektiven Admins (Schwelle ${consensus.minVouches}, Voter ${consensus.totalVoters}).');
-          }
-        } else {
-          AppLogger.diag('Admin', 'Bürgschafts-Konsens: keine Voter im Netzwerk gefunden.');
-        }
-      } catch (e) {
-        AppLogger.warn('Admin', 'Bürgschafts-Konsens nicht abrufbar (Relays?): $e');
-        // Relays nicht erreichbar -> Pfad überspringen (kein fälschlicher
-        // Entzug bei Offline; Sicherheit der anderen Pfade unberührt).
-      }
-    }
+    // --- Bürgschafts-Konsens: ENTFERNT (August 2026) ---
+    //
+    // Hier stand ein dritter Weg zum Organisator: genug Bürgschaften im
+    // Netzwerk. Er ist weggefallen, weil er kein offenes Problem loeste.
+    //
+    // Wer ein Meetup im Portal eintraegt, wird dort automatisch Leader,
+    // darf Badges ausstellen und andere befoerdern — das deckt sowohl die
+    // Gruendung als auch die Weitergabe ab. Und der Portal-Weg ist
+    // WIDERRUFBAR: Ein Eintrag laesst sich austragen. Ein per Bürgschaft
+    // befoerderter Organisator haette in keiner Meetup-Struktur gestanden,
+    // und der Entzug haette den Widerruf jedes einzelnen Bürgen gebraucht.
+    //
+    // Es bleiben zwei Wege: Portal (adminViaPortal) und Trust Score.
 
     // --- CHECK 3: ECHTER Seed-/Super-Admin ---
     // WICHTIG: Für die SELBST-Prüfung zählt NUR ein echter Super-Admin

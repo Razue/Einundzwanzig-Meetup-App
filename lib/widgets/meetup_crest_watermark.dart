@@ -137,20 +137,37 @@ class MeetupCrestFace extends StatelessWidget {
   final String meetupName;
   final Widget fallback;
 
+  /// Bild, das dem Wappen VORGEHT.
+  ///
+  /// Noetig fuer Event-Badges: Die tragen ihr eigenes Bild, gehoeren aber zu
+  /// keinem Meetup — die Suche ueber den Namen findet also nichts, und in der
+  /// Detailansicht stand die generative Grafik, waehrend die Wallet-Karte
+  /// daneben das richtige Bild zeigte. Genau dieser Widerspruch wurde
+  /// gemeldet: "vorne ist es drin, im Badge fehlt es".
+  final String? imageUrl;
+
   const MeetupCrestFace({
     super.key,
     required this.meetupName,
     required this.fallback,
+    this.imageUrl,
   });
 
   @override
   Widget build(BuildContext context) {
-    final city = meetupName.split(',').first.trim();
-    if (city.isEmpty) return fallback;
+    var url = '';
+    final own = imageUrl?.trim() ?? '';
+    if (own.isNotEmpty) {
+      url = MeetupCalendarService.absoluteImageUrl(own);
+    }
 
-    final url = MeetupCalendarService.absoluteImageUrl(
-      MeetupCalendarService.logoFor(city),
-    );
+    if (url.isEmpty) {
+      final city = meetupName.split(',').first.trim();
+      if (city.isEmpty) return fallback;
+      url = MeetupCalendarService.absoluteImageUrl(
+        MeetupCalendarService.logoFor(city),
+      );
+    }
     if (url.isEmpty) return fallback;
 
     return Image.network(

@@ -15,6 +15,7 @@ import '../l10n/app_localizations.dart';
 import '../models/calendar_event.dart';
 import '../services/calendar_event_service.dart';
 import '../services/event_chat_service.dart';
+import '../services/event_rsvp_service.dart';
 import '../theme.dart';
 import 'chat_screen.dart';
 
@@ -47,11 +48,17 @@ class MyEventsScreen extends StatefulWidget {
   /// ueber das Gruppen-Relay laeuft und das Dashboard sie ohnehin kennt.
   final Future<void> Function(String favKey, String label) onOpenMeetupChat;
 
+  /// Meldet dem Dashboard, dass sich die Zusagen geaendert haben — dieser
+  /// Bildschirm bekommt seine Liste von dort und kann sie nicht selbst
+  /// nachladen.
+  final VoidCallback onChanged;
+
   const MyEventsScreen({
     super.key,
     required this.events,
     required this.meetupDates,
     required this.onOpenMeetupChat,
+    required this.onChanged,
   });
 
   @override
@@ -61,17 +68,36 @@ class MyEventsScreen extends StatefulWidget {
 class _MyEventsScreenState extends State<MyEventsScreen> {
   Map<String, int> _unread = {};
 
+  /// Eigene, veraenderbare Kopie der Liste.
+  ///
+  /// Die uebergebene Liste gehoert dem Dashboard. Nach einer Absage soll der
+  /// Termin SOFORT verschwinden — ohne dass dieser Bildschirm geschlossen und
+  /// neu aufgebaut werden muss. Deshalb eine eigene Kopie, die hier gepflegt
+  /// wird; das Dashboard erfaehrt es ueber onChanged und laedt fuer sich neu.
+  late List<NostrCalendarEvent> _events;
+
   @override
   void initState() {
     super.initState();
+    _events = List.of(widget.events);
     _loadUnread();
   }
 
   Future<void> _loadUnread() async {
-    if (widget.events.isEmpty) return;
+    if (_events.isEmpty) return;
     final counts = await EventChatService.unreadCounts(
-        widget.events.map((e) => e.address).toList());
+        _events.map((e) => e.address).toList());
     if (mounted) setState(() => _unread = counts);
+  }
+
+  @override
+  void didUpdateWidget(MyEventsScreen old) {
+    super.didUpdateWidget(old);
+    // Kommt eine neue Liste von aussen, uebernehmen — sonst zeigte dieser
+    // Bildschirm nach einem Neuladen des Dashboards weiter den alten Stand.
+    if (!identical(old.events, widget.events)) {
+      _events = List.of(widget.events);
+    }
   }
 
   @override
@@ -94,7 +120,7 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
         onRefresh: _loadUnread,
         color: cOrange,
         backgroundColor: cCard,
-        child: widget.events.isEmpty && widget.meetupDates.isEmpty
+        child: _events.isEmpty && widget.meetupDates.isEmpty
           ? ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               children: [
@@ -123,14 +149,73 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
                   _sectionLabel(t.eventChatsMeetups),
                   ...widget.meetupDates.map((m) => _meetupCard(t, m)),
                 ],
-                if (widget.events.isNotEmpty) ...[
+                if (_events.isNotEmpty) ...[
                   _sectionLabel(t.eventChatsEvents),
-                  ...widget.events.map((e) => _card(t, e)),
+                  ..._events.map((e) => _card(t, e)),
                 ],
               ],
             ),
       ),
     );
+  }
+
+  /// Fragt nach, bevor die Zusage zurueckgenommen wird.
+  Future<void> _confirmWithdraw(
+      AppLocalizations t, NostrCalendarEvent event) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: cTileBorder, width: 0.5)),
+        title: Text(t.rsvpWithdrawTitle,
+            style: const TextStyle(
+                color: cText, fontSize: 17, fontWeight: FontWeight.w700)),
+        content: Text(t.rsvpWithdrawBody(event.title),
+            style: const TextStyle(
+                color: cTextSecondary, fontSize: 14, height: 1.45)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.actionCancel,
+                style: const TextStyle(color: cTextSecondary)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: cRed),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.rsvpWithdrawConfirm,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    // "declined" statt loeschen: Nostr kennt kein Loeschen, nur Ersetzen.
+    // Eine Absage ist ohnehin die ehrlichere Auskunft an den Veranstalter
+    // als ein spurloses Verschwinden.
+    final err = await EventRsvpService.setStatus(
+      eventAddress: event.address,
+      eventAuthorPubkey: event.pubkey,
+      status: RsvpStatus.declined,
+    );
+    if (!mounted) return;
+    if (err != null) {
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.rsvpFailed(err)), backgroundColor: cRed));
+      return;
+    }
+    // Aus der eigenen Liste nehmen statt den Bildschirm zu schliessen.
+    //
+    // Vorher wurde hier zurueckgesprungen — das ergab ein schwarzes Bild,
+    // weil zugleich das Dashboard neu lud und die Route darunter wegzog. Und
+    // es war auch als Bedienung falsch: Wer zwei Termine absagen will,
+    // muesste den Bildschirm zweimal oeffnen.
+    setState(() => _events.removeWhere((e) => e.address == event.address));
+    widget.onChanged();
   }
 
   Widget _sectionLabel(String text) => Padding(
@@ -213,6 +298,13 @@ class _MyEventsScreenState extends State<MyEventsScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
+        // Langdruck: Zusage zuruecknehmen. Damit verschwindet der Termin aus
+        // dieser Liste — er ist der einzige Grund, warum er hier steht.
+        //
+        // Kein Wisch-Loeschen: Ein Wisch ist eine schnelle Bewegung, und die
+        // Zusage ist eine Aussage gegenueber dem Veranstalter. Sie soll man
+        // nicht im Vorbeigehen zuruecknehmen.
+        onLongPress: () => _confirmWithdraw(t, event),
         onTap: () async {
           await Navigator.push(
             context,

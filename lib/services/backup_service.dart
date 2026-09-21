@@ -385,7 +385,6 @@ class BackupService {
       final String backupActiveNpub =
           (isExternal && hasLocalKey) ? (activeNpub ?? '') : '';
       final adminList = await AdminRegistry.getAdminList();
-      final myVouches = await AdminRegistry.getMyVouches();
 
       // =============================================
       // NEU: Platform Proofs & Humanity Proof laden
@@ -454,7 +453,6 @@ class BackupService {
           'nip46_bunker_uri': nip46Session?['bunker_uri'] ?? '',
         },
         'admin_registry': adminList.map((a) => a.toJson()).toList(),
-        'my_vouches': myVouches.map((a) => a.toJson()).toList(),
 
         // =============================================
         // NEU: Platform Proofs sichern
@@ -936,19 +934,12 @@ class BackupService {
           }
         }
 
-        // --- PERSÖNLICHE BÜRGSCHAFTEN WIEDERHERSTELLEN ---
-        if (data['my_vouches'] != null) {
-          final vouchesList = data['my_vouches'] as List<dynamic>;
-          for (var vouchJson in vouchesList) {
-            try {
-              await AdminRegistry.addVouch(
-                AdminEntry.fromJson(vouchJson as Map<String, dynamic>),
-              );
-            } catch (e) {
-              // Duplikat oder Self-Vouch ignorieren
-            }
-          }
-        }
+        // Bürgschaften werden nicht mehr wiederhergestellt.
+        //
+        // Aeltere Sicherungen enthalten noch ein Feld `my_vouches`. Es wird
+        // stillschweigend uebergangen: Bürgschaften haben in dieser Fassung
+        // keine Wirkung mehr, und etwas wiederherzustellen, das nichts tut,
+        // waere nur Ballast.
 
         // =============================================
         // PLATFORM PROOFS WIEDERHERSTELLEN (MIT VALIDIERUNG)

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
-import 'trust_path_screen.dart';
 import 'verify_person_screen.dart';
 
 /// Zentraler Einstieg ins Vertrauensnetzwerk — für ALLE Nutzer zugänglich.
@@ -26,16 +25,11 @@ class TrustNetworkHubScreen extends StatelessWidget {
           Text(t.tnHubIntro,
               style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5)),
           const SizedBox(height: 20),
-          _toolCard(
-            context,
-            icon: Icons.route_rounded,
-            color: cCyan,
-            title: t.tnHubPathTitle,
-            subtitle: t.tnHubPathSub,
-            onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const TrustPathScreen())),
-          ),
-          const SizedBox(height: 12),
+          // Der "Vertrauenspfad" ist entfallen.
+          //
+          // Er zeichnete die Kette aus BUERGSCHAFTEN, nicht aus Begegnungen —
+          // mit dem Bürgschafts-Netz faellt er weg. Die Begegnungen selbst
+          // stehen weiterhin im Netzwerk und in "Person pruefen".
           _toolCard(
             context,
             icon: Icons.hub_rounded,

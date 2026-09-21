@@ -93,31 +93,85 @@ class PlebrapAudio {
 
   static bool _wired = false;
 
-  /// Einmalige Verdrahtung des Auto-Weiter. Idempotent — jeder Einstieg
-  /// (Kachel oder Screen) darf das gefahrlos aufrufen.
+  /// Ist die Wiedergabeliste schon beim Player hinterlegt?
+  static bool _sourceSet = false;
+
+  /// Einmalige Verdrahtung. Idempotent — jeder Einstieg darf das aufrufen.
+  ///
+  /// ============================================
+  /// WARUM EINE ECHTE WIEDERGABELISTE
+  /// ============================================
+  ///
+  /// Vorher lud die App jedes Lied einzeln und hoerte auf das Ende, um das
+  /// naechste zu starten. Das hatte zwei Schwaechen:
+  ///
+  ///   - `await player.play()` kehrt erst zurueck, wenn das Lied VORBEI ist.
+  ///     Jeder Wechsel hing damit am vorigen, und die Aufrufe verschachtelten
+  ///     sich ineinander.
+  ///   - Lud das naechste Lied nicht, endete die Wiedergabe still. Von aussen
+  ///     sah das genau so aus wie gemeldet: "spielt nur 1 Lied ab".
+  ///
+  /// `ConcatenatingAudioSource` uebernimmt das Weiterschalten im Player
+  /// selbst — lueckenlos, auch im Hintergrund, und ein defekter Titel wird
+  /// uebersprungen statt die Liste zu beenden.
   static void ensureWired() {
     if (_wired) return;
     _wired = true;
-    player.playerStateStream.listen((st) {
-      if (st.processingState == ProcessingState.completed) next();
+
+    // Den angezeigten Titel aus dem PLAYER nehmen, nicht selbst mitzaehlen —
+    // sonst laufen Anzeige und Wiedergabe beim automatischen Weiterschalten
+    // auseinander.
+    player.currentIndexStream.listen((i) {
+      if (i != null) index.value = i;
+    });
+
+    // Defekte Titel ueberspringen statt die Wiedergabe zu beenden.
+    player.playbackEventStream.listen((_) {}, onError: (Object e, _) async {
+      final i = player.currentIndex;
+      AppLogger.diag('PlebRap',
+          'Titel laedt nicht (${i != null ? kPlebSongs[i].title : "?"}): $e — springe weiter.');
+      loadErrors.value++;
+      if (player.hasNext) {
+        await player.seekToNext();
+        player.play();
+      }
     });
   }
 
   static PlebSong? get current =>
       index.value != null ? kPlebSongs[index.value!] : null;
 
+  /// Legt die ganze Liste beim Player ab — einmal.
+  static Future<void> _ensureSource(int startIndex) async {
+    if (_sourceSet) return;
+    await player.setAudioSource(
+      ConcatenatingAudioSource(
+        children: [
+          for (final s in kPlebSongs) AudioSource.uri(Uri.parse(s.url)),
+        ],
+      ),
+      initialIndex: startIndex,
+    );
+    _sourceSet = true;
+  }
+
   static Future<void> playIndex(int i) async {
     ensureWired();
     index.value = i;
     loading.value = true;
     try {
-      await player.setUrl(kPlebSongs[i].url);
+      if (!_sourceSet) {
+        await _ensureSource(i);
+      } else {
+        await player.seek(Duration.zero, index: i);
+      }
       loading.value = false;
-      await player.play();
+      // BEWUSST ohne await: play() kehrt erst am Ende des Titels zurueck.
+      player.play();
     } catch (e) {
       AppLogger.diag('PlebRap', 'Song laedt nicht (${kPlebSongs[i].title}): $e');
       loading.value = false;
-      loadErrors.value++; // UI-seitig beobachtbar
+      loadErrors.value++;
     }
   }
 
@@ -125,16 +179,26 @@ class PlebrapAudio {
   static Future<void> toggle() async {
     ensureWired();
     if (index.value == null) { await playIndex(0); return; }
-    player.playing ? await player.pause() : await player.play();
+    if (player.playing) {
+      await player.pause();
+    } else {
+      player.play();
+    }
   }
 
   static Future<void> next() async {
-    final i = index.value;
-    if (i != null && i < kPlebSongs.length - 1) await playIndex(i + 1);
+    ensureWired();
+    if (player.hasNext) {
+      await player.seekToNext();
+      player.play();
+    }
   }
 
   static Future<void> prev() async {
-    final i = index.value;
-    if (i != null && i > 0) await playIndex(i - 1);
+    ensureWired();
+    if (player.hasPrevious) {
+      await player.seekToPrevious();
+      player.play();
+    }
   }
 }

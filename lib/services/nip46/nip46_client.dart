@@ -102,7 +102,7 @@ class Nip46Client {
   ///   22242 Portal-Anmeldung (portal_api_service)
   ///   30021 Promotion-Claim (promotion_claim_service)
   ///   30078 Reputation + Organisator-Registry (reputation_publisher,
-  ///         admin_registry, vouching_service)
+  ///         admin_registry)
   ///   30079 gemeinsame Teilnahme (coattendance_service)
   ///   31922/31923 Kalender-Events (calendar_event_service)
   static const List<int> signedKinds = [

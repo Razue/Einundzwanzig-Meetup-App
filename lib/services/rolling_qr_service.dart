@@ -196,7 +196,21 @@ class RollingQRService {
     // vorher ausgegebenen Codes waeren entwertet.
     final existing = await loadSession();
     if (existing != null && !existing.isExpired && existing.meetupId == meetupId) {
-      return existing;
+      // Eine laufende Session wird weiterbenutzt — ABER nur, wenn sie lang
+      // genug ist.
+      //
+      // Sonst uebernimmt sie ihre alte Laufzeit: Wurde sie einmal mit den
+      // vier Standardstunden angelegt, blieb es dabei, auch wenn der Termin
+      // bis Mitternacht geht. Genau das wurde gemeldet — "Event geht nur 4h,
+      // egal was man auswaehlt". Das gewuenschte Ende kam an, wurde aber von
+      // der bestehenden Session ueberstimmt.
+      if (validUntilEpoch == null || validUntilEpoch <= existing.expiresAt) {
+        return existing;
+      }
+      // Faellt durch: Es wird unten eine neue Session mit dem laengeren
+      // Ende angelegt. Die vorher ausgegebenen Codes verfallen dabei —
+      // das ist der Preis, und er ist kleiner als eine Session, die
+      // mitten im Event ablaeuft.
     }
 
     // Immer aktuelle Blockhöhe von Mempool.space holen

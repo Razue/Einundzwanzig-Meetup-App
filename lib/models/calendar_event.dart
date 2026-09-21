@@ -16,6 +16,9 @@ class CalendarEvent {
   /// bei mehreren Meetups einer Stadt zwangslaeufig alle.
   final String meetupId;
 
+  /// Identity of the hosting meetup, distinct from the event's own URL.
+  final String meetupPortalLink;
+
   /// Portal-ID des TERMINS (nicht des Meetups).
   ///
   /// Nur bei Portal-Terminen gesetzt. Damit laesst sich die Zu- oder Absage
@@ -29,6 +32,7 @@ class CalendarEvent {
     required this.startTime,
     required this.url,
     this.meetupId = '',
+    this.meetupPortalLink = '',
     this.portalEventId,
   });
 

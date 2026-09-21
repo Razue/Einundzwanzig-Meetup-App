@@ -301,6 +301,9 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
                   borderRadius: BorderRadius.circular(18),
                   child: MeetupCrestFace(
                     meetupName: b.meetupName,
+                    // Das eigene Bild des Badges zuerst — bei Event-Badges
+                    // ist es das einzige, das es gibt.
+                    imageUrl: b.coverUrl.isNotEmpty ? b.coverUrl : null,
                     // OHNE WAPPEN: Statt eines einsamen Symbols in viel
                     // Leerraum dieselbe generative Grafik wie auf der
                     // Wallet-Karte — gleicher Startwert, also dasselbe

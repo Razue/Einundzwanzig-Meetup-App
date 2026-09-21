@@ -15,7 +15,6 @@ import '../services/rolling_qr_service.dart';
 import '../services/meetup_service.dart';
 import '../services/coattendance_service.dart';
 import '../services/meetup_location_service.dart';
-import 'wot_dashboard.dart';
 import '../features.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
@@ -889,31 +888,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               ),
             ],
 
-            // Web of Trust Dashboard (für ALLE Admins)
-            const SizedBox(height: 32),
-            const Divider(color: Colors.white10),
-            const SizedBox(height: 24),
-
-            Text(
-              AppLocalizations.of(context).apNetwork,
-              style: TextStyle(color: cOrange, fontWeight: FontWeight.bold, letterSpacing: 1.2),
-            ),
-            const SizedBox(height: 12),
-
-            _buildAdminTile(
-              context: context,
-              icon: Icons.hub,
-              color: cPurple,
-              title: AppLocalizations.of(context).apWebOfTrust,
-              subtitle: AppLocalizations.of(context).apManageVouches,
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const WotDashboardScreen()),
-                );
-              },
-            ),
-
+            // Hier stand der Abschnitt "Netzwerk" mit dem WoT-Dashboard —
+            // Bürgschaften vergeben und Meldungen absetzen. Beides ist weg:
+            // Organisator wird man ueber das Portal oder den Trust Score, und
+            // eine Meldung hatte ausserhalb jenes einen Bildschirms nie eine
+            // Wirkung. Mit dem Abschnitt faellt auch sein Trenner weg.
             const SizedBox(height: 16),
 
             // Admin-Verwaltung (nur Super-Admin — Legacy)

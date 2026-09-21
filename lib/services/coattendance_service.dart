@@ -129,6 +129,49 @@ class CoAttendanceService {
   /// Zweitens gehoert es zur Sache: Ein Event IST ein Event, egal bei
   /// welchem Helfer man gescannt hat. Ohne diese Zusammenfassung zerfiele
   /// eine Veranstaltung in so viele Gruppen, wie Helfer im Einsatz waren.
+  /// Gemeinsame Kennungen zweier Teilnehmer.
+  ///
+  /// Nicht einfach `intersection`, weil ZWEI FORMATE nebeneinander im Netz
+  /// liegen:
+  ///
+  ///   aschaffenburg-2026-06-03                 (alt, ohne Signierer)
+  ///   aschaffenburg-2026-06-03@u8qf5q534jzc    (neu, mit Signierer)
+  ///
+  /// Der Anhang kam spaeter dazu, um zwei Organisatoren am selben Abend
+  /// auseinanderzuhalten. Aeltere Badges tragen keinen Signierer, und ein
+  /// exakter Vergleich laesst beide Formate aneinander vorbeilaufen — genau
+  /// deshalb blieb das Netzwerk bei Bestaenden aus der Zeit davor leer.
+  ///
+  /// Regel: Gleich ist gleich. Fehlt EINER Seite der Anhang, entscheidet der
+  /// Teil davor. Haben BEIDE einen Anhang, muss er uebereinstimmen — sonst
+  /// waren es verschiedene Sessions, und die Unterscheidung bliebe wertlos.
+  static Set<String> sharedKeys(Set<String> a, Set<String> b) {
+    if (a.isEmpty || b.isEmpty) return <String>{};
+
+    String base(String k) {
+      final i = k.indexOf('@');
+      return i < 0 ? k : k.substring(0, i);
+    }
+
+    final out = <String>{};
+    for (final x in a) {
+      final xb = base(x);
+      final xHasSigner = x.length != xb.length;
+      for (final y in b) {
+        if (x == y) {
+          out.add(x);
+          continue;
+        }
+        final yb = base(y);
+        if (xb != yb) continue;
+        // Nur wenn mindestens eine Seite aus der Zeit ohne Anhang stammt.
+        final yHasSigner = y.length != yb.length;
+        if (!xHasSigner || !yHasSigner) out.add(xb);
+      }
+    }
+    return out;
+  }
+
   static String attendanceKey(
     String meetupEventId,
     String signerNpub, {
@@ -256,12 +299,54 @@ class CoAttendanceService {
     return false;
   }
 
-  static Future<Map<String, CoAttNode>> _loadAllNodes() async {
+  /// Holt die EIGENEN Kennungen — gefiltert nach dem eigenen Schluessel.
+  ///
+  /// Erster von zwei Schritten. Die eigenen Teilnahmen sind wenige und ueber
+  /// den `authors`-Filter exakt zu bekommen; erst mit ihnen in der Hand
+  /// laesst sich im zweiten Schritt gezielt nach den passenden fremden
+  /// fragen. Vorher lief beides in einem Abruf ohne Filter — und der
+  /// lieferte bei einem gewachsenen Netzwerk irgendwelche Meetups, nur
+  /// nicht die eigenen.
+  static Future<Set<String>> _fetchMyKeys(String myNpub) async {
+    final String myHex;
+    try {
+      myHex = Nip19.decodePubkey(myNpub);
+    } catch (_) {
+      return <String>{};
+    }
+
+    final relays = await RelayConfig.getActiveRelays();
+    final keys = <String>{};
+    for (final relayUrl in relays) {
+      final records = await _fetchFromRelay(relayUrl, authorsHex: [myHex]);
+      if (records == null) continue;
+      for (final r in records) {
+        if (_isDegenerateEventId(r.meetupEventId)) continue;
+        keys.add(r.meetupEventId);
+      }
+    }
+    AppLogger.diag('Netzwerk', '${keys.length} eigene Kennungen vom Relay.');
+    return keys;
+  }
+
+  /// [myKeys] schraenkt die Abfrage auf die EIGENEN Kennungen ein.
+  ///
+  /// Ohne sie holte die App alle Teilnahmen der Welt und siebte hinterher
+  /// selbst — bei einem Limit von 500 und einem wachsenden Netzwerk kamen
+  /// dann irgendwelche fremden Meetups an, aber nicht die eigenen. Genau das
+  /// war zu sehen: Westerwald, Bonn, Schärding, Passau — kein Aschaffenburg,
+  /// obwohl dort ein Dutzend Teilnahmen liegen.
+  ///
+  /// Die Kennung steht im `d`-Tag, also laesst sich gezielt danach fragen.
+  /// Aus "alles holen und hoffen" wird "genau das holen, was zaehlt".
+  static Future<Map<String, CoAttNode>> _loadAllNodes({
+    Set<String>? myKeys,
+  }) async {
     final relays = await RelayConfig.getActiveRelays();
     final nodes = <String, CoAttNode>{};
 
     for (final relayUrl in relays) {
-      final records = await _fetchFromRelay(relayUrl);
+      final records = await _fetchFromRelay(relayUrl, myKeys: myKeys);
       if (records == null) continue;
       for (final r in records) {
         // Fehl-Kennungen ueberspringen — sonst entstehen Verknuepfungen
@@ -278,7 +363,11 @@ class CoAttendanceService {
     return nodes;
   }
 
-  static Future<List<CoAttendanceRecord>?> _fetchFromRelay(String relayUrl) async {
+  static Future<List<CoAttendanceRecord>?> _fetchFromRelay(
+    String relayUrl, {
+    Set<String>? myKeys,
+    List<String>? authorsHex,
+  }) async {
     RelaySocket? ws;
     final tally = RelayParseTally('CoAttendance', 'Co-Attendance von $relayUrl');
     final out = <CoAttendanceRecord>[];
@@ -317,7 +406,26 @@ class CoAttendanceService {
         onError: (_) { if (!completer.isCompleted) completer.complete(null); },
       );
 
-      ws.add(jsonEncode(['REQ', subId, {'kinds': [kind]}]));
+      // Gezielt nach den eigenen Kennungen fragen — und nach denen OHNE
+      // Signierer-Anhang gleich mit, weil aeltere Teilnahmen in dem Format
+      // veroeffentlicht wurden und sonst durchs Raster fielen.
+      final filter = <String, dynamic>{'kinds': [kind]};
+      if (authorsHex != null && authorsHex.isNotEmpty) {
+        filter['authors'] = authorsHex;
+        filter['limit'] = 500;
+      } else if (myKeys != null && myKeys.isNotEmpty) {
+        final wanted = <String>{};
+        for (final k in myKeys) {
+          wanted.add(k);
+          final i = k.indexOf('@');
+          if (i > 0) wanted.add(k.substring(0, i));
+        }
+        filter['#d'] = wanted.toList();
+        // Grosszuegiges Limit: Bei einem gut besuchten Meetup kommen leicht
+        // dreissig Teilnahmen je Termin zusammen.
+        filter['limit'] = 1000;
+      }
+      ws.add(jsonEncode(['REQ', subId, filter]));
 
       final res = await completer.future.timeout(
         _timeout,
@@ -339,7 +447,7 @@ class CoAttendanceService {
     required String myNpub,
     required String targetNpub,
   }) async {
-    final nodes = await _loadAllNodes();
+    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
 
     final myNode = nodes[myNpub];
     final targetNode = nodes[targetNpub];
@@ -348,7 +456,7 @@ class CoAttendanceService {
     final targetMeetups = targetNode?.meetups ?? <String>{};
 
     // Gemeinsame Meetups (ich + Ziel)
-    final shared = myMeetups.intersection(targetMeetups);
+    final shared = sharedKeys(myMeetups, targetMeetups);
 
     // Gemeinsame Kontakte: andere npubs, die mit BEIDEN je ein Meetup teilen
     final mutual = <String>[];
@@ -356,8 +464,8 @@ class CoAttendanceService {
       final npub = entry.key;
       if (npub == myNpub || npub == targetNpub) continue;
       final m = entry.value.meetups;
-      final withMe = m.intersection(myMeetups).isNotEmpty;
-      final withTarget = m.intersection(targetMeetups).isNotEmpty;
+      final withMe = sharedKeys(m, myMeetups).isNotEmpty;
+      final withTarget = sharedKeys(m, targetMeetups).isNotEmpty;
       if (withMe && withTarget) mutual.add(npub);
     }
 
@@ -365,7 +473,7 @@ class CoAttendanceService {
     final targetContacts = <String>{};
     for (final entry in nodes.entries) {
       if (entry.key == targetNpub) continue;
-      if (entry.value.meetups.intersection(targetMeetups).isNotEmpty) {
+      if (sharedKeys(entry.value.meetups, targetMeetups).isNotEmpty) {
         targetContacts.add(entry.key);
       }
     }
@@ -396,11 +504,11 @@ class CoAttendanceService {
     required String targetNpub,
     int maxDepth = 6,
   }) async {
-    final nodes = await _loadAllNodes();
+    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
 
     final myMeetups = nodes[myNpub]?.meetups ?? <String>{};
     final targetMeetups = nodes[targetNpub]?.meetups ?? <String>{};
-    final sharedMeetups = myMeetups.intersection(targetMeetups);
+    final sharedMeetups = sharedKeys(myMeetups, targetMeetups);
 
     // Sonderfall: man selbst
     if (myNpub == targetNpub) {
@@ -419,7 +527,7 @@ class CoAttendanceService {
     final entries = nodes.entries.toList();
     for (int i = 0; i < entries.length; i++) {
       for (int j = i + 1; j < entries.length; j++) {
-        if (entries[i].value.meetups.intersection(entries[j].value.meetups).isNotEmpty) {
+        if (sharedKeys(entries[i].value.meetups, entries[j].value.meetups).isNotEmpty) {
           adj.putIfAbsent(entries[i].key, () => <String>{}).add(entries[j].key);
           adj.putIfAbsent(entries[j].key, () => <String>{}).add(entries[i].key);
         }
@@ -576,7 +684,7 @@ class CoAttendanceService {
     required String myNpub,
     int maxDepth = 3,
   }) async {
-    final nodes = await _loadAllNodes();
+    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
 
     // Ungerichtete Adjazenz: A--B wenn sie >=1 Meetup teilen
     final adj = <String, Set<String>>{};
@@ -585,7 +693,7 @@ class CoAttendanceService {
       for (int j = i + 1; j < entries.length; j++) {
         final a = entries[i];
         final b = entries[j];
-        if (a.value.meetups.intersection(b.value.meetups).isNotEmpty) {
+        if (sharedKeys(a.value.meetups, b.value.meetups).isNotEmpty) {
           adj.putIfAbsent(a.key, () => <String>{}).add(b.key);
           adj.putIfAbsent(b.key, () => <String>{}).add(a.key);
         }
@@ -635,7 +743,7 @@ class CoAttendanceService {
 
       Set<String> shared = <String>{};
       if (deg == 1) {
-        shared = (nodes[npub]?.meetups ?? <String>{}).intersection(myMeetups);
+        shared = sharedKeys(nodes[npub]?.meetups ?? <String>{}, myMeetups);
       }
 
       byDegree.putIfAbsent(deg, () => []).add(NetworkContact(
@@ -653,6 +761,29 @@ class CoAttendanceService {
     AppLogger.diag('Netzwerk',
         'Eigene Meetup-Kennungen (${myMeetups.length}): '
         '${myMeetups.join(", ")}');
+    // Zaehlt mit, ob ueberhaupt fremde Teilnahmen ankamen. Ohne diese Zahl
+    // sieht ein leeres Netzwerk gleich aus, egal ob die Relays nichts
+    // lieferten oder ob die Kennungen nicht zusammenpassten.
+    AppLogger.diag('Netzwerk',
+        '${nodes.length} Teilnehmer aus den Relays, davon ${(byDegree[1] ?? const []).length} im 1. Grad, '
+        '${(byDegree[2] ?? const []).length} im 2. Grad.');
+
+    // Bei NULL Treffern eine Stichprobe der FREMDEN Kennungen ausgeben.
+    //
+    // Ohne sie sieht man nur, dass nichts passt — nicht warum. Und der
+    // Vergleich der beiden Formate nebeneinander beantwortet die Frage
+    // sofort: gleiche Meetups mit anderem Anhang, andere Schreibweise, oder
+    // schlicht andere Meetups.
+    if ((byDegree[1] ?? const []).isEmpty && nodes.isNotEmpty) {
+      final fremde = <String>{};
+      for (final e in nodes.entries) {
+        if (e.key == myNpub) continue;
+        fremde.addAll(e.value.meetups);
+        if (fremde.length >= 15) break;
+      }
+      AppLogger.diag('Netzwerk',
+          'Keine Treffer. Fremde Kennungen (Stichprobe): ${fremde.take(15).join(", ")}');
+    }
     for (final c in (byDegree[1] ?? const <NetworkContact>[])) {
       AppLogger.diag('Netzwerk',
           '1. Grad ${c.npub.substring(0, c.npub.length > 16 ? 16 : c.npub.length)}… '
