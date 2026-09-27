@@ -3396,7 +3396,9 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
                     width: 7, height: 7,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: d != null ? cGreen.withValues(alpha: 0.7) : cTextTertiary,
+                      color: (d != null && !d.isDead)
+                          ? cGreen.withValues(alpha: 0.7)
+                          : cTextTertiary,
                     ),
                   ),
                   const SizedBox(width: 6),
