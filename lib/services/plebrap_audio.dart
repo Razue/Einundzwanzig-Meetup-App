@@ -9,6 +9,19 @@
 // Screen — sonst endet die Wiedergabe, sobald der Screen zu ist.
 // ============================================
 
+// LockCachingAudioSource ist bei just_audio als EXPERIMENTELL markiert: Die
+// Schnittstelle darf sich in kuenftigen Versionen aendern. Die Funktion
+// selbst ist ausgereift und die einzige, die das Problem hier loest — der
+// PlebRap-Server liefert weder Teilanfragen noch Dateigroesse, und ohne
+// Zwischenspeicher laesst sich in keinem Lied springen.
+//
+// Die Warnung ist deshalb fuer diese Datei abgeschaltet. BEIM NAECHSTEN
+// UPDATE VON just_audio (derzeit 0.9.46) diese Datei pruefen: Aendert sich
+// die Quelle, bricht es hier und nirgends sonst.
+// ignore_for_file: experimental_member_use
+
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'app_logger.dart';
@@ -122,7 +135,21 @@ class PlebrapAudio {
     // sonst laufen Anzeige und Wiedergabe beim automatischen Weiterschalten
     // auseinander.
     player.currentIndexStream.listen((i) {
-      if (i != null) index.value = i;
+      if (i != null) {
+        index.value = i;
+        // Beim Neuladen aus dem Speicher meldet der Player denselben Titel
+        // noch einmal — dann nicht erneut beobachten.
+        if (!_reloading) _watchCache(i);
+      }
+    });
+
+    // Fuer die Fehlersuche: Kennt der Player die Dauer, und kann er springen?
+    // Bleibt hier "unbekannt" stehen, ist der Balken gesperrt — dann liegt es
+    // an der Quelle, nicht an der Anzeige.
+    player.durationStream.listen((d) {
+      final i = player.currentIndex;
+      AppLogger.diag('PlebRap',
+          '${i != null ? kPlebSongs[i].title : "?"}: Dauer ${d == null ? "unbekannt" : "${d.inSeconds} s"}.');
     });
 
     // Defekte Titel ueberspringen statt die Wiedergabe zu beenden.
@@ -141,15 +168,95 @@ class PlebrapAudio {
   static PlebSong? get current =>
       index.value != null ? kPlebSongs[index.value!] : null;
 
+  /// Ladefortschritt des aktuellen Liedes, 0.0 bis 1.0.
+  ///
+  /// Die Anzeige braucht ihn, um zu erklaeren, warum der Balken noch
+  /// gesperrt ist — ohne Hinweis sieht ein gesperrter Balken aus wie ein
+  /// Fehler.
+  static final ValueNotifier<double> cacheProgress = ValueNotifier(0.0);
+
+  /// Die aktuellen Quellen, eine je Lied.
+  static List<LockCachingAudioSource> _sources = [];
+  static StreamSubscription<double>? _progressSub;
+  static bool _reloading = false;
+
+  /// Baut die Quellen.
+  ///
+  /// ============================================
+  /// WARUM ZWISCHENSPEICHERN (und warum der Zeitbalken nicht zog)
+  /// ============================================
+  ///
+  /// Die Lieder kommen ueber das Skript des Website-Baukastens von
+  /// plebrap.de. Dieses Skript liefert jede Datei nur AM STUECK: keine
+  /// Teilanfragen (HTTP 206), und nicht einmal die Dateigroesse. Ohne beides
+  /// kann ein Player weder die Dauer bestimmen noch an eine Stelle springen
+  /// — der Balken bleibt gesperrt, egal wie die Anzeige gebaut ist.
+  ///
+  /// Deshalb wird jedes Lied beim ersten Abspielen auf dem Geraet
+  /// gespeichert. Aus dem Speicher kommt es als gewoehnliche Datei, mit
+  /// bekannter Groesse — dann funktioniert Springen ueberall. Beim zweiten
+  /// Hoeren braucht es ueberhaupt kein Netz mehr.
+  ///
+  /// Neue Instanzen je Aufruf: Eine Quelle darf nur einer Wiedergabeliste
+  /// gehoeren. Sie finden ihre Datei im Speicher trotzdem wieder, weil der
+  /// Speicherort aus der Adresse abgeleitet wird.
+  static List<LockCachingAudioSource> _buildSources() => [
+        for (final s in kPlebSongs) LockCachingAudioSource(Uri.parse(s.url)),
+      ];
+
+  /// Beobachtet den Download des Liedes [i].
+  ///
+  /// Ist es vollstaendig da, der Player aber noch auf dem Stand "nicht
+  /// springbar" (Dauer unbekannt), wird es an der aktuellen Stelle neu
+  /// geladen — dann aus dem Speicher und damit springbar.
+  ///
+  /// Das braucht es, weil der Player sich beim ERSTEN Abspielen merkt, dass
+  /// die Quelle nicht springen kann, und dabei bleibt, auch wenn die Datei
+  /// laengst komplett ist. Der Neuladen passiert einmal pro Lied und kostet
+  /// einen kaum hoerbaren Moment.
+  static void _watchCache(int i) {
+    _progressSub?.cancel();
+    if (i < 0 || i >= _sources.length) return;
+    cacheProgress.value = 0.0;
+    _progressSub = _sources[i].downloadProgressStream.listen((p) async {
+      cacheProgress.value = p;
+      if (p < 1.0) return;
+      await _progressSub?.cancel();
+      _progressSub = null;
+      if (player.currentIndex != i) return;
+      if (player.duration != null) return; // ohnehin schon springbar
+      await _reloadAt(i);
+    });
+  }
+
+  static Future<void> _reloadAt(int i) async {
+    if (_reloading) return;
+    _reloading = true;
+    try {
+      final pos = player.position;
+      final wasPlaying = player.playing;
+      _sources = _buildSources();
+      await player.setAudioSource(
+        ConcatenatingAudioSource(children: _sources),
+        initialIndex: i,
+        initialPosition: pos,
+      );
+      AppLogger.diag('PlebRap',
+          '${kPlebSongs[i].title} vollstaendig geladen — jetzt springbar.');
+      if (wasPlaying) player.play();
+    } catch (e) {
+      AppLogger.diag('PlebRap', 'Neuladen aus dem Speicher fehlgeschlagen: $e');
+    } finally {
+      _reloading = false;
+    }
+  }
+
   /// Legt die ganze Liste beim Player ab — einmal.
   static Future<void> _ensureSource(int startIndex) async {
     if (_sourceSet) return;
+    _sources = _buildSources();
     await player.setAudioSource(
-      ConcatenatingAudioSource(
-        children: [
-          for (final s in kPlebSongs) AudioSource.uri(Uri.parse(s.url)),
-        ],
-      ),
+      ConcatenatingAudioSource(children: _sources),
       initialIndex: startIndex,
     );
     _sourceSet = true;

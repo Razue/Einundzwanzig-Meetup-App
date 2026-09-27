@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6169,4 +6170,99 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get evCancelFailed =>
       'Absage nicht angekommen — kein Relay hat sie angenommen.';
+
+  @override
+  String get mnEventNote =>
+      'Veranstaltungen zählen hier nicht als Begegnung. Bei hunderten Besuchern heißt gemeinsame Anwesenheit nicht, dass man sich getroffen hat — das Netzwerk entsteht deshalb nur aus Meetups. Deine Event-Badges bleiben gültig und zählen für den Trust Score.';
+
+  @override
+  String get caPublishFailed =>
+      'Teilnahme konnte nicht veröffentlicht werden — kein Relay hat sie angenommen. Im Vertrauensnetzwerk kannst du es erneut versuchen.';
+
+  @override
+  String mnFailedBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Teilnahmen sind nicht angekommen',
+      one: '1 Teilnahme ist nicht angekommen',
+    );
+    return '$_temp0 — die Verbindungen daraus fehlen im Netzwerk.';
+  }
+
+  @override
+  String get mnRetry => 'Erneut senden';
+
+  @override
+  String mnRetryResult(int fixed, int total) {
+    return '$fixed von $total jetzt veröffentlicht.';
+  }
+
+  @override
+  String get evIssuersTitle => 'Badges verteilen';
+
+  @override
+  String get evIssuerCreator => 'Veranstalter';
+
+  @override
+  String get evIssuersEdit => 'Helfer bearbeiten';
+
+  @override
+  String get evIssuersEditHint =>
+      'Wer hier steht, kann vor Ort Badges ausgeben. Wer entfernt wird, kann ab sofort keine mehr ausgeben — Badges, die er vorher verteilt hat, bleiben gültig.';
+
+  @override
+  String get evIssuersNone => 'Noch keine Helfer — nur du gibst Badges aus.';
+
+  @override
+  String get evIssuersInvalid => 'Das ist kein gültiger npub.';
+
+  @override
+  String get evIssuersDuplicate => 'Steht schon auf der Liste.';
+
+  @override
+  String get evIssuersSave => 'Speichern';
+
+  @override
+  String get evIssuersSaved => 'Helfer gespeichert.';
+
+  @override
+  String get evIssuersFailed =>
+      'Nicht gespeichert — kein Relay hat die Änderung angenommen.';
+
+  @override
+  String verifyAlreadyEvent(String name) {
+    return 'Du hast das Badge für „$name“ schon. Ein Event zählt einmal — egal, an wie vielen Tagen du dabei bist.';
+  }
+
+  @override
+  String get evBadgeLocating => 'Standort wird ermittelt …';
+
+  @override
+  String get evBadgeLocatingHint =>
+      'Die App prüft, ob du am Veranstaltungsort bist. Das kann einige Sekunden dauern — bitte nicht erneut tippen.';
+
+  @override
+  String get evSessionOpenSettings => 'Einstellungen';
+
+  @override
+  String get evSessionLocationOff =>
+      'Der Ortungsdienst ist ausgeschaltet. Schalte ihn ein — die App prüft damit, ob du am Veranstaltungsort bist.';
+
+  @override
+  String get evSessionLocationDenied =>
+      'Die App darf deinen Standort nicht abfragen. Erlaube es beim nächsten Versuch — ohne Standort lässt sich nicht prüfen, ob du vor Ort bist.';
+
+  @override
+  String get evSessionLocationDeniedForever =>
+      'Der Standortzugriff ist dauerhaft gesperrt. Du kannst ihn nur in den App-Einstellungen wieder erlauben.';
+
+  @override
+  String get evSessionLocationNoFix =>
+      'Kein GPS-Signal. Ortung und Berechtigung sind an, aber das Gerät findet keine Position — meist drinnen. Geh kurz ans Fenster oder nach draußen und versuche es erneut. Auf Geräten ohne Google-Dienste (etwa GrapheneOS) fehlt die WLAN-Ortung, dort braucht GPS freien Himmel.';
+
+  @override
+  String prCaching(int percent) {
+    return 'Lied wird geladen ($percent %) — Springen ist möglich, sobald es vollständig da ist. Danach bleibt es gespeichert.';
+  }
 }

@@ -11127,6 +11127,150 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Absage nicht angekommen — kein Relay hat sie angenommen.'**
   String get evCancelFailed;
+
+  /// No description provided for @mnEventNote.
+  ///
+  /// In de, this message translates to:
+  /// **'Veranstaltungen zählen hier nicht als Begegnung. Bei hunderten Besuchern heißt gemeinsame Anwesenheit nicht, dass man sich getroffen hat — das Netzwerk entsteht deshalb nur aus Meetups. Deine Event-Badges bleiben gültig und zählen für den Trust Score.'**
+  String get mnEventNote;
+
+  /// No description provided for @caPublishFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilnahme konnte nicht veröffentlicht werden — kein Relay hat sie angenommen. Im Vertrauensnetzwerk kannst du es erneut versuchen.'**
+  String get caPublishFailed;
+
+  /// No description provided for @mnFailedBanner.
+  ///
+  /// In de, this message translates to:
+  /// **'{count, plural, =1{1 Teilnahme ist nicht angekommen} other{{count} Teilnahmen sind nicht angekommen}} — die Verbindungen daraus fehlen im Netzwerk.'**
+  String mnFailedBanner(int count);
+
+  /// No description provided for @mnRetry.
+  ///
+  /// In de, this message translates to:
+  /// **'Erneut senden'**
+  String get mnRetry;
+
+  /// No description provided for @mnRetryResult.
+  ///
+  /// In de, this message translates to:
+  /// **'{fixed} von {total} jetzt veröffentlicht.'**
+  String mnRetryResult(int fixed, int total);
+
+  /// No description provided for @evIssuersTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Badges verteilen'**
+  String get evIssuersTitle;
+
+  /// No description provided for @evIssuerCreator.
+  ///
+  /// In de, this message translates to:
+  /// **'Veranstalter'**
+  String get evIssuerCreator;
+
+  /// No description provided for @evIssuersEdit.
+  ///
+  /// In de, this message translates to:
+  /// **'Helfer bearbeiten'**
+  String get evIssuersEdit;
+
+  /// No description provided for @evIssuersEditHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Wer hier steht, kann vor Ort Badges ausgeben. Wer entfernt wird, kann ab sofort keine mehr ausgeben — Badges, die er vorher verteilt hat, bleiben gültig.'**
+  String get evIssuersEditHint;
+
+  /// No description provided for @evIssuersNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Helfer — nur du gibst Badges aus.'**
+  String get evIssuersNone;
+
+  /// No description provided for @evIssuersInvalid.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist kein gültiger npub.'**
+  String get evIssuersInvalid;
+
+  /// No description provided for @evIssuersDuplicate.
+  ///
+  /// In de, this message translates to:
+  /// **'Steht schon auf der Liste.'**
+  String get evIssuersDuplicate;
+
+  /// No description provided for @evIssuersSave.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get evIssuersSave;
+
+  /// No description provided for @evIssuersSaved.
+  ///
+  /// In de, this message translates to:
+  /// **'Helfer gespeichert.'**
+  String get evIssuersSaved;
+
+  /// No description provided for @evIssuersFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht gespeichert — kein Relay hat die Änderung angenommen.'**
+  String get evIssuersFailed;
+
+  /// No description provided for @verifyAlreadyEvent.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast das Badge für „{name}“ schon. Ein Event zählt einmal — egal, an wie vielen Tagen du dabei bist.'**
+  String verifyAlreadyEvent(String name);
+
+  /// No description provided for @evBadgeLocating.
+  ///
+  /// In de, this message translates to:
+  /// **'Standort wird ermittelt …'**
+  String get evBadgeLocating;
+
+  /// No description provided for @evBadgeLocatingHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App prüft, ob du am Veranstaltungsort bist. Das kann einige Sekunden dauern — bitte nicht erneut tippen.'**
+  String get evBadgeLocatingHint;
+
+  /// No description provided for @evSessionOpenSettings.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get evSessionOpenSettings;
+
+  /// No description provided for @evSessionLocationOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Ortungsdienst ist ausgeschaltet. Schalte ihn ein — die App prüft damit, ob du am Veranstaltungsort bist.'**
+  String get evSessionLocationOff;
+
+  /// No description provided for @evSessionLocationDenied.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App darf deinen Standort nicht abfragen. Erlaube es beim nächsten Versuch — ohne Standort lässt sich nicht prüfen, ob du vor Ort bist.'**
+  String get evSessionLocationDenied;
+
+  /// No description provided for @evSessionLocationDeniedForever.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Standortzugriff ist dauerhaft gesperrt. Du kannst ihn nur in den App-Einstellungen wieder erlauben.'**
+  String get evSessionLocationDeniedForever;
+
+  /// No description provided for @evSessionLocationNoFix.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein GPS-Signal. Ortung und Berechtigung sind an, aber das Gerät findet keine Position — meist drinnen. Geh kurz ans Fenster oder nach draußen und versuche es erneut. Auf Geräten ohne Google-Dienste (etwa GrapheneOS) fehlt die WLAN-Ortung, dort braucht GPS freien Himmel.'**
+  String get evSessionLocationNoFix;
+
+  /// No description provided for @prCaching.
+  ///
+  /// In de, this message translates to:
+  /// **'Lied wird geladen ({percent} %) — Springen ist möglich, sobald es vollständig da ist. Danach bleibt es gespeichert.'**
+  String prCaching(int percent);
 }
 
 class _AppLocalizationsDelegate

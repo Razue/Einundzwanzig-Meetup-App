@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import '../models/badge.dart';
 import 'signing_service.dart';
@@ -185,6 +187,66 @@ class CoAttendanceService {
     return '$meetupEventId@$short';
   }
 
+  // ============================================
+  // VEROEFFENTLICHUNGSSTATUS (Issue #57, Punkt 5)
+  // ============================================
+  //
+  // Wer beim Scannen zustimmt, dass seine Teilnahme ins Netzwerk geht, soll
+  // erfahren, ob das geklappt hat — und es wiederholen koennen.
+  //
+  // Vorher: Schlug die Veroeffentlichung fehl, zeigte die App NICHTS. Die
+  // Erfolgsmeldung kam nur bei Erfolg, der Fehlschlag verschwand still, und
+  // es gab keinen Weg, es spaeter nachzuholen. Die Teilnahme fehlte im
+  // Netzwerk fuer immer.
+  //
+  // Gespeichert wird je Badge-Signatur die Zahl der Relays, die angenommen
+  // haben. 0 heisst: zugestimmt, aber nicht angekommen. Nicht gespeichert =
+  // nie zugestimmt — das bleibt eine freie Entscheidung und wird nicht als
+  // Fehler gezaehlt.
+
+  static const String _statusKey = 'coatt_publish_status';
+
+  static Future<Map<String, int>> publishStatus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_statusKey);
+      if (raw == null) return {};
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      return m.map((k, v) => MapEntry(k, v is int ? v : 0));
+    } catch (_) {
+      return {};
+    }
+  }
+
+  static Future<void> _saveStatus(String sigId, int relays) async {
+    if (sigId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final current = await publishStatus();
+      current[sigId] = relays;
+      await prefs.setString(_statusKey, jsonEncode(current));
+    } catch (_) {}
+  }
+
+  /// Badges, deren Veroeffentlichung zugestimmt wurde, aber fehlschlug.
+  static Future<List<MeetupBadge>> failedBadges(List<MeetupBadge> all) async {
+    final status = await publishStatus();
+    return all.where((b) => status[b.sigId] == 0).toList();
+  }
+
+  /// Versucht alle fehlgeschlagenen erneut. Gibt zurueck, wie viele jetzt
+  /// angekommen sind.
+  static Future<int> retryFailed(List<MeetupBadge> all) async {
+    final failed = await failedBadges(all);
+    var fixed = 0;
+    for (final b in failed) {
+      if (await publishAttendance(b) > 0) fixed++;
+    }
+    AppLogger.info(_tag,
+        'Erneut veroeffentlicht: $fixed von ${failed.length} Teilnahmen.');
+    return fixed;
+  }
+
   static Future<int> publishAttendance(MeetupBadge badge) async {
     // Sicherheit: nur echte, organisator-signierte Badges qualifizieren
     if (!badge.isNostrSigned || _isDegenerateEventId(badge.meetupEventId)) {
@@ -214,9 +276,14 @@ class CoAttendanceService {
         content: content,
       );
 
-      return await _publish(signed);
+      final n = await _publish(signed);
+      await _saveStatus(badge.sigId, n);
+      return n;
     } catch (e) {
       AppLogger.warn(_tag, 'Publish-Fehler: $e');
+      // Auch der Fehlschlag wird festgehalten — sonst taucht er in der
+      // Liste der erneut zu sendenden gar nicht erst auf.
+      await _saveStatus(badge.sigId, 0);
       return 0;
     }
   }
@@ -238,18 +305,58 @@ class CoAttendanceService {
       }
     ]);
 
-    int ok = 0;
-    for (final relayUrl in relays) {
+    // Alle Relays GLEICHZEITIG, und gezaehlt wird nur, was ein Relay mit
+    // ["OK", <id>, true, …] bestaetigt hat.
+    //
+    // Vorher: senden, zwei Sekunden warten, schliessen, ok++. Ein Relay, das
+    // das Ereignis ABGEWIESEN hatte — falsches Format, Rate-Limit,
+    // Anmeldung verlangt —, zaehlte als Erfolg. Die App meldete
+    // "veroeffentlicht", und die Teilnahme fehlte danach im Netzwerk ohne
+    // jeden Hinweis (Issue #57, Punkt 3).
+    final results = await Future.wait(relays.map((relayUrl) async {
+      RelaySocket? ws;
       try {
-        final ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.publishTimeout);
+        ws = await RelaySocket.connect(relayUrl)
+            .timeout(RelayConfig.publishTimeout);
+        final done = Completer<bool>();
+        ws.listen((data) {
+          try {
+            final msg = jsonDecode(data as String) as List<dynamic>;
+            if (msg.length >= 3 && msg[0] == 'OK' && msg[1] == event.id) {
+              final accepted = msg[2] == true;
+              if (!accepted) {
+                AppLogger.warn(_tag,
+                    '$relayUrl hat abgelehnt: ${msg.length >= 4 ? msg[3] : "ohne Grund"}');
+              }
+              if (!done.isCompleted) done.complete(accepted);
+            }
+          } catch (_) {}
+        }, onError: (_) {
+          if (!done.isCompleted) done.complete(false);
+        }, onDone: () {
+          if (!done.isCompleted) done.complete(false);
+        });
         ws.add(eventJson);
-        await Future.delayed(const Duration(seconds: 2));
-        ws.close();
-        ok++;
+        // Keine Antwort binnen der Frist zaehlt als NICHT angenommen — eine
+        // Stille ist keine Zusage.
+        return await done.future
+            .timeout(const Duration(seconds: 6), onTimeout: () {
+          AppLogger.warn(_tag, '$relayUrl: keine Bestaetigung erhalten.');
+          return false;
+        });
       } catch (e) {
         AppLogger.warn(_tag, '$relayUrl fehlgeschlagen: $e');
+        return false;
+      } finally {
+        try {
+          ws?.close();
+        } catch (_) {}
       }
-    }
+    }));
+
+    final ok = results.where((r) => r).length;
+    AppLogger.diag(_tag,
+        'Teilnahme ${event.id.substring(0, 8)}…: $ok von ${relays.length} Relays haben angenommen.');
     return ok;
   }
 
@@ -299,56 +406,62 @@ class CoAttendanceService {
     return false;
   }
 
-  /// Holt die EIGENEN Kennungen — gefiltert nach dem eigenen Schluessel.
+  /// Obergrenzen je Nachladestufe.
   ///
-  /// Erster von zwei Schritten. Die eigenen Teilnahmen sind wenige und ueber
-  /// den `authors`-Filter exakt zu bekommen; erst mit ihnen in der Hand
-  /// laesst sich im zweiten Schritt gezielt nach den passenden fremden
-  /// fragen. Vorher lief beides in einem Abruf ohne Filter — und der
-  /// lieferte bei einem gewachsenen Netzwerk irgendwelche Meetups, nur
-  /// nicht die eigenen.
-  static Future<Set<String>> _fetchMyKeys(String myNpub) async {
-    final String myHex;
-    try {
-      myHex = Nip19.decodePubkey(myNpub);
-    } catch (_) {
-      return <String>{};
-    }
+  /// Ohne sie wuechse jede Stufe mit der Netzwerkgroesse: Wer zwanzig Meetups
+  /// besucht hat, bei denen je dreissig Leute waren, deren jeder weitere
+  /// zwanzig Meetups hat … Die Grenzen halten Relays und Ladezeit im Rahmen.
+  /// Wird eine erreicht, steht es im Log — abgeschnitten wird NIE still.
+  static const int _maxMeetupsPerStage = 60;
+  static const int _maxPeoplePerStage = 300;
 
-    final relays = await RelayConfig.getActiveRelays();
-    final keys = <String>{};
-    for (final relayUrl in relays) {
-      final records = await _fetchFromRelay(relayUrl, authorsHex: [myHex]);
-      if (records == null) continue;
-      for (final r in records) {
-        if (_isDegenerateEventId(r.meetupEventId)) continue;
-        keys.add(r.meetupEventId);
-      }
-    }
-    AppLogger.diag('Netzwerk', '${keys.length} eigene Kennungen vom Relay.');
-    return keys;
-  }
+  /// Wie viele Autoren eine Abfrage hoechstens enthaelt. Manche Relays
+  /// begrenzen die Filtergroesse und antworten sonst gar nicht.
+  static const int _authorBatch = 100;
 
-  /// [myKeys] schraenkt die Abfrage auf die EIGENEN Kennungen ein.
+  /// Baut die Knoten GRADWEISE auf.
   ///
-  /// Ohne sie holte die App alle Teilnahmen der Welt und siebte hinterher
-  /// selbst — bei einem Limit von 500 und einem wachsenden Netzwerk kamen
-  /// dann irgendwelche fremden Meetups an, aber nicht die eigenen. Genau das
-  /// war zu sehen: Westerwald, Bonn, Schärding, Passau — kein Aschaffenburg,
-  /// obwohl dort ein Dutzend Teilnahmen liegen.
+  /// ============================================
+  /// WARUM GESTAFFELT (Issue #57, Punkt 1)
+  /// ============================================
   ///
-  /// Die Kennung steht im `d`-Tag, also laesst sich gezielt danach fragen.
-  /// Aus "alles holen und hoffen" wird "genau das holen, was zaehlt".
+  /// Frueher gab es zwei falsche Extreme:
+  ///
+  ///   - Alles holen, ungefiltert, Limit 500: Bei einem gewachsenen Netzwerk
+  ///     kamen irgendwelche fremden Meetups an, aber nicht die eigenen.
+  ///   - Nur die EIGENEN Meetups holen (die Korrektur danach): Grad 1
+  ///     funktionierte wieder, aber die WEITEREN Meetups der Kontakte fehlten.
+  ///     Eine Kette ich – B (gemeinsam bei X) – C (B und C bei Y) liess sich
+  ///     so nie bilden, solange ich nicht selbst bei Y war. Grad 2 und 3
+  ///     blieben leer, egal wie viele Meetups man besuchte.
+  ///
+  /// Jetzt wird nur geholt, was fuer die naechste Stufe gebraucht wird:
+  ///
+  ///   eigene Teilnahmen
+  ///     → Teilnehmer dieser Meetups                     (Grad 1)
+  ///     → deren weitere Teilnahmen
+  ///     → Teilnehmer DIESER Meetups                     (Grad 2)
+  ///     → deren weitere Teilnahmen
+  ///     → Teilnehmer dieser Meetups                     (Grad 3)
+  ///
+  /// [extraNpubs] werden wie der eigene Schluessel als Ausgangspunkt
+  /// behandelt — fuer die Pruefung einer bestimmten Person muessen DEREN
+  /// Teilnahmen dabei sein, auch wenn sie weiter als drei Stufen entfernt ist.
+  ///
+  /// Veranstaltungen gehen in die Knoten ein, dienen aber NICHT zum
+  /// Weiterhangeln: Bei fuenfhundert Besuchern ist gemeinsame Anwesenheit
+  /// keine Begegnung, und der Graph wuerde sonst ueber jedes Grossevent
+  /// explodieren.
   static Future<Map<String, CoAttNode>> _loadAllNodes({
-    Set<String>? myKeys,
+    required String myNpub,
+    List<String> extraNpubs = const [],
+    int maxDepth = 3,
   }) async {
     final relays = await RelayConfig.getActiveRelays();
     final nodes = <String, CoAttNode>{};
 
-    for (final relayUrl in relays) {
-      final records = await _fetchFromRelay(relayUrl, myKeys: myKeys);
-      if (records == null) continue;
-      for (final r in records) {
+    void addAll(Iterable<CoAttendanceRecord> recs) {
+      for (final r in recs) {
         // Fehl-Kennungen ueberspringen — sonst entstehen Verknuepfungen
         // zwischen Leuten, die sich nie begegnet sind.
         if (_isDegenerateEventId(r.meetupEventId)) continue;
@@ -360,6 +473,106 @@ class CoAttendanceService {
         }
       }
     }
+
+    // Holt ueber alle Relays gleichzeitig und entdoppelt.
+    Future<List<CoAttendanceRecord>> fetch({
+      Set<String>? keys,
+      List<String>? authors,
+    }) async {
+      final batches = <List<String>?>[];
+      if (authors != null) {
+        for (var k = 0; k < authors.length; k += _authorBatch) {
+          batches.add(authors.sublist(
+              k, (k + _authorBatch).clamp(0, authors.length)));
+        }
+      } else {
+        batches.add(null);
+      }
+
+      final seen = <String>{};
+      final out = <CoAttendanceRecord>[];
+      for (final batch in batches) {
+        final perRelay = await Future.wait(relays.map((url) =>
+            _fetchFromRelay(url, myKeys: keys, authorsHex: batch)));
+        for (final recs in perRelay) {
+          if (recs == null) continue;
+          for (final r in recs) {
+            if (seen.add('${r.npub}|${r.meetupEventId}')) out.add(r);
+          }
+        }
+      }
+      return out;
+    }
+
+    String? toHex(String npub) {
+      try {
+        return Nip19.decodePubkey(npub);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    Set<String> meetupKeysOf(Iterable<CoAttendanceRecord> recs) => recs
+        .map((r) => r.meetupEventId)
+        .where((k) => !_isDegenerateEventId(k) && !isEventKey(k))
+        .toSet();
+
+    // --- Stufe 0: eigene Teilnahmen (und die der zu pruefenden Person) ---
+    final seedHex = <String>[
+      for (final n in [myNpub, ...extraNpubs])
+        if (toHex(n) != null) toHex(n)!,
+    ];
+    if (seedHex.isEmpty) return nodes;
+
+    final own = await fetch(authors: seedHex);
+    addAll(own);
+
+    final seenPeople = <String>{myNpub, ...extraNpubs};
+    final seenKeys = <String>{};
+    var frontierKeys = meetupKeysOf(own);
+
+    AppLogger.diag('Netzwerk',
+        'Stufe 0: ${own.length} eigene Teilnahmen, ${frontierKeys.length} Meetups.');
+
+    for (var depth = 1; depth <= maxDepth; depth++) {
+      frontierKeys = frontierKeys.difference(seenKeys);
+      if (frontierKeys.isEmpty) break;
+
+      var keys = frontierKeys;
+      if (keys.length > _maxMeetupsPerStage) {
+        AppLogger.warn('Netzwerk',
+            'Grad $depth: ${keys.length} Meetups, begrenzt auf $_maxMeetupsPerStage.');
+        keys = keys.take(_maxMeetupsPerStage).toSet();
+      }
+      seenKeys.addAll(keys);
+
+      // Wer war bei diesen Meetups?
+      final attendees = await fetch(keys: keys);
+      addAll(attendees);
+
+      var newPeople = attendees
+          .map((r) => r.npub)
+          .where((n) => !seenPeople.contains(n))
+          .toSet();
+      if (newPeople.length > _maxPeoplePerStage) {
+        AppLogger.warn('Netzwerk',
+            'Grad $depth: ${newPeople.length} Personen, begrenzt auf $_maxPeoplePerStage.');
+        newPeople = newPeople.take(_maxPeoplePerStage).toSet();
+      }
+      seenPeople.addAll(newPeople);
+
+      AppLogger.diag('Netzwerk',
+          'Grad $depth: ${keys.length} Meetups abgefragt, ${newPeople.length} neue Personen.');
+
+      if (depth == maxDepth || newPeople.isEmpty) break;
+
+      // Wo waren diese Personen sonst noch?
+      final hexes = newPeople.map(toHex).whereType<String>().toList();
+      final theirs = await fetch(authors: hexes);
+      addAll(theirs);
+      frontierKeys = meetupKeysOf(theirs);
+    }
+
     return nodes;
   }
 
@@ -412,7 +625,11 @@ class CoAttendanceService {
       final filter = <String, dynamic>{'kinds': [kind]};
       if (authorsHex != null && authorsHex.isNotEmpty) {
         filter['authors'] = authorsHex;
-        filter['limit'] = 500;
+        // Bis zu hundert Personen je Abfrage, jede mit etlichen Teilnahmen —
+        // 500 waren dafuer zu knapp und schnitten still ab (Issue #57,
+        // Punkt 4). 5000 reicht fuer den Normalfall; wird es erreicht,
+        // meldet das Log es weiter unten.
+        filter['limit'] = 5000;
       } else if (myKeys != null && myKeys.isNotEmpty) {
         final wanted = <String>{};
         for (final k in myKeys) {
@@ -429,9 +646,27 @@ class CoAttendanceService {
 
       final res = await completer.future.timeout(
         _timeout,
-        onTimeout: () => out.isEmpty ? null : out,
+        onTimeout: () {
+          // Teilmenge statt nichts — aber NICHT stillschweigend.
+          //
+          // Vorher kam ein halber Abruf zurueck, als waere er vollstaendig.
+          // Im Netzwerk fehlten dann Kontakte, und niemand konnte sehen,
+          // dass nur die Zeit abgelaufen war (Issue #57, Punkt 4).
+          if (out.isNotEmpty) {
+            AppLogger.warn(_tag,
+                '$relayUrl: Zeit abgelaufen, ${out.length} Eintraege erhalten — Ergebnis moeglicherweise unvollstaendig.');
+          }
+          return out.isEmpty ? null : out;
+        },
       );
       ws.add(jsonEncode(['CLOSE', subId]));
+
+      // Limit erreicht heisst: Es gibt vermutlich mehr, als geliefert wurde.
+      final limit = filter['limit'];
+      if (res != null && limit is int && res.length >= limit) {
+        AppLogger.warn(_tag,
+            '$relayUrl: Limit von $limit erreicht — es gibt vermutlich weitere Eintraege.');
+      }
       return res;
     } catch (e) {
       AppLogger.warn(_tag, 'Fetch-Fehler $relayUrl: $e');
@@ -447,7 +682,7 @@ class CoAttendanceService {
     required String myNpub,
     required String targetNpub,
   }) async {
-    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
+    final nodes = await _loadAllNodes(myNpub: myNpub, extraNpubs: [targetNpub]);
 
     final myNode = nodes[myNpub];
     final targetNode = nodes[targetNpub];
@@ -504,7 +739,12 @@ class CoAttendanceService {
     required String targetNpub,
     int maxDepth = 6,
   }) async {
-    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
+    // Die Pruefung braucht die Teilnahmen der Zielperson — deshalb als
+    // zweiter Ausgangspunkt. Tiefer als drei Stufen wird nicht geladen,
+    // auch wenn die Suche weiter reicht: Die Kette ergibt sich von beiden
+    // Enden her.
+    final nodes = await _loadAllNodes(
+        myNpub: myNpub, extraNpubs: [targetNpub], maxDepth: 3);
 
     final myMeetups = nodes[myNpub]?.meetups ?? <String>{};
     final targetMeetups = nodes[targetNpub]?.meetups ?? <String>{};
@@ -684,7 +924,7 @@ class CoAttendanceService {
     required String myNpub,
     int maxDepth = 3,
   }) async {
-    final nodes = await _loadAllNodes(myKeys: await _fetchMyKeys(myNpub));
+    final nodes = await _loadAllNodes(myNpub: myNpub, maxDepth: maxDepth);
 
     // Ungerichtete Adjazenz: A--B wenn sie >=1 Meetup teilen
     final adj = <String, Set<String>>{};

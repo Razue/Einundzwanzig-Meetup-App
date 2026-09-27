@@ -8,6 +8,9 @@
 // ============================================
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart' show Geolocator;
+import 'package:nostr/nostr.dart' show Nip19;
+import '../widgets/npub_chip.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../theme.dart';
@@ -132,6 +135,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   @override
   void dispose() {
     _locationCtrl.dispose();
+    _startingSession.dispose();
     super.dispose();
   }
 
@@ -144,7 +148,15 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
   /// Laeuft gerade ein Sessionstart? Sperrt den Knopf — die Ortspruefung
   /// dauert ein paar Sekunden, und zweimal tippen erzeugt sonst zwei
   /// Versuche.
-  bool _startingSession = false;
+  /// Laeuft gerade der Start einer Badge-Session?
+  ///
+  /// Als ValueNotifier und NICHT als einfaches Feld: Der Knopf sitzt im
+  /// Detailblatt, und das haengt in einer EIGENEN Route. Ein setState des
+  /// Kalenders zeichnet es nicht neu. Der Wartezustand war deshalb zwar
+  /// gesetzt, wurde aber nie gemalt — man drueckte, sah nichts und drueckte
+  /// nochmal. Ein ValueListenableBuilder hoert direkt hin, egal in welcher
+  /// Route er steckt.
+  final ValueNotifier<bool> _startingSession = ValueNotifier(false);
 
   /// meetupId einer bereits laufenden Session, sonst null. Damit der Knopf
   /// "QR anzeigen" statt "Session starten" heisst — sonst sieht es aus, als
@@ -224,31 +236,62 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             // Ohne Ort kein Knopf: Er wuerde nur die Ablehnung ausloesen.
             if (iAmIssuer && !noLocation && (e.nostr?.isBadgeWindowOpen ?? false)) ...[
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _startingSession ? null : () => _startEventSession(e),
-                  icon: _startingSession
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.black))
-                      : const Icon(Icons.qr_code_2_rounded,
-                          color: Colors.black, size: 18),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: cOrange,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(kTileRadius)),
-                  ),
-                  label: Text(
-                      _runningSessionId != null &&
-                              e.nostr != null &&
-                              _runningSessionId!.contains(e.nostr!.dTag)
-                          ? t.evBadgeShowSession
-                          : t.evBadgeStartSession,
-                      style: const TextStyle(
-                          color: Colors.black, fontWeight: FontWeight.w800)),
+              ValueListenableBuilder<bool>(
+                valueListenable: _startingSession,
+                builder: (_, busy, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: busy ? null : () => _startEventSession(e),
+                      icon: busy
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.black))
+                          : const Icon(Icons.qr_code_2_rounded,
+                              color: Colors.black, size: 18),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: cOrange,
+                        // Auch im gesperrten Zustand orange bleiben — ein
+                        // grauer Knopf sieht nach "geht nicht" aus, nicht
+                        // nach "arbeitet".
+                        disabledBackgroundColor:
+                            cOrange.withValues(alpha: 0.75),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(kTileRadius)),
+                      ),
+                      label: Text(
+                          busy
+                              ? t.evBadgeLocating
+                              : (_runningSessionId != null &&
+                                      e.nostr != null &&
+                                      _runningSessionId!
+                                          .contains(e.nostr!.dTag)
+                                  ? t.evBadgeShowSession
+                                  : t.evBadgeStartSession),
+                          style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w800)),
+                    ),
+                    // Sagen, WORAUF gewartet wird. Ein drehender Kringel
+                    // allein laesst offen, ob etwas haengt.
+                    if (busy) ...[
+                      const SizedBox(height: 8),
+                      const LinearProgressIndicator(
+                          minHeight: 2,
+                          color: cOrange,
+                          backgroundColor: cTileBorder),
+                      const SizedBox(height: 6),
+                      Text(t.evBadgeLocatingHint,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: cTextTertiary,
+                              fontSize: 11.5,
+                              height: 1.4)),
+                    ],
+                  ],
                 ),
               ),
             ],
@@ -358,6 +401,253 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     }
   }
 
+  /// Die Helfer eines Termins, mit Profilnamen.
+  ///
+  /// Der Ersteller steht immer zuerst — er darf ohnehin, und ohne ihn
+  /// saehe es aus, als gaebe es niemanden. Fuer den Ersteller selbst gibt es
+  /// darunter den Weg zum Bearbeiten.
+  Widget _issuerList(AppLocalizations t, NostrCalendarEvent event) {
+    String npubOf(String hex) {
+      try {
+        return Nip19.encodePubkey(hex);
+      } catch (_) {
+        return hex;
+      }
+    }
+
+    final amCreator = _myPubkey != null && _myPubkey == event.pubkey;
+    final people = <(String, bool)>[
+      (event.pubkey, true),
+      for (final h in event.issuers)
+        if (h.toLowerCase() != event.pubkey.toLowerCase()) (h, false),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+      decoration: BoxDecoration(
+        color: cSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cTileBorder, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(t.evIssuersTitle.toUpperCase(),
+            style: const TextStyle(
+                color: cTextTertiary,
+                fontSize: 10.5,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.w800)),
+        const SizedBox(height: 8),
+        for (final (hex, isCreator) in people)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Row(children: [
+              Icon(isCreator ? Icons.star_rounded : Icons.person_rounded,
+                  size: 15, color: isCreator ? cOrange : cTextTertiary),
+              const SizedBox(width: 8),
+              Flexible(
+                child: NpubChip(npubOf(hex),
+                    showIcon: false,
+                    style: const TextStyle(color: cText, fontSize: 13)),
+              ),
+              if (isCreator) ...[
+                const SizedBox(width: 6),
+                Text(t.evIssuerCreator,
+                    style: const TextStyle(
+                        color: cTextTertiary, fontSize: 11)),
+              ],
+            ]),
+          ),
+        if (amCreator) ...[
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => _editIssuers(t, event),
+              icon: const Icon(Icons.edit_rounded, size: 16, color: cOrange),
+              label: Text(t.evIssuersEdit,
+                  style: const TextStyle(
+                      color: cOrange, fontWeight: FontWeight.w700)),
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  /// Bearbeiten der Helferliste — nur fuer den Ersteller.
+  Future<void> _editIssuers(
+      AppLocalizations t, NostrCalendarEvent event) async {
+    final list = <String>[
+      for (final h in event.issuers)
+        if (h.toLowerCase() != event.pubkey.toLowerCase()) h.toLowerCase(),
+    ];
+    final input = TextEditingController();
+    String? inputError;
+    var saving = false;
+
+    String npubOf(String hex) {
+      try {
+        return Nip19.encodePubkey(hex);
+      } catch (_) {
+        return hex;
+      }
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: cCard,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          void add() {
+            final raw = input.text.trim();
+            String hex;
+            try {
+              hex = raw.startsWith('npub')
+                  ? Nip19.decodePubkey(raw)
+                  : raw.toLowerCase();
+            } catch (_) {
+              setSheet(() => inputError = t.evIssuersInvalid);
+              return;
+            }
+            if (hex.length != 64) {
+              setSheet(() => inputError = t.evIssuersInvalid);
+              return;
+            }
+            if (hex == event.pubkey.toLowerCase() || list.contains(hex)) {
+              setSheet(() => inputError = t.evIssuersDuplicate);
+              return;
+            }
+            setSheet(() {
+              list.add(hex);
+              input.clear();
+              inputError = null;
+            });
+          }
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(
+                20, 16, 20, 20 + MediaQuery.of(ctx).viewInsets.bottom),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(t.evIssuersEdit,
+                    style: const TextStyle(
+                        color: cText,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(height: 6),
+                // Die Folge des Entfernens gleich dazusagen — sonst
+                // befuerchtet man, den Leuten ihre Badges wegzunehmen.
+                Text(t.evIssuersEditHint,
+                    style: const TextStyle(
+                        color: cTextTertiary, fontSize: 12, height: 1.45)),
+                const SizedBox(height: 14),
+                if (list.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(t.evIssuersNone,
+                        style: const TextStyle(
+                            color: cTextTertiary, fontSize: 13)),
+                  ),
+                for (final hex in list)
+                  Row(children: [
+                    Expanded(
+                      child: NpubChip(npubOf(hex),
+                          showIcon: false,
+                          style: const TextStyle(
+                              color: cText, fontSize: 13)),
+                    ),
+                    IconButton(
+                      onPressed: saving
+                          ? null
+                          : () => setSheet(() => list.remove(hex)),
+                      icon: const Icon(Icons.close_rounded,
+                          color: cRed, size: 20),
+                    ),
+                  ]),
+                const SizedBox(height: 10),
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Expanded(
+                    child: TextField(
+                      controller: input,
+                      style: TextStyle(
+                          color: cText, fontSize: 13, fontFamily: fontMono),
+                      decoration: InputDecoration(
+                        hintText: 'npub1…',
+                        hintStyle: const TextStyle(color: cTextTertiary),
+                        errorText: inputError,
+                        isDense: true,
+                        filled: true,
+                        fillColor: cSurface,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none),
+                      ),
+                      onSubmitted: (_) => add(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    onPressed: saving ? null : add,
+                    style: IconButton.styleFrom(backgroundColor: cOrange),
+                    icon: const Icon(Icons.add_rounded, color: Colors.black),
+                  ),
+                ]),
+                const SizedBox(height: 18),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: cOrange,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: saving
+                      ? null
+                      : () async {
+                          setSheet(() => saving = true);
+                          final ok = await CalendarEventService.updateIssuers(
+                              event, list);
+                          if (!ctx.mounted) return;
+                          Navigator.pop(ctx);
+                          messenger.showSnackBar(SnackBar(
+                            content: Text(ok
+                                ? t.evIssuersSaved
+                                : t.evIssuersFailed),
+                            backgroundColor:
+                                ok ? Colors.green.shade700 : cRed,
+                          ));
+                          if (ok) {
+                            // Das Detailblatt zeigt noch die alte Fassung —
+                            // schliessen und neu laden.
+                            navigator.pop();
+                            _load();
+                          }
+                        },
+                  child: saving
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.black))
+                      : Text(t.evIssuersSave,
+                          style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w800)),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+    input.dispose();
+  }
+
   /// Fragt nach und sagt den Termin dann ab.
   Future<void> _confirmCancelEvent(
       AppLocalizations t, NostrCalendarEvent event) async {
@@ -434,18 +724,44 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
     final t = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
-    setState(() => _startingSession = true);
+    // Doppeltippen abfangen, auch wenn der Knopf schon gesperrt aussieht.
+    if (_startingSession.value) return;
+    _startingSession.value = true;
 
-    final res = await EventBadgeSessionService.start(event);
-
+    // finally: Wirft der Start — etwa weil der Standortdienst abstuerzt —,
+    // bliebe der Knopf sonst fuer immer im Wartezustand.
+    final EventSessionResult res;
+    try {
+      res = await EventBadgeSessionService.start(event);
+    } finally {
+      _startingSession.value = false;
+    }
     if (!mounted) return;
-    setState(() => _startingSession = false);
 
     if (!res.ok) {
+      // Wo es eine direkte Abhilfe gibt, bekommt die Meldung einen Knopf
+      // dorthin. "Ortungsdienst aus" und "dauerhaft verweigert" lassen sich
+      // nur in den Einstellungen beheben — ein Hinweis ohne Weg dorthin
+      // schickt den Nutzer auf die Suche.
+      final SnackBarAction? action = switch (res.error) {
+        EventSessionError.locationServiceOff => SnackBarAction(
+            label: t.evSessionOpenSettings,
+            textColor: Colors.white,
+            onPressed: () => Geolocator.openLocationSettings()),
+        EventSessionError.locationDeniedForever => SnackBarAction(
+            label: t.evSessionOpenSettings,
+            textColor: Colors.white,
+            onPressed: () => Geolocator.openAppSettings()),
+        _ => null,
+      };
       messenger.showSnackBar(SnackBar(
         content: Text(_sessionErrorText(t, res)),
         backgroundColor: cRed,
-        duration: const Duration(seconds: 5),
+        // Die Hinweise zum fehlenden GPS-Fix sind laenger — sie muessen
+        // lesbar bleiben.
+        duration: Duration(
+            seconds: res.error == EventSessionError.locationNoFix ? 10 : 6),
+        action: action,
       ));
       return;
     }
@@ -466,6 +782,11 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
         EventSessionError.outsideWindow => t.evSessionOutsideWindow,
         EventSessionError.noEventLocation => t.evSessionNoEventLocation,
         EventSessionError.locationUnavailable => t.evSessionNoLocation,
+        EventSessionError.locationServiceOff => t.evSessionLocationOff,
+        EventSessionError.locationDenied => t.evSessionLocationDenied,
+        EventSessionError.locationDeniedForever =>
+          t.evSessionLocationDeniedForever,
+        EventSessionError.locationNoFix => t.evSessionLocationNoFix,
         EventSessionError.tooFarAway =>
           t.evSessionTooFar((res.distanceKm ?? 0).toStringAsFixed(1)),
         _ => t.evSessionFailed,
@@ -1155,6 +1476,12 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
             if (e.hasBadge) ...[
               const SizedBox(height: 16),
               _badgeNotice(t, e),
+              // Wer gibt hier Badges aus? Fuer ALLE sichtbar — wer vor Ort
+              // ein Badge will, soll wissen, bei wem er es bekommt.
+              if (e.nostr != null) ...[
+                const SizedBox(height: 14),
+                _issuerList(t, e.nostr!),
+              ],
             ],
             // Absagen — nur fuer den Ersteller.
             //

@@ -2665,5 +2665,60 @@
   },
   "evCancelConfirm": "Cancelar",
   "evCancelDone": "Fecha cancelada.",
-  "evCancelFailed": "La cancelación no llegó: ningún relé la aceptó."
+  "evCancelFailed": "La cancelación no llegó: ningún relé la aceptó.",
+  "mnEventNote": "Los eventos no cuentan aquí como encuentros. Con cientos de asistentes, coincidir no significa haberse conocido, así que la red se forma solo con meetups. Tus insignias de eventos siguen siendo válidas y cuentan para tu Trust Score.",
+  "caPublishFailed": "No se pudo publicar la asistencia: ningún relé la aceptó. Puedes reintentarlo desde la red de confianza.",
+  "mnFailedBanner": "{count, plural, =1{1 asistencia no llegó} other{{count} asistencias no llegaron}}: faltan las conexiones que dependen de ellas.",
+  "@mnFailedBanner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mnRetry": "Reintentar",
+  "mnRetryResult": "{fixed} de {total} publicadas ahora.",
+  "@mnRetryResult": {
+    "placeholders": {
+      "fixed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "evIssuersTitle": "Reparten insignias",
+  "evIssuerCreator": "organizador",
+  "evIssuersEdit": "Editar ayudantes",
+  "evIssuersEditHint": "Quien figura aquí puede repartir insignias en el lugar. Quien se elimine ya no podrá emitir nuevas; las que ya repartió siguen siendo válidas.",
+  "evIssuersNone": "Aún no hay ayudantes: solo tú repartes insignias.",
+  "evIssuersInvalid": "No es un npub válido.",
+  "evIssuersDuplicate": "Ya está en la lista.",
+  "evIssuersSave": "Guardar",
+  "evIssuersSaved": "Ayudantes guardados.",
+  "evIssuersFailed": "No guardado: ningún relé aceptó el cambio.",
+  "verifyAlreadyEvent": "Ya tienes la insignia de «{name}». Un evento cuenta una vez, sin importar cuántos días asistas.",
+  "@verifyAlreadyEvent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "evBadgeLocating": "Obteniendo ubicación …",
+  "evBadgeLocatingHint": "La app comprueba que estás en el lugar del evento. Puede tardar unos segundos; no hace falta volver a pulsar.",
+  "evSessionOpenSettings": "Ajustes",
+  "evSessionLocationOff": "Los servicios de ubicación están desactivados. Actívalos: la app los usa para comprobar que estás en el lugar.",
+  "evSessionLocationDenied": "La app no tiene permiso para usar tu ubicación. Permítelo en el próximo intento: sin ella no se puede comprobar que estás allí.",
+  "evSessionLocationDeniedForever": "El acceso a la ubicación está bloqueado de forma permanente. Solo puedes volver a permitirlo en los ajustes de la app.",
+  "evSessionLocationNoFix": "Sin señal GPS. La ubicación y el permiso están activos, pero el dispositivo no encuentra posición, normalmente en interiores. Acércate a una ventana o sal un momento y vuelve a intentarlo. Los dispositivos sin servicios de Google (como GrapheneOS) no tienen ubicación por Wi-Fi y necesitan cielo despejado.",
+  "prCaching": "Cargando canción ({percent} %): podrás saltar cuando esté completa. Después queda guardada.",
+  "@prCaching": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  }
 }

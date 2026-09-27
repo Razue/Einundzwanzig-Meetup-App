@@ -33,6 +33,9 @@ class _PlebrapPlayerScreenState extends State<PlebrapPlayerScreen> {
   // dieser Screen ist nur noch eine Ansicht darauf. KEIN dispose des
   // Players: die Musik laeuft nach Verlassen weiter (Dashboard-Mini-Player).
   AudioPlayer get _player => PlebrapAudio.player;
+
+  /// Position unter dem Finger, solange gezogen wird. null = nicht gezogen.
+  double? _dragMs;
   int? get _index => PlebrapAudio.index.value;
   bool get _loading => PlebrapAudio.loading.value;
   int _seenErrors = 0;
@@ -145,11 +148,21 @@ class _PlebrapPlayerScreenState extends State<PlebrapPlayerScreen> {
                     ])),
                   ]),
                   const SizedBox(height: 10),
-                  StreamBuilder<Duration>(
+                  // Zwei Stroeme: DAUER aussen, POSITION innen.
+                  //
+                  // Vorher wurde die Dauer nur nebenbei gelesen, wenn die
+                  // Position sich aenderte. Bei pausiertem Lied kommt aber
+                  // keine Position — eine inzwischen bekannte Dauer wurde nie
+                  // uebernommen, und der Balken blieb gesperrt. Jetzt zeichnet
+                  // er neu, sobald die Dauer feststeht.
+                  StreamBuilder<Duration?>(
+                    stream: _player.durationStream,
+                    initialData: _player.duration,
+                    builder: (_, durSnap) => StreamBuilder<Duration>(
                     stream: _player.positionStream,
                     builder: (_, snap) {
                       final pos = snap.data ?? Duration.zero;
-                      final total = _player.duration ?? Duration.zero;
+                      final total = durSnap.data ?? Duration.zero;
                       final max = total.inMilliseconds.toDouble();
                       return Column(children: [
                         SliderTheme(
@@ -159,21 +172,70 @@ class _PlebrapPlayerScreenState extends State<PlebrapPlayerScreen> {
                             activeTrackColor: cOrange, inactiveTrackColor: cSurface, thumbColor: cOrange,
                             overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
                           ),
+                          // Waehrend des Ziehens zeigt der Balken den WERT UNTER DEM
+                          // FINGER, nicht die Position vom Player — gesprungen wird
+                          // erst beim Loslassen.
+                          //
+                          // Vorher loeste jeder Ziehschritt einen seek aus. Die
+                          // Position vom Player hinkt aber hinterher, der Balken
+                          // wurde bei jedem Neuzeichnen darauf zurueckgesetzt, und
+                          // der Daumen sprang zurueck. Mit der Wiedergabeliste ist
+                          // der Versatz groesser geworden; ziehen ging praktisch
+                          // gar nicht mehr.
                           child: Slider(
-                            value: max > 0 ? pos.inMilliseconds.clamp(0, total.inMilliseconds).toDouble() : 0,
+                            value: max > 0
+                                ? (_dragMs ?? pos.inMilliseconds.toDouble())
+                                    .clamp(0, max)
+                                    .toDouble()
+                                : 0,
                             max: max > 0 ? max : 1,
-                            onChanged: max > 0 ? (v) => _player.seek(Duration(milliseconds: v.round())) : null,
+                            onChanged: max > 0
+                                ? (v) => setState(() => _dragMs = v)
+                                : null,
+                            onChangeEnd: max > 0
+                                ? (v) async {
+                                    await _player.seek(
+                                        Duration(milliseconds: v.round()));
+                                    if (mounted) setState(() => _dragMs = null);
+                                  }
+                                : null,
                           ),
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            Text(_fmt(pos), style: const TextStyle(color: cTextTertiary, fontSize: 11).copyWith(fontFamily: fontMono)),
+                            Text(_fmt(_dragMs != null ? Duration(milliseconds: _dragMs!.round()) : pos), style: const TextStyle(color: cTextTertiary, fontSize: 11).copyWith(fontFamily: fontMono)),
                             Text(_fmt(total), style: const TextStyle(color: cTextTertiary, fontSize: 11).copyWith(fontFamily: fontMono)),
                           ]),
                         ),
+                        // Solange die Dauer fehlt, laedt das Lied noch in den
+                        // Speicher. Sagen, dass das der Grund fuer den
+                        // gesperrten Balken ist — und wie weit es ist.
+                        if (max <= 0 && song != null)
+                          ValueListenableBuilder<double>(
+                            valueListenable: PlebrapAudio.cacheProgress,
+                            builder: (_, p, _) => Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 6, 8, 0),
+                              child: Column(children: [
+                                LinearProgressIndicator(
+                                  value: p > 0 ? p : null,
+                                  minHeight: 2,
+                                  color: cOrange,
+                                  backgroundColor: cSurface,
+                                ),
+                                const SizedBox(height: 5),
+                                Text(t.prCaching((p * 100).round()),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                        color: cTextTertiary,
+                                        fontSize: 11,
+                                        height: 1.35)),
+                              ]),
+                            ),
+                          ),
                       ]);
                     },
+                  ),
                   ),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     IconButton(icon: const Icon(Icons.skip_previous_rounded, color: cText, size: 30),

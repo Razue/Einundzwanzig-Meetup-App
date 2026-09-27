@@ -27,6 +27,7 @@ import '../theme.dart';
 import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/shadows.dart';
+import '../services/app_review_demo.dart';
 
 class SecureQRScanner extends StatefulWidget {
   const SecureQRScanner({super.key});
@@ -55,7 +56,15 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
     if (_isScanned) return;
     for (final barcode in capture.barcodes) {
       final String? code = barcode.rawValue;
-      if (code != null && (code.startsWith("21:") || code.startsWith("21v2:") || code.startsWith("21v3:"))) {
+      if (code == null) continue;
+      if (AppReviewDemo.matches(code)) {
+        setState(() => _isScanned = true);
+        AppReviewDemo.showSuccess(context).then((_) {
+          if (mounted) setState(() => _isScanned = false);
+        });
+        break;
+      }
+      if (code.startsWith("21:") || code.startsWith("21v2:") || code.startsWith("21v3:")) {
         setState(() => _isScanned = true);
         _verifyAndShow(code);
         break;
@@ -93,6 +102,13 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
 
       for (final barcode in barcodes.barcodes) {
         final code = barcode.rawValue;
+        if (AppReviewDemo.matches(code)) {
+          if (!mounted) return;
+          setState(() => _isScanned = true);
+          await AppReviewDemo.showSuccess(context);
+          if (mounted) setState(() => _isScanned = false);
+          return;
+        }
         if (code != null && (code.startsWith("21:") || code.startsWith("21v2:") || code.startsWith("21v3:"))) {
           setState(() => _isScanned = true);
           _verifyAndShow(code);

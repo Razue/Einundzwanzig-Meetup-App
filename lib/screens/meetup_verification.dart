@@ -21,6 +21,7 @@
 //   - NFC-Simulation ENTFERNT — kein Fake-Badge mehr möglich.
 // ============================================
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../services/app_logger.dart';
 import 'dart:convert';
@@ -47,6 +48,7 @@ import '../services/nostr_service.dart';
 import '../services/mempool.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/admin_registry.dart';
+import '../services/app_review_demo.dart';
 
 class MeetupVerificationScreen extends StatefulWidget {
   final Meetup meetup;
@@ -55,6 +57,11 @@ class MeetupVerificationScreen extends StatefulWidget {
   @override
   State<MeetupVerificationScreen> createState() => _MeetupVerificationScreenState();
 }
+
+/// Kennung eines Event-Badges: je EVENT, ohne Datum.
+///
+/// Oeffentlich, weil Wallet und Netzwerk dieselbe Form kennen muessen.
+String eventBadgeKey(String eventAddress) => 'evt|$eventAddress';
 
 class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> with SingleTickerProviderStateMixin {
   bool _tagProcessing = false; // Sperre gegen Mehrfach-Erkennung desselben Tags
@@ -284,6 +291,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     );
 
     if (result != null) {
+      if (result['_reviewDemo'] == true) {
+        if (!mounted) return;
+        await AppReviewDemo.showSuccess(context);
+        return;
+      }
+
       // Nonce-Check für Rolling QR
       if (result.containsKey('n') || result.containsKey('qr_nonce')) {
         final nonceResult = RollingQRService.validateNonce(result);
@@ -382,12 +395,33 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     // echte, signierte Badge — genau der Fall, wenn zwei Organisatoren sich
     // auf demselben Meetup gegenseitig bestaetigen (Kempten, Aug. 2026).
     final collectible = storedNow.where((b) => !b.isOrganizer);
-    final bool alreadyCollected = collectible.any((b) =>
-        (b.meetupEventId.isNotEmpty && b.meetupEventId == prospectiveEventId) ||
-        (b.meetupName == fullName &&
-            b.date.year == DateTime.now().year &&
-            b.date.month == DateTime.now().month &&
-            b.date.day == DateTime.now().day));
+
+    // VERANSTALTUNGEN: ein Badge je EVENT, nicht je Tag.
+    //
+    // Ein Event ueber drei Tage ist EINE Teilnahme, egal an welchem Tag man
+    // kommt. Frueher galt hier dieselbe Regel wie bei Meetups — ein Badge je
+    // Tag —, und aus der Zitadelle wurden drei Badges: dreifach im Trust
+    // Score, dreifach in der Wallet, fuer denselben Besuch.
+    //
+    // Erkannt wird das Event an seiner ADRESSE, nicht am Titel: Ein
+    // umbenanntes Event bliebe sonst ein neues. Aeltere Event-Badges tragen
+    // die Adresse noch nicht in der Kennung; fuer die greift der Titel als
+    // Rueckfall.
+    final scanEventAddress = BadgeSecurity.eventAddressOf(normalized);
+    final bool alreadyCollected;
+    if (scanEventAddress != null) {
+      final eventKey = eventBadgeKey(scanEventAddress);
+      alreadyCollected = collectible.any((b) =>
+          b.meetupEventId == eventKey ||
+          (b.isEvent && b.meetupName == fullName));
+    } else {
+      alreadyCollected = collectible.any((b) =>
+          (b.meetupEventId.isNotEmpty && b.meetupEventId == prospectiveEventId) ||
+          (b.meetupName == fullName &&
+              b.date.year == DateTime.now().year &&
+              b.date.month == DateTime.now().month &&
+              b.date.day == DateTime.now().day));
+    }
     if (alreadyCollected) {
       AppLogger.diag('Scan',
           'Bereits gesammelt: "$fullName" ($prospectiveEventId) — Scan abgelehnt.');
@@ -497,7 +531,13 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       final usableName = nameSlug.isNotEmpty &&
           nameSlug != unknownSlug &&
           nameSlug.replaceAll('-', '').isNotEmpty;
-      final meetupEventId = usableName ? '$nameSlug-$dateStr' : '';
+      // Veranstaltungen tragen die EVENT-ADRESSE statt Name und Tag — damit
+      // ist ein mehrtaegiges Event eine einzige Teilnahme (siehe
+      // Duplikat-Pruefung oben).
+      final evAddr = BadgeSecurity.eventAddressOf(normalized);
+      final meetupEventId = evAddr != null
+          ? eventBadgeKey(evAddr)
+          : (usableName ? '$nameSlug-$dateStr' : '');
       if (!usableName) {
         AppLogger.warn('Scan',
             'Tag ohne verwertbaren Meetup-Namen — keine Kennung vergeben, '
@@ -527,9 +567,19 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
       if (verifyResult != null && verifyResult.version >= 2 && adminPubkey.isNotEmpty) {
         if (eventAddress != null) {
+          // Zeitpunkt fuer EHEMALIGE Helfer: JETZT, von der Uhr dessen, der
+          // gerade scannt — nicht der Zeitstempel im Code.
+          //
+          // Der Zeitstempel im Code stammt vom Geraet des Helfers. Ein
+          // entfernter Helfer koennte seine Uhr zurueckstellen und neue
+          // Badges ausgeben, die vor seinem Entfernen zu liegen scheinen. Die
+          // Uhr des Scannenden kann er nicht beeinflussen. Und fuer ehrliche
+          // Helfer macht es keinen Unterschied: Der rollierende Code wird
+          // ohnehin sofort gescannt.
           final chain = await EventBadgeChainService.verify(
             eventAddress: eventAddress,
             signerPubkey: adminPubkey,
+            issuedAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
           );
           isKnownAdmin = chain.ok;
           eventBadgeImage = chain.badgeImageUrl;
@@ -716,7 +766,11 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       }
 
     } else {
-      msg = tr.verifyAlreadyToday(fullName);
+      // Bei Events nicht "heute" — das Badge gilt fuer das ganze Event, und
+      // "schon heute gesammelt" wuerde nahelegen, morgen ginge es wieder.
+      msg = scanEventAddress != null
+          ? tr.verifyAlreadyEvent(fullName)
+          : tr.verifyAlreadyToday(fullName);
       _pendingBadge = null;
       _pendingOrgLat = 0;
       _pendingOrgLng = 0;
@@ -1048,15 +1102,20 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
 
     if (agree == true) {
       final count = await CoAttendanceService.publishAttendance(badge);
-      if (mounted && count > 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context).caPublished),
-            backgroundColor: cGreen,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (!mounted) return;
+      // Auch den Fehlschlag MELDEN. Vorher kam nur bei Erfolg eine
+      // Bestaetigung — schlug es fehl, geschah sichtbar nichts, und der
+      // Nutzer hielt die Teilnahme fuer veroeffentlicht.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(count > 0
+              ? AppLocalizations.of(context).caPublished
+              : AppLocalizations.of(context).caPublishFailed),
+          backgroundColor: count > 0 ? cGreen : cRed,
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: count > 0 ? 3 : 6),
+        ),
+      );
     }
   }
 
@@ -1298,34 +1357,75 @@ class _QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<_QRScannerScreen> {
   bool _isScanned = false;
+  late final MobileScannerController _scannerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scannerController = MobileScannerController();
+  }
+
+  @override
+  void dispose() {
+    _scannerController.dispose();
+    super.dispose();
+  }
 
   void _onDetect(BarcodeCapture capture) {
     if (_isScanned) return;
     for (final barcode in capture.barcodes) {
       final String? code = barcode.rawValue;
-      if (code != null) {
-        try {
-          final data = json.decode(code) as Map<String, dynamic>;
-          // Ist es ein Meetup-Badge-Tag? (Kompakt oder Legacy)
-          if (data.containsKey('t') || data.containsKey('type')) {
-            setState(() => _isScanned = true);
-            Navigator.pop(context, data);
-            return;
-          }
-        } catch (_) {
-          // Kein JSON — ignorieren
+      if (code == null) continue;
+      if (AppReviewDemo.matches(code)) {
+        setState(() => _isScanned = true);
+        Navigator.pop(context, {'_reviewDemo': true});
+        return;
+      }
+      try {
+        final data = json.decode(code) as Map<String, dynamic>;
+        // Ist es ein Meetup-Badge-Tag? (Kompakt oder Legacy)
+        if (data.containsKey('t') || data.containsKey('type')) {
+          setState(() => _isScanned = true);
+          Navigator.pop(context, data);
+          return;
         }
+      } catch (_) {
+        // Kein JSON — ignorieren
       }
     }
+  }
+
+  Future<void> _pickFromGallery() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final path = result.files.single.path;
+      if (path == null) return;
+
+      final barcodes = await _scannerController.analyzeImage(path);
+      if (barcodes == null || barcodes.barcodes.isEmpty) return;
+      _onDetect(barcodes);
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).verifyScanQr),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library_outlined),
+            onPressed: _pickFromGallery,
+          ),
+        ],
+      ),
       body: Stack(children: [
-        MobileScanner(onDetect: _onDetect),
+        MobileScanner(controller: _scannerController, onDetect: _onDetect),
         // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
         // dass die App tatsaechlich sucht.
         const ScannerOverlay(),

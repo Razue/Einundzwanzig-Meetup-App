@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6125,4 +6126,98 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get evCancelFailed =>
       'Cancellation not delivered — no relay accepted it.';
+
+  @override
+  String get mnEventNote =>
+      'Events do not count as encounters here. With hundreds of visitors, being there together does not mean you actually met — so the network is built from meetups only. Your event badges remain valid and count towards your trust score.';
+
+  @override
+  String get caPublishFailed =>
+      'Attendance could not be published — no relay accepted it. You can retry from the trust network.';
+
+  @override
+  String mnFailedBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count attendances were not delivered',
+      one: '1 attendance was not delivered',
+    );
+    return '$_temp0 — the connections from them are missing.';
+  }
+
+  @override
+  String get mnRetry => 'Retry';
+
+  @override
+  String mnRetryResult(int fixed, int total) {
+    return '$fixed of $total now published.';
+  }
+
+  @override
+  String get evIssuersTitle => 'Handing out badges';
+
+  @override
+  String get evIssuerCreator => 'organiser';
+
+  @override
+  String get evIssuersEdit => 'Edit helpers';
+
+  @override
+  String get evIssuersEditHint =>
+      'Everyone listed here can hand out badges on site. Anyone removed can no longer issue new ones — badges they already handed out stay valid.';
+
+  @override
+  String get evIssuersNone => 'No helpers yet — only you hand out badges.';
+
+  @override
+  String get evIssuersInvalid => 'That is not a valid npub.';
+
+  @override
+  String get evIssuersDuplicate => 'Already on the list.';
+
+  @override
+  String get evIssuersSave => 'Save';
+
+  @override
+  String get evIssuersSaved => 'Helpers saved.';
+
+  @override
+  String get evIssuersFailed => 'Not saved — no relay accepted the change.';
+
+  @override
+  String verifyAlreadyEvent(String name) {
+    return 'You already have the badge for “$name”. An event counts once, however many days you attend.';
+  }
+
+  @override
+  String get evBadgeLocating => 'Checking your location …';
+
+  @override
+  String get evBadgeLocatingHint =>
+      'The app is checking that you are at the venue. This can take a few seconds — no need to tap again.';
+
+  @override
+  String get evSessionOpenSettings => 'Settings';
+
+  @override
+  String get evSessionLocationOff =>
+      'Location services are off. Turn them on — the app uses them to check that you are at the venue.';
+
+  @override
+  String get evSessionLocationDenied =>
+      'The app is not allowed to access your location. Allow it on the next attempt — without it, being on site cannot be checked.';
+
+  @override
+  String get evSessionLocationDeniedForever =>
+      'Location access is permanently blocked. You can only allow it again in the app settings.';
+
+  @override
+  String get evSessionLocationNoFix =>
+      'No GPS signal. Location and permission are on, but the device cannot find a position — usually indoors. Step to a window or outside briefly and try again. Devices without Google services (such as GrapheneOS) lack Wi-Fi positioning and need a clear view of the sky.';
+
+  @override
+  String prCaching(int percent) {
+    return 'Loading song ($percent %) — seeking works once it is fully downloaded. It stays saved afterwards.';
+  }
 }

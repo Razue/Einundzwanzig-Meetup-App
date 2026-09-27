@@ -32,6 +32,14 @@ class MempoolConfig {
   // =============================================
   static const String clearnetHost = 'https://mempool.space';
 
+  /// Öffentliche Spiegel, wenn mempool.space (Cloudflare) die IP abweist —
+  /// typisch Datacenter/NAT der App-Prüfung, Tor-Exits, strenge WAFs.
+  /// Wird nur für die Sitzung genutzt, nicht in den Einstellungen gespeichert.
+  static const List<String> fallbackHosts = [
+    'https://mempool.emzy.de',
+    'https://mempool.ninja',
+  ];
+
   /// Offizielle Onion-Adresse von mempool.space (onion-location-Header).
   static const String torHost =
       'http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion';
@@ -43,6 +51,7 @@ class MempoolConfig {
   // ZUSTAND (einmal geladen, dann im Speicher)
   // =============================================
   static String _host = clearnetHost;
+  static String? _sessionOverride;
   static bool _loaded = false;
 
   /// Muss vor dem ersten Netzzugriff einmal gelaufen sein. Idempotent —
@@ -61,13 +70,20 @@ class MempoolConfig {
     _loaded = true;
   }
 
+  /// Sitzungs-Fallback (nicht persistiert). `null` hebt ihn auf.
+  static void setSessionOverride(String? host) {
+    _sessionOverride = host == null || host.trim().isEmpty
+        ? null
+        : normalize(host);
+  }
+
   /// Aktueller Host OHNE `/api` und ohne Slash am Ende.
-  static String get host => _host;
+  static String get host => _sessionOverride ?? _host;
 
   /// Basis-URL für API-Aufrufe, z.B. `https://mempool.space/api`.
-  static String get apiBase => '$_host/api';
+  static String get apiBase => '$host/api';
 
-  static bool get isOnion => _host.contains('.onion');
+  static bool get isOnion => host.contains('.onion');
 
   /// Tor ist deutlich langsamer als Clearnet — großzügigeres Zeitlimit,
   /// sonst laufen die Requests in einen Timeout, obwohl sie noch unterwegs sind.

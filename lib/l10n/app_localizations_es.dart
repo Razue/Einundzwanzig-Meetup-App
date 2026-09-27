@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6159,4 +6160,99 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get evCancelFailed =>
       'La cancelación no llegó: ningún relé la aceptó.';
+
+  @override
+  String get mnEventNote =>
+      'Los eventos no cuentan aquí como encuentros. Con cientos de asistentes, coincidir no significa haberse conocido, así que la red se forma solo con meetups. Tus insignias de eventos siguen siendo válidas y cuentan para tu Trust Score.';
+
+  @override
+  String get caPublishFailed =>
+      'No se pudo publicar la asistencia: ningún relé la aceptó. Puedes reintentarlo desde la red de confianza.';
+
+  @override
+  String mnFailedBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count asistencias no llegaron',
+      one: '1 asistencia no llegó',
+    );
+    return '$_temp0: faltan las conexiones que dependen de ellas.';
+  }
+
+  @override
+  String get mnRetry => 'Reintentar';
+
+  @override
+  String mnRetryResult(int fixed, int total) {
+    return '$fixed de $total publicadas ahora.';
+  }
+
+  @override
+  String get evIssuersTitle => 'Reparten insignias';
+
+  @override
+  String get evIssuerCreator => 'organizador';
+
+  @override
+  String get evIssuersEdit => 'Editar ayudantes';
+
+  @override
+  String get evIssuersEditHint =>
+      'Quien figura aquí puede repartir insignias en el lugar. Quien se elimine ya no podrá emitir nuevas; las que ya repartió siguen siendo válidas.';
+
+  @override
+  String get evIssuersNone =>
+      'Aún no hay ayudantes: solo tú repartes insignias.';
+
+  @override
+  String get evIssuersInvalid => 'No es un npub válido.';
+
+  @override
+  String get evIssuersDuplicate => 'Ya está en la lista.';
+
+  @override
+  String get evIssuersSave => 'Guardar';
+
+  @override
+  String get evIssuersSaved => 'Ayudantes guardados.';
+
+  @override
+  String get evIssuersFailed => 'No guardado: ningún relé aceptó el cambio.';
+
+  @override
+  String verifyAlreadyEvent(String name) {
+    return 'Ya tienes la insignia de «$name». Un evento cuenta una vez, sin importar cuántos días asistas.';
+  }
+
+  @override
+  String get evBadgeLocating => 'Obteniendo ubicación …';
+
+  @override
+  String get evBadgeLocatingHint =>
+      'La app comprueba que estás en el lugar del evento. Puede tardar unos segundos; no hace falta volver a pulsar.';
+
+  @override
+  String get evSessionOpenSettings => 'Ajustes';
+
+  @override
+  String get evSessionLocationOff =>
+      'Los servicios de ubicación están desactivados. Actívalos: la app los usa para comprobar que estás en el lugar.';
+
+  @override
+  String get evSessionLocationDenied =>
+      'La app no tiene permiso para usar tu ubicación. Permítelo en el próximo intento: sin ella no se puede comprobar que estás allí.';
+
+  @override
+  String get evSessionLocationDeniedForever =>
+      'El acceso a la ubicación está bloqueado de forma permanente. Solo puedes volver a permitirlo en los ajustes de la app.';
+
+  @override
+  String get evSessionLocationNoFix =>
+      'Sin señal GPS. La ubicación y el permiso están activos, pero el dispositivo no encuentra posición, normalmente en interiores. Acércate a una ventana o sal un momento y vuelve a intentarlo. Los dispositivos sin servicios de Google (como GrapheneOS) no tienen ubicación por Wi-Fi y necesitan cielo despejado.';
+
+  @override
+  String prCaching(int percent) {
+    return 'Cargando canción ($percent %): podrás saltar cuando esté completa. Después queda guardada.';
+  }
 }
