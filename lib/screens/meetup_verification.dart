@@ -21,6 +21,7 @@
 //   - NFC-Simulation ENTFERNT — kein Fake-Badge mehr möglich.
 // ============================================
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../services/app_logger.dart';
 import 'dart:convert';
@@ -47,6 +48,7 @@ import '../services/nostr_service.dart';
 import '../services/mempool.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/admin_registry.dart';
+import '../services/app_review_demo.dart';
 
 class MeetupVerificationScreen extends StatefulWidget {
   final Meetup meetup;
@@ -289,6 +291,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     );
 
     if (result != null) {
+      if (result['_reviewDemo'] == true) {
+        if (!mounted) return;
+        await AppReviewDemo.showSuccess(context);
+        return;
+      }
+
       // Nonce-Check für Rolling QR
       if (result.containsKey('n') || result.containsKey('qr_nonce')) {
         final nonceResult = RollingQRService.validateNonce(result);
@@ -1349,34 +1357,75 @@ class _QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<_QRScannerScreen> {
   bool _isScanned = false;
+  late final MobileScannerController _scannerController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scannerController = MobileScannerController();
+  }
+
+  @override
+  void dispose() {
+    _scannerController.dispose();
+    super.dispose();
+  }
 
   void _onDetect(BarcodeCapture capture) {
     if (_isScanned) return;
     for (final barcode in capture.barcodes) {
       final String? code = barcode.rawValue;
-      if (code != null) {
-        try {
-          final data = json.decode(code) as Map<String, dynamic>;
-          // Ist es ein Meetup-Badge-Tag? (Kompakt oder Legacy)
-          if (data.containsKey('t') || data.containsKey('type')) {
-            setState(() => _isScanned = true);
-            Navigator.pop(context, data);
-            return;
-          }
-        } catch (_) {
-          // Kein JSON — ignorieren
+      if (code == null) continue;
+      if (AppReviewDemo.matches(code)) {
+        setState(() => _isScanned = true);
+        Navigator.pop(context, {'_reviewDemo': true});
+        return;
+      }
+      try {
+        final data = json.decode(code) as Map<String, dynamic>;
+        // Ist es ein Meetup-Badge-Tag? (Kompakt oder Legacy)
+        if (data.containsKey('t') || data.containsKey('type')) {
+          setState(() => _isScanned = true);
+          Navigator.pop(context, data);
+          return;
         }
+      } catch (_) {
+        // Kein JSON — ignorieren
       }
     }
+  }
+
+  Future<void> _pickFromGallery() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+      if (result == null || result.files.isEmpty) return;
+      final path = result.files.single.path;
+      if (path == null) return;
+
+      final barcodes = await _scannerController.analyzeImage(path);
+      if (barcodes == null || barcodes.barcodes.isEmpty) return;
+      _onDetect(barcodes);
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: cDark,
-      appBar: AppBar(title: Text(AppLocalizations.of(context).verifyScanQr)),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).verifyScanQr),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library_outlined),
+            onPressed: _pickFromGallery,
+          ),
+        ],
+      ),
       body: Stack(children: [
-        MobileScanner(onDetect: _onDetect),
+        MobileScanner(controller: _scannerController, onDetect: _onDetect),
         // Rahmen mit Suchlinie: gibt die Zielgroesse vor und zeigt,
         // dass die App tatsaechlich sucht.
         const ScannerOverlay(),
