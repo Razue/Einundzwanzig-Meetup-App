@@ -181,11 +181,10 @@ else
   ok "Assets liegen unter $RELEASE_BASE/"
 fi
 
-# assetURLs: Dateiname ohne Endung -> URL (erlaubt Hosting ohne Verzeichnisstruktur)
-ASSET_URLS="$(printf '%s\n' "$FILES" | while IFS= read -r f; do
-  name="$(basename "$f")"
-  printf '{"key":"%s","url":"%s/%s"}\n' "${name%.*}" "$RELEASE_BASE" "$name"
-done | jq -s 'map({(.key): .url}) | add')"
+# Die Dateien liegen flach im GitHub-Release. Die Pages-Action baut daraus
+# die Ordner variant/ und delta/, weil das Manifest diese Pfade erwartet.
+# assetURLs bleiben weg: AltStore haengt sie als HTTP-Header an, und mit
+# Deltas aus mehreren Vorgaengerversionen wird der Header zu gross.
 
 # ---------------------------------------------------------------------------
 # 4. source.json aktualisieren
@@ -217,14 +216,13 @@ NEW_SOURCE="$(jq \
   --arg build "$BUILD" \
   --arg date "$TODAY" \
   --arg notes "$NOTES" \
-  --arg dl "$RELEASE_BASE/manifest.json" \
+  --arg dl "https://razue.github.io/Einundzwanzig-Meetup-App/altstore/adp/${VERSION}-${BUILD}/manifest.json" \
   --argjson size "$SIZE" \
   --arg minos "$MIN_OS" \
-  --argjson assets "$ASSET_URLS" \
   --argjson privacy "$PRIVACY" \
   --argjson ents "$ENTITLEMENT_KEYS" '
   ( {version: $version, buildVersion: $build, marketingVersion: ($version + " (" + $build + ")"),
-     date: $date, localizedDescription: $notes, downloadURL: $dl, size: $size, assetURLs: $assets}
+     date: $date, localizedDescription: $notes, downloadURL: $dl, size: $size}
     + (if $minos != "" then {minOSVersion: $minos} else {} end) ) as $entry
   | .apps |= map(
       if .bundleIdentifier == $bundle then

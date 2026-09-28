@@ -47,6 +47,48 @@ jobs:
       - name: Web bauen
         run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
 
+      # GitHub Releases sind flach. Das ADP-Manifest verweist aber auf
+      # variant/*.ipa und delta/*.ipa. Ohne diese Ordner bricht das Update ab,
+      # obwohl AltStore die neue Version schon anzeigt.
+      - name: AltStore-ADP mit Ordnerstruktur ablegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python3 << 'PY'
+          import json, os, shutil, subprocess
+          from pathlib import Path
+
+          src = json.load(open("web/altstore/source.json"))
+          repo = os.environ["GITHUB_REPOSITORY"]
+          for version in src["apps"][0]["versions"]:
+              download = version.get("downloadURL") or ""
+              if "/altstore/adp/" not in download:
+                  continue
+              tag = f"ios-{version['version']}-{version['buildVersion']}"
+              work = Path("/tmp") / f"adp-{tag}"
+              dest = Path("build/web/altstore/adp") / f"{version['version']}-{version['buildVersion']}"
+              if work.exists():
+                  shutil.rmtree(work)
+              work.mkdir(parents=True)
+              subprocess.check_call([
+                  "gh", "release", "download", tag,
+                  "--repo", repo,
+                  "--dir", str(work),
+              ])
+              manifest = json.load(open(work / "manifest.json"))
+              dest.mkdir(parents=True, exist_ok=True)
+              shutil.copy(work / "manifest.json", dest / "manifest.json")
+              shutil.copy(work / "signature", dest / "signature")
+              paths = [item["assetPath"] for item in manifest.get("variants") or []]
+              paths += [item["assetPath"] for item in manifest.get("deltas") or []]
+              for rel in paths:
+                  target = dest / rel
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  shutil.copy(work / Path(rel).name, target)
+              print(f"{tag}: {len(paths)} Pakete nach {dest}")
+          PY
+
       - name: Artefakt hochladen
         uses: actions/upload-pages-artifact@v3
         with:
