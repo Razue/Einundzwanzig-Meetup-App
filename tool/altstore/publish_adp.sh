@@ -181,10 +181,10 @@ else
   ok "Assets liegen unter $RELEASE_BASE/"
 fi
 
-# Die Dateien liegen flach im GitHub-Release. Die Pages-Action baut daraus
-# die Ordner variant/ und delta/, weil das Manifest diese Pfade erwartet.
-# assetURLs bleiben weg: AltStore haengt sie als HTTP-Header an, und mit
-# Deltas aus mehreren Vorgaengerversionen wird der Header zu gross.
+# GitHub Releases sind flach, GitHub Pages komprimiert die IPAs (gzip).
+# Beides bricht die Installation: das Manifest verlangt variant/ und delta/
+# und die exakte Bytegröße. Deshalb kommt das Paket unkomprimiert mit
+# Ordnern ins Repo und wird über media.githubusercontent.com ausgeliefert.
 
 # ---------------------------------------------------------------------------
 # 4. source.json aktualisieren
@@ -216,7 +216,7 @@ NEW_SOURCE="$(jq \
   --arg build "$BUILD" \
   --arg date "$TODAY" \
   --arg notes "$NOTES" \
-  --arg dl "https://razue.github.io/Einundzwanzig-Meetup-App/altstore/adp/${VERSION}-${BUILD}/manifest.json" \
+  --arg dl "https://media.githubusercontent.com/media/Razue/Einundzwanzig-Meetup-App/integration/ios-complete/altstore/adp/${VERSION}-${BUILD}/manifest.json" \
   --argjson size "$SIZE" \
   --arg minos "$MIN_OS" \
   --argjson privacy "$PRIVACY" \
@@ -243,6 +243,12 @@ fi
 mkdir -p "$(dirname "$SOURCE_JSON")"
 printf '%s\n' "$NEW_SOURCE" > "$SOURCE_JSON"
 ok "web/altstore/source.json aktualisiert (Version $VERSION ($BUILD) steht jetzt vorne)."
+
+ADP_PUBLISH_DIR="$REPO_ROOT/altstore/adp/${VERSION}-${BUILD}"
+rm -rf "$ADP_PUBLISH_DIR"
+mkdir -p "$ADP_PUBLISH_DIR"
+cp -R "$ADP_ROOT/." "$ADP_PUBLISH_DIR/"
+ok "ADP nach $ADP_PUBLISH_DIR kopiert. Diese Dateien mit committen."
 
 cat <<EOF
 
