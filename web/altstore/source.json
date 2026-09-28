@@ -28,9 +28,9 @@
           "version": "1.6.6",
           "buildVersion": "29",
           "marketingVersion": "1.6.6 (29)",
-          "date": "2026-09-28T23:01:07Z",
+          "date": "2026-09-28T23:05:01Z",
           "localizedDescription": "Meetup-Details lassen sich bei langen Texten scrollen und jederzeit schließen. Mehrtägige Events zählen als ein Badge. Veranstalter können Helfer nachträglich hinzufügen und entfernen; bereits ausgegebene Badges bleiben gültig. Im Vertrauensnetzwerk siehst du, ob eine Teilnahme veröffentlicht wurde, und kannst sie erneut senden. Standortfehler beim Badge-Start sind genauer, und während die Position ermittelt wird, erscheint ein Wartehinweis. PlebRap speichert Lieder, der Zeitbalken lässt sich wieder ziehen.",
-          "downloadURL": "https://media.githubusercontent.com/media/Razue/Einundzwanzig-Meetup-App/integration/ios-complete/altstore/adp/1.6.6-29/manifest.json",
+          "downloadURL": "https://raw.githubusercontent.com/Razue/Einundzwanzig-Meetup-App/integration/ios-complete/altstore/adp/1.6.6-29/manifest.json",
           "size": 12656726,
           "minOSVersion": "15.0"
         },

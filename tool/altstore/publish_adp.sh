@@ -184,7 +184,8 @@ fi
 # GitHub Releases sind flach, GitHub Pages komprimiert die IPAs (gzip).
 # Beides bricht die Installation: das Manifest verlangt variant/ und delta/
 # und die exakte Bytegröße. Deshalb kommt das Paket unkomprimiert mit
-# Ordnern ins Repo und wird über media.githubusercontent.com ausgeliefert.
+# Ordnern ins Repo und wird über raw.githubusercontent.com ausgeliefert.
+# media.githubusercontent.com liefert diese Dateien nicht (404).
 
 # ---------------------------------------------------------------------------
 # 4. source.json aktualisieren
@@ -216,7 +217,7 @@ NEW_SOURCE="$(jq \
   --arg build "$BUILD" \
   --arg date "$TODAY" \
   --arg notes "$NOTES" \
-  --arg dl "https://media.githubusercontent.com/media/Razue/Einundzwanzig-Meetup-App/integration/ios-complete/altstore/adp/${VERSION}-${BUILD}/manifest.json" \
+  --arg dl "https://raw.githubusercontent.com/Razue/Einundzwanzig-Meetup-App/integration/ios-complete/altstore/adp/${VERSION}-${BUILD}/manifest.json" \
   --argjson size "$SIZE" \
   --arg minos "$MIN_OS" \
   --argjson privacy "$PRIVACY" \
