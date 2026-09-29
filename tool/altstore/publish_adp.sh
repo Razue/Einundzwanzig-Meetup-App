@@ -181,11 +181,16 @@ else
   ok "Assets liegen unter $RELEASE_BASE/"
 fi
 
-# GitHub Releases sind flach, GitHub Pages komprimiert die IPAs (gzip).
-# Beides bricht die Installation: das Manifest verlangt variant/ und delta/
-# und die exakte Bytegröße. Deshalb kommt das Paket unkomprimiert mit
-# Ordnern ins Repo und wird über raw.githubusercontent.com ausgeliefert.
-# media.githubusercontent.com liefert diese Dateien nicht (404).
+# assetURLs: Dateiname ohne Endung -> URL.
+# AltStore schickt sie als Header alt-asset-<id>. Der Install-Proxy leitet
+# dann auf die flache Release-Datei um, statt variant/ oder delta/ anzuhängen.
+# GitHub Releases liefern die Bytes unkomprimiert. Pages und
+# raw.githubusercontent.com gzippen das Manifest, dadurch passt die Signatur
+# nicht mehr und die Installation schlägt fehl.
+ASSET_URLS="$(printf '%s\n' "$FILES" | while IFS= read -r f; do
+  name="$(basename "$f")"
+  printf '{"key":"%s","url":"%s/%s"}\n' "${name%.*}" "$RELEASE_BASE" "$name"
+done | jq -s 'map({(.key): .url}) | add')"
 
 # ---------------------------------------------------------------------------
 # 4. source.json aktualisieren
@@ -217,13 +222,14 @@ NEW_SOURCE="$(jq \
   --arg build "$BUILD" \
   --arg date "$TODAY" \
   --arg notes "$NOTES" \
-  --arg dl "https://raw.githubusercontent.com/Razue/Einundzwanzig-Meetup-App/integration/ios-complete/altstore/adp/${VERSION}-${BUILD}/manifest.json" \
+  --arg dl "$RELEASE_BASE/manifest.json" \
   --argjson size "$SIZE" \
   --arg minos "$MIN_OS" \
+  --argjson assets "$ASSET_URLS" \
   --argjson privacy "$PRIVACY" \
   --argjson ents "$ENTITLEMENT_KEYS" '
   ( {version: $version, buildVersion: $build, marketingVersion: ($version + " (" + $build + ")"),
-     date: $date, localizedDescription: $notes, downloadURL: $dl, size: $size}
+     date: $date, localizedDescription: $notes, downloadURL: $dl, size: $size, assetURLs: $assets}
     + (if $minos != "" then {minOSVersion: $minos} else {} end) ) as $entry
   | .apps |= map(
       if .bundleIdentifier == $bundle then
@@ -244,12 +250,6 @@ fi
 mkdir -p "$(dirname "$SOURCE_JSON")"
 printf '%s\n' "$NEW_SOURCE" > "$SOURCE_JSON"
 ok "web/altstore/source.json aktualisiert (Version $VERSION ($BUILD) steht jetzt vorne)."
-
-ADP_PUBLISH_DIR="$REPO_ROOT/altstore/adp/${VERSION}-${BUILD}"
-rm -rf "$ADP_PUBLISH_DIR"
-mkdir -p "$ADP_PUBLISH_DIR"
-cp -R "$ADP_ROOT/." "$ADP_PUBLISH_DIR/"
-ok "ADP nach $ADP_PUBLISH_DIR kopiert. Diese Dateien mit committen."
 
 cat <<EOF
 
