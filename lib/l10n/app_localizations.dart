@@ -11305,7 +11305,7 @@ abstract class AppLocalizations {
   /// No description provided for @vwHintIdle.
   ///
   /// In de, this message translates to:
-  /// **'Tippe auf das Mikrofon und sprich {language}.'**
+  /// **'{language}. Sag Token, Kamera oder Kontostand.'**
   String vwHintIdle(String language);
 
   /// No description provided for @vwHintListening.
@@ -11365,7 +11365,7 @@ abstract class AppLocalizations {
   /// No description provided for @vwHelp.
   ///
   /// In de, this message translates to:
-  /// **'Kontostand. Token scannen. Schick 1000 Sats.'**
+  /// **'Token. Kamera. Kontostand. Schick 1000 Sats.'**
   String get vwHelp;
 
   /// No description provided for @vwSpeechOff.

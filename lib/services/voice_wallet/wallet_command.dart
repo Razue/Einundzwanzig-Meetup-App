@@ -34,8 +34,8 @@ WalletCommand parseWalletCommand(String raw) {
   final sats = parseSpokenSats(text);
   final send = _hasWord(text, _send);
   if (send && sats != null) return WalletCommand(WalletCommandKind.send, sats: sats);
-  if (_hasWord(text, _scan)) return const WalletCommand(WalletCommandKind.scan);
   if (send) return const WalletCommand(WalletCommandKind.send);
+  if (_isScan(text)) return const WalletCommand(WalletCommandKind.scan);
   return WalletCommand.unknown;
 }
 
@@ -102,10 +102,26 @@ const _balance = {
 };
 
 const _scan = {
-  'scannen',
-  'scan',
+  'token',
+  'tokens',
+  'tocken',
+  'kamera',
+  'camera',
+  'foto',
+  'photo',
+  'qr',
+  'code',
+  'einloesen',
+  'einloese',
   'empfangen',
+  'empfang',
   'receive',
+  'redeem',
+};
+
+const _scanPhrases = {
+  'ku er',
+  'q r',
 };
 
 const _send = {
@@ -128,6 +144,11 @@ bool _hasPhrase(String text, Set<String> phrases) =>
 bool _hasWord(String text, Set<String> words) => words.any((w) {
       return RegExp('(?:^|\\s)${RegExp.escape(w)}(?:\\s|\$)').hasMatch(text);
     });
+
+bool _isScan(String text) {
+  if (_hasWord(text, _scan) || _hasPhrase(text, _scanPhrases)) return true;
+  return text.split(' ').any((w) => w.startsWith('scan') || w.startsWith('skan'));
+}
 
 bool _startsWithWord(String text, Set<String> words) =>
     words.any((w) => text == w || text.startsWith('$w '));

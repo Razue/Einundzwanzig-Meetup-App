@@ -13,8 +13,13 @@ void main() {
 
   test('Scannen', () {
     expect(kind('Token scannen'), WalletCommandKind.scan);
+    expect(kind('scanne token'), WalletCommandKind.scan);
     expect(kind('scan the token'), WalletCommandKind.scan);
+    expect(kind('token'), WalletCommandKind.scan);
+    expect(kind('Kamera'), WalletCommandKind.scan);
+    expect(kind('QR-Code'), WalletCommandKind.scan);
     expect(kind('empfangen'), WalletCommandKind.scan);
+    expect(kind('schick den token'), WalletCommandKind.send);
   });
 
   test('Senden mit Ziffern und Zahlwoertern', () {
