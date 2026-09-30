@@ -2722,8 +2722,8 @@
     }
   },
   "tileVoiceWallet": "Sats",
-  "tileVoiceWalletValue": "Voice",
-  "tileVoiceWalletSub": "Tap and speak",
+  "tileVoiceWalletValue": "Voice Wallet",
+  "tileVoiceWalletSub": "Just say it.",
   "vwLangDe": "German",
   "vwLangEn": "English",
   "vwHintIdle": "{language}. Say token, camera or balance.",

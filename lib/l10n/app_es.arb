@@ -2722,8 +2722,8 @@
     }
   },
   "tileVoiceWallet": "Sats",
-  "tileVoiceWalletValue": "Voz",
-  "tileVoiceWalletSub": "Toca y habla",
+  "tileVoiceWalletValue": "Wallet de voz",
+  "tileVoiceWalletSub": "Solo decirlo.",
   "vwLangDe": "alemán",
   "vwLangEn": "inglés",
   "vwHintIdle": "{language}. Di token, cámara o saldo.",

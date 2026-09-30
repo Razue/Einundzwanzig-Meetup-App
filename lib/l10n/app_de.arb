@@ -2744,8 +2744,8 @@
     }
   },
   "tileVoiceWallet": "Sats",
-  "tileVoiceWalletValue": "Sprache",
-  "tileVoiceWalletSub": "Tippen und sprechen",
+  "tileVoiceWalletValue": "Sprach Wallet",
+  "tileVoiceWalletSub": "Einfach sagen.",
   "vwLangDe": "Deutsch",
   "vwLangEn": "Englisch",
   "vwHintIdle": "{language}. Sag Token, Kamera oder Kontostand.",

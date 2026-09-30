@@ -11281,13 +11281,13 @@ abstract class AppLocalizations {
   /// No description provided for @tileVoiceWalletValue.
   ///
   /// In de, this message translates to:
-  /// **'Sprache'**
+  /// **'Sprach Wallet'**
   String get tileVoiceWalletValue;
 
   /// No description provided for @tileVoiceWalletSub.
   ///
   /// In de, this message translates to:
-  /// **'Tippen und sprechen'**
+  /// **'Einfach sagen.'**
   String get tileVoiceWalletSub;
 
   /// No description provided for @vwLangDe.

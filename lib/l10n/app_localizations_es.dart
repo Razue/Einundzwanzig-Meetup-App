@@ -6259,10 +6259,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tileVoiceWallet => 'Sats';
 
   @override
-  String get tileVoiceWalletValue => 'Voz';
+  String get tileVoiceWalletValue => 'Wallet de voz';
 
   @override
-  String get tileVoiceWalletSub => 'Toca y habla';
+  String get tileVoiceWalletSub => 'Solo decirlo.';
 
   @override
   String get vwLangDe => 'alemán';
