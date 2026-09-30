@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/speech/on_device_speech.dart';
+import '../services/speech/on_device_voice.dart';
 import '../services/speech/system_on_device_speech.dart';
+import '../services/speech/system_on_device_voice.dart';
 import '../services/voice_wallet/cashu_mint.dart';
 import '../services/voice_wallet/cashu_wallet.dart';
+import '../services/voice_wallet/spoken_reply.dart';
 import '../services/voice_wallet/wallet_command.dart';
 import '../theme.dart';
 import 'cashu_scan_screen.dart';
@@ -16,9 +21,10 @@ import 'cashu_scan_screen.dart';
 /// als QR, der Rest bleibt auf dem Gerät.
 class VoiceWalletScreen extends StatefulWidget {
   final OnDeviceSpeech? speech;
+  final OnDeviceVoice? voice;
   final CashuWallet? wallet;
 
-  const VoiceWalletScreen({super.key, this.speech, this.wallet});
+  const VoiceWalletScreen({super.key, this.speech, this.voice, this.wallet});
 
   @override
   State<VoiceWalletScreen> createState() => _VoiceWalletScreenState();
@@ -27,6 +33,7 @@ class VoiceWalletScreen extends StatefulWidget {
 class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     with SingleTickerProviderStateMixin {
   late final OnDeviceSpeech _speech;
+  late final OnDeviceVoice _voice;
   late final CashuWallet _wallet;
   late final AnimationController _pulse;
 
@@ -44,6 +51,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   void initState() {
     super.initState();
     _speech = widget.speech ?? SystemOnDeviceSpeech();
+    _voice = widget.voice ?? SystemOnDeviceVoice();
     _wallet = widget.wallet ?? CashuWallet();
     _pulse = AnimationController(
       vsync: this,
@@ -55,6 +63,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   void dispose() {
     _pulse.dispose();
     _speech.stop();
+    _voice.stop();
     super.dispose();
   }
 
@@ -64,6 +73,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       _localeId() == 'de_DE' ? t.vwLangDe : t.vwLangEn;
 
   Future<void> _toggle() async {
+    await _voice.stop();
     if (_listening) {
       await _speech.stop();
       if (mounted) setState(() => _listening = false);
@@ -76,12 +86,14 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     );
     if (!mounted) return;
     if (failure != null) {
+      final failureText = _failureText(failure);
       setState(() {
         _listening = false;
         _huge = false;
-        _primary = _failureText(failure);
+        _primary = failureText;
         _caption = '';
       });
+      _say(failureText);
       return;
     }
     setState(() => _listening = true);
@@ -99,7 +111,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     }
   }
 
-  void _onWords(String words, bool isFinal) {
+  Future<void> _onWords(String words, bool isFinal) async {
     if (!mounted || _busy) return;
     if (!isFinal) {
       setState(() {
@@ -109,9 +121,16 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       });
       return;
     }
-    _speech.stop();
+    await _speech.stop();
+    if (!mounted) return;
     setState(() => _listening = false);
-    _apply(words);
+    await _apply(words);
+  }
+
+  void _say(String? text) {
+    if (!mounted || text == null || text.isEmpty) return;
+    final language = Localizations.localeOf(context).languageCode;
+    unawaited(_voice.speak(text, languageCode: language));
   }
 
   Future<void> _apply(String words) async {
@@ -139,6 +158,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         return;
       }
       if (command.kind == WalletCommandKind.cancel) {
+        await _voice.stop();
         setState(() {
           _pendingSats = null;
           _awaitingAmount = false;
@@ -180,6 +200,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
             _primary = t.vwAskAmount;
             _caption = '';
           });
+          _say(t.vwAskAmount);
           return;
         }
         setState(() {
@@ -190,6 +211,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           _primary = _group(command.sats!);
           _caption = t.vwHintConfirm;
         });
+        _say(spokenReply(amount: command.sats, sentence: t.vwHintConfirm));
       case WalletCommandKind.help:
         setState(() {
           _outgoing = null;
@@ -197,6 +219,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           _primary = t.vwHelp;
           _caption = '';
         });
+        _say(t.vwHelp);
       case WalletCommandKind.confirm:
       case WalletCommandKind.cancel:
       case WalletCommandKind.unknown:
@@ -213,6 +236,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
               _caption = '';
             }
           });
+          _say(spokenReply(amount: pending, sentence: t.vwUnknown));
         }
     }
   }
@@ -228,6 +252,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _primary = _group(balance);
         _caption = balance == 0 ? t.vwEmpty : t.vwBalanceCaption;
       });
+      _say(spokenReply(amount: balance));
     } on CashuException catch (e) {
       _showFail(e.fail);
     }
@@ -245,6 +270,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _caption = t.vwSent(sent.balance);
         _outgoing = sent.token;
       });
+      _say(spokenReply(amount: sent.amount, sentence: t.vwSent(sent.balance)));
     } on CashuException catch (e) {
       _showFail(e.fail);
     }
@@ -273,6 +299,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _primary = _group(received.received);
         _caption = t.vwReceived(received.balance);
       });
+      _say(spokenReply(amount: received.received, sentence: t.vwReceived(received.balance)));
     } on CashuException catch (e) {
       _showFail(e.fail, e.detail);
     }
@@ -309,6 +336,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       _primary = text;
       _caption = caption;
     });
+    _say(text);
   }
 
   String _group(int sats) {
