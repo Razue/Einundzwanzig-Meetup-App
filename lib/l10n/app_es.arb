@@ -2746,5 +2746,24 @@
   "vwHelp": "Saldo. Escanear token. Envía 1000 sats.",
   "vwSpeechOff": "Falta el reconocimiento en el dispositivo. No se envió nada.",
   "vwSpeechDenied": "El micrófono o el reconocimiento de voz están desactivados.",
-  "vwAndroidOff": "En Android el micrófono permanece apagado mientras el reconocimiento pueda recurrir a la red."
+  "vwAndroidOff": "En Android el micrófono permanece apagado mientras el reconocimiento pueda recurrir a la red.",
+  "vwWorking": "Un momento.",
+  "vwAlready": "Este ya lo tienes.",
+  "vwSpent": "Este token ya está canjeado.",
+  "vwNotEnough": "El saldo no alcanza.",
+  "vwMintNo": "El mint lo ha rechazado.",
+  "vwNet": "Sin conexión con el mint.",
+  "vwBadToken": "Este token no se puede canjear.",
+  "vwReceived": "Canjeado. Saldo {balance}.",
+  "@vwReceived": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  },
+  "vwSent": "Listo para entregar. Saldo {balance}.",
+  "@vwSent": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  }
 }

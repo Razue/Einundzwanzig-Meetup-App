@@ -6317,4 +6317,35 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get vwAndroidOff =>
       'En Android el micrófono permanece apagado mientras el reconocimiento pueda recurrir a la red.';
+
+  @override
+  String get vwWorking => 'Un momento.';
+
+  @override
+  String get vwAlready => 'Este ya lo tienes.';
+
+  @override
+  String get vwSpent => 'Este token ya está canjeado.';
+
+  @override
+  String get vwNotEnough => 'El saldo no alcanza.';
+
+  @override
+  String get vwMintNo => 'El mint lo ha rechazado.';
+
+  @override
+  String get vwNet => 'Sin conexión con el mint.';
+
+  @override
+  String get vwBadToken => 'Este token no se puede canjear.';
+
+  @override
+  String vwReceived(int balance) {
+    return 'Canjeado. Saldo $balance.';
+  }
+
+  @override
+  String vwSent(int balance) {
+    return 'Listo para entregar. Saldo $balance.';
+  }
 }

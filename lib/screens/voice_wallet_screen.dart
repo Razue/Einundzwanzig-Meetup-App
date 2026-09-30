@@ -1,22 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/speech/on_device_speech.dart';
 import '../services/speech/system_on_device_speech.dart';
-import '../services/voice_wallet/cashu_token_amount.dart';
+import '../services/voice_wallet/cashu_mint.dart';
+import '../services/voice_wallet/cashu_wallet.dart';
 import '../services/voice_wallet/wallet_command.dart';
 import '../theme.dart';
 import 'cashu_scan_screen.dart';
 
 /// Leere Wallet-Seite. Ein Mikrofon, sonst nichts.
 ///
-/// Der Kontostand ist noch immer 0: Token werden hier noch nicht gehalten.
-/// Senden merkt den Betrag nur vor. Scannen zeigt den Betrag eines
-/// `cashuA`-Tokens, ohne ihn einloesen.
+/// Scannen löst den Token beim Mint ein. Senden zeigt den neuen Token
+/// als QR, der Rest bleibt auf dem Gerät.
 class VoiceWalletScreen extends StatefulWidget {
   final OnDeviceSpeech? speech;
+  final CashuWallet? wallet;
 
-  const VoiceWalletScreen({super.key, this.speech});
+  const VoiceWalletScreen({super.key, this.speech, this.wallet});
 
   @override
   State<VoiceWalletScreen> createState() => _VoiceWalletScreenState();
@@ -25,11 +27,14 @@ class VoiceWalletScreen extends StatefulWidget {
 class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     with SingleTickerProviderStateMixin {
   late final OnDeviceSpeech _speech;
+  late final CashuWallet _wallet;
   late final AnimationController _pulse;
 
   bool _listening = false;
+  bool _busy = false;
   bool _awaitingAmount = false;
   int? _pendingSats;
+  String? _outgoing;
 
   String _primary = '';
   String _caption = '';
@@ -39,6 +44,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   void initState() {
     super.initState();
     _speech = widget.speech ?? SystemOnDeviceSpeech();
+    _wallet = widget.wallet ?? CashuWallet();
     _pulse = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -94,7 +100,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   }
 
   void _onWords(String words, bool isFinal) {
-    if (!mounted) return;
+    if (!mounted || _busy) return;
     if (!isFinal) {
       setState(() {
         _huge = false;
@@ -119,19 +125,24 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
 
     if (_pendingSats != null) {
       if (command.kind == WalletCommandKind.confirm) {
+        final amount = _pendingSats!;
         setState(() {
           _pendingSats = null;
           _awaitingAmount = false;
+          _busy = true;
+          _outgoing = null;
           _huge = false;
-          _primary = t.vwSendPending;
+          _primary = t.vwWorking;
           _caption = '';
         });
+        await _send(amount);
         return;
       }
       if (command.kind == WalletCommandKind.cancel) {
         setState(() {
           _pendingSats = null;
           _awaitingAmount = false;
+          _outgoing = null;
           _huge = false;
           _primary = '';
           _caption = '';
@@ -145,14 +156,18 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         setState(() {
           _awaitingAmount = false;
           _pendingSats = null;
-          _huge = true;
-          _primary = '0';
-          _caption = t.vwEmpty;
+          _outgoing = null;
+          _busy = true;
+          _huge = false;
+          _primary = t.vwWorking;
+          _caption = '';
         });
+        await _showBalance();
       case WalletCommandKind.scan:
         setState(() {
           _awaitingAmount = false;
           _pendingSats = null;
+          _outgoing = null;
         });
         await _scan();
       case WalletCommandKind.send:
@@ -160,6 +175,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           setState(() {
             _awaitingAmount = true;
             _pendingSats = null;
+            _outgoing = null;
             _huge = false;
             _primary = t.vwAskAmount;
             _caption = '';
@@ -169,12 +185,14 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         setState(() {
           _awaitingAmount = false;
           _pendingSats = command.sats;
+          _outgoing = null;
           _huge = true;
           _primary = _group(command.sats!);
           _caption = t.vwHintConfirm;
         });
       case WalletCommandKind.help:
         setState(() {
+          _outgoing = null;
           _huge = false;
           _primary = t.vwHelp;
           _caption = '';
@@ -199,28 +217,84 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     }
   }
 
+  Future<void> _showBalance() async {
+    try {
+      final balance = await _wallet.balance();
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      setState(() {
+        _busy = false;
+        _huge = true;
+        _primary = _group(balance);
+        _caption = balance == 0 ? t.vwEmpty : t.vwBalanceCaption;
+      });
+    } on CashuException catch (e) {
+      _showFail(e.fail);
+    }
+  }
+
+  Future<void> _send(int amount) async {
+    try {
+      final sent = await _wallet.send(amount);
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      setState(() {
+        _busy = false;
+        _huge = true;
+        _primary = _group(sent.amount);
+        _caption = t.vwSent(sent.balance);
+        _outgoing = sent.token;
+      });
+    } on CashuException catch (e) {
+      _showFail(e.fail);
+    }
+  }
+
   Future<void> _scan() async {
     final code = await Navigator.push<String>(
       context,
       MaterialPageRoute(builder: (_) => const CashuScanScreen()),
     );
     if (!mounted || code == null) return;
-    final t = AppLocalizations.of(context);
-    final peek = peekCashuToken(code);
     setState(() {
-      if (!peek.isCashu) {
-        _huge = false;
-        _primary = t.vwNotToken;
-        _caption = '';
-      } else if (peek.sats == null) {
-        _huge = false;
-        _primary = t.vwTokenNoAmount;
-        _caption = '';
-      } else {
+      _busy = true;
+      _outgoing = null;
+      _huge = false;
+      _primary = AppLocalizations.of(context).vwWorking;
+      _caption = '';
+    });
+    try {
+      final received = await _wallet.receive(code);
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      setState(() {
+        _busy = false;
         _huge = true;
-        _primary = _group(peek.sats!);
-        _caption = t.vwBalanceCaption;
-      }
+        _primary = _group(received.received);
+        _caption = t.vwReceived(received.balance);
+      });
+    } on CashuException catch (e) {
+      _showFail(e.fail);
+    }
+  }
+
+  void _showFail(CashuFail fail) {
+    if (!mounted) return;
+    final t = AppLocalizations.of(context);
+    final text = switch (fail) {
+      CashuFail.already => t.vwAlready,
+      CashuFail.spent => t.vwSpent,
+      CashuFail.notEnough => t.vwNotEnough,
+      CashuFail.network => t.vwNet,
+      CashuFail.mintRejected => t.vwMintNo,
+      CashuFail.badToken || CashuFail.badMint => t.vwBadToken,
+    };
+    setState(() {
+      _busy = false;
+      _huge = false;
+      _outgoing = null;
+      _primary = text;
+      _caption = '';
     });
   }
 
@@ -265,6 +339,21 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
                 _caption,
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: cTextSecondary, fontSize: 18, height: 1.3),
+              ),
+            ],
+            if (_outgoing != null) ...[
+              const SizedBox(height: 22),
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8),
+                child: QrImageView(
+                  data: _outgoing!,
+                  size: 220,
+                  padding: EdgeInsets.zero,
+                  backgroundColor: Colors.white,
+                  eyeStyle: const QrEyeStyle(color: Colors.black),
+                  dataModuleStyle: const QrDataModuleStyle(color: Colors.black),
+                ),
               ),
             ],
             const Spacer(),

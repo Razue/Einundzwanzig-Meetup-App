@@ -2746,5 +2746,24 @@
   "vwHelp": "Balance. Scan a token. Send 1000 sats.",
   "vwSpeechOff": "On-device recognition is missing. Nothing was sent.",
   "vwSpeechDenied": "Microphone or speech recognition is off.",
-  "vwAndroidOff": "On Android the microphone stays off while recognition could fall back to the network."
+  "vwAndroidOff": "On Android the microphone stays off while recognition could fall back to the network.",
+  "vwWorking": "One moment.",
+  "vwAlready": "You already have this one.",
+  "vwSpent": "This token is already redeemed.",
+  "vwNotEnough": "The balance does not cover that.",
+  "vwMintNo": "The mint refused.",
+  "vwNet": "No connection to the mint.",
+  "vwBadToken": "This token cannot be redeemed.",
+  "vwReceived": "Redeemed. Balance {balance}.",
+  "@vwReceived": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  },
+  "vwSent": "Ready to pass on. Balance {balance}.",
+  "@vwSent": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  }
 }

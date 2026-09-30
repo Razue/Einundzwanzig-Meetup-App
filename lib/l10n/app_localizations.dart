@@ -11385,6 +11385,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Auf Android bleibt das Mikrofon aus, solange die Erkennung ins Netz ausweichen könnte.'**
   String get vwAndroidOff;
+
+  /// No description provided for @vwWorking.
+  ///
+  /// In de, this message translates to:
+  /// **'Einen Moment.'**
+  String get vwWorking;
+
+  /// No description provided for @vwAlready.
+  ///
+  /// In de, this message translates to:
+  /// **'Den hast du schon.'**
+  String get vwAlready;
+
+  /// No description provided for @vwSpent.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Token ist schon eingelöst.'**
+  String get vwSpent;
+
+  /// No description provided for @vwNotEnough.
+  ///
+  /// In de, this message translates to:
+  /// **'Dafür reicht der Stand nicht.'**
+  String get vwNotEnough;
+
+  /// No description provided for @vwMintNo.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Mint hat abgelehnt.'**
+  String get vwMintNo;
+
+  /// No description provided for @vwNet.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Netz zum Mint.'**
+  String get vwNet;
+
+  /// No description provided for @vwBadToken.
+  ///
+  /// In de, this message translates to:
+  /// **'Diesen Token kann ich nicht einlösen.'**
+  String get vwBadToken;
+
+  /// No description provided for @vwReceived.
+  ///
+  /// In de, this message translates to:
+  /// **'Eingelöst. Stand {balance}.'**
+  String vwReceived(int balance);
+
+  /// No description provided for @vwSent.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Weitergeben. Stand {balance}.'**
+  String vwSent(int balance);
 }
 
 class _AppLocalizationsDelegate

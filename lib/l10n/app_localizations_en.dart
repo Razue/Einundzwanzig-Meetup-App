@@ -6281,4 +6281,35 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vwAndroidOff =>
       'On Android the microphone stays off while recognition could fall back to the network.';
+
+  @override
+  String get vwWorking => 'One moment.';
+
+  @override
+  String get vwAlready => 'You already have this one.';
+
+  @override
+  String get vwSpent => 'This token is already redeemed.';
+
+  @override
+  String get vwNotEnough => 'The balance does not cover that.';
+
+  @override
+  String get vwMintNo => 'The mint refused.';
+
+  @override
+  String get vwNet => 'No connection to the mint.';
+
+  @override
+  String get vwBadToken => 'This token cannot be redeemed.';
+
+  @override
+  String vwReceived(int balance) {
+    return 'Redeemed. Balance $balance.';
+  }
+
+  @override
+  String vwSent(int balance) {
+    return 'Ready to pass on. Balance $balance.';
+  }
 }

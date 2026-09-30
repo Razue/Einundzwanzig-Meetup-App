@@ -2768,5 +2768,24 @@
   "vwHelp": "Kontostand. Token scannen. Schick 1000 Sats.",
   "vwSpeechOff": "Die Erkennung auf dem Gerät fehlt. Es wurde nichts verschickt.",
   "vwSpeechDenied": "Mikrofon oder Spracherkennung ist aus.",
-  "vwAndroidOff": "Auf Android bleibt das Mikrofon aus, solange die Erkennung ins Netz ausweichen könnte."
+  "vwAndroidOff": "Auf Android bleibt das Mikrofon aus, solange die Erkennung ins Netz ausweichen könnte.",
+  "vwWorking": "Einen Moment.",
+  "vwAlready": "Den hast du schon.",
+  "vwSpent": "Der Token ist schon eingelöst.",
+  "vwNotEnough": "Dafür reicht der Stand nicht.",
+  "vwMintNo": "Der Mint hat abgelehnt.",
+  "vwNet": "Kein Netz zum Mint.",
+  "vwBadToken": "Diesen Token kann ich nicht einlösen.",
+  "vwReceived": "Eingelöst. Stand {balance}.",
+  "@vwReceived": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  },
+  "vwSent": "Zum Weitergeben. Stand {balance}.",
+  "@vwSent": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  }
 }

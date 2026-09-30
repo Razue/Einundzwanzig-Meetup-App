@@ -6326,4 +6326,35 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get vwAndroidOff =>
       'Auf Android bleibt das Mikrofon aus, solange die Erkennung ins Netz ausweichen könnte.';
+
+  @override
+  String get vwWorking => 'Einen Moment.';
+
+  @override
+  String get vwAlready => 'Den hast du schon.';
+
+  @override
+  String get vwSpent => 'Der Token ist schon eingelöst.';
+
+  @override
+  String get vwNotEnough => 'Dafür reicht der Stand nicht.';
+
+  @override
+  String get vwMintNo => 'Der Mint hat abgelehnt.';
+
+  @override
+  String get vwNet => 'Kein Netz zum Mint.';
+
+  @override
+  String get vwBadToken => 'Diesen Token kann ich nicht einlösen.';
+
+  @override
+  String vwReceived(int balance) {
+    return 'Eingelöst. Stand $balance.';
+  }
+
+  @override
+  String vwSent(int balance) {
+    return 'Zum Weitergeben. Stand $balance.';
+  }
 }
