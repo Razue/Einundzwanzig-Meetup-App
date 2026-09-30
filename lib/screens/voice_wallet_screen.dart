@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,6 +12,7 @@ import '../services/speech/on_device_voice.dart';
 import '../services/speech/system_on_device_speech.dart';
 import '../services/speech/system_on_device_voice.dart';
 import '../services/voice_wallet/cashu_image.dart';
+import '../services/voice_wallet/clipboard_picture.dart';
 import '../services/voice_wallet/cashu_mint.dart';
 import '../services/voice_wallet/cashu_token.dart';
 import '../services/voice_wallet/cashu_ur.dart';
@@ -358,36 +361,54 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     final text = data?.text?.trim() ?? '';
     if (!mounted) return;
     final t = AppLocalizations.of(context);
-    if (text.isEmpty) {
-      await _tell(t.vwClipEmpty);
-      return;
-    }
-    if (urPart(text) != null && cashuReadHint(text) == 'none') {
-      final picture = readCashuPicture([
-        Barcode(rawValue: text),
-      ]);
-      if (picture.partial || picture.code == null) {
+    final token = _tokenFromText(text);
+    if (token != null) {
+      if (token.isEmpty) {
         await _tell(t.vwUrPart);
         return;
       }
-      await _redeem(picture.code!);
+      await _redeem(token);
       return;
     }
-    if (cashuReadHint(text) == 'none') {
-      await _tell(t.vwClipNone);
+    final path = await ClipboardPicture.file();
+    if (!mounted) return;
+    if (path != null) {
+      try {
+        await _readPicture(path);
+      } finally {
+        try {
+          await File(path).delete();
+        } on Object {
+          // Die temporäre Datei darf bleiben.
+        }
+      }
       return;
     }
-    await _redeem(text);
+    await _tell(text.isEmpty ? t.vwClipEmpty : t.vwClipNone);
+  }
+
+  String? _tokenFromText(String text) {
+    if (text.isEmpty) return null;
+    if (urPart(text) != null && cashuReadHint(text) == 'none') {
+      final picture = readCashuPicture([Barcode(rawValue: text)]);
+      return picture.code ?? '';
+    }
+    if (cashuReadHint(text) == 'none') return null;
+    return text;
   }
 
   Future<void> _gallery() async {
     final file = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (!mounted || file == null) return;
+    await _readPicture(file.path);
+  }
+
+  Future<void> _readPicture(String path) async {
     final t = AppLocalizations.of(context);
     final scanner = MobileScannerController(autoStart: false);
     try {
       final capture = await scanner.analyzeImage(
-        file.path,
+        path,
         formats: const [BarcodeFormat.qrCode],
       );
       final picture = readCashuPicture(capture?.barcodes ?? const []);
