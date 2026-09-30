@@ -2743,7 +2743,7 @@
   "vwWorking": "One moment.",
   "vwAlready": "You already have this one.",
   "vwSpent": "This token is already redeemed.",
-  "vwNotEnough": "The balance does not cover that.",
+  "vwNotEnough": "There aren't enough sats for that.",
   "vwMintNo": "The mint refused.",
   "vwNet": "No connection to the mint.",
   "vwBadToken": "I cannot read this Cashu code.",

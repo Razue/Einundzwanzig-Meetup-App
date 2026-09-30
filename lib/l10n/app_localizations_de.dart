@@ -6335,7 +6335,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vwSpent => 'Der Token ist schon eingelöst.';
 
   @override
-  String get vwNotEnough => 'Dafür reicht der Stand nicht.';
+  String get vwNotEnough => 'Dafür sind zu wenig Sats da.';
 
   @override
   String get vwMintNo => 'Der Mint hat abgelehnt.';

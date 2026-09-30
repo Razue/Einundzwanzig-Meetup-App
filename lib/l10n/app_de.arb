@@ -2765,7 +2765,7 @@
   "vwWorking": "Einen Moment.",
   "vwAlready": "Den hast du schon.",
   "vwSpent": "Der Token ist schon eingelöst.",
-  "vwNotEnough": "Dafür reicht der Stand nicht.",
+  "vwNotEnough": "Dafür sind zu wenig Sats da.",
   "vwMintNo": "Der Mint hat abgelehnt.",
   "vwNet": "Kein Netz zum Mint.",
   "vwBadToken": "Den Cashu-Code kann ich nicht lesen.",

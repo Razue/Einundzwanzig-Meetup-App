@@ -2743,7 +2743,7 @@
   "vwWorking": "Un momento.",
   "vwAlready": "Este ya lo tienes.",
   "vwSpent": "Este token ya está canjeado.",
-  "vwNotEnough": "El saldo no alcanza.",
+  "vwNotEnough": "No hay suficientes sats para eso.",
   "vwMintNo": "El mint lo ha rechazado.",
   "vwNet": "Sin conexión con el mint.",
   "vwBadToken": "No puedo leer este código Cashu.",

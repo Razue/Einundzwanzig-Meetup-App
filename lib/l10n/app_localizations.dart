@@ -11407,7 +11407,7 @@ abstract class AppLocalizations {
   /// No description provided for @vwNotEnough.
   ///
   /// In de, this message translates to:
-  /// **'Dafür reicht der Stand nicht.'**
+  /// **'Dafür sind zu wenig Sats da.'**
   String get vwNotEnough;
 
   /// No description provided for @vwMintNo.

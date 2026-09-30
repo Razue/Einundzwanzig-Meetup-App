@@ -6290,7 +6290,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vwSpent => 'This token is already redeemed.';
 
   @override
-  String get vwNotEnough => 'The balance does not cover that.';
+  String get vwNotEnough => 'There aren\'t enough sats for that.';
 
   @override
   String get vwMintNo => 'The mint refused.';
