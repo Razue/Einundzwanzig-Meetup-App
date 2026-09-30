@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -38,6 +36,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   late final AnimationController _pulse;
 
   bool _listening = false;
+  bool _handsFree = false;
+  bool _turn = false;
+  int _loop = 0;
   bool _busy = false;
   bool _awaitingAmount = false;
   int? _pendingSats;
@@ -61,6 +62,8 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
 
   @override
   void dispose() {
+    _handsFree = false;
+    _loop++;
     _pulse.dispose();
     _speech.stop();
     _voice.stop();
@@ -71,19 +74,54 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       onDeviceSpeechLocale(Localizations.localeOf(context).languageCode);
 
   Future<void> _toggle() async {
+    if (_handsFree) {
+      await _endLoop();
+      return;
+    }
     await _voice.stop();
     if (_listening) {
       await _speech.stop();
       if (mounted) setState(() => _listening = false);
       return;
     }
+    await _beginListen();
+  }
 
+  /// Gehalten: nach jeder Antwort wieder zuhören, bis man tippt oder
+  /// noch einmal hält.
+  Future<void> _hold() async {
+    if (_handsFree) {
+      await _endLoop();
+      return;
+    }
+    setState(() => _handsFree = true);
+    if (_listening) return;
+    await _voice.stop();
+    await _beginListen();
+  }
+
+  Future<void> _endLoop() async {
+    _handsFree = false;
+    _loop++;
+    await _voice.stop();
+    await _speech.stop();
+    if (mounted) setState(() => _listening = false);
+  }
+
+  Future<void> _beginListen() async {
+    final loop = _loop;
+    await _voice.stop();
+    if (!mounted || loop != _loop) return;
     final failure = await _speech.listen(
       localeId: _localeId(),
       onWords: _onWords,
     );
-    if (!mounted) return;
+    if (!mounted || loop != _loop) {
+      await _speech.stop();
+      return;
+    }
     if (failure != null) {
+      _handsFree = false;
       final failureText = _failureText(failure);
       setState(() {
         _listening = false;
@@ -91,7 +129,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _primary = failureText;
         _caption = '';
       });
-      _say(failureText);
+      await _say(failureText);
       return;
     }
     setState(() => _listening = true);
@@ -110,7 +148,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   }
 
   Future<void> _onWords(String words, bool isFinal) async {
-    if (!mounted || _busy) return;
+    if (!mounted || _busy || _turn) return;
     if (!isFinal) {
       setState(() {
         _huge = false;
@@ -119,16 +157,26 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       });
       return;
     }
-    await _speech.stop();
-    if (!mounted) return;
-    setState(() => _listening = false);
-    await _apply(words);
+    _turn = true;
+    final loop = _loop;
+    try {
+      await _speech.stop();
+      if (!mounted || loop != _loop) return;
+      setState(() => _listening = false);
+      await _apply(words);
+      if (!_handsFree || !mounted || loop != _loop) return;
+      await Future<void>.delayed(const Duration(milliseconds: 350));
+      if (!_handsFree || !mounted || loop != _loop) return;
+      await _beginListen();
+    } finally {
+      _turn = false;
+    }
   }
 
-  void _say(String? text) {
+  Future<void> _say(String? text) async {
     if (!mounted || text == null || text.isEmpty) return;
     final language = Localizations.localeOf(context).languageCode;
-    unawaited(_voice.speak(text, languageCode: language));
+    await _voice.speak(text, languageCode: language);
   }
 
   Future<void> _apply(String words) async {
@@ -200,7 +248,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
             _primary = t.vwAskAmount;
             _caption = '';
           });
-          _say(t.vwAskAmount);
+          await _say(t.vwAskAmount);
           return;
         }
         setState(() {
@@ -211,7 +259,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           _primary = _group(command.sats!);
           _caption = t.vwHintConfirm;
         });
-        _say(spokenReply(amount: command.sats, sentence: t.vwHintConfirm));
+        await _say(spokenReply(amount: command.sats, sentence: t.vwHintConfirm));
       case WalletCommandKind.help:
         setState(() {
           _outgoing = null;
@@ -219,7 +267,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           _primary = t.vwHelp;
           _caption = '';
         });
-        _say(t.vwHelp);
+        await _say(t.vwHelp);
       case WalletCommandKind.confirm:
       case WalletCommandKind.cancel:
       case WalletCommandKind.unknown:
@@ -236,7 +284,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
               _caption = '';
             }
           });
-          _say(spokenReply(amount: pending, sentence: t.vwUnknown));
+          await _say(spokenReply(amount: pending, sentence: t.vwUnknown));
         }
     }
   }
@@ -252,9 +300,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _primary = _group(balance);
         _caption = balance == 0 ? t.vwEmpty : t.vwBalanceCaption;
       });
-      _say(spokenReply(amount: balance));
+      await _say(spokenReply(amount: balance));
     } on CashuException catch (e) {
-      _showFail(e.fail);
+      await _showFail(e.fail);
     }
   }
 
@@ -270,9 +318,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _caption = t.vwSent(sent.balance);
         _outgoing = sent.token;
       });
-      _say(spokenReply(amount: sent.amount, sentence: t.vwSent(sent.balance)));
+      await _say(spokenReply(amount: sent.amount, sentence: t.vwSent(sent.balance)));
     } on CashuException catch (e) {
-      _showFail(e.fail);
+      await _showFail(e.fail);
     }
   }
 
@@ -299,18 +347,18 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _primary = _group(received.received);
         _caption = t.vwReceived(received.balance);
       });
-      _say(
+      await _say(
         spokenReply(
           amount: received.received,
           sentence: t.vwReceived(received.balance),
         ),
       );
     } on CashuException catch (e) {
-      _showFail(e.fail, e.detail);
+      await _showFail(e.fail, e.detail);
     }
   }
 
-  void _showFail(CashuFail fail, [String? detail]) {
+  Future<void> _showFail(CashuFail fail, [String? detail]) async {
     if (!mounted) return;
     final t = AppLocalizations.of(context);
     final text = switch (fail) {
@@ -342,7 +390,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       _primary = text;
       _caption = caption;
     });
-    _say(text);
+    await _say(text);
   }
 
   String _group(int sats) {
@@ -356,7 +404,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     final pad = MediaQuery.paddingOf(context);
     final hint = _listening
         ? t.vwHintListening
-        : (_pendingSats != null ? t.vwHintConfirm : t.vwHintIdle);
+        : (_pendingSats != null
+              ? t.vwHintConfirm
+              : (_handsFree ? '' : t.vwHintIdle));
 
     // Derselbe Rand links und rechts. Ein einseitiger Zuschlag
     // wuerde Text und Mikrofon aus der Mitte schieben.
@@ -423,6 +473,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
             Center(
               child: GestureDetector(
                 onTap: _toggle,
+                onLongPress: _hold,
                 child: ScaleTransition(
                   scale: Tween<double>(begin: 1, end: _listening ? 1.12 : 1.05)
                       .animate(

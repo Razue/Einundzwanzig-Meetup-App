@@ -28,6 +28,7 @@ class SystemOnDeviceVoice implements OnDeviceVoice {
         [IosTextToSpeechAudioCategoryOptions.defaultToSpeaker],
       );
       await _tts.setSpeechRate(0.5);
+      await _tts.awaitSpeakCompletion(true);
       await _useVoice(_language(languageCode));
       await _tts.speak(spoken);
     } on Object {
