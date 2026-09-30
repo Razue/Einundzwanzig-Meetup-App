@@ -6271,7 +6271,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get vwLangEn => 'inglés';
 
   @override
-  String get vwHintIdle => 'Di saldo, cámara o enviar sats.';
+  String get vwHintIdle => 'Di saldo, cámara, pegar o enviar sats.';
 
   @override
   String get vwHintListening => 'Escuchando.';
@@ -6302,7 +6302,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get vwUnknown => 'Otra vez.';
 
   @override
-  String get vwHelp => 'Saldo. Cámara. Enviar sats.';
+  String get vwHelp => 'Saldo. Cámara. Pegar. Imagen. Enviar sats.';
 
   @override
   String get vwSpeechOff =>
@@ -6339,6 +6339,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get vwNotCashu => 'No hay un código Cashu en la imagen.';
+
+  @override
+  String get vwClipEmpty => 'El portapapeles está vacío.';
+
+  @override
+  String get vwClipNone => 'Ahí no hay un código Cashu.';
+
+  @override
+  String get vwUrPart =>
+      'Eso es solo una parte. Para el código que cambia usa la cámara.';
 
   @override
   String get vwUrHold =>

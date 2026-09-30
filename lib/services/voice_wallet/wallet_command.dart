@@ -5,7 +5,17 @@
 // in einem gesprochenen Auftrag nehmen wir nicht an — ein verhoerter
 // Satz soll keine grosse Summe vormerken.
 
-enum WalletCommandKind { balance, scan, send, confirm, cancel, help, unknown }
+enum WalletCommandKind {
+  balance,
+  scan,
+  paste,
+  gallery,
+  send,
+  confirm,
+  cancel,
+  help,
+  unknown,
+}
 
 class WalletCommand {
   final WalletCommandKind kind;
@@ -35,6 +45,8 @@ WalletCommand parseWalletCommand(String raw) {
   final send = _hasWord(text, _send) || _hasPhrase(text, _sendPhrases);
   if (send && sats != null) return WalletCommand(WalletCommandKind.send, sats: sats);
   if (send) return const WalletCommand(WalletCommandKind.send);
+  if (_hasWord(text, _gallery)) return const WalletCommand(WalletCommandKind.gallery);
+  if (_hasWord(text, _paste)) return const WalletCommand(WalletCommandKind.paste);
   if (_isScan(text)) return const WalletCommand(WalletCommandKind.scan);
   return WalletCommand.unknown;
 }
@@ -122,6 +134,24 @@ const _scan = {
 const _scanPhrases = {
   'ku er',
   'q r',
+};
+
+const _paste = {
+  'einfuegen',
+  'einfugen',
+  'paste',
+  'zwischenablage',
+  'clipboard',
+};
+
+const _gallery = {
+  'galerie',
+  'gallery',
+  'album',
+  'bild',
+  'bilder',
+  'upload',
+  'screenshot',
 };
 
 const _send = {

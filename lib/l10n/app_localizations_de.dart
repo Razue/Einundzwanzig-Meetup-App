@@ -6281,7 +6281,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vwLangEn => 'Englisch';
 
   @override
-  String get vwHintIdle => 'Sag Kontostand, Kamera oder Sats senden.';
+  String get vwHintIdle => 'Sag Kontostand, Kamera, Einfügen oder Sats senden.';
 
   @override
   String get vwHintListening => 'Ich höre zu.';
@@ -6312,7 +6312,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vwUnknown => 'Noch einmal.';
 
   @override
-  String get vwHelp => 'Kontostand. Kamera. Sats senden.';
+  String get vwHelp => 'Kontostand. Kamera. Einfügen. Bild. Sats senden.';
 
   @override
   String get vwSpeechOff =>
@@ -6348,6 +6348,16 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get vwNotCashu => 'Kein Cashu-Code im Bild.';
+
+  @override
+  String get vwClipEmpty => 'Die Zwischenablage ist leer.';
+
+  @override
+  String get vwClipNone => 'Da ist kein Cashu-Code.';
+
+  @override
+  String get vwUrPart =>
+      'Das ist nur ein Teil. Für den wechselnden Code nimm die Kamera.';
 
   @override
   String get vwUrHold => 'Halte die Kamera auf den Code, bis er stehen bleibt.';

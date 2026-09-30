@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../l10n/app_localizations.dart';
@@ -6,7 +9,10 @@ import '../services/speech/on_device_speech.dart';
 import '../services/speech/on_device_voice.dart';
 import '../services/speech/system_on_device_speech.dart';
 import '../services/speech/system_on_device_voice.dart';
+import '../services/voice_wallet/cashu_image.dart';
 import '../services/voice_wallet/cashu_mint.dart';
+import '../services/voice_wallet/cashu_token.dart';
+import '../services/voice_wallet/cashu_ur.dart';
 import '../services/voice_wallet/cashu_wallet.dart';
 import '../services/voice_wallet/spoken_reply.dart';
 import '../services/voice_wallet/wallet_command.dart';
@@ -238,6 +244,20 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           _outgoing = null;
         });
         await _scan();
+      case WalletCommandKind.paste:
+        setState(() {
+          _awaitingAmount = false;
+          _pendingSats = null;
+          _outgoing = null;
+        });
+        await _paste();
+      case WalletCommandKind.gallery:
+        setState(() {
+          _awaitingAmount = false;
+          _pendingSats = null;
+          _outgoing = null;
+        });
+        await _gallery();
       case WalletCommandKind.send:
         if (command.sats == null) {
           setState(() {
@@ -330,6 +350,60 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       MaterialPageRoute(builder: (_) => const CashuScanScreen()),
     );
     if (!mounted || code == null) return;
+    await _redeem(code);
+  }
+
+  Future<void> _paste() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = data?.text?.trim() ?? '';
+    if (!mounted) return;
+    final t = AppLocalizations.of(context);
+    if (text.isEmpty) {
+      await _tell(t.vwClipEmpty);
+      return;
+    }
+    if (urPart(text) != null && cashuReadHint(text) == 'none') {
+      final picture = readCashuPicture([
+        Barcode(rawValue: text),
+      ]);
+      if (picture.partial || picture.code == null) {
+        await _tell(t.vwUrPart);
+        return;
+      }
+      await _redeem(picture.code!);
+      return;
+    }
+    if (cashuReadHint(text) == 'none') {
+      await _tell(t.vwClipNone);
+      return;
+    }
+    await _redeem(text);
+  }
+
+  Future<void> _gallery() async {
+    final file = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (!mounted || file == null) return;
+    final t = AppLocalizations.of(context);
+    final scanner = MobileScannerController(autoStart: false);
+    try {
+      final capture = await scanner.analyzeImage(
+        file.path,
+        formats: const [BarcodeFormat.qrCode],
+      );
+      final picture = readCashuPicture(capture?.barcodes ?? const []);
+      if (picture.code != null) {
+        await _redeem(picture.code!);
+        return;
+      }
+      await _tell(picture.partial ? t.vwUrPart : t.vwNotCashu);
+    } on Object {
+      if (mounted) await _tell(t.vwNotCashu);
+    } finally {
+      await scanner.dispose();
+    }
+  }
+
+  Future<void> _redeem(String code) async {
     setState(() {
       _busy = true;
       _outgoing = null;
@@ -389,6 +463,18 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       _outgoing = null;
       _primary = text;
       _caption = caption;
+    });
+    await _say(text);
+  }
+
+  Future<void> _tell(String text) async {
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _huge = false;
+      _outgoing = null;
+      _primary = text;
+      _caption = '';
     });
     await _say(text);
   }

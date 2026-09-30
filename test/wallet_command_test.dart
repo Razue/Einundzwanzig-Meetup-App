@@ -23,6 +23,10 @@ void main() {
     expect(kind('token senden'), WalletCommandKind.send);
     expect(kind('sats senden'), WalletCommandKind.send);
     expect(kind('tokensenden'), WalletCommandKind.send);
+    expect(kind('Einfügen'), WalletCommandKind.paste);
+    expect(kind('Galerie'), WalletCommandKind.gallery);
+    expect(kind('Bild einfügen'), WalletCommandKind.gallery);
+    expect(kind('Foto'), WalletCommandKind.scan);
   });
 
   test('Senden mit Ziffern und Zahlwoertern', () {

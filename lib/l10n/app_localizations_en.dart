@@ -6236,7 +6236,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vwLangEn => 'English';
 
   @override
-  String get vwHintIdle => 'Say balance, camera or send sats.';
+  String get vwHintIdle => 'Say balance, camera, paste or send sats.';
 
   @override
   String get vwHintListening => 'Listening.';
@@ -6267,7 +6267,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vwUnknown => 'Once more.';
 
   @override
-  String get vwHelp => 'Balance. Camera. Send sats.';
+  String get vwHelp => 'Balance. Camera. Paste. Picture. Send sats.';
 
   @override
   String get vwSpeechOff =>
@@ -6303,6 +6303,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vwNotCashu => 'No Cashu code in the picture.';
+
+  @override
+  String get vwClipEmpty => 'The clipboard is empty.';
+
+  @override
+  String get vwClipNone => 'There is no Cashu code.';
+
+  @override
+  String get vwUrPart =>
+      'That is only one part. Use the camera for the changing code.';
 
   @override
   String get vwUrHold => 'Hold the camera on the code until it stops changing.';

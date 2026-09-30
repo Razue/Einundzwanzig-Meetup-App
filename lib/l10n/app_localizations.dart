@@ -11305,7 +11305,7 @@ abstract class AppLocalizations {
   /// No description provided for @vwHintIdle.
   ///
   /// In de, this message translates to:
-  /// **'Sag Kontostand, Kamera oder Sats senden.'**
+  /// **'Sag Kontostand, Kamera, Einfügen oder Sats senden.'**
   String get vwHintIdle;
 
   /// No description provided for @vwHintListening.
@@ -11365,7 +11365,7 @@ abstract class AppLocalizations {
   /// No description provided for @vwHelp.
   ///
   /// In de, this message translates to:
-  /// **'Kontostand. Kamera. Sats senden.'**
+  /// **'Kontostand. Kamera. Einfügen. Bild. Sats senden.'**
   String get vwHelp;
 
   /// No description provided for @vwSpeechOff.
@@ -11433,6 +11433,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Kein Cashu-Code im Bild.'**
   String get vwNotCashu;
+
+  /// No description provided for @vwClipEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Zwischenablage ist leer.'**
+  String get vwClipEmpty;
+
+  /// No description provided for @vwClipNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Da ist kein Cashu-Code.'**
+  String get vwClipNone;
+
+  /// No description provided for @vwUrPart.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist nur ein Teil. Für den wechselnden Code nimm die Kamera.'**
+  String get vwUrPart;
 
   /// No description provided for @vwUrHold.
   ///
