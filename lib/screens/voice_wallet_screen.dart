@@ -319,9 +319,16 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final pad = MediaQuery.paddingOf(context);
     final hint = _listening
         ? t.vwHintListening
         : (_pendingSats != null ? t.vwHintConfirm : t.vwHintIdle(_languageName(t)));
+
+    // Seitlicher Rand nur auf einer Seite wuerde die Spalte verschieben.
+    // Dazu ein kleiner Schritt nach rechts: auf dem breiten Display
+    // stand Text und Mikrofon sonst knapp links der Mitte.
+    final side = pad.left > pad.right ? pad.left : pad.right;
+    const nudge = 10.0;
 
     return Scaffold(
       backgroundColor: cDark,
@@ -331,10 +338,11 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         foregroundColor: cTextSecondary,
         title: const SizedBox.shrink(),
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 0, 28, 28),
-          child: Column(children: [
+      body: Padding(
+        padding: EdgeInsets.fromLTRB(28 + side + nudge, 0, 28 + side - nudge, 28 + pad.bottom),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
             const Spacer(),
             Text(
               _primary,
@@ -394,7 +402,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
               textAlign: TextAlign.center,
               style: const TextStyle(color: cTextTertiary, fontSize: 15, height: 1.35),
             ),
-          ]),
+          ],
         ),
       ),
     );
