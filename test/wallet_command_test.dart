@@ -1,0 +1,43 @@
+import 'package:einundzwanzig_meetup_app/services/voice_wallet/wallet_command.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  WalletCommandKind kind(String words) => parseWalletCommand(words).kind;
+  int? sats(String words) => parseWalletCommand(words).sats;
+
+  test('Kontostand und Balance', () {
+    expect(kind('Wie ist der Kontostand?'), WalletCommandKind.balance);
+    expect(kind("what's my balance"), WalletCommandKind.balance);
+    expect(kind('how much do I have'), WalletCommandKind.balance);
+  });
+
+  test('Scannen', () {
+    expect(kind('Token scannen'), WalletCommandKind.scan);
+    expect(kind('scan the token'), WalletCommandKind.scan);
+    expect(kind('empfangen'), WalletCommandKind.scan);
+  });
+
+  test('Senden mit Ziffern und Zahlwoertern', () {
+    expect(sats('schick 1000 sats'), 1000);
+    expect(sats('schick 1.000 Sats'), 1000);
+    expect(sats('sende einundzwanzig sats'), 21);
+    expect(sats('send twenty one sats'), 21);
+    expect(sats('send two thousand sats'), 2000);
+    expect(sats('schick zweitausend'), 2000);
+    expect(sats('pay a hundred'), 100);
+    expect(kind('schick'), WalletCommandKind.send);
+    expect(sats('schick'), isNull);
+  });
+
+  test('Bestaetigen, abbrechen, Hilfe, unbekannt', () {
+    expect(kind('ja'), WalletCommandKind.confirm);
+    expect(kind('yes'), WalletCommandKind.confirm);
+    expect(kind('nein'), WalletCommandKind.cancel);
+    expect(kind('Hilfe'), WalletCommandKind.help);
+    expect(kind('hello there'), WalletCommandKind.unknown);
+  });
+
+  test('Eine gesprochene Summe ueber ein Bitcoin wird nicht angenommen', () {
+    expect(parseSpokenSats('send 100000001 sats'), isNull);
+  });
+}

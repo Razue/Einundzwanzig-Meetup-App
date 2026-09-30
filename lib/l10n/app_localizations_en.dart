@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6220,4 +6219,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String prCaching(int percent) {
     return 'Loading song ($percent %) — seeking works once it is fully downloaded. It stays saved afterwards.';
   }
+
+  @override
+  String get tileVoiceWallet => 'Sats';
+
+  @override
+  String get tileVoiceWalletValue => 'Voice';
+
+  @override
+  String get tileVoiceWalletSub => 'Tap and speak';
+
+  @override
+  String get vwLangDe => 'German';
+
+  @override
+  String get vwLangEn => 'English';
+
+  @override
+  String vwHintIdle(String language) {
+    return 'Tap the microphone and speak $language.';
+  }
+
+  @override
+  String get vwHintListening => 'Listening.';
+
+  @override
+  String get vwHintConfirm => 'Say yes or no.';
+
+  @override
+  String get vwAskAmount => 'How many sats?';
+
+  @override
+  String get vwBalanceCaption => 'On this device';
+
+  @override
+  String get vwEmpty => 'No tokens here yet.';
+
+  @override
+  String get vwSendPending => 'Noted. The token comes with the wallet.';
+
+  @override
+  String get vwNotToken => 'Not a Cashu token.';
+
+  @override
+  String get vwTokenNoAmount =>
+      'Cashu token. This version cannot read the amount yet.';
+
+  @override
+  String get vwUnknown => 'Once more.';
+
+  @override
+  String get vwHelp => 'Balance. Scan a token. Send 1000 sats.';
+
+  @override
+  String get vwSpeechOff =>
+      'On-device recognition is missing. Nothing was sent.';
+
+  @override
+  String get vwSpeechDenied => 'Microphone or speech recognition is off.';
+
+  @override
+  String get vwAndroidOff =>
+      'On Android the microphone stays off while recognition could fall back to the network.';
 }

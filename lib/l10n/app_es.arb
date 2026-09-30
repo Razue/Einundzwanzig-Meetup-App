@@ -2720,5 +2720,31 @@
         "type": "int"
       }
     }
-  }
+  },
+  "tileVoiceWallet": "Sats",
+  "tileVoiceWalletValue": "Voz",
+  "tileVoiceWalletSub": "Toca y habla",
+  "vwLangDe": "alemán",
+  "vwLangEn": "inglés",
+  "vwHintIdle": "Toca el micrófono y habla en {language}.",
+  "@vwHintIdle": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "vwHintListening": "Escuchando.",
+  "vwHintConfirm": "Di sí o no.",
+  "vwAskAmount": "¿Cuántos sats?",
+  "vwBalanceCaption": "En este dispositivo",
+  "vwEmpty": "Aquí todavía no hay tokens.",
+  "vwSendPending": "Anotado. El token llegará con la wallet.",
+  "vwNotToken": "No es un token Cashu.",
+  "vwTokenNoAmount": "Token Cashu. Esta versión aún no puede leer el importe.",
+  "vwUnknown": "Otra vez.",
+  "vwHelp": "Saldo. Escanear token. Envía 1000 sats.",
+  "vwSpeechOff": "Falta el reconocimiento en el dispositivo. No se envió nada.",
+  "vwSpeechDenied": "El micrófono o el reconocimiento de voz están desactivados.",
+  "vwAndroidOff": "En Android el micrófono permanece apagado mientras el reconocimiento pueda recurrir a la red."
 }

@@ -71,6 +71,7 @@ dependencies:
 
   flutter_svg: any
   provider: ^6.1.5+1
+  speech_to_text: ^7.5.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

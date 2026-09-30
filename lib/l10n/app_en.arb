@@ -2720,5 +2720,31 @@
         "type": "int"
       }
     }
-  }
+  },
+  "tileVoiceWallet": "Sats",
+  "tileVoiceWalletValue": "Voice",
+  "tileVoiceWalletSub": "Tap and speak",
+  "vwLangDe": "German",
+  "vwLangEn": "English",
+  "vwHintIdle": "Tap the microphone and speak {language}.",
+  "@vwHintIdle": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "vwHintListening": "Listening.",
+  "vwHintConfirm": "Say yes or no.",
+  "vwAskAmount": "How many sats?",
+  "vwBalanceCaption": "On this device",
+  "vwEmpty": "No tokens here yet.",
+  "vwSendPending": "Noted. The token comes with the wallet.",
+  "vwNotToken": "Not a Cashu token.",
+  "vwTokenNoAmount": "Cashu token. This version cannot read the amount yet.",
+  "vwUnknown": "Once more.",
+  "vwHelp": "Balance. Scan a token. Send 1000 sats.",
+  "vwSpeechOff": "On-device recognition is missing. Nothing was sent.",
+  "vwSpeechDenied": "Microphone or speech recognition is off.",
+  "vwAndroidOff": "On Android the microphone stays off while recognition could fall back to the network."
 }

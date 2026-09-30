@@ -11271,6 +11271,120 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Lied wird geladen ({percent} %) — Springen ist möglich, sobald es vollständig da ist. Danach bleibt es gespeichert.'**
   String prCaching(int percent);
+
+  /// No description provided for @tileVoiceWallet.
+  ///
+  /// In de, this message translates to:
+  /// **'Sats'**
+  String get tileVoiceWallet;
+
+  /// No description provided for @tileVoiceWalletValue.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprache'**
+  String get tileVoiceWalletValue;
+
+  /// No description provided for @tileVoiceWalletSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippen und sprechen'**
+  String get tileVoiceWalletSub;
+
+  /// No description provided for @vwLangDe.
+  ///
+  /// In de, this message translates to:
+  /// **'Deutsch'**
+  String get vwLangDe;
+
+  /// No description provided for @vwLangEn.
+  ///
+  /// In de, this message translates to:
+  /// **'Englisch'**
+  String get vwLangEn;
+
+  /// No description provided for @vwHintIdle.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe auf das Mikrofon und sprich {language}.'**
+  String vwHintIdle(String language);
+
+  /// No description provided for @vwHintListening.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich höre zu.'**
+  String get vwHintListening;
+
+  /// No description provided for @vwHintConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Sag ja oder nein.'**
+  String get vwHintConfirm;
+
+  /// No description provided for @vwAskAmount.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie viele Sats?'**
+  String get vwAskAmount;
+
+  /// No description provided for @vwBalanceCaption.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf dem Gerät'**
+  String get vwBalanceCaption;
+
+  /// No description provided for @vwEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Token hier.'**
+  String get vwEmpty;
+
+  /// No description provided for @vwSendPending.
+  ///
+  /// In de, this message translates to:
+  /// **'Vorgemerkt. Der Token kommt mit der Wallet.'**
+  String get vwSendPending;
+
+  /// No description provided for @vwNotToken.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Cashu-Token.'**
+  String get vwNotToken;
+
+  /// No description provided for @vwTokenNoAmount.
+  ///
+  /// In de, this message translates to:
+  /// **'Cashu-Token. Den Betrag kann diese Fassung noch nicht lesen.'**
+  String get vwTokenNoAmount;
+
+  /// No description provided for @vwUnknown.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch einmal.'**
+  String get vwUnknown;
+
+  /// No description provided for @vwHelp.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontostand. Token scannen. Schick 1000 Sats.'**
+  String get vwHelp;
+
+  /// No description provided for @vwSpeechOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Erkennung auf dem Gerät fehlt. Es wurde nichts verschickt.'**
+  String get vwSpeechOff;
+
+  /// No description provided for @vwSpeechDenied.
+  ///
+  /// In de, this message translates to:
+  /// **'Mikrofon oder Spracherkennung ist aus.'**
+  String get vwSpeechDenied;
+
+  /// No description provided for @vwAndroidOff.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf Android bleibt das Mikrofon aus, solange die Erkennung ins Netz ausweichen könnte.'**
+  String get vwAndroidOff;
 }
 
 class _AppLocalizationsDelegate

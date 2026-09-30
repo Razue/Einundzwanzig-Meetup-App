@@ -50,9 +50,11 @@
 	<key>NSCalendarsUsageDescription</key>
 	<string>Diese App kann Meetup-Termine in deinen Kalender eintragen.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Diese App nutzt die Kamera, um Meetup- und Badge-QR-Codes zu scannen.</string>
+	<string>Diese App nutzt die Kamera, um Meetup-, Badge- und Cashu-QR-Codes zu scannen.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Die App spielt Audio (PlebRap) über ein Audio-Framework ab, das Mikrofon-APIs enthält. Die App nimmt nichts auf und greift nicht auf das Mikrofon zu.</string>
+	<string>Die App nutzt das Mikrofon für gesprochene Wallet-Befehle. Die Erkennung läuft auf dem iPhone, die Aufnahme wird nicht verschickt.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Gesprochene Wallet-Befehle werden auf dem iPhone erkannt. Die Aufnahme verlässt das Gerät nicht.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Diese App nutzt deinen Standort, um Meetups in deiner Nähe anzuzeigen.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
