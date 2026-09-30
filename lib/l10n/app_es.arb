@@ -2755,6 +2755,14 @@
   "vwNet": "Sin conexión con el mint.",
   "vwBadToken": "No puedo leer este código Cashu.",
   "vwNotCashu": "No hay un código Cashu en la imagen.",
+  "vwUrHold": "Mantén la cámara sobre el código hasta que deje de cambiar.",
+  "vwUrProgress": "Parte {done} de {total}.",
+  "@vwUrProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "vwLightning": "Eso es una factura Lightning, no un token.",
   "vwOnlySat": "Solo tokens en satoshis.",
   "vwFeeHigh": "La comisión es mayor que el token.",

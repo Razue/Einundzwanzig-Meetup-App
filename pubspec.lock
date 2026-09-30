@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.25"
+  bc_ur:
+    dependency: "direct main"
+    description:
+      name: bc_ur
+      sha256: "746530094ce87912b7517eddf01905f75750cb3b215d8613b58b5bf8f40592a8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   bech32:
     dependency: "direct main"
     description:

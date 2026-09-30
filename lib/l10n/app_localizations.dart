@@ -11434,6 +11434,18 @@ abstract class AppLocalizations {
   /// **'Kein Cashu-Code im Bild.'**
   String get vwNotCashu;
 
+  /// No description provided for @vwUrHold.
+  ///
+  /// In de, this message translates to:
+  /// **'Halte die Kamera auf den Code, bis er stehen bleibt.'**
+  String get vwUrHold;
+
+  /// No description provided for @vwUrProgress.
+  ///
+  /// In de, this message translates to:
+  /// **'Teil {done} von {total}.'**
+  String vwUrProgress(int done, int total);
+
   /// No description provided for @vwLightning.
   ///
   /// In de, this message translates to:

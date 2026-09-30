@@ -6352,6 +6352,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vwNotCashu => 'Kein Cashu-Code im Bild.';
 
   @override
+  String get vwUrHold => 'Halte die Kamera auf den Code, bis er stehen bleibt.';
+
+  @override
+  String vwUrProgress(int done, int total) {
+    return 'Teil $done von $total.';
+  }
+
+  @override
   String get vwLightning => 'Das ist eine Lightning-Rechnung, kein Token.';
 
   @override

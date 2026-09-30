@@ -2755,6 +2755,14 @@
   "vwNet": "No connection to the mint.",
   "vwBadToken": "I cannot read this Cashu code.",
   "vwNotCashu": "No Cashu code in the picture.",
+  "vwUrHold": "Hold the camera on the code until it stops changing.",
+  "vwUrProgress": "Part {done} of {total}.",
+  "@vwUrProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "vwLightning": "That is a Lightning invoice, not a token.",
   "vwOnlySat": "Only satoshi tokens.",
   "vwFeeHigh": "The fee is higher than the token.",

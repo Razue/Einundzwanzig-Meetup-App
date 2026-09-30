@@ -2777,6 +2777,14 @@
   "vwNet": "Kein Netz zum Mint.",
   "vwBadToken": "Den Cashu-Code kann ich nicht lesen.",
   "vwNotCashu": "Kein Cashu-Code im Bild.",
+  "vwUrHold": "Halte die Kamera auf den Code, bis er stehen bleibt.",
+  "vwUrProgress": "Teil {done} von {total}.",
+  "@vwUrProgress": {
+    "placeholders": {
+      "done": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
   "vwLightning": "Das ist eine Lightning-Rechnung, kein Token.",
   "vwOnlySat": "Nur Satoshi-Token.",
   "vwFeeHigh": "Die Gebühr ist höher als der Token.",
