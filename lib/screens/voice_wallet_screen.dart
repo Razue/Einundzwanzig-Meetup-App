@@ -69,9 +69,6 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
 
   String _localeId() => onDeviceSpeechLocale(Localizations.localeOf(context).languageCode);
 
-  String _languageName(AppLocalizations t) =>
-      _localeId() == 'de_DE' ? t.vwLangDe : t.vwLangEn;
-
   Future<void> _toggle() async {
     await _voice.stop();
     if (_listening) {
@@ -350,7 +347,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     final pad = MediaQuery.paddingOf(context);
     final hint = _listening
         ? t.vwHintListening
-        : (_pendingSats != null ? t.vwHintConfirm : t.vwHintIdle(_languageName(t)));
+        : (_pendingSats != null ? t.vwHintConfirm : t.vwHintIdle);
 
     // Seitlicher Rand nur auf einer Seite wuerde die Spalte verschieben.
     // Dazu ein kleiner Schritt nach rechts: auf dem breiten Display

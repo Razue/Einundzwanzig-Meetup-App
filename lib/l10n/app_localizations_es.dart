@@ -6271,9 +6271,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get vwLangEn => 'inglés';
 
   @override
-  String vwHintIdle(String language) {
-    return '$language. Di token, cámara o saldo.';
-  }
+  String get vwHintIdle => 'Di saldo, cámara o enviar sats.';
 
   @override
   String get vwHintListening => 'Escuchando.';
@@ -6304,7 +6302,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get vwUnknown => 'Otra vez.';
 
   @override
-  String get vwHelp => 'Token. Cámara. Saldo. Envía 1000 sats.';
+  String get vwHelp => 'Saldo. Cámara. Enviar sats.';
 
   @override
   String get vwSpeechOff =>

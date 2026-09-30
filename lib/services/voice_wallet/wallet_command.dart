@@ -32,7 +32,7 @@ WalletCommand parseWalletCommand(String raw) {
   if (_hasPhrase(text, _balance)) return const WalletCommand(WalletCommandKind.balance);
 
   final sats = parseSpokenSats(text);
-  final send = _hasWord(text, _send);
+  final send = _hasWord(text, _send) || _hasPhrase(text, _sendPhrases);
   if (send && sats != null) return WalletCommand(WalletCommandKind.send, sats: sats);
   if (send) return const WalletCommand(WalletCommandKind.send);
   if (_isScan(text)) return const WalletCommand(WalletCommandKind.scan);
@@ -127,6 +127,7 @@ const _scanPhrases = {
 const _send = {
   'schick',
   'schicke',
+  'schicken',
   'sende',
   'senden',
   'send',
@@ -134,6 +135,16 @@ const _send = {
   'pay',
   'ueberweise',
   'ueberweisen',
+};
+
+const _sendPhrases = {
+  'token senden',
+  'token sende',
+  'tokensenden',
+  'sats senden',
+  'sats sende',
+  'satssenden',
+  'satz senden',
 };
 
 bool _exact(String text, Set<String> words) => words.contains(text);

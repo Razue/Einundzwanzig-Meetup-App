@@ -20,6 +20,9 @@ void main() {
     expect(kind('QR-Code'), WalletCommandKind.scan);
     expect(kind('empfangen'), WalletCommandKind.scan);
     expect(kind('schick den token'), WalletCommandKind.send);
+    expect(kind('token senden'), WalletCommandKind.send);
+    expect(kind('sats senden'), WalletCommandKind.send);
+    expect(kind('tokensenden'), WalletCommandKind.send);
   });
 
   test('Senden mit Ziffern und Zahlwoertern', () {

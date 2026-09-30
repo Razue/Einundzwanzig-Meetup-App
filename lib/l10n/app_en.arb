@@ -2726,14 +2726,7 @@
   "tileVoiceWalletSub": "Just say it.",
   "vwLangDe": "German",
   "vwLangEn": "English",
-  "vwHintIdle": "{language}. Say token, camera or balance.",
-  "@vwHintIdle": {
-    "placeholders": {
-      "language": {
-        "type": "String"
-      }
-    }
-  },
+  "vwHintIdle": "Say balance, camera or send sats.",
   "vwHintListening": "Listening.",
   "vwHintConfirm": "Say yes or no.",
   "vwAskAmount": "How many sats?",
@@ -2743,7 +2736,7 @@
   "vwNotToken": "Not a Cashu token.",
   "vwTokenNoAmount": "Cashu token. This version cannot read the amount yet.",
   "vwUnknown": "Once more.",
-  "vwHelp": "Token. Camera. Balance. Send 1000 sats.",
+  "vwHelp": "Balance. Camera. Send sats.",
   "vwSpeechOff": "On-device recognition is missing. Nothing was sent.",
   "vwSpeechDenied": "Microphone or speech recognition is off.",
   "vwAndroidOff": "On Android the microphone stays off while recognition could fall back to the network.",
