@@ -61,6 +61,15 @@
 	<string>Diese App nutzt deinen Standort, um Meetups in deiner Nähe anzuzeigen. Der Standort wird nur verwendet, während die App geöffnet ist.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Diese App nutzt deine Fotomediathek, um Profilbilder auszuwählen.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Ein Cashu-Mint im lokalen Netz wird angesprochen, um einen Token einzulösen.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

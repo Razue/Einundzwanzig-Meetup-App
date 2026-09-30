@@ -6340,6 +6340,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get vwBadToken => 'Este token no se puede canjear.';
 
   @override
+  String get vwBadMint => 'No puedo contactar con este mint.';
+
+  @override
+  String get vwUnknownKeyset => 'El mint no conoce este token.';
+
+  @override
   String vwReceived(int balance) {
     return 'Canjeado. Saldo $balance.';
   }

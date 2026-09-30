@@ -11428,6 +11428,18 @@ abstract class AppLocalizations {
   /// **'Diesen Token kann ich nicht einlösen.'**
   String get vwBadToken;
 
+  /// No description provided for @vwBadMint.
+  ///
+  /// In de, this message translates to:
+  /// **'Diesen Mint kann ich nicht ansprechen.'**
+  String get vwBadMint;
+
+  /// No description provided for @vwUnknownKeyset.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Mint kennt dieses Token nicht.'**
+  String get vwUnknownKeyset;
+
   /// No description provided for @vwReceived.
   ///
   /// In de, this message translates to:

@@ -2754,6 +2754,8 @@
   "vwMintNo": "The mint refused.",
   "vwNet": "No connection to the mint.",
   "vwBadToken": "This token cannot be redeemed.",
+  "vwBadMint": "I cannot reach this mint.",
+  "vwUnknownKeyset": "The mint does not know this token.",
   "vwReceived": "Redeemed. Balance {balance}.",
   "@vwReceived": {
     "placeholders": {

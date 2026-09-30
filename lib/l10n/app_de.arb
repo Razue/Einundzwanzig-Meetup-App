@@ -2776,6 +2776,8 @@
   "vwMintNo": "Der Mint hat abgelehnt.",
   "vwNet": "Kein Netz zum Mint.",
   "vwBadToken": "Diesen Token kann ich nicht einlösen.",
+  "vwBadMint": "Diesen Mint kann ich nicht ansprechen.",
+  "vwUnknownKeyset": "Der Mint kennt dieses Token nicht.",
   "vwReceived": "Eingelöst. Stand {balance}.",
   "@vwReceived": {
     "placeholders": {

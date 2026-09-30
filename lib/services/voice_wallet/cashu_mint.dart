@@ -7,6 +7,7 @@ import 'cashu_token.dart';
 enum CashuFail {
   badToken,
   badMint,
+  unknownKeyset,
   spent,
   already,
   notEnough,
@@ -26,6 +27,10 @@ abstract class CashuMintClient {
     required List<CashuProof> inputs,
     required List<BlindedOutput> outputs,
   });
+
+  /// Keyset nachladen, wenn die Liste nur die lange ID kennt und der
+  /// Token die kurze schickt. `null`, wenn der Mint dazu nichts sagt.
+  Future<({String id, int ppk})?> identifyKeyset(String mintUrl, String id);
 }
 
 /// Aktive Schlüssel und Gebühren eines Mints.
@@ -42,12 +47,43 @@ class MintSnapshot {
     required this.keysetIds,
   });
 
-  String resolveKeyset(String id) {
-    if (keysetIds.contains(id)) return id;
-    final matches = keysetIds.where((known) => known.startsWith(id)).toList();
-    if (matches.length == 1) return matches.single;
-    throw const CashuException(CashuFail.badToken);
+  MintSnapshot addKeyset(String id, int ppk) {
+    return MintSnapshot(
+      activeId: activeId,
+      keys: keys,
+      feePpk: {...feePpk, id: ppk},
+      keysetIds: {...keysetIds, id},
+    );
   }
+
+  /// Volle Keyset-ID zum Token. `null`, wenn sie in der Liste fehlt.
+  /// Mehrdeutig ist ein Fehler, sonst würde der falsche Satz signiert.
+  String? resolveKeyset(String id) {
+    if (keysetIds.contains(id)) return id;
+    if (!_hexId(id)) return null;
+    final want = id.toLowerCase();
+    final exact = [
+      for (final known in keysetIds)
+        if (_hexId(known) && known.toLowerCase() == want) known,
+    ];
+    if (exact.isNotEmpty) return exact.first;
+    final matches = [
+      for (final known in keysetIds)
+        if (_hexId(known) && _sameKeyset(want, known.toLowerCase())) known,
+    ];
+    if (matches.length == 1) return matches.single;
+    if (matches.length > 1) throw const CashuException(CashuFail.unknownKeyset);
+    return null;
+  }
+}
+
+bool _hexId(String id) => RegExp(r'^[0-9a-fA-F]+$').hasMatch(id) && id.length.isEven;
+
+bool _sameKeyset(String a, String b) {
+  if (a == b) return true;
+  final short = a.length < b.length ? a : b;
+  final long = a.length < b.length ? b : a;
+  return short.length >= 16 && long.startsWith(short);
 }
 
 class BlindedOutput {
@@ -74,8 +110,16 @@ class BlindSignature {
   });
 }
 
-/// Spricht HTTPS mit einem Cashu-Mint. Nur die zwei Rufe, die Einlösen
-/// und Weitergeben brauchen: Schlüssel und Tausch.
+/// Spricht mit einem Cashu-Mint. Nur die Rufe, die Einlösen und
+/// Weitergeben brauchen: Schlüssel und Tausch. http bleibt erlaubt,
+/// weil die Mint-Adresse im Token steht und oft kein TLS hat.
+Uri cashuMintBase(String mintUrl) {
+  final uri = Uri.tryParse(mintUrl.trim());
+  if (uri == null || uri.host.isEmpty || (uri.scheme != 'https' && uri.scheme != 'http')) {
+    throw const CashuException(CashuFail.badMint);
+  }
+  return uri;
+}
 class HttpsCashuMint implements CashuMintClient {
   HttpsCashuMint({http.Client? httpClient}) : _http = httpClient ?? http.Client();
 
@@ -107,7 +151,8 @@ class HttpsCashuMint implements CashuMintClient {
     for (final item in activeSets) {
       if (item is! Map) continue;
       final unit = item['unit'];
-      if (unit == null || unit == 'sat') {
+      final unitText = unit is String ? unit.trim().toLowerCase() : null;
+      if (unitText == null || unitText == 'sat') {
         active = item.cast<String, Object?>();
         break;
       }
@@ -160,13 +205,46 @@ class HttpsCashuMint implements CashuMintClient {
     ];
   }
 
-  Uri _base(String mintUrl) {
-    final uri = Uri.tryParse(mintUrl.trim());
-    if (uri == null || uri.scheme != 'https' || uri.host.isEmpty) {
-      throw const CashuException(CashuFail.badMint);
+  @override
+  Future<({String id, int ppk})?> identifyKeyset(String mintUrl, String id) async {
+    final http.Response response;
+    try {
+      final base = _base(mintUrl);
+      response = await _send(http.Request(
+        'GET',
+        base.replace(path: _join(base.path, '/v1/keys/${Uri.encodeComponent(id)}')),
+      ));
+    } on CashuException {
+      return null;
     }
-    return uri;
+    if (response.statusCode != 200) return null;
+    Object? json;
+    try {
+      json = jsonDecode(response.body);
+    } catch (_) {
+      return null;
+    }
+    if (json is! Map) return null;
+    final sets = json['keysets'];
+    if (sets is! List) return null;
+    for (final item in sets) {
+      if (item is! Map) continue;
+      final found = item['id'];
+      if (found is! String || found.isEmpty) continue;
+      final trial = MintSnapshot(
+        activeId: found,
+        keys: const {},
+        feePpk: const {},
+        keysetIds: {found},
+      );
+      if (trial.resolveKeyset(id) != found) continue;
+      final ppk = item['input_fee_ppk'];
+      return (id: found, ppk: ppk is int ? ppk : 0);
+    }
+    return null;
   }
+
+  Uri _base(String mintUrl) => cashuMintBase(mintUrl);
 
   Future<Map<String, Object?>> _get(Uri base, String path) async {
     return _read(await _send(http.Request('GET', base.replace(path: _join(base.path, path)))));

@@ -65,6 +65,52 @@ void main() {
     );
     expect(await wallet.balance(), 4);
   });
+
+  test('Token im Link, http-Mint und kurze Keyset-ID', () async {
+    expect(cashuMintBase('http://localhost:3338').scheme, 'http');
+    expect(
+      () => cashuMintBase('notaurl'),
+      throwsA(isA<CashuException>().having((e) => e.fail, 'fail', CashuFail.badMint)),
+    );
+
+    const full = '0184237e63ce3423DF7DB2DCEDC7329C';
+    final snapshot = MintSnapshot(
+      activeId: full,
+      keys: const {1: '02'},
+      feePpk: {full: 0},
+      keysetIds: {full, '${full}AA'},
+    );
+    expect(
+      () => snapshot.resolveKeyset('0184237e63ce3423'),
+      throwsA(isA<CashuException>().having((e) => e.fail, 'fail', CashuFail.unknownKeyset)),
+    );
+    expect(snapshot.resolveKeyset(full.toLowerCase()), full);
+    final unique = MintSnapshot(
+      activeId: full,
+      keys: const {1: '02'},
+      feePpk: {full: 0},
+      keysetIds: {full},
+    );
+    expect(unique.resolveKeyset('0184237e63ce3423'), full);
+
+    final mint = _FakeMint();
+    final wallet = CashuWallet(store: MemoryProofStore(), mint: mint);
+    final proof = mint.issue(8);
+    final token = encodeCashuToken(
+      mint: 'http://mint.local',
+      proofs: [
+        CashuProof(
+          amount: proof.amount,
+          id: proof.id,
+          secret: proof.secret,
+          c: proof.c,
+          witness: '{"signatures":[]}',
+        ),
+      ],
+    );
+    final received = await wallet.receive('schau mal $token danke');
+    expect(received.received, 8);
+  });
 }
 
 class _FakeMint implements CashuMintClient {
@@ -82,6 +128,9 @@ class _FakeMint implements CashuMintClient {
       c: unblindSignature(blindedSignature: signature, r: blinded.r, mintKey: pub),
     );
   }
+
+  @override
+  Future<({String id, int ppk})?> identifyKeyset(String mintUrl, String id) async => null;
 
   @override
   Future<MintSnapshot> snapshot(String mintUrl) async {

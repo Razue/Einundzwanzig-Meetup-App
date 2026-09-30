@@ -6349,6 +6349,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vwBadToken => 'Diesen Token kann ich nicht einlösen.';
 
   @override
+  String get vwBadMint => 'Diesen Mint kann ich nicht ansprechen.';
+
+  @override
+  String get vwUnknownKeyset => 'Der Mint kennt dieses Token nicht.';
+
+  @override
   String vwReceived(int balance) {
     return 'Eingelöst. Stand $balance.';
   }

@@ -25,13 +25,20 @@ class _CashuScanScreenState extends State<CashuScanScreen> {
 
   void _onDetect(BarcodeCapture capture) {
     if (_done) return;
+    String? fallback;
     for (final barcode in capture.barcodes) {
       final code = barcode.rawValue;
       if (code == null || code.isEmpty) continue;
-      _done = true;
-      Navigator.pop(context, code);
-      return;
+      fallback ??= code;
+      if (code.contains('cashuA') || code.contains('cashuB')) {
+        _done = true;
+        Navigator.pop(context, code);
+        return;
+      }
     }
+    if (fallback == null) return;
+    _done = true;
+    Navigator.pop(context, fallback);
   }
 
   @override

@@ -6304,6 +6304,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vwBadToken => 'This token cannot be redeemed.';
 
   @override
+  String get vwBadMint => 'I cannot reach this mint.';
+
+  @override
+  String get vwUnknownKeyset => 'The mint does not know this token.';
+
+  @override
   String vwReceived(int balance) {
     return 'Redeemed. Balance $balance.';
   }

@@ -159,7 +159,7 @@ class CashuWallet {
         final pile = byMint[mint]!;
         if (_sum(pile) < amount) continue;
         try {
-          final snapshot = await _mint.snapshot(mint);
+          final snapshot = await _snapshotFor(mint, [for (final stored in pile) stored.proof]);
           final picked = _pick(pile, amount, snapshot);
           if (picked == null) continue;
           final inputs = picked.map((p) => _withFullId(p.proof, snapshot)).toList();
@@ -201,7 +201,7 @@ class CashuWallet {
     required String mintUrl,
     required List<CashuProof> inputs,
   }) async {
-    final snapshot = await _mint.snapshot(mintUrl);
+    final snapshot = await _snapshotFor(mintUrl, inputs);
     final full = inputs.map((p) => _withFullId(p, snapshot)).toList();
     final fee = _fee(full, snapshot);
     final output = full.fold<int>(0, (sum, p) => sum + p.amount) - fee;
@@ -251,23 +251,40 @@ class CashuWallet {
       if (key == null || signature.amount != out.amount) {
         throw const CashuException(CashuFail.mintRejected);
       }
+      final String unblinded;
+      try {
+        unblinded = unblindSignature(
+          blindedSignature: signature.cBlind,
+          r: out.blinded.r,
+          mintKey: key,
+        );
+      } on FormatException {
+        throw const CashuException(CashuFail.mintRejected);
+      }
       final proof = CashuProof(
         amount: out.amount,
         id: signature.id,
         secret: out.blinded.secret,
-        c: unblindSignature(
-          blindedSignature: signature.cBlind,
-          r: out.blinded.r,
-          mintKey: key,
-        ),
+        c: unblinded,
       );
       (out.give ? giveProofs : changeProofs).add(proof);
     }
     return (give: giveProofs, change: changeProofs);
   }
 
+  Future<MintSnapshot> _snapshotFor(String mintUrl, List<CashuProof> inputs) async {
+    var snapshot = await _mint.snapshot(mintUrl);
+    for (final proof in inputs) {
+      if (snapshot.resolveKeyset(proof.id) != null) continue;
+      final found = await _mint.identifyKeyset(mintUrl, proof.id);
+      if (found == null) continue;
+      snapshot = snapshot.addKeyset(found.id, found.ppk);
+    }
+    return snapshot;
+  }
+
   CashuProof _withFullId(CashuProof proof, MintSnapshot snapshot) {
-    final id = snapshot.resolveKeyset(proof.id);
+    final id = snapshot.resolveKeyset(proof.id) ?? proof.id;
     if (id == proof.id) return proof;
     return CashuProof(
       amount: proof.amount,
@@ -281,9 +298,19 @@ class CashuWallet {
   int _fee(List<CashuProof> inputs, MintSnapshot snapshot) {
     var ppk = 0;
     for (final proof in inputs) {
-      ppk += snapshot.feePpk[proof.id] ?? 0;
+      ppk += _ppk(snapshot, proof.id);
     }
     return (ppk + 999) ~/ 1000;
+  }
+
+  int _ppk(MintSnapshot snapshot, String id) {
+    final direct = snapshot.feePpk[id];
+    if (direct != null) return direct;
+    final want = id.toLowerCase();
+    for (final entry in snapshot.feePpk.entries) {
+      if (entry.key.toLowerCase() == want) return entry.value;
+    }
+    return 0;
   }
 
   List<StoredProof>? _pick(List<StoredProof> pile, int amount, MintSnapshot snapshot) {
@@ -308,10 +335,7 @@ class CashuWallet {
   CashuToken _readToken(String raw) {
     try {
       final token = parseCashuToken(raw);
-      if (token.unit != 'sat' || token.proofs.isEmpty) {
-        throw const CashuException(CashuFail.badToken);
-      }
-      if (token.proofs.any((p) => p.witness != null)) {
+      if (token.unit.toLowerCase() != 'sat' || token.proofs.isEmpty) {
         throw const CashuException(CashuFail.badToken);
       }
       return token;

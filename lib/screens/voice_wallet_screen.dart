@@ -287,7 +287,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       CashuFail.notEnough => t.vwNotEnough,
       CashuFail.network => t.vwNet,
       CashuFail.mintRejected => t.vwMintNo,
-      CashuFail.badToken || CashuFail.badMint => t.vwBadToken,
+      CashuFail.badMint => t.vwBadMint,
+      CashuFail.unknownKeyset => t.vwUnknownKeyset,
+      CashuFail.badToken => t.vwBadToken,
     };
     setState(() {
       _busy = false;

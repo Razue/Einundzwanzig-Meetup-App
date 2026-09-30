@@ -2754,6 +2754,8 @@
   "vwMintNo": "El mint lo ha rechazado.",
   "vwNet": "Sin conexión con el mint.",
   "vwBadToken": "Este token no se puede canjear.",
+  "vwBadMint": "No puedo contactar con este mint.",
+  "vwUnknownKeyset": "El mint no conoce este token.",
   "vwReceived": "Canjeado. Saldo {balance}.",
   "@vwReceived": {
     "placeholders": {
