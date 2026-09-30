@@ -67,7 +67,8 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     super.dispose();
   }
 
-  String _localeId() => onDeviceSpeechLocale(Localizations.localeOf(context).languageCode);
+  String _localeId() =>
+      onDeviceSpeechLocale(Localizations.localeOf(context).languageCode);
 
   Future<void> _toggle() async {
     await _voice.stop();
@@ -136,7 +137,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
 
     if (_awaitingAmount && command.kind == WalletCommandKind.unknown) {
       final sats = parseSpokenSats(words);
-      if (sats != null) command = WalletCommand(WalletCommandKind.send, sats: sats);
+      if (sats != null) {
+        command = WalletCommand(WalletCommandKind.send, sats: sats);
+      }
     }
 
     if (_pendingSats != null) {
@@ -296,7 +299,12 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _primary = _group(received.received);
         _caption = t.vwReceived(received.balance);
       });
-      _say(spokenReply(amount: received.received, sentence: t.vwReceived(received.balance)));
+      _say(
+        spokenReply(
+          amount: received.received,
+          sentence: t.vwReceived(received.balance),
+        ),
+      );
     } on CashuException catch (e) {
       _showFail(e.fail, e.detail);
     }
@@ -317,13 +325,14 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       CashuFail.feeTooHigh => t.vwFeeHigh,
       CashuFail.noSatKey => t.vwNoSat,
       CashuFail.badToken => switch (detail) {
-          'lightning' => t.vwLightning,
-          'none' => t.vwNotCashu,
-          _ => t.vwBadToken,
-        },
+        'lightning' => t.vwLightning,
+        'none' => t.vwNotCashu,
+        _ => t.vwBadToken,
+      },
     };
     final parts = detail?.split(':');
-    final caption = fail == CashuFail.badToken && parts != null && parts.length == 2
+    final caption =
+        fail == CashuFail.badToken && parts != null && parts.length == 2
         ? t.vwReadDetail(parts[0], int.tryParse(parts[1]) ?? 0)
         : '';
     setState(() {
@@ -349,11 +358,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         ? t.vwHintListening
         : (_pendingSats != null ? t.vwHintConfirm : t.vwHintIdle);
 
-    // Seitlicher Rand nur auf einer Seite wuerde die Spalte verschieben.
-    // Dazu ein kleiner Schritt nach rechts: auf dem breiten Display
-    // stand Text und Mikrofon sonst knapp links der Mitte.
+    // Derselbe Rand links und rechts. Ein einseitiger Zuschlag
+    // wuerde Text und Mikrofon aus der Mitte schieben.
     final side = pad.left > pad.right ? pad.left : pad.right;
-    const nudge = 10.0;
 
     return Scaffold(
       backgroundColor: cDark,
@@ -364,27 +371,37 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         title: const SizedBox.shrink(),
       ),
       body: Padding(
-        padding: EdgeInsets.fromLTRB(28 + side + nudge, 0, 28 + side - nudge, 28 + pad.bottom),
+        padding: EdgeInsets.fromLTRB(28 + side, 0, 28 + side, 28 + pad.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Spacer(),
-            Text(
-              _primary,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: cText,
-                fontSize: _huge ? 84 : 28,
-                fontWeight: FontWeight.w700,
-                height: 1.05,
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                _primary,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: cText,
+                  fontSize: _huge ? 84 : 28,
+                  fontWeight: FontWeight.w700,
+                  height: 1.05,
+                ),
               ),
             ),
             if (_caption.isNotEmpty) ...[
               const SizedBox(height: 14),
-              Text(
-                _caption,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: cTextSecondary, fontSize: 18, height: 1.3),
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  _caption,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: cTextSecondary,
+                    fontSize: 18,
+                    height: 1.3,
+                  ),
+                ),
               ),
             ],
             if (_outgoing != null) ...[
@@ -403,29 +420,51 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
               ),
             ],
             const Spacer(),
-            GestureDetector(
-              onTap: _toggle,
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 1, end: _listening ? 1.12 : 1.05).animate(
-                  CurvedAnimation(parent: _pulse, curve: Curves.easeInOut),
-                ),
-                child: Container(
-                  width: 168,
-                  height: 168,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: cOrange.withValues(alpha: _listening ? 0.22 : 0.12),
-                    border: Border.all(color: cOrange, width: _listening ? 3 : 1.5),
+            Center(
+              child: GestureDetector(
+                onTap: _toggle,
+                child: ScaleTransition(
+                  scale: Tween<double>(begin: 1, end: _listening ? 1.12 : 1.05)
+                      .animate(
+                        CurvedAnimation(
+                          parent: _pulse,
+                          curve: Curves.easeInOut,
+                        ),
+                      ),
+                  child: Container(
+                    width: 168,
+                    height: 168,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: cOrange.withValues(
+                        alpha: _listening ? 0.22 : 0.12,
+                      ),
+                      border: Border.all(
+                        color: cOrange,
+                        width: _listening ? 3 : 1.5,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.mic_rounded,
+                      color: cOrange,
+                      size: 84,
+                    ),
                   ),
-                  child: const Icon(Icons.mic_rounded, color: cOrange, size: 84),
                 ),
               ),
             ),
             const SizedBox(height: 22),
-            Text(
-              hint,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: cTextTertiary, fontSize: 15, height: 1.35),
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                hint,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: cTextTertiary,
+                  fontSize: 15,
+                  height: 1.35,
+                ),
+              ),
             ),
           ],
         ),
