@@ -2775,7 +2775,19 @@
   "vwNotEnough": "Dafür reicht der Stand nicht.",
   "vwMintNo": "Der Mint hat abgelehnt.",
   "vwNet": "Kein Netz zum Mint.",
-  "vwBadToken": "Diesen Token kann ich nicht einlösen.",
+  "vwBadToken": "Den Cashu-Code kann ich nicht lesen.",
+  "vwNotCashu": "Kein Cashu-Code im Bild.",
+  "vwLightning": "Das ist eine Lightning-Rechnung, kein Token.",
+  "vwOnlySat": "Nur Satoshi-Token.",
+  "vwFeeHigh": "Die Gebühr ist höher als der Token.",
+  "vwNoSat": "Der Mint hat keinen Satoshi-Schlüssel.",
+  "vwReadDetail": "Fassung {version}, {length} Zeichen.",
+  "@vwReadDetail": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "length": {"type": "int"}
+    }
+  },
   "vwBadMint": "Diesen Mint kann ich nicht ansprechen.",
   "vwUnknownKeyset": "Der Mint kennt dieses Token nicht.",
   "vwReceived": "Eingelöst. Stand {balance}.",

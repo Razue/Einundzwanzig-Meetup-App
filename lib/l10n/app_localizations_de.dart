@@ -6346,7 +6346,27 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vwNet => 'Kein Netz zum Mint.';
 
   @override
-  String get vwBadToken => 'Diesen Token kann ich nicht einlösen.';
+  String get vwBadToken => 'Den Cashu-Code kann ich nicht lesen.';
+
+  @override
+  String get vwNotCashu => 'Kein Cashu-Code im Bild.';
+
+  @override
+  String get vwLightning => 'Das ist eine Lightning-Rechnung, kein Token.';
+
+  @override
+  String get vwOnlySat => 'Nur Satoshi-Token.';
+
+  @override
+  String get vwFeeHigh => 'Die Gebühr ist höher als der Token.';
+
+  @override
+  String get vwNoSat => 'Der Mint hat keinen Satoshi-Schlüssel.';
+
+  @override
+  String vwReadDetail(String version, int length) {
+    return 'Fassung $version, $length Zeichen.';
+  }
 
   @override
   String get vwBadMint => 'Diesen Mint kann ich nicht ansprechen.';

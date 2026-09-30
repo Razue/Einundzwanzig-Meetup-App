@@ -11425,8 +11425,44 @@ abstract class AppLocalizations {
   /// No description provided for @vwBadToken.
   ///
   /// In de, this message translates to:
-  /// **'Diesen Token kann ich nicht einlösen.'**
+  /// **'Den Cashu-Code kann ich nicht lesen.'**
   String get vwBadToken;
+
+  /// No description provided for @vwNotCashu.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Cashu-Code im Bild.'**
+  String get vwNotCashu;
+
+  /// No description provided for @vwLightning.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist eine Lightning-Rechnung, kein Token.'**
+  String get vwLightning;
+
+  /// No description provided for @vwOnlySat.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Satoshi-Token.'**
+  String get vwOnlySat;
+
+  /// No description provided for @vwFeeHigh.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Gebühr ist höher als der Token.'**
+  String get vwFeeHigh;
+
+  /// No description provided for @vwNoSat.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Mint hat keinen Satoshi-Schlüssel.'**
+  String get vwNoSat;
+
+  /// No description provided for @vwReadDetail.
+  ///
+  /// In de, this message translates to:
+  /// **'Fassung {version}, {length} Zeichen.'**
+  String vwReadDetail(String version, int length);
 
   /// No description provided for @vwBadMint.
   ///

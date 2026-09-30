@@ -8,6 +8,9 @@ enum CashuFail {
   badToken,
   badMint,
   unknownKeyset,
+  unsupportedUnit,
+  feeTooHigh,
+  noSatKey,
   spent,
   already,
   notEnough,
@@ -17,7 +20,11 @@ enum CashuFail {
 
 class CashuException implements Exception {
   final CashuFail fail;
-  const CashuException(this.fail);
+
+  /// Kurz und ohne Geheimnis, z. B. `B:840` oder `lightning`.
+  final String? detail;
+
+  const CashuException(this.fail, {this.detail});
 }
 
 abstract class CashuMintClient {
@@ -157,7 +164,7 @@ class HttpsCashuMint implements CashuMintClient {
         break;
       }
     }
-    if (active == null) throw const CashuException(CashuFail.badToken);
+    if (active == null) throw const CashuException(CashuFail.noSatKey);
     final id = active['id'];
     final rawKeys = active['keys'];
     if (id is! String || rawKeys is! Map) {

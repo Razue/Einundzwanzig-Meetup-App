@@ -274,11 +274,11 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _caption = t.vwReceived(received.balance);
       });
     } on CashuException catch (e) {
-      _showFail(e.fail);
+      _showFail(e.fail, e.detail);
     }
   }
 
-  void _showFail(CashuFail fail) {
+  void _showFail(CashuFail fail, [String? detail]) {
     if (!mounted) return;
     final t = AppLocalizations.of(context);
     final text = switch (fail) {
@@ -289,14 +289,25 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       CashuFail.mintRejected => t.vwMintNo,
       CashuFail.badMint => t.vwBadMint,
       CashuFail.unknownKeyset => t.vwUnknownKeyset,
-      CashuFail.badToken => t.vwBadToken,
+      CashuFail.unsupportedUnit => t.vwOnlySat,
+      CashuFail.feeTooHigh => t.vwFeeHigh,
+      CashuFail.noSatKey => t.vwNoSat,
+      CashuFail.badToken => switch (detail) {
+          'lightning' => t.vwLightning,
+          'none' => t.vwNotCashu,
+          _ => t.vwBadToken,
+        },
     };
+    final parts = detail?.split(':');
+    final caption = fail == CashuFail.badToken && parts != null && parts.length == 2
+        ? t.vwReadDetail(parts[0], int.tryParse(parts[1]) ?? 0)
+        : '';
     setState(() {
       _busy = false;
       _huge = false;
       _outgoing = null;
       _primary = text;
-      _caption = '';
+      _caption = caption;
     });
   }
 

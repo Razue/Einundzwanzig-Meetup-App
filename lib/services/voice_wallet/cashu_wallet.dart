@@ -123,21 +123,38 @@ class CashuWallet {
   /// Löst einen Token beim Mint ein und legt die neuen Proofs hier ab.
   Future<CashuReceive> receive(String raw) {
     return _locked(() async {
-      final token = _readToken(raw);
-      final have = await _store.load();
+      final tokens = _readTokens(raw);
+      var have = await _store.load();
       final secrets = have.map((p) => p.proof.secret).toSet();
-      if (token.proofs.any((p) => secrets.contains(p.secret))) {
-        throw const CashuException(CashuFail.already);
+      var received = 0;
+      CashuException? failure;
+      for (final token in tokens) {
+        if (token.proofs.any((p) => secrets.contains(p.secret))) {
+          failure = const CashuException(CashuFail.already);
+          break;
+        }
+        try {
+          final fresh = await _swapIn(
+            mintUrl: token.mint,
+            inputs: token.proofs,
+          );
+          have = [...have, for (final proof in fresh) StoredProof(mint: token.mint, proof: proof)];
+          for (final proof in fresh) {
+            secrets.add(proof.secret);
+          }
+          received += fresh.fold<int>(0, (sum, p) => sum + p.amount);
+          await _store.save(have);
+        } on CashuException catch (e) {
+          failure = e;
+          break;
+        }
       }
-      final fresh = await _swapIn(
-        mintUrl: token.mint,
-        inputs: token.proofs,
-      );
-      final next = [...have, for (final proof in fresh) StoredProof(mint: token.mint, proof: proof)];
-      await _store.save(next);
+      if (received == 0) {
+        throw failure ?? CashuException(CashuFail.badToken, detail: cashuReadHint(raw));
+      }
       return CashuReceive(
-        received: fresh.fold<int>(0, (sum, p) => sum + p.amount),
-        balance: next.fold<int>(0, (sum, p) => sum + p.proof.amount),
+        received: received,
+        balance: have.fold<int>(0, (sum, p) => sum + p.proof.amount),
       );
     });
   }
@@ -205,7 +222,7 @@ class CashuWallet {
     final full = inputs.map((p) => _withFullId(p, snapshot)).toList();
     final fee = _fee(full, snapshot);
     final output = full.fold<int>(0, (sum, p) => sum + p.amount) - fee;
-    if (output <= 0) throw const CashuException(CashuFail.badToken);
+    if (output <= 0) throw const CashuException(CashuFail.feeTooHigh);
     final swapped = await _swap(
       mintUrl: mintUrl,
       snapshot: snapshot,
@@ -332,16 +349,21 @@ class CashuWallet {
   int _sum(List<StoredProof> proofs) =>
       proofs.fold<int>(0, (sum, p) => sum + p.proof.amount);
 
-  CashuToken _readToken(String raw) {
+  List<CashuToken> _readTokens(String raw) {
+    final List<CashuToken> all;
     try {
-      final token = parseCashuToken(raw);
-      if (token.unit.toLowerCase() != 'sat' || token.proofs.isEmpty) {
-        throw const CashuException(CashuFail.badToken);
-      }
-      return token;
+      all = parseCashuTokens(raw);
     } on FormatException {
-      throw const CashuException(CashuFail.badToken);
+      throw CashuException(CashuFail.badToken, detail: cashuReadHint(raw));
     }
+    final sat = all.where((token) => token.unit.toLowerCase() == 'sat' && token.proofs.isNotEmpty).toList();
+    if (sat.isEmpty) {
+      throw CashuException(
+        all.isEmpty ? CashuFail.badToken : CashuFail.unsupportedUnit,
+        detail: cashuReadHint(raw),
+      );
+    }
+    return sat;
   }
 
   Future<T> _locked<T>(Future<T> Function() run) {

@@ -2753,7 +2753,19 @@
   "vwNotEnough": "El saldo no alcanza.",
   "vwMintNo": "El mint lo ha rechazado.",
   "vwNet": "Sin conexión con el mint.",
-  "vwBadToken": "Este token no se puede canjear.",
+  "vwBadToken": "No puedo leer este código Cashu.",
+  "vwNotCashu": "No hay un código Cashu en la imagen.",
+  "vwLightning": "Eso es una factura Lightning, no un token.",
+  "vwOnlySat": "Solo tokens en satoshis.",
+  "vwFeeHigh": "La comisión es mayor que el token.",
+  "vwNoSat": "El mint no tiene clave de satoshis.",
+  "vwReadDetail": "Versión {version}, {length} caracteres.",
+  "@vwReadDetail": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "length": {"type": "int"}
+    }
+  },
   "vwBadMint": "No puedo contactar con este mint.",
   "vwUnknownKeyset": "El mint no conoce este token.",
   "vwReceived": "Canjeado. Saldo {balance}.",

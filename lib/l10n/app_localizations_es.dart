@@ -6337,7 +6337,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get vwNet => 'Sin conexión con el mint.';
 
   @override
-  String get vwBadToken => 'Este token no se puede canjear.';
+  String get vwBadToken => 'No puedo leer este código Cashu.';
+
+  @override
+  String get vwNotCashu => 'No hay un código Cashu en la imagen.';
+
+  @override
+  String get vwLightning => 'Eso es una factura Lightning, no un token.';
+
+  @override
+  String get vwOnlySat => 'Solo tokens en satoshis.';
+
+  @override
+  String get vwFeeHigh => 'La comisión es mayor que el token.';
+
+  @override
+  String get vwNoSat => 'El mint no tiene clave de satoshis.';
+
+  @override
+  String vwReadDetail(String version, int length) {
+    return 'Versión $version, $length caracteres.';
+  }
 
   @override
   String get vwBadMint => 'No puedo contactar con este mint.';

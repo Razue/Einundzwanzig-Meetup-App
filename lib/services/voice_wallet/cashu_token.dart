@@ -55,13 +55,29 @@ class CashuPeek {
 
 CashuPeek peekCashuToken(String raw) {
   try {
-    final token = parseCashuToken(raw);
-    if (token.unit.toLowerCase() != 'sat') return const CashuPeek(isCashu: true);
-    return CashuPeek(isCashu: true, sats: token.sats);
+    final parts = parseCashuTokens(raw);
+    final sats = parts
+        .where((token) => token.unit.toLowerCase() == 'sat')
+        .fold<int>(0, (sum, token) => sum + token.sats);
+    if (sats == 0 && parts.any((token) => token.unit.toLowerCase() != 'sat')) {
+      return const CashuPeek(isCashu: true);
+    }
+    return CashuPeek(isCashu: true, sats: sats);
   } on FormatException {
     if (_tokenIn(raw) != null) return const CashuPeek(isCashu: true);
     return CashuPeek.notToken;
   }
+}
+
+/// Kurzer Hinweis ohne Geheimnis: `A:840`, `B:840`, `lightning` oder `none`.
+String cashuReadHint(String raw) {
+  final lower = raw.toLowerCase();
+  if (lower.contains('lnbc') || lower.contains('lntb') || lower.contains('lnurl')) {
+    return 'lightning';
+  }
+  final token = _tokenIn(raw);
+  if (token == null || token.length < 6) return 'none';
+  return '${token[5]}:${token.length}';
 }
 
 /// Findet `cashuA`/`cashuB` auch in einem Link. Zeilenumbrüche im Token
@@ -75,8 +91,8 @@ String? _tokenIn(String raw) {
     } catch (_) {}
   }
   text = text.replaceAll(RegExp(r'[\u0000\uFEFF\u200B]'), '');
-  if (text.startsWith('cashu:')) text = text.substring('cashu:'.length);
-  final start = RegExp(r'cashu[AB]').firstMatch(text);
+  if (text.toLowerCase().startsWith('cashu:')) text = text.substring('cashu:'.length);
+  final start = RegExp(r'cashu[ABab]', caseSensitive: false).firstMatch(text);
   if (start == null) return null;
   final buf = StringBuffer(start.group(0)!);
   for (var i = start.end; i < text.length; i++) {
@@ -100,14 +116,22 @@ String? _tokenIn(String raw) {
   }
   final token = buf.toString();
   if (token.length < 7) return null;
-  return token;
+  final version = token[5].toUpperCase();
+  if (version != 'A' && version != 'B') return null;
+  return 'cashu$version${token.substring(6)}';
 }
 
 CashuToken parseCashuToken(String raw) {
+  final parts = parseCashuTokens(raw);
+  if (parts.isEmpty) throw const FormatException('Token ohne Proofs.');
+  return parts.first;
+}
+
+List<CashuToken> parseCashuTokens(String raw) {
   final token = _tokenIn(raw);
   if (token == null) throw const FormatException('Kein Cashu-Token.');
   if (token.startsWith('cashuA')) return _parseV3(token.substring('cashuA'.length));
-  return _parseV4(token.substring('cashuB'.length));
+  return [_parseV4(token.substring('cashuB'.length))];
 }
 
 String encodeCashuToken({required String mint, required List<CashuProof> proofs}) {
@@ -124,7 +148,7 @@ String encodeCashuToken({required String mint, required List<CashuProof> proofs}
   return 'cashuA$encoded';
 }
 
-CashuToken _parseV3(String payload) {
+List<CashuToken> _parseV3(String payload) {
   final Object? json;
   try {
     json = jsonDecode(utf8.decode(_decode64(payload)));
@@ -138,23 +162,23 @@ CashuToken _parseV3(String payload) {
   if (entries is! List || entries.isEmpty) {
     throw const FormatException('Token ohne Proofs.');
   }
-  if (entries.length != 1) {
-    throw const FormatException('Mehrere Mints in einem Token.');
+  final tokens = <CashuToken>[];
+  for (final entry in entries) {
+    if (entry is! Map) throw const FormatException('Token ohne Proofs.');
+    final mint = entry['mint'];
+    final proofs = entry['proofs'];
+    if (mint is! String || proofs is! List || proofs.isEmpty) {
+      throw const FormatException('Token ohne Proofs.');
+    }
+    tokens.add(CashuToken(
+      mint: _mint(mint),
+      unit: unit,
+      proofs: [
+        for (final proof in proofs) _proofMap(proof),
+      ],
+    ));
   }
-  final entry = entries.first;
-  if (entry is! Map) throw const FormatException('Token ohne Proofs.');
-  final mint = entry['mint'];
-  final proofs = entry['proofs'];
-  if (mint is! String || proofs is! List || proofs.isEmpty) {
-    throw const FormatException('Token ohne Proofs.');
-  }
-  return CashuToken(
-    mint: _mint(mint),
-    unit: unit,
-    proofs: [
-      for (final proof in proofs) _proofMap(proof),
-    ],
-  );
+  return tokens;
 }
 
 CashuToken _parseV4(String payload) {
@@ -205,15 +229,15 @@ CashuProof _proofMap(Object? raw) {
   final amount = _asAmount(raw['amount']);
   final id = raw['id'];
   final secret = _asSecret(raw['secret']);
-  final c = raw['C'] ?? raw['c'];
-  if (amount == null || amount < 0 || id is! String || id.isEmpty || secret == null || c is! String) {
+  final point = _asPoint(raw['C'] ?? raw['c']);
+  if (amount == null || amount < 0 || id is! String || id.isEmpty || secret == null || point == null) {
     throw const FormatException('Proof unvollständig.');
   }
   return CashuProof(
     amount: amount,
     id: id,
     secret: secret,
-    c: c,
+    c: point,
     witness: _asWitness(raw['witness']),
   );
 }
@@ -228,17 +252,14 @@ int? _asAmount(Object? value) {
   if (value is double && value.isFinite && value >= 0 && value == value.roundToDouble()) {
     return value.round();
   }
+  if (value is String) return int.tryParse(value);
   return null;
 }
 
 String? _asSecret(Object? value) {
-  if (value is String) return value;
-  if (value is Uint8List) {
-    try {
-      return utf8.decode(value);
-    } catch (_) {
-      return null;
-    }
+  if (value is String && value.isNotEmpty) return value;
+  if (value is Uint8List && value.isNotEmpty) {
+    return utf8.decode(value, allowMalformed: true);
   }
   return null;
 }

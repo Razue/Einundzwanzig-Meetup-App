@@ -2753,7 +2753,19 @@
   "vwNotEnough": "The balance does not cover that.",
   "vwMintNo": "The mint refused.",
   "vwNet": "No connection to the mint.",
-  "vwBadToken": "This token cannot be redeemed.",
+  "vwBadToken": "I cannot read this Cashu code.",
+  "vwNotCashu": "No Cashu code in the picture.",
+  "vwLightning": "That is a Lightning invoice, not a token.",
+  "vwOnlySat": "Only satoshi tokens.",
+  "vwFeeHigh": "The fee is higher than the token.",
+  "vwNoSat": "The mint has no satoshi key.",
+  "vwReadDetail": "Version {version}, {length} characters.",
+  "@vwReadDetail": {
+    "placeholders": {
+      "version": {"type": "String"},
+      "length": {"type": "int"}
+    }
+  },
   "vwBadMint": "I cannot reach this mint.",
   "vwUnknownKeyset": "The mint does not know this token.",
   "vwReceived": "Redeemed. Balance {balance}.",
