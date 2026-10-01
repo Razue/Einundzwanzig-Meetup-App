@@ -5605,6 +5605,72 @@ class AppLocalizationsDe extends AppLocalizations {
       'Start ist Pflicht, das Ende darfst du weglassen. Bei einem Event mit Badge zählt der Kalendertag: Badges lassen sich nur an diesem Tag ausgeben, von Mitternacht bis Mitternacht.';
 
   @override
+  String get glCatVoice => 'Sprach Wallet';
+
+  @override
+  String get glVoiceIntroTitle => 'So sagst du es';
+
+  @override
+  String get glVoiceIntroBody =>
+      'Tippe das Mikrofon und sag einen Befehl. Hältst du es länger, wechselt die App von selbst zwischen Zuhören und Antwort, bis du wieder tippst oder noch einmal länger hältst. Unten stehen alle Wörter, die sie versteht. Den Token liest sie nie vor.';
+
+  @override
+  String get glVoiceBalanceTitle => 'Kontostand';
+
+  @override
+  String get glVoiceBalanceBody =>
+      'Sagt den Stand.\nKontostand, Guthaben, Balance, Wie viel, Wieviel, How much, How many.';
+
+  @override
+  String get glVoiceScanTitle => 'Kamera';
+
+  @override
+  String get glVoiceScanBody =>
+      'Öffnet die Kamera und liest den Code, auch einen wechselnden. Foto meint die Kamera, nicht die Galerie.\nToken, Tokens, Tocken, Kamera, Camera, Foto, Photo, QR, Code, Einlösen, Einlöse, Empfangen, Empfang, Receive, Redeem.\nAuch Q R, KU ER, und jedes Wort, das mit Scan oder Skan beginnt.';
+
+  @override
+  String get glVoicePasteTitle => 'Einfügen';
+
+  @override
+  String get glVoicePasteBody =>
+      'Nimmt Text oder ein Bild aus der Zwischenablage. Ein einzelnes Teil eines wechselnden Codes reicht nicht, dafür nimm die Kamera.\nEinfügen, Paste, Zwischenablage, Clipboard.';
+
+  @override
+  String get glVoiceGalleryTitle => 'Bild';
+
+  @override
+  String get glVoiceGalleryBody =>
+      'Öffnet ein Foto und liest den QR. Bild einfügen öffnet die Galerie, nicht die Zwischenablage.\nGalerie, Gallery, Album, Bild, Bilder, Upload, Screenshot.';
+
+  @override
+  String get glVoiceSendTitle => 'Sats senden';
+
+  @override
+  String get glVoiceSendBody =>
+      'Fragt nach der Summe, wenn keine dabei war, und will danach ein Ja. Die Summe als Ziffer oder als Wort, zum Beispiel tausend oder twenty one. Mehr als ein Bitcoin nimmt sie nicht an. Token senden schickt Sats, es öffnet nicht die Kamera.\nSchick, Schicke, Schicken, Sende, Senden, Send, Zahl, Pay, Überweise, Überweisen.\nAuch Token senden, Token sende, Tokensenden, Sats senden, Sats sende, Satssenden, Satz senden.';
+
+  @override
+  String get glVoiceYesTitle => 'Bestätigen';
+
+  @override
+  String get glVoiceYesBody =>
+      'Gilt nur, wenn der ganze Satz genau eines dieser Wörter ist.\nJa, Jawohl, Yes, Yeah, Ok, Okay, Bestätigen, Confirm, Klar.';
+
+  @override
+  String get glVoiceNoTitle => 'Abbrechen';
+
+  @override
+  String get glVoiceNoBody =>
+      'Als ganzer Satz oder am Anfang eines Satzes.\nNein, No, Abbrechen, Stop, Stopp, Cancel, Zurück.';
+
+  @override
+  String get glVoiceHelpTitle => 'Hilfe';
+
+  @override
+  String get glVoiceHelpBody =>
+      'Liest die kurze Liste vor: Kontostand, Kamera, Einfügen, Bild, Sats senden. Die ganze Liste ist diese Kategorie.\nHilfe, Help, Befehle, Commands, Was kann ich, What can I.';
+
+  @override
   String get glCatApp => 'App & Bedienung';
 
   @override

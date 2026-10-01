@@ -10174,6 +10174,120 @@ abstract class AppLocalizations {
   /// **'Start ist Pflicht, das Ende darfst du weglassen. Bei einem Event mit Badge zählt der Kalendertag: Badges lassen sich nur an diesem Tag ausgeben, von Mitternacht bis Mitternacht.'**
   String get guideEvWhenWhereBody;
 
+  /// No description provided for @glCatVoice.
+  ///
+  /// In de, this message translates to:
+  /// **'Sprach Wallet'**
+  String get glCatVoice;
+
+  /// No description provided for @glVoiceIntroTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'So sagst du es'**
+  String get glVoiceIntroTitle;
+
+  /// No description provided for @glVoiceIntroBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Tippe das Mikrofon und sag einen Befehl. Hältst du es länger, wechselt die App von selbst zwischen Zuhören und Antwort, bis du wieder tippst oder noch einmal länger hältst. Unten stehen alle Wörter, die sie versteht. Den Token liest sie nie vor.'**
+  String get glVoiceIntroBody;
+
+  /// No description provided for @glVoiceBalanceTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontostand'**
+  String get glVoiceBalanceTitle;
+
+  /// No description provided for @glVoiceBalanceBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Sagt den Stand.\nKontostand, Guthaben, Balance, Wie viel, Wieviel, How much, How many.'**
+  String get glVoiceBalanceBody;
+
+  /// No description provided for @glVoiceScanTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Kamera'**
+  String get glVoiceScanTitle;
+
+  /// No description provided for @glVoiceScanBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnet die Kamera und liest den Code, auch einen wechselnden. Foto meint die Kamera, nicht die Galerie.\nToken, Tokens, Tocken, Kamera, Camera, Foto, Photo, QR, Code, Einlösen, Einlöse, Empfangen, Empfang, Receive, Redeem.\nAuch Q R, KU ER, und jedes Wort, das mit Scan oder Skan beginnt.'**
+  String get glVoiceScanBody;
+
+  /// No description provided for @glVoicePasteTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Einfügen'**
+  String get glVoicePasteTitle;
+
+  /// No description provided for @glVoicePasteBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Nimmt Text oder ein Bild aus der Zwischenablage. Ein einzelnes Teil eines wechselnden Codes reicht nicht, dafür nimm die Kamera.\nEinfügen, Paste, Zwischenablage, Clipboard.'**
+  String get glVoicePasteBody;
+
+  /// No description provided for @glVoiceGalleryTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bild'**
+  String get glVoiceGalleryTitle;
+
+  /// No description provided for @glVoiceGalleryBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnet ein Foto und liest den QR. Bild einfügen öffnet die Galerie, nicht die Zwischenablage.\nGalerie, Gallery, Album, Bild, Bilder, Upload, Screenshot.'**
+  String get glVoiceGalleryBody;
+
+  /// No description provided for @glVoiceSendTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sats senden'**
+  String get glVoiceSendTitle;
+
+  /// No description provided for @glVoiceSendBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragt nach der Summe, wenn keine dabei war, und will danach ein Ja. Die Summe als Ziffer oder als Wort, zum Beispiel tausend oder twenty one. Mehr als ein Bitcoin nimmt sie nicht an. Token senden schickt Sats, es öffnet nicht die Kamera.\nSchick, Schicke, Schicken, Sende, Senden, Send, Zahl, Pay, Überweise, Überweisen.\nAuch Token senden, Token sende, Tokensenden, Sats senden, Sats sende, Satssenden, Satz senden.'**
+  String get glVoiceSendBody;
+
+  /// No description provided for @glVoiceYesTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Bestätigen'**
+  String get glVoiceYesTitle;
+
+  /// No description provided for @glVoiceYesBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Gilt nur, wenn der ganze Satz genau eines dieser Wörter ist.\nJa, Jawohl, Yes, Yeah, Ok, Okay, Bestätigen, Confirm, Klar.'**
+  String get glVoiceYesBody;
+
+  /// No description provided for @glVoiceNoTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get glVoiceNoTitle;
+
+  /// No description provided for @glVoiceNoBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Als ganzer Satz oder am Anfang eines Satzes.\nNein, No, Abbrechen, Stop, Stopp, Cancel, Zurück.'**
+  String get glVoiceNoBody;
+
+  /// No description provided for @glVoiceHelpTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Hilfe'**
+  String get glVoiceHelpTitle;
+
+  /// No description provided for @glVoiceHelpBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Liest die kurze Liste vor: Kontostand, Kamera, Einfügen, Bild, Sats senden. Die ganze Liste ist diese Kategorie.\nHilfe, Help, Befehle, Commands, Was kann ich, What can I.'**
+  String get glVoiceHelpBody;
+
   /// No description provided for @glCatApp.
   ///
   /// In de, this message translates to:

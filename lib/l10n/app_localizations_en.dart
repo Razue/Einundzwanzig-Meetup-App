@@ -5561,6 +5561,72 @@ class AppLocalizationsEn extends AppLocalizations {
       'A start is required, the end is optional. For an event with a badge the calendar day matters: badges can only be issued on that day, from midnight to midnight.';
 
   @override
+  String get glCatVoice => 'Voice Wallet';
+
+  @override
+  String get glVoiceIntroTitle => 'How to say it';
+
+  @override
+  String get glVoiceIntroBody =>
+      'Tap the microphone and say a command. Hold it and the app switches by itself between listening and answering, until you tap or hold again. Every word it understands is listed below. It never reads the token aloud.';
+
+  @override
+  String get glVoiceBalanceTitle => 'Balance';
+
+  @override
+  String get glVoiceBalanceBody =>
+      'Says the balance.\nKontostand, Guthaben, Balance, Wie viel, Wieviel, How much, How many.';
+
+  @override
+  String get glVoiceScanTitle => 'Camera';
+
+  @override
+  String get glVoiceScanBody =>
+      'Opens the camera and reads the code, including one that keeps changing. Foto means the camera, not the gallery.\nToken, Tokens, Tocken, Kamera, Camera, Foto, Photo, QR, Code, Einlösen, Einlöse, Empfangen, Empfang, Receive, Redeem.\nAlso Q R, KU ER, and any word that starts with Scan or Skan.';
+
+  @override
+  String get glVoicePasteTitle => 'Paste';
+
+  @override
+  String get glVoicePasteBody =>
+      'Takes text or a picture from the clipboard. One piece of a changing code is not enough; use the camera for that.\nEinfügen, Paste, Zwischenablage, Clipboard.';
+
+  @override
+  String get glVoiceGalleryTitle => 'Picture';
+
+  @override
+  String get glVoiceGalleryBody =>
+      'Opens a photo and reads the QR. Bild einfügen opens the gallery, not the clipboard.\nGalerie, Gallery, Album, Bild, Bilder, Upload, Screenshot.';
+
+  @override
+  String get glVoiceSendTitle => 'Send sats';
+
+  @override
+  String get glVoiceSendBody =>
+      'Asks for the amount if you did not say one, then wants a yes. Say the amount as digits or as words, for example tausend or twenty one. It will not accept more than one bitcoin. Token senden sends sats, it does not open the camera.\nSchick, Schicke, Schicken, Sende, Senden, Send, Zahl, Pay, Überweise, Überweisen.\nAlso Token senden, Token sende, Tokensenden, Sats senden, Sats sende, Satssenden, Satz senden.';
+
+  @override
+  String get glVoiceYesTitle => 'Confirm';
+
+  @override
+  String get glVoiceYesBody =>
+      'Counts only when the whole sentence is exactly one of these words.\nJa, Jawohl, Yes, Yeah, Ok, Okay, Bestätigen, Confirm, Klar.';
+
+  @override
+  String get glVoiceNoTitle => 'Cancel';
+
+  @override
+  String get glVoiceNoBody =>
+      'As the whole sentence, or at the start of one.\nNein, No, Abbrechen, Stop, Stopp, Cancel, Zurück.';
+
+  @override
+  String get glVoiceHelpTitle => 'Help';
+
+  @override
+  String get glVoiceHelpBody =>
+      'Reads the short list: balance, camera, paste, picture, send sats. The full list is this category.\nHilfe, Help, Befehle, Commands, Was kann ich, What can I.';
+
+  @override
   String get glCatApp => 'App & handling';
 
   @override

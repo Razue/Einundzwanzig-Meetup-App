@@ -25,6 +25,7 @@ enum GlossaryCategory {
   identity,
   events,
   nostr,
+  voice,
   app,
 }
 
@@ -121,6 +122,17 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         GlossaryEntry(GlossaryCategory.nostr, t.glCommunityTitle, t.glCommunityBody),
         GlossaryEntry(GlossaryCategory.nostr, t.glConverterTitle, t.glConverterBody),
 
+        // --- Sprach Wallet ---
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceIntroTitle, t.glVoiceIntroBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceBalanceTitle, t.glVoiceBalanceBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceScanTitle, t.glVoiceScanBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoicePasteTitle, t.glVoicePasteBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceGalleryTitle, t.glVoiceGalleryBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceSendTitle, t.glVoiceSendBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceYesTitle, t.glVoiceYesBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceNoTitle, t.glVoiceNoBody),
+        GlossaryEntry(GlossaryCategory.voice, t.glVoiceHelpTitle, t.glVoiceHelpBody),
+
         // --- App & Bedienung ---
         GlossaryEntry(GlossaryCategory.app, t.glTilesTitle, t.glTilesBody),
         GlossaryEntry(GlossaryCategory.app, t.glLanguageTitle, t.glLanguageBody),
@@ -136,6 +148,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         GlossaryCategory.identity => t.glCatIdentity,
         GlossaryCategory.events => t.glCatEvents,
         GlossaryCategory.nostr => t.glCatNostr,
+        GlossaryCategory.voice => t.glCatVoice,
         GlossaryCategory.app => t.glCatApp,
       };
 
@@ -147,6 +160,7 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
         GlossaryCategory.identity => Icons.key_rounded,
         GlossaryCategory.events => Icons.celebration_rounded,
         GlossaryCategory.nostr => Icons.bolt_rounded,
+        GlossaryCategory.voice => Icons.mic_rounded,
         GlossaryCategory.app => Icons.tune_rounded,
       };
 
