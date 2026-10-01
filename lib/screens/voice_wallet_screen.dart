@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
 import '../services/speech/on_device_speech.dart';
@@ -56,6 +57,10 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   String _primary = '';
   String _caption = '';
   bool _huge = false;
+  bool _speaking = false;
+  WalletOutput _output = WalletOutput.both;
+
+  static const _outputKey = 'voice_wallet_output_v1';
 
   @override
   void initState() {
@@ -67,6 +72,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
+    _loadOutput();
   }
 
   @override
@@ -184,8 +190,47 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
 
   Future<void> _say(String? text) async {
     if (!mounted || text == null || text.isEmpty) return;
-    final language = Localizations.localeOf(context).languageCode;
-    await _voice.speak(text, languageCode: language);
+    if (_output == WalletOutput.text) return;
+    setState(() => _speaking = true);
+    try {
+      final language = Localizations.localeOf(context).languageCode;
+      await _voice.speak(text, languageCode: language);
+    } finally {
+      if (mounted) setState(() => _speaking = false);
+    }
+  }
+
+  Future<void> _loadOutput() async {
+    final prefs = await SharedPreferences.getInstance();
+    final next = switch (prefs.getString(_outputKey)) {
+      'sound' => WalletOutput.sound,
+      'text' => WalletOutput.text,
+      _ => WalletOutput.both,
+    };
+    if (mounted && next != _output) setState(() => _output = next);
+  }
+
+  Future<void> _setOutput(WalletOutput next) async {
+    final line = _outputLine(next);
+    setState(() {
+      _output = next;
+      _huge = false;
+      _caption = '';
+      _primary = next == WalletOutput.sound ? '' : line;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_outputKey, next.name);
+    if (!mounted) return;
+    await _say(line);
+  }
+
+  String _outputLine(WalletOutput mode) {
+    final t = AppLocalizations.of(context);
+    return switch (mode) {
+      WalletOutput.both => t.vwOutBothSay,
+      WalletOutput.sound => t.vwOutSoundSay,
+      WalletOutput.text => t.vwOutTextSay,
+    };
   }
 
   Future<void> _apply(String words) async {
@@ -282,7 +327,11 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           _primary = _group(command.sats!);
           _caption = t.vwHintConfirm;
         });
-        await _say(spokenReply(amount: command.sats, sentence: t.vwHintConfirm));
+        await _say(
+          spokenReply(amount: command.sats, sentence: t.vwHintConfirm),
+        );
+      case WalletCommandKind.output:
+        await _setOutput(command.output ?? WalletOutput.both);
       case WalletCommandKind.help:
         setState(() {
           _outgoing = null;
@@ -341,7 +390,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _caption = t.vwSent(sent.balance);
         _outgoing = sent.token;
       });
-      await _say(spokenReply(amount: sent.amount, sentence: t.vwSent(sent.balance)));
+      await _say(
+        spokenReply(amount: sent.amount, sentence: t.vwSent(sent.balance)),
+      );
     } on CashuException catch (e) {
       await _showFail(e.fail);
     }
@@ -509,11 +560,13 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final pad = MediaQuery.paddingOf(context);
+    final soundOnly = _output == WalletOutput.sound && !_listening;
     final hint = _listening
         ? t.vwHintListening
         : (_pendingSats != null
               ? t.vwHintConfirm
-              : (_handsFree ? '' : t.vwHintIdle));
+              : (_handsFree || soundOnly ? '' : t.vwHintIdle));
+    final showDots = soundOnly && (_speaking || _busy);
 
     // Derselbe Rand links und rechts. Ein einseitiger Zuschlag
     // wuerde Text und Mikrofon aus der Mitte schieben.
@@ -525,7 +578,8 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         backgroundColor: cDark,
         elevation: 0,
         foregroundColor: cTextSecondary,
-        title: const SizedBox.shrink(),
+        centerTitle: true,
+        title: _outputSwitch(t),
       ),
       body: Padding(
         padding: EdgeInsets.fromLTRB(28 + side, 0, 28 + side, 28 + pad.bottom),
@@ -533,20 +587,23 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: Text(
-                _primary,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: cText,
-                  fontSize: _huge ? 84 : 28,
-                  fontWeight: FontWeight.w700,
-                  height: 1.05,
+            if (showDots)
+              const _SpeakDots()
+            else if (!soundOnly)
+              SizedBox(
+                width: double.infinity,
+                child: Text(
+                  _primary,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: cText,
+                    fontSize: _huge ? 84 : 28,
+                    fontWeight: FontWeight.w700,
+                    height: 1.05,
+                  ),
                 ),
               ),
-            ),
-            if (_caption.isNotEmpty) ...[
+            if (!soundOnly && _caption.isNotEmpty) ...[
               const SizedBox(height: 14),
               SizedBox(
                 width: double.infinity,
@@ -627,6 +684,108 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
           ],
         ),
       ),
+    );
+  }
+
+  Widget _outputSwitch(AppLocalizations t) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _outputPill(WalletOutput.both, t.vwOutBoth),
+        _outputPill(WalletOutput.sound, t.vwOutSound),
+        _outputPill(WalletOutput.text, t.vwOutText),
+      ],
+    );
+  }
+
+  Widget _outputPill(WalletOutput mode, String label) {
+    final on = _output == mode;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: GestureDetector(
+        onTap: () {
+          if (mode != _output) {
+            _setOutput(mode);
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: on ? cOrange.withValues(alpha: 0.18) : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: on ? cOrange : cTileBorder,
+              width: on ? 1.4 : 0.6,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: on ? cOrange : cTextTertiary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SpeakDots extends StatefulWidget {
+  const _SpeakDots();
+
+  @override
+  State<_SpeakDots> createState() => _SpeakDotsState();
+}
+
+class _SpeakDotsState extends State<_SpeakDots>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _bounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _bounce = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _bounce.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _bounce,
+      builder: (context, _) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(3, (i) {
+            final phase = (_bounce.value + i * 0.18) % 1;
+            final lift = phase < 0.5 ? phase * 2 : (1 - phase) * 2;
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Transform.translate(
+                offset: Offset(0, -14 * lift),
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: cOrange.withValues(alpha: 0.35 + 0.65 * lift),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }

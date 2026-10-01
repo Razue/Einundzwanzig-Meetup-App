@@ -5657,7 +5657,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get glVoiceHelpBody =>
-      'Lee la lista corta: saldo, cámara, pegar, imagen, enviar sats. La lista completa es esta categoría.\nHilfe, Help, Befehle, Commands, Was kann ich, What can I.';
+      'Lee la lista corta: saldo, cámara, pegar, imagen, enviar sats, y cómo cambiar la salida. La lista completa es esta categoría.\nHilfe, Help, Befehle, Commands, Was kann ich, What can I.';
+
+  @override
+  String get glVoiceOutputTitle => 'Salida';
+
+  @override
+  String get glVoiceOutputBody =>
+      'Arriba en la wallet de voz, o por voz. Ambos es el inicio: voz y texto.\nTon und Text, Text und Ton, Beides, Both, Sound and text, Text and sound.\nNur Ton, Nur Stimme, Ohne Text, Sound only, Voice only, No text. Entonces no ves la respuesta, solo tres puntos mientras habla. El QR para pagar se queda.\nNur Text, Ohne Ton, Kein Ton, Stumm, Text only, No sound, Mute.';
 
   @override
   String get glCatApp => 'App y manejo';
@@ -6368,7 +6375,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String get vwUnknown => 'Otra vez.';
 
   @override
-  String get vwHelp => 'Saldo. Cámara. Pegar. Imagen. Enviar sats.';
+  String get vwHelp =>
+      'Saldo. Cámara. Pegar. Imagen. Enviar sats. Solo voz, solo texto, o ambos.';
+
+  @override
+  String get vwOutBoth => 'Ambos';
+
+  @override
+  String get vwOutSound => 'Voz';
+
+  @override
+  String get vwOutText => 'Texto';
+
+  @override
+  String get vwOutBothSay => 'Voz y texto.';
+
+  @override
+  String get vwOutSoundSay => 'Solo voz.';
+
+  @override
+  String get vwOutTextSay => 'Solo texto.';
 
   @override
   String get vwSpeechOff =>

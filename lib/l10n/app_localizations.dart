@@ -10285,8 +10285,20 @@ abstract class AppLocalizations {
   /// No description provided for @glVoiceHelpBody.
   ///
   /// In de, this message translates to:
-  /// **'Liest die kurze Liste vor: Kontostand, Kamera, Einfügen, Bild, Sats senden. Die ganze Liste ist diese Kategorie.\nHilfe, Help, Befehle, Commands, Was kann ich, What can I.'**
+  /// **'Liest die kurze Liste vor: Kontostand, Kamera, Einfügen, Bild, Sats senden, und wie du die Ausgabe umschaltest. Die ganze Liste ist diese Kategorie.\nHilfe, Help, Befehle, Commands, Was kann ich, What can I.'**
   String get glVoiceHelpBody;
+
+  /// No description provided for @glVoiceOutputTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Ausgabe'**
+  String get glVoiceOutputTitle;
+
+  /// No description provided for @glVoiceOutputBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Oben auf der Sprach-Wallet, oder per Sprache. Beides ist der Anfang: Ton und Text.\nTon und Text, Text und Ton, Beides, Both, Sound and text, Text and sound.\nNur Ton, Nur Stimme, Ohne Text, Sound only, Voice only, No text. Dann siehst du keine Antwort, nur drei Punkte, solange sie spricht. Der QR zum Bezahlen bleibt.\nNur Text, Ohne Ton, Kein Ton, Stumm, Text only, No sound, Mute.'**
+  String get glVoiceOutputBody;
 
   /// No description provided for @glCatApp.
   ///
@@ -11479,8 +11491,44 @@ abstract class AppLocalizations {
   /// No description provided for @vwHelp.
   ///
   /// In de, this message translates to:
-  /// **'Kontostand. Kamera. Einfügen. Bild. Sats senden.'**
+  /// **'Kontostand. Kamera. Einfügen. Bild. Sats senden. Nur Ton, nur Text oder beides.'**
   String get vwHelp;
+
+  /// No description provided for @vwOutBoth.
+  ///
+  /// In de, this message translates to:
+  /// **'Beides'**
+  String get vwOutBoth;
+
+  /// No description provided for @vwOutSound.
+  ///
+  /// In de, this message translates to:
+  /// **'Ton'**
+  String get vwOutSound;
+
+  /// No description provided for @vwOutText.
+  ///
+  /// In de, this message translates to:
+  /// **'Text'**
+  String get vwOutText;
+
+  /// No description provided for @vwOutBothSay.
+  ///
+  /// In de, this message translates to:
+  /// **'Ton und Text.'**
+  String get vwOutBothSay;
+
+  /// No description provided for @vwOutSoundSay.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Ton.'**
+  String get vwOutSoundSay;
+
+  /// No description provided for @vwOutTextSay.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Text.'**
+  String get vwOutTextSay;
 
   /// No description provided for @vwSpeechOff.
   ///

@@ -14,8 +14,12 @@ enum WalletCommandKind {
   confirm,
   cancel,
   help,
+  output,
   unknown,
 }
+
+/// Was die Wallet zeigt und spricht. Beides ist der Anfang.
+enum WalletOutput { both, sound, text }
 
 class WalletCommand {
   final WalletCommandKind kind;
@@ -23,7 +27,10 @@ class WalletCommand {
   /// Nur bei [WalletCommandKind.send] gesetzt, und nur wenn eine Zahl da war.
   final int? sats;
 
-  const WalletCommand(this.kind, {this.sats});
+  /// Nur bei [WalletCommandKind.output] gesetzt.
+  final WalletOutput? output;
+
+  const WalletCommand(this.kind, {this.sats, this.output});
 
   static const unknown = WalletCommand(WalletCommandKind.unknown);
 }
@@ -34,19 +41,35 @@ WalletCommand parseWalletCommand(String raw) {
   final text = _normalize(raw);
   if (text.isEmpty) return WalletCommand.unknown;
 
-  if (_exact(text, _confirm)) return const WalletCommand(WalletCommandKind.confirm);
+  if (_exact(text, _confirm)) {
+    return const WalletCommand(WalletCommandKind.confirm);
+  }
+  final output = _outputOf(text);
+  if (output != null) {
+    return WalletCommand(WalletCommandKind.output, output: output);
+  }
   if (_exact(text, _cancel) || _startsWithWord(text, _cancel)) {
     return const WalletCommand(WalletCommandKind.cancel);
   }
-  if (_hasPhrase(text, _help)) return const WalletCommand(WalletCommandKind.help);
-  if (_hasPhrase(text, _balance)) return const WalletCommand(WalletCommandKind.balance);
+  if (_hasPhrase(text, _help)) {
+    return const WalletCommand(WalletCommandKind.help);
+  }
+  if (_hasPhrase(text, _balance)) {
+    return const WalletCommand(WalletCommandKind.balance);
+  }
 
   final sats = parseSpokenSats(text);
   final send = _hasWord(text, _send) || _hasPhrase(text, _sendPhrases);
-  if (send && sats != null) return WalletCommand(WalletCommandKind.send, sats: sats);
+  if (send && sats != null) {
+    return WalletCommand(WalletCommandKind.send, sats: sats);
+  }
   if (send) return const WalletCommand(WalletCommandKind.send);
-  if (_hasWord(text, _gallery)) return const WalletCommand(WalletCommandKind.gallery);
-  if (_hasWord(text, _paste)) return const WalletCommand(WalletCommandKind.paste);
+  if (_hasWord(text, _gallery)) {
+    return const WalletCommand(WalletCommandKind.gallery);
+  }
+  if (_hasWord(text, _paste)) {
+    return const WalletCommand(WalletCommandKind.paste);
+  }
   if (_isScan(text)) return const WalletCommand(WalletCommandKind.scan);
   return WalletCommand.unknown;
 }
@@ -94,6 +117,41 @@ const _cancel = {
   'zurueck',
 };
 
+const _outputBoth = {
+  'ton und text',
+  'text und ton',
+  'beides',
+  'sound and text',
+  'text and sound',
+  'both',
+};
+
+const _outputSound = {
+  'nur ton',
+  'nur stimme',
+  'ohne text',
+  'sound only',
+  'voice only',
+  'no text',
+};
+
+const _outputText = {
+  'nur text',
+  'ohne ton',
+  'kein ton',
+  'stumm',
+  'text only',
+  'no sound',
+  'mute',
+};
+
+WalletOutput? _outputOf(String text) {
+  if (_hasPhrase(text, _outputBoth)) return WalletOutput.both;
+  if (_hasPhrase(text, _outputSound)) return WalletOutput.sound;
+  if (_hasPhrase(text, _outputText)) return WalletOutput.text;
+  return null;
+}
+
 const _help = {
   'hilfe',
   'help',
@@ -131,10 +189,7 @@ const _scan = {
   'redeem',
 };
 
-const _scanPhrases = {
-  'ku er',
-  'q r',
-};
+const _scanPhrases = {'ku er', 'q r'};
 
 const _paste = {
   'einfuegen',
@@ -183,12 +238,14 @@ bool _hasPhrase(String text, Set<String> phrases) =>
     phrases.any((p) => text.contains(p));
 
 bool _hasWord(String text, Set<String> words) => words.any((w) {
-      return RegExp('(?:^|\\s)${RegExp.escape(w)}(?:\\s|\$)').hasMatch(text);
-    });
+  return RegExp('(?:^|\\s)${RegExp.escape(w)}(?:\\s|\$)').hasMatch(text);
+});
 
 bool _isScan(String text) {
   if (_hasWord(text, _scan) || _hasPhrase(text, _scanPhrases)) return true;
-  return text.split(' ').any((w) => w.startsWith('scan') || w.startsWith('skan'));
+  return text
+      .split(' ')
+      .any((w) => w.startsWith('scan') || w.startsWith('skan'));
 }
 
 bool _startsWithWord(String text, Set<String> words) =>
@@ -311,13 +368,15 @@ int? _parseWords(String text) {
       continue;
     }
 
-    final asThousand = _scaled(token, 'tausend', 1000) ?? _scaled(token, 'thousand', 1000);
+    final asThousand =
+        _scaled(token, 'tausend', 1000) ?? _scaled(token, 'thousand', 1000);
     if (asThousand != null) {
       total += asThousand;
       seen = true;
       continue;
     }
-    final asHundred = _scaled(token, 'hundert', 100) ?? _scaled(token, 'hundred', 100);
+    final asHundred =
+        _scaled(token, 'hundert', 100) ?? _scaled(token, 'hundred', 100);
     if (asHundred != null) {
       current += asHundred;
       seen = true;

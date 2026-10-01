@@ -47,6 +47,12 @@ void main() {
     expect(kind('nein'), WalletCommandKind.cancel);
     expect(kind('Hilfe'), WalletCommandKind.help);
     expect(kind('hello there'), WalletCommandKind.unknown);
+    expect(parseWalletCommand('nur Ton').output, WalletOutput.sound);
+    expect(parseWalletCommand('nur Text').output, WalletOutput.text);
+    expect(parseWalletCommand('Beides').output, WalletOutput.both);
+    expect(parseWalletCommand('no text').output, WalletOutput.sound);
+    expect(parseWalletCommand('mute').output, WalletOutput.text);
+    expect(kind('ja'), WalletCommandKind.confirm);
   });
 
   test('Eine gesprochene Summe ueber ein Bitcoin wird nicht angenommen', () {
