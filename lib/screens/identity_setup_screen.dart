@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../models/meetup.dart';
 import '../models/user.dart';
+import '../services/app_review_demo.dart';
 import '../services/backup_service.dart';
 import '../services/local_easy_auth.dart';
 import '../services/local_key_vault.dart';
@@ -23,6 +24,7 @@ import '../services/passkey_prf_service.dart';
 import '../services/secure_key_store.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
+import '../widgets/app_review_sign_in.dart';
 import '../widgets/meetup_search_sheet.dart';
 import 'app_shell.dart';
 import 'bunker_connect_sheet.dart';
@@ -73,6 +75,9 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
   bool _hasPasswordWrap = false;
   bool _hasPasskeyWrap = false;
   bool _resumeUsePassword = false;
+  // Demo-Login fuer Apple-Reviewer: nur in Debug/TestFlight/Review-Builds
+  // true, fuer normale Nutzer bleibt die Box unsichtbar.
+  bool _offerReviewSignIn = false;
 
   List<Meetup> _meetups = [];
   List<String> _selectedMeetupCities = [];
@@ -99,6 +104,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     final hasKey = await SecureKeyStore.hasKey();
     final pwWrap = await LocalKeyVault.getPasswordWrap();
     final pkWrap = await LocalKeyVault.hasPasskeyWrap();
+    final offerReviewSignIn = await AppReviewDemo.shouldOfferSignIn();
     if (!mounted) return;
     setState(() {
       _path = path;
@@ -106,6 +112,7 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
       _hasLocalKey = hasKey;
       _hasPasswordWrap = pwWrap != null && pwWrap.isNotEmpty;
       _hasPasskeyWrap = pkWrap;
+      _offerReviewSignIn = offerReviewSignIn;
       _bootstrapping = false;
     });
   }
@@ -948,6 +955,12 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
             _step = _SetupStep.existing;
           }),
         ),
+        // Demo-Zugang fuer die Apple-Pruefung. Steht bewusst auf der
+        // Auswahlseite: Reviewer starten die App frisch und landen hier.
+        if (_offerReviewSignIn) ...[
+          const SizedBox(height: 28),
+          AppReviewSignIn(onSuccess: _finishIfOnboarded),
+        ],
       ];
 
   /// Dieselben Bedingungen wie beim Backup-Passwort, nur fuer ein anderes

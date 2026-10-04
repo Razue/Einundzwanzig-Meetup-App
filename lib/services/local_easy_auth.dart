@@ -72,6 +72,10 @@ class LocalEasyAuth {
     user.nostrNpub = npub;
     user.hasNostrKey = true;
     user.isNostrVerified = true;
+    // Eine echte Registrierung loest die Review-Demo-Identitaet ab — das
+    // Flag darf nicht auf das neue Profil uebergreifen. (Die Demo selbst
+    // setzt es nach ihrem register()-Aufruf wieder.)
+    user.isReviewDemo = false;
     await user.save();
   }
 
