@@ -51,8 +51,12 @@
 	<string>Diese App kann Meetup-Termine in deinen Kalender eintragen.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Diese App nutzt die Kamera, um Meetup- und Badge-QR-Codes zu scannen.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Die App spielt Audio (PlebRap) über ein Audio-Framework ab, das Mikrofon-APIs enthält. Die App nimmt nichts auf und greift nicht auf das Mikrofon zu.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Diese App nutzt deinen Standort, um Meetups in deiner Nähe anzuzeigen.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Diese App nutzt deinen Standort, um Meetups in deiner Nähe anzuzeigen. Der Standort wird nur verwendet, während die App geöffnet ist.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Diese App nutzt deine Fotomediathek, um Profilbilder auszuwählen.</string>
 	<key>UILaunchStoryboardName</key>
@@ -72,6 +76,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

@@ -465,6 +465,30 @@ class MempoolService {
   }
 
   static Future<BitcoinDashboardData> _fetchDashboard() async {
+    var data = await _fetchFromCurrentHost();
+    if (data.sourcesOk > 0) return data;
+    // Nutzer hat Tor oder eine eigene Instanz gewählt: nicht still
+    // umbiegen. Nur der Default (mempool.space) darf auf Spiegel fallen.
+    if (MempoolConfig.mode != MempoolMode.clearnet) return data;
+
+    final original = MempoolConfig.host;
+    for (final fb in MempoolConfig.fallbackHosts) {
+      if (fb == original) continue;
+      AppLogger.warn(_tag, 'Keine Daten von $original — Fallback $fb');
+      MempoolConfig.setSessionOverride(fb);
+      resetClient();
+      data = await _fetchFromCurrentHost();
+      if (data.sourcesOk > 0) {
+        AppLogger.diag(_tag, 'Fallback OK: $fb (${data.sourcesOk}/6 Quellen)');
+        return data;
+      }
+    }
+    MempoolConfig.setSessionOverride(null);
+    resetClient();
+    return data;
+  }
+
+  static Future<BitcoinDashboardData> _fetchFromCurrentHost() async {
     await MempoolConfig.ensureLoaded();
     final prev = lastDashboard;
 

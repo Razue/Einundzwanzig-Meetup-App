@@ -367,7 +367,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'btc_dashboard', label: 'Bitcoin',         span: 2, builder: _buildBtcDashboardTile),
       _TileDef(id: 'news',         label: 'News',             span: 2, builder: _buildNewsTile),
       _TileDef(id: 'portal',       label: 'Meine Meetups',    span: 2, builder: _buildPortalTile),
-      _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin),
+      _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin || _user.isReviewDemo),
       // ── Admin-optionale Kacheln ──
     ];
   }
@@ -3534,7 +3534,9 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
                     width: 7, height: 7,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: d != null ? cGreen.withValues(alpha: 0.7) : cTextTertiary,
+                      color: (d != null && !d.isDead)
+                          ? cGreen.withValues(alpha: 0.7)
+                          : cTextTertiary,
                     ),
                   ),
                   const SizedBox(width: 6),

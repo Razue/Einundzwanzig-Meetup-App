@@ -1,0 +1,34 @@
+{
+  "name": "Einundzwanzig",
+  "subtitle": "Meetup-Badges & Web of Trust",
+  "description": "Apps des Einundzwanzig-Vereins für die deutschsprachige Bitcoin-Community. Meetup-Teilnahme per QR-Code erfassen, kryptographisch signierte Badges sammeln und daraus eine verifizierbare Reputation aufbauen – ohne Server, ohne KYC.",
+  "iconURL": "https://razue.github.io/Einundzwanzig-Meetup-App/icons/Icon-512.png",
+  "website": "https://razue.github.io/Einundzwanzig-Meetup-App/",
+  "tintColor": "#F7931A",
+  "featuredApps": [
+    "dev.einundzwanzig.einundzwanzigMeetupApp"
+  ],
+  "apps": [
+    {
+      "name": "Einundzwanzig Meetup App",
+      "bundleIdentifier": "dev.einundzwanzig.einundzwanzigMeetupApp",
+      "marketplaceID": "",
+      "developerName": "Einundzwanzig",
+      "subtitle": "Meetup-Badges mit Schnorr-Signatur",
+      "localizedDescription": "Die Einundzwanzig Meetup App erfasst deine Teilnahme an Bitcoin-Meetups über Rolling-QR-Codes und versiegelt jedes Badge mit einer Schnorr-Signatur (BIP-340) des Organisators. Aus den Badges entsteht ein dezentraler Trust Score, den du bei P2P-Trades per QR-Code vorzeigen kannst – dein Gegenüber prüft die Echtheit in Sekunden.\n\n• Meetups in deiner Nähe finden und Termine in den Kalender übernehmen\n• Badges sammeln, lokal auf dem Gerät gespeichert\n• Reputation als QR-Code teilen und verifizieren\n• Nostr-Identität (npub) und Web of Trust\n• Kein Server, kein Account, kein KYC – alles Open Source (MIT)",
+      "iconURL": "https://razue.github.io/Einundzwanzig-Meetup-App/icons/Icon-512.png",
+      "tintColor": "#F7931A",
+      "category": "social",
+      "screenshots": [
+        "https://razue.github.io/Einundzwanzig-Meetup-App/altstore/screenshots/01.png",
+        "https://razue.github.io/Einundzwanzig-Meetup-App/altstore/screenshots/02.png"
+      ],
+      "versions": [],
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {}
+      }
+    }
+  ],
+  "news": []
+}
