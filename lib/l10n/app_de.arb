@@ -2752,5 +2752,99 @@
       }
     }
   },
-  "mnUpdateFailed": "Aktualisierung gerade nicht möglich — du siehst den gespeicherten Stand. Zum erneuten Versuch herunterziehen."
+  "mnUpdateFailed": "Aktualisierung gerade nicht möglich — du siehst den gespeicherten Stand. Zum erneuten Versuch herunterziehen.",
+  "mnReachTitle": "DEINE REICHWEITE",
+  "mnReachSub": "Personen aus {meetups} Meetups",
+  "@mnReachSub": {
+    "placeholders": {
+      "meetups": {
+        "type": "int"
+      }
+    }
+  },
+  "mnReachSplit": "{d1} direkt getroffen · {d2} über Kontakte · {d3} eine Ebene weiter",
+  "@mnReachSplit": {
+    "placeholders": {
+      "d1": {
+        "type": "int"
+      },
+      "d2": {
+        "type": "int"
+      },
+      "d3": {
+        "type": "int"
+      }
+    }
+  },
+  "mnStandAt": "Stand {time}",
+  "@mnStandAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "mnSavedState": "Gespeicherter Stand",
+  "mnGraphExcerpt": "{shown} von {total} direkten Kontakten · Ausschnitt",
+  "@mnGraphExcerpt": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "mnTapShowsPath": "Antippen zeigt den Weg",
+  "mnFilterAll": "Alle",
+  "mnSearchHint": "Name oder npub suchen",
+  "mnNoResults": "Niemand gefunden",
+  "mnShowAll": "Alle {count} anzeigen",
+  "@mnShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mnLastAt": "zuletzt {place}",
+  "@mnLastAt": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "mnVia": "über {names}",
+  "@mnVia": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "mnAnd": "und",
+  "mnHowItWorks": "So entsteht dein Netzwerk",
+  "mnHowItWorksSub": "Nur Meetups zählen, nur wer zugestimmt hat",
+  "mnPathTo": "Dein Weg zu {name}",
+  "@mnPathTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mnYou": "Du",
+  "mnTogetherAt": "gemeinsam bei {place}",
+  "@mnTogetherAt": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "mnAlsoVia": "Auch erreichbar über",
+  "mnClose": "Schließen",
+  "mnCopyNpub": "npub kopieren"
 }

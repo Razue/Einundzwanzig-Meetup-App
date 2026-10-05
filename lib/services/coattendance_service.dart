@@ -1373,6 +1373,8 @@ class CoAttendanceService {
       byDegree: out,
       myMeetupCount: fresh.myMeetupCount,
       updatedAt: previous.updatedAt,
+      // Fuer die Wege im Detail: alte Teilnahmen, von neuen ueberschrieben.
+      meetupsOf: {...previous.meetupsOf, ...fresh.meetupsOf},
     );
   }
 
@@ -1414,15 +1416,31 @@ class CoAttendanceService {
     // BFS: Grad pro npub + über welchen Grad-1-Kontakt erreichbar
     final degree = <String, int>{myNpub: 0};
     final bridges = <String, Set<String>>{}; // npub -> Grad-1-Brücken
+    // Vorgaenger auf EINEM kuerzesten Weg — fuer die Anzeige "Du → Anna →
+    // Carla". Weil die direkten Kontakte nach Zahl gemeinsamer Meetups
+    // geordnet in die Suche gehen, fuehrt der Weg bevorzugt ueber die
+    // staerkste Verbindung.
+    final parent = <String, String>{};
     final queue = Queue<String>()..add(myNpub);
 
     while (queue.isNotEmpty) {
       final current = queue.removeFirst();
       final curDeg = degree[current]!;
       if (curDeg >= maxDepth) continue;
-      for (final neighbor in (adj[current] ?? const <String>{})) {
+      var neighbors = adj[current] ?? const <String>{};
+      if (curDeg == 0) {
+        final strength = <String, int>{
+          for (final n in neighbors)
+            n: sharedKeys(nodes[n]?.meetups ?? <String>{}, myMeetups).length,
+        };
+        neighbors = (neighbors.toList()
+              ..sort((a, b) => strength[b]!.compareTo(strength[a]!)))
+            .toSet();
+      }
+      for (final neighbor in neighbors) {
         if (!degree.containsKey(neighbor)) {
           degree[neighbor] = curDeg + 1;
+          parent[neighbor] = current;
           queue.add(neighbor);
         }
         // Brücke merken: der Grad-1-Knoten auf dem Weg
@@ -1459,6 +1477,7 @@ class CoAttendanceService {
             degree: deg,
             sharedMeetupsWithMe: shared,
             bridges: deg == 1 ? <String>{} : (bridges[npub] ?? <String>{}),
+            parent: parent[npub],
           ));
     }
 
@@ -1501,9 +1520,16 @@ class CoAttendanceService {
       }
     }
 
-    // Sortierung: Grad 1 nach Anzahl gemeinsamer Meetups, sonst nach Brücken-Anzahl
-    byDegree[1]?.sort((a, b) =>
-        b.sharedMeetupsWithMe.length.compareTo(a.sharedMeetupsWithMe.length));
+    // Sortierung: Grad 1 nach Anzahl gemeinsamer Meetups (bei Gleichstand
+    // das juengste zuerst), sonst nach Brücken-Anzahl
+    byDegree[1]?.sort((a, b) {
+      final c =
+          b.sharedMeetupsWithMe.length.compareTo(a.sharedMeetupsWithMe.length);
+      if (c != 0) return c;
+      final da = AttendanceKeyLabel.newest(a.sharedMeetupsWithMe);
+      final db = AttendanceKeyLabel.newest(b.sharedMeetupsWithMe);
+      return (db ?? DateTime(0)).compareTo(da ?? DateTime(0));
+    });
     byDegree[2]?.sort((a, b) => b.bridges.length.compareTo(a.bridges.length));
     byDegree[3]?.sort((a, b) => b.bridges.length.compareTo(a.bridges.length));
 
@@ -1512,6 +1538,10 @@ class CoAttendanceService {
       byDegree: byDegree,
       myMeetupCount: myMeetups.length,
       updatedAt: updatedAt,
+      meetupsOf: {
+        for (final n in degree.keys)
+          if (degree[n]! <= maxDepth) n: Set.of(nodes[n]?.meetups ?? const <String>{}),
+      },
     );
   }
 }
@@ -1642,11 +1672,15 @@ class NetworkContact {
   final Set<String> sharedMeetupsWithMe; // nur bei Grad 1 befüllt
   final Set<String> bridges;           // Grad-1-Kontakte, über die ich diese Person erreiche (Grad 2+)
 
+  /// Vorgaenger auf einem kuerzesten Weg (bei Grad 1: ich selbst).
+  final String? parent;
+
   NetworkContact({
     required this.npub,
     required this.degree,
     required this.sharedMeetupsWithMe,
     required this.bridges,
+    this.parent,
   });
 }
 
@@ -1663,12 +1697,17 @@ class MyNetwork {
   /// Stand.
   final bool stale;
 
+  /// Meetup-Kennungen je Person (ich und alle Kontakte) — fuer die Angabe,
+  /// bei welchem Meetup sich zwei Personen auf dem Weg begegnet sind.
+  final Map<String, Set<String>> meetupsOf;
+
   MyNetwork({
     required this.myNpub,
     required this.byDegree,
     required this.myMeetupCount,
     this.updatedAt,
     this.stale = false,
+    this.meetupsOf = const {},
   });
 
   MyNetwork markStale() => MyNetwork(
@@ -1677,7 +1716,35 @@ class MyNetwork {
         myMeetupCount: myMeetupCount,
         updatedAt: updatedAt,
         stale: true,
+        meetupsOf: meetupsOf,
       );
+
+  /// Alle Kontakte nach npub.
+  late final Map<String, NetworkContact> contactsByNpub = {
+    for (final list in byDegree.values)
+      for (final c in list) c.npub: c,
+  };
+
+  /// Weg von mir zu [npub], z. B. [ich, Anna, Carla]. Leer, wenn er sich
+  /// nicht vollstaendig zusammensetzen laesst.
+  List<String> pathTo(String npub) {
+    final chain = <String>[npub];
+    var cur = npub;
+    for (var i = 0; i < 4; i++) {
+      final p = contactsByNpub[cur]?.parent;
+      if (p == null) break;
+      chain.add(p);
+      if (p == myNpub) break;
+      cur = p;
+    }
+    if (chain.last != myNpub) return const [];
+    return chain.reversed.toList();
+  }
+
+  /// Gemeinsame Meetups zweier Personen, das juengste zuerst.
+  List<String> sharedBetween(String a, String b) =>
+      AttendanceKeyLabel.newestFirst(CoAttendanceService.sharedKeys(
+          meetupsOf[a] ?? const <String>{}, meetupsOf[b] ?? const <String>{}));
 
   /// Grad je Person — zum Vergleich zweier Staende.
   Map<String, int> get degreeOf => {
@@ -1713,4 +1780,70 @@ class PresenceCheck {
   bool get found => degree >= 0;
   bool get isDirect => degree == 1;
   bool get isSelf => degree == 0;
+}
+
+/// Macht aus einer Anwesenheits-Kennung etwas Lesbares.
+///
+/// Kennungen sehen so aus: `wuerzburg-2026-09-12@u8qf5q534jzc` — Meetup-Name
+/// in Kleinbuchstaben mit Bindestrichen, Datum, optional der Signierer.
+/// Angezeigt wird daraus "Wuerzburg, 12.09.2026". Der Signierer-Anhang ist
+/// reine Technik und verschwindet.
+class AttendanceKeyLabel {
+  static final RegExp _dated = RegExp(r'^(.*)-(\d{4})-(\d{2})-(\d{2})$');
+
+  static String _strip(String key) {
+    var k = key;
+    if (k.startsWith(CoAttendanceService.eventPrefix)) {
+      k = k.substring(CoAttendanceService.eventPrefix.length);
+    }
+    final i = k.indexOf('@');
+    return i < 0 ? k : k.substring(0, i);
+  }
+
+  static DateTime? date(String key) {
+    final m = _dated.firstMatch(_strip(key));
+    if (m == null) return null;
+    return DateTime(
+        int.parse(m.group(2)!), int.parse(m.group(3)!), int.parse(m.group(4)!));
+  }
+
+  static String place(String key) {
+    final s = _strip(key);
+    final m = _dated.firstMatch(s);
+    final raw = m == null ? s : m.group(1)!;
+    return raw
+        .split('-')
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+
+  /// "12.09.2026", mit [withYear] = false nur "12.09.".
+  static String dateText(DateTime d, {bool withYear = true}) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return withYear
+        ? '${two(d.day)}.${two(d.month)}.${d.year}'
+        : '${two(d.day)}.${two(d.month)}.';
+  }
+
+  /// "Wuerzburg, 12.09.2026"
+  static String label(String key) {
+    final d = date(key);
+    final p = place(key);
+    return d == null ? p : '$p, ${dateText(d)}';
+  }
+
+  static List<String> newestFirst(Iterable<String> keys) => keys.toList()
+    ..sort((a, b) =>
+        (date(b) ?? DateTime(0)).compareTo(date(a) ?? DateTime(0)));
+
+  /// Datum der juengsten Kennung, null wenn keine ein Datum traegt.
+  static DateTime? newest(Iterable<String> keys) {
+    DateTime? best;
+    for (final k in keys) {
+      final d = date(k);
+      if (d != null && (best == null || d.isAfter(best))) best = d;
+    }
+    return best;
+  }
 }
