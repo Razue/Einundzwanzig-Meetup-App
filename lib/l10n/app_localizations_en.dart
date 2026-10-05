@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6220,4 +6219,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String prCaching(int percent) {
     return 'Loading song ($percent %) — seeking works once it is fully downloaded. It stays saved afterwards.';
   }
+
+  @override
+  String get chatRelayUnavailable =>
+      'The chat relay did not respond, or signing in did not complete. Please try again in a moment — if you use an external signer, approve the sign-in there.';
 }

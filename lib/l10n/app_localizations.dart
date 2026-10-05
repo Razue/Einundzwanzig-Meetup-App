@@ -11271,6 +11271,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Lied wird geladen ({percent} %) — Springen ist möglich, sobald es vollständig da ist. Danach bleibt es gespeichert.'**
   String prCaching(int percent);
+
+  /// No description provided for @chatRelayUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.'**
+  String get chatRelayUnavailable;
 }
 
 class _AppLocalizationsDelegate

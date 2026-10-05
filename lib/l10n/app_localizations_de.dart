@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -6265,4 +6264,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String prCaching(int percent) {
     return 'Lied wird geladen ($percent %) — Springen ist möglich, sobald es vollständig da ist. Danach bleibt es gespeichert.';
   }
+
+  @override
+  String get chatRelayUnavailable =>
+      'Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.';
 }
