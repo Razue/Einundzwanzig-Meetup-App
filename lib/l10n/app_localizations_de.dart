@@ -6268,4 +6268,13 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatRelayUnavailable =>
       'Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.';
+
+  @override
+  String mnUpdating(int degree) {
+    return 'Aktualisiere $degree. Grad …';
+  }
+
+  @override
+  String get mnUpdateFailed =>
+      'Aktualisierung gerade nicht möglich — du siehst den gespeicherten Stand. Zum erneuten Versuch herunterziehen.';
 }

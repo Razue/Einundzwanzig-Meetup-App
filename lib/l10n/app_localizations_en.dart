@@ -6223,4 +6223,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatRelayUnavailable =>
       'The chat relay did not respond, or signing in did not complete. Please try again in a moment — if you use an external signer, approve the sign-in there.';
+
+  @override
+  String mnUpdating(int degree) {
+    return 'Updating degree $degree …';
+  }
+
+  @override
+  String get mnUpdateFailed =>
+      'Couldn\'t update right now — showing the saved state. Pull down to try again.';
 }

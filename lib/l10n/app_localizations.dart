@@ -11277,6 +11277,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.'**
   String get chatRelayUnavailable;
+
+  /// No description provided for @mnUpdating.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisiere {degree}. Grad …'**
+  String mnUpdating(int degree);
+
+  /// No description provided for @mnUpdateFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisierung gerade nicht möglich — du siehst den gespeicherten Stand. Zum erneuten Versuch herunterziehen.'**
+  String get mnUpdateFailed;
 }
 
 class _AppLocalizationsDelegate

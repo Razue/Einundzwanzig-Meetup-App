@@ -6258,4 +6258,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get chatRelayUnavailable =>
       'El relé del chat no respondió o el inicio de sesión no se completó. Vuelve a intentarlo enseguida; si usas un firmante externo, aprueba allí el inicio de sesión.';
+
+  @override
+  String mnUpdating(int degree) {
+    return 'Actualizando grado $degree …';
+  }
+
+  @override
+  String get mnUpdateFailed =>
+      'No se pudo actualizar ahora — se muestra el estado guardado. Desliza hacia abajo para reintentar.';
 }
