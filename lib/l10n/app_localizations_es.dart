@@ -6267,4 +6267,88 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get mnUpdateFailed =>
       'No se pudo actualizar ahora — se muestra el estado guardado. Desliza hacia abajo para reintentar.';
+
+  @override
+  String get mnReachTitle => 'TU ALCANCE';
+
+  @override
+  String mnReachSub(int meetups) {
+    return 'personas de $meetups meetups';
+  }
+
+  @override
+  String mnReachSplit(int d1, int d2, int d3) {
+    return '$d1 en persona · $d2 vía contactos · $d3 un nivel más';
+  }
+
+  @override
+  String mnStandAt(String time) {
+    return 'Estado $time';
+  }
+
+  @override
+  String get mnSavedState => 'Estado guardado';
+
+  @override
+  String mnGraphExcerpt(int shown, int total) {
+    return '$shown de $total contactos directos · extracto';
+  }
+
+  @override
+  String get mnTapShowsPath => 'Toca para ver el camino';
+
+  @override
+  String get mnFilterAll => 'Todos';
+
+  @override
+  String get mnSearchHint => 'Buscar nombre o npub';
+
+  @override
+  String get mnNoResults => 'No se encontró a nadie';
+
+  @override
+  String mnShowAll(int count) {
+    return 'Mostrar los $count';
+  }
+
+  @override
+  String mnLastAt(String place) {
+    return 'último $place';
+  }
+
+  @override
+  String mnVia(String names) {
+    return 'vía $names';
+  }
+
+  @override
+  String get mnAnd => 'y';
+
+  @override
+  String get mnHowItWorks => 'Cómo se forma tu red';
+
+  @override
+  String get mnHowItWorksSub => 'Solo cuentan los meetups, solo quien aceptó';
+
+  @override
+  String mnPathTo(String name) {
+    return 'Tu camino hacia $name';
+  }
+
+  @override
+  String get mnYou => 'Tú';
+
+  @override
+  String mnTogetherAt(String place) {
+    return 'juntos en $place';
+  }
+
+  @override
+  String get mnAlsoVia => 'También accesible vía';
+
+  @override
+  String get mnClose => 'Cerrar';
+
+  @override
+  String get mnCopyNpub => 'Copiar npub';
 }
