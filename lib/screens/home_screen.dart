@@ -188,6 +188,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   @override
   void initState() {
     super.initState();
+    // Waehrung umgestellt → Kacheln neu zeichnen (Issue #66).
+    CurrencyService.current.addListener(_onCurrencyChanged);
     _loadTileCounters();
     _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
     _initTileDefs();
@@ -443,8 +445,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     await prefs.setStringList('tile_hidden', _hiddenTiles.toList());
   }
 
+  void _onCurrencyChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    CurrencyService.current.removeListener(_onCurrencyChanged);
     _favPageCtrl.dispose(); WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _midnightTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
   /// Wird von der Huelle gerufen, sobald der Home-Reiter wieder vorne ist.
   ///
@@ -2521,23 +2528,24 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Echter Wert statt Wegweiser: Der Kurs liegt ohnehin vor, also
     // zeigt die Kachel gleich, was eine Einheit der gewählten Währung
     // heute in Sats ist — "1 € = …", "1 CHF = …" (Issue #66).
-    return ValueListenableBuilder<String>(
-      valueListenable: CurrencyService.current,
-      builder: (context, cur, _) {
-        final price = MempoolService.lastDashboard?.priceIn(cur) ?? 0;
-        final satsPerUnit = price > 0 ? (100000000 / price).round() : 0;
-        return _tile(accentColor: cCyan, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: _heroContent(
-          icon: Icons.swap_vert_rounded,
-          accent: cCyan,
-          label: AppLocalizations.of(context).tileActConvert,
-          value: satsPerUnit > 0
-              ? '1 ${CurrencyService.symbol(cur)} = ${CurrencyService.groupInt(satsPerUnit)} sats'
-              : AppLocalizations.of(context).tileConverter,
-          valueSize: 17,
-          sub: AppLocalizations.of(context).tileConverterSub,
-        ));
-      },
-    );
+    //
+    // BEWUSST ohne ValueListenableBuilder: Dessen Builder laeuft erst
+    // spaeter, wenn _buildingPinnedTile schon fuer die naechste Gruppe
+    // umgestellt ist — die angeheftete Kachel erschien dadurch grau statt
+    // orange. Neu gezeichnet wird stattdessen ueber _onCurrencyChanged.
+    final cur = CurrencyService.current.value;
+    final price = MempoolService.lastDashboard?.priceIn(cur) ?? 0;
+    final satsPerUnit = price > 0 ? (100000000 / price).round() : 0;
+    return _tile(accentColor: cCyan, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: _heroContent(
+      icon: Icons.swap_vert_rounded,
+      accent: cCyan,
+      label: AppLocalizations.of(context).tileActConvert,
+      value: satsPerUnit > 0
+          ? '1 ${CurrencyService.symbol(cur)} = ${CurrencyService.groupInt(satsPerUnit)} sats'
+          : AppLocalizations.of(context).tileConverter,
+      valueSize: 17,
+      sub: AppLocalizations.of(context).tileConverterSub,
+    ));
   }
 
   Widget _buildNewsTile() => _tile(
