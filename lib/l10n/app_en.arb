@@ -2824,5 +2824,14 @@
   },
   "mnAlsoVia": "Also reachable via",
   "mnClose": "Close",
-  "mnCopyNpub": "Copy npub"
+  "mnCopyNpub": "Copy npub",
+  "settingsCurrencyTitle": "Currency",
+  "settingsCurrencyHint": "Applies to the converter, home screen, Bitcoin dashboard and widget. Rates from mempool.space.",
+  "curEUR": "Euro",
+  "curUSD": "US dollar",
+  "curCHF": "Swiss franc",
+  "curGBP": "British pound",
+  "curCAD": "Canadian dollar",
+  "curAUD": "Australian dollar",
+  "curJPY": "Japanese yen"
 }
