@@ -11491,7 +11491,7 @@ abstract class AppLocalizations {
   /// No description provided for @vwHelp.
   ///
   /// In de, this message translates to:
-  /// **'Kontostand. Kamera. Einfügen. Bild. Sats senden. Nur Ton, nur Text oder beides.'**
+  /// **'Bark oder Cashu. Kontostand. Rechnung mit Betrag. Adresse. Bezahlen. Kamera. Einfügen. Sats senden.'**
   String get vwHelp;
 
   /// No description provided for @vwOutBoth.
@@ -11679,6 +11679,108 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zum Weitergeben. Stand {balance}.'**
   String vwSent(int balance);
+
+  /// No description provided for @vwHintBark.
+  ///
+  /// In de, this message translates to:
+  /// **'Sag Kontostand, Rechnung, Adresse oder Bezahlen.'**
+  String get vwHintBark;
+
+  /// No description provided for @vwRailBark.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark. Ark und Lightning.'**
+  String get vwRailBark;
+
+  /// No description provided for @vwRailCashu.
+  ///
+  /// In de, this message translates to:
+  /// **'Cashu.'**
+  String get vwRailCashu;
+
+  /// No description provided for @vwBarkBalance.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei Bark.'**
+  String get vwBarkBalance;
+
+  /// No description provided for @vwBarkEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei Bark liegt nichts.'**
+  String get vwBarkEmpty;
+
+  /// No description provided for @vwBarkDown.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark ist nicht erreichbar. Der Rechner muss wach und im selben Netz sein.'**
+  String get vwBarkDown;
+
+  /// No description provided for @vwBarkUnset.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark ist nicht eingerichtet.'**
+  String get vwBarkUnset;
+
+  /// No description provided for @vwBarkServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark erreicht den Ark-Server nicht.'**
+  String get vwBarkServer;
+
+  /// No description provided for @vwInvoiceReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Rechnung liegt als Code bereit.'**
+  String get vwInvoiceReady;
+
+  /// No description provided for @vwInvoiceWait.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Zahlung ist unterwegs.'**
+  String get vwInvoiceWait;
+
+  /// No description provided for @vwAddressReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Ark-Adresse liegt als Code bereit.'**
+  String get vwAddressReady;
+
+  /// No description provided for @vwAskDest.
+  ///
+  /// In de, this message translates to:
+  /// **'Füge die Rechnung oder die Adresse ein.'**
+  String get vwAskDest;
+
+  /// No description provided for @vwNotPay.
+  ///
+  /// In de, this message translates to:
+  /// **'Das kann Bark nicht zahlen.'**
+  String get vwNotPay;
+
+  /// No description provided for @vwPayFail.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark hat nicht gezahlt.'**
+  String get vwPayFail;
+
+  /// No description provided for @vwPaid.
+  ///
+  /// In de, this message translates to:
+  /// **'Bezahlt. Stand {balance}.'**
+  String vwPaid(int balance);
+
+  /// No description provided for @vwArrived.
+  ///
+  /// In de, this message translates to:
+  /// **'Angekommen. Stand {balance}.'**
+  String vwArrived(int balance);
+
+  /// No description provided for @vwOffboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterwegs auf die Kette. Das wartet auf die nächste Runde.'**
+  String get vwOffboard;
 }
 
 class _AppLocalizationsDelegate

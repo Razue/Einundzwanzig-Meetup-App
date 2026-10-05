@@ -17,7 +17,13 @@ String? _safe(String? sentence) {
   final line = sentence.trim();
   if (line.isEmpty) return null;
   final lower = line.toLowerCase();
-  if (lower.contains('cashua') || lower.contains('cashub') || lower.contains('ur:')) {
+  if (lower.contains('cashua') ||
+      lower.contains('cashub') ||
+      lower.contains('ur:') ||
+      lower.contains('lnbc') ||
+      lower.contains('lntb') ||
+      lower.contains('lnurl') ||
+      lower.contains('ark1')) {
     return null;
   }
   return line;

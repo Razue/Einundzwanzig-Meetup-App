@@ -2757,7 +2757,7 @@
   "vwNotToken": "Not a Cashu token.",
   "vwTokenNoAmount": "Cashu token. This version cannot read the amount yet.",
   "vwUnknown": "Once more.",
-  "vwHelp": "Balance. Camera. Paste. Picture. Send sats. Sound only, text only, or both.",
+  "vwHelp": "Bark or Cashu. Balance. Invoice with an amount. Address. Pay. Camera. Paste. Send sats.",
   "vwOutBoth": "Both",
   "vwOutSound": "Sound",
   "vwOutText": "Text",
@@ -2810,5 +2810,32 @@
     "placeholders": {
       "balance": {"type": "int"}
     }
-  }
+  },
+  "vwHintBark": "Say balance, invoice, address or pay.",
+  "vwRailBark": "Bark. Ark and Lightning.",
+  "vwRailCashu": "Cashu.",
+  "vwBarkBalance": "On Bark.",
+  "vwBarkEmpty": "Nothing on Bark.",
+  "vwBarkDown": "Bark is unreachable. The computer has to be awake and on the same network.",
+  "vwBarkUnset": "Bark is not set up.",
+  "vwBarkServer": "Bark cannot reach the Ark server.",
+  "vwInvoiceReady": "The invoice is ready as a code.",
+  "vwInvoiceWait": "The payment is on its way.",
+  "vwAddressReady": "The Ark address is ready as a code.",
+  "vwAskDest": "Paste the invoice or the address.",
+  "vwNotPay": "Bark cannot pay that.",
+  "vwPayFail": "Bark did not pay.",
+  "vwPaid": "Paid. Balance {balance}.",
+  "@vwPaid": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  },
+  "vwArrived": "Arrived. Balance {balance}.",
+  "@vwArrived": {
+    "placeholders": {
+      "balance": {"type": "int"}
+    }
+  },
+  "vwOffboard": "On its way to the chain. It waits for the next round."
 }

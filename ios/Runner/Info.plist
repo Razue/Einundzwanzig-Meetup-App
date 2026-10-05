@@ -62,7 +62,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Diese App nutzt deine Fotomediathek, um Profilbilder auszuwählen.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Ein Cashu-Mint im lokalen Netz wird angesprochen, um einen Token einzulösen.</string>
+	<string>Die Sprach-Wallet spricht Bark auf einem Rechner im lokalen Netz an, und ein Cashu-Mint, um einen Token einzulösen.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
