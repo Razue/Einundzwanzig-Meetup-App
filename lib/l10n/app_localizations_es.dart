@@ -6351,4 +6351,32 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get mnCopyNpub => 'Copiar npub';
+
+  @override
+  String get settingsCurrencyTitle => 'Moneda';
+
+  @override
+  String get settingsCurrencyHint =>
+      'Se aplica al conversor, la pantalla de inicio, el panel de Bitcoin y el widget. Tipos de mempool.space.';
+
+  @override
+  String get curEUR => 'Euro';
+
+  @override
+  String get curUSD => 'Dólar estadounidense';
+
+  @override
+  String get curCHF => 'Franco suizo';
+
+  @override
+  String get curGBP => 'Libra esterlina';
+
+  @override
+  String get curCAD => 'Dólar canadiense';
+
+  @override
+  String get curAUD => 'Dólar australiano';
+
+  @override
+  String get curJPY => 'Yen japonés';
 }

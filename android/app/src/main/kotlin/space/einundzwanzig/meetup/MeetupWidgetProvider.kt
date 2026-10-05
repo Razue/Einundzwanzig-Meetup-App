@@ -27,12 +27,16 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                 val views = RemoteViews(context.packageName, R.layout.meetup_widget)
 
                 // Daten lesen — falls das Plugin noch nie lief, mit Fallbacks.
-                var block = "––"; var priceEur = "––"; var moscow = "––:––"; var fees = "–·–·–"
+                var block = "––"; var price = "––"; var priceSymbol = "€"; var moscow = "––:––"; var fees = "–·–·–"
                 var meetupCity = ""; var meetupCountdown = ""
                 try {
                     val prefs = HomeWidgetPlugin.getData(context)
                     block = prefs.getString("block", "––") ?: "––"
-                    priceEur = prefs.getString("priceEur", "––") ?: "––"
+                    // Kurs in der in der App gewählten Währung (Issue #66).
+                    // Ältere App-Versionen schrieben nur "priceEur".
+                    price = prefs.getString("priceFiat", null)
+                        ?: prefs.getString("priceEur", "––") ?: "––"
+                    priceSymbol = prefs.getString("priceSymbol", "€") ?: "€"
                     moscow = prefs.getString("moscow", "––:––") ?: "––:––"
                     fees = prefs.getString("fees", "–·–·–") ?: "–·–·–"
                     meetupCity = prefs.getString("meetupCity", "") ?: ""
@@ -40,7 +44,7 @@ class MeetupWidgetProvider : AppWidgetProvider() {
                 } catch (_: Exception) { /* Fallback-Werte behalten */ }
 
                 views.setTextViewText(R.id.widget_block, block)
-                views.setTextViewText(R.id.widget_price, "$priceEur €")
+                views.setTextViewText(R.id.widget_price, "$price $priceSymbol")
                 views.setTextViewText(R.id.widget_moscow, moscow)
                 views.setTextViewText(R.id.widget_fees, fees)
 

@@ -2824,5 +2824,14 @@
   },
   "mnAlsoVia": "También accesible vía",
   "mnClose": "Cerrar",
-  "mnCopyNpub": "Copiar npub"
+  "mnCopyNpub": "Copiar npub",
+  "settingsCurrencyTitle": "Moneda",
+  "settingsCurrencyHint": "Se aplica al conversor, la pantalla de inicio, el panel de Bitcoin y el widget. Tipos de mempool.space.",
+  "curEUR": "Euro",
+  "curUSD": "Dólar estadounidense",
+  "curCHF": "Franco suizo",
+  "curGBP": "Libra esterlina",
+  "curCAD": "Dólar canadiense",
+  "curAUD": "Dólar australiano",
+  "curJPY": "Yen japonés"
 }

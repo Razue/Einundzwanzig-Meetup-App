@@ -11421,6 +11421,60 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'npub kopieren'**
   String get mnCopyNpub;
+
+  /// No description provided for @settingsCurrencyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Währung'**
+  String get settingsCurrencyTitle;
+
+  /// No description provided for @settingsCurrencyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gilt für Umrechner, Startseite, Bitcoin-Dashboard und Widget. Kurse von mempool.space.'**
+  String get settingsCurrencyHint;
+
+  /// No description provided for @curEUR.
+  ///
+  /// In de, this message translates to:
+  /// **'Euro'**
+  String get curEUR;
+
+  /// No description provided for @curUSD.
+  ///
+  /// In de, this message translates to:
+  /// **'US-Dollar'**
+  String get curUSD;
+
+  /// No description provided for @curCHF.
+  ///
+  /// In de, this message translates to:
+  /// **'Schweizer Franken'**
+  String get curCHF;
+
+  /// No description provided for @curGBP.
+  ///
+  /// In de, this message translates to:
+  /// **'Britisches Pfund'**
+  String get curGBP;
+
+  /// No description provided for @curCAD.
+  ///
+  /// In de, this message translates to:
+  /// **'Kanadischer Dollar'**
+  String get curCAD;
+
+  /// No description provided for @curAUD.
+  ///
+  /// In de, this message translates to:
+  /// **'Australischer Dollar'**
+  String get curAUD;
+
+  /// No description provided for @curJPY.
+  ///
+  /// In de, this message translates to:
+  /// **'Japanischer Yen'**
+  String get curJPY;
 }
 
 class _AppLocalizationsDelegate

@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'mempool.dart';
+import 'currency_service.dart';
 import 'news_service.dart';
 import 'app_logger.dart';
 
@@ -38,6 +39,17 @@ class WidgetService {
     try {
       await HomeWidget.saveWidgetData<String>(
           'block', d.blockHeight > 0 ? _fmtInt(d.blockHeight) : '––');
+      // Kurs in der gewählten Währung (Issue #66). Aus dem Speicher gelesen,
+      // weil dieser Aufruf auch im Hintergrund laufen kann, wo der
+      // CurrencyService nie geladen wurde.
+      final cur = await CurrencyService.read();
+      final price = d.priceIn(cur);
+      await HomeWidget.saveWidgetData<String>(
+          'priceFiat', price > 0 ? _fmtInt(price.round()) : '––');
+      await HomeWidget.saveWidgetData<String>(
+          'priceSymbol', CurrencyService.symbol(cur));
+      // Alter Schlüssel für Widgets, deren nativer Teil noch nicht
+      // aktualisiert ist.
       await HomeWidget.saveWidgetData<String>(
           'priceEur', d.priceEur > 0 ? _fmtInt(d.priceEur.round()) : '––');
       await HomeWidget.saveWidgetData<String>('moscow', d.moscowTime);

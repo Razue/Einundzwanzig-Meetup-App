@@ -2846,5 +2846,14 @@
   },
   "mnAlsoVia": "Auch erreichbar über",
   "mnClose": "Schließen",
-  "mnCopyNpub": "npub kopieren"
+  "mnCopyNpub": "npub kopieren",
+  "settingsCurrencyTitle": "Währung",
+  "settingsCurrencyHint": "Gilt für Umrechner, Startseite, Bitcoin-Dashboard und Widget. Kurse von mempool.space.",
+  "curEUR": "Euro",
+  "curUSD": "US-Dollar",
+  "curCHF": "Schweizer Franken",
+  "curGBP": "Britisches Pfund",
+  "curCAD": "Kanadischer Dollar",
+  "curAUD": "Australischer Dollar",
+  "curJPY": "Japanischer Yen"
 }

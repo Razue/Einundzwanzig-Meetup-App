@@ -6361,4 +6361,32 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get mnCopyNpub => 'npub kopieren';
+
+  @override
+  String get settingsCurrencyTitle => 'Währung';
+
+  @override
+  String get settingsCurrencyHint =>
+      'Gilt für Umrechner, Startseite, Bitcoin-Dashboard und Widget. Kurse von mempool.space.';
+
+  @override
+  String get curEUR => 'Euro';
+
+  @override
+  String get curUSD => 'US-Dollar';
+
+  @override
+  String get curCHF => 'Schweizer Franken';
+
+  @override
+  String get curGBP => 'Britisches Pfund';
+
+  @override
+  String get curCAD => 'Kanadischer Dollar';
+
+  @override
+  String get curAUD => 'Australischer Dollar';
+
+  @override
+  String get curJPY => 'Japanischer Yen';
 }
