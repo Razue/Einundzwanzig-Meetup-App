@@ -2720,5 +2720,6 @@
         "type": "int"
       }
     }
-  }
+  },
+  "chatRelayUnavailable": "The chat relay did not respond, or signing in did not complete. Please try again in a moment — if you use an external signer, approve the sign-in there."
 }

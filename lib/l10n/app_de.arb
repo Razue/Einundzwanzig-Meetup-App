@@ -2742,5 +2742,6 @@
         "type": "int"
       }
     }
-  }
+  },
+  "chatRelayUnavailable": "Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen."
 }

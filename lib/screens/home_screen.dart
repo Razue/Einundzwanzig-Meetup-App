@@ -1885,6 +1885,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// einzige Weg, bei mehreren Meetups einer Stadt das richtige zu treffen.
   /// Nur wenn der Favorit noch aus einer aelteren Fassung stammt und einen
   /// Stadtnamen enthaelt, greift die alte Namenssuche.
+  ///
+  /// Wirft [ChatRelayUnavailable], wenn das Relay keine Auskunft gab. Dann
+  /// wird bewusst NICHT ueber den Stadtnamen weitergesucht: Dieselbe
+  /// Stoerung traefe auch diese Suche, und ihr leeres Ergebnis saehe aus
+  /// wie "kein Raum".
   Future<ChatRoom?> _findRoomFor(String favKey) async {
     final meetup = MeetupService.resolveFavorite(favKey);
     if (meetup != null) {
@@ -1945,7 +1950,19 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         duration: const Duration(seconds: 4),
         backgroundColor: cCard));
 
-    final room = await _findRoomFor(favKey);
+    ChatRoom? room;
+    try {
+      room = await _findRoomFor(favKey);
+    } on ChatRelayUnavailable {
+      if (!mounted) return;
+      messenger.hideCurrentSnackBar();
+      // Keine Behauptung ueber das Meetup — nur ueber die Verbindung.
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.chatRelayUnavailable),
+          duration: const Duration(seconds: 5),
+          backgroundColor: cCard));
+      return;
+    }
     if (!mounted) return;
     messenger.hideCurrentSnackBar();
 
@@ -1958,8 +1975,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           backgroundColor: cCard));
       return;
     }
+    // Eigene final-Variable: In der Builder-Closure greift die
+    // Null-Pruefung von `room` nicht, weil es vorher zugewiesen wurde.
+    final found = room;
     await navigator.push(
-        MaterialPageRoute(builder: (_) => ChatScreen.room(room)));
+        MaterialPageRoute(builder: (_) => ChatScreen.room(found)));
     // Zurueck aus dem Raum: Der Lesestand hat sich geaendert, also neu
     // zaehlen — sonst bliebe der Punkt stehen, obwohl alles gelesen ist.
     if (mounted) _loadChatUnread();
