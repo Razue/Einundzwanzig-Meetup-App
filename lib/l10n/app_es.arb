@@ -2721,5 +2721,14 @@
       }
     }
   },
-  "chatRelayUnavailable": "El relé del chat no respondió o el inicio de sesión no se completó. Vuelve a intentarlo enseguida; si usas un firmante externo, aprueba allí el inicio de sesión."
+  "chatRelayUnavailable": "El relé del chat no respondió o el inicio de sesión no se completó. Vuelve a intentarlo enseguida; si usas un firmante externo, aprueba allí el inicio de sesión.",
+  "mnUpdating": "Actualizando grado {degree} …",
+  "@mnUpdating": {
+    "placeholders": {
+      "degree": {
+        "type": "int"
+      }
+    }
+  },
+  "mnUpdateFailed": "No se pudo actualizar ahora — se muestra el estado guardado. Desliza hacia abajo para reintentar."
 }

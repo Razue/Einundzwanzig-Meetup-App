@@ -2743,5 +2743,14 @@
       }
     }
   },
-  "chatRelayUnavailable": "Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen."
+  "chatRelayUnavailable": "Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.",
+  "mnUpdating": "Aktualisiere {degree}. Grad …",
+  "@mnUpdating": {
+    "placeholders": {
+      "degree": {
+        "type": "int"
+      }
+    }
+  },
+  "mnUpdateFailed": "Aktualisierung gerade nicht möglich — du siehst den gespeicherten Stand. Zum erneuten Versuch herunterziehen."
 }

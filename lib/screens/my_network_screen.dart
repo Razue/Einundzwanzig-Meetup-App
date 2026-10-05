@@ -96,28 +96,136 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
         ]),
       );
 
-  Future<void> _load() async {
-    setState(() => _loading = true);
+  /// Laeuft gerade eine Aktualisierung im Hintergrund?
+  bool _updating = false;
+
+  /// Bis zu welchem Grad die laufende Aktualisierung fertig ist (0 = keiner).
+  int _doneDepth = 0;
+
+  /// Die letzte Aktualisierung kam nicht zustande — gezeigt wird der
+  /// gespeicherte Stand.
+  bool _updateFailed = false;
+
+  /// Laedt das Netzwerk.
+  ///
+  /// Ablauf: gespeicherten Stand SOFORT zeigen, dann im Hintergrund Grad
+  /// fuer Grad aktualisieren. Frueher stand bei jedem Oeffnen ein Spinner,
+  /// bis alle drei Grade von den Relays geholt waren — bei einem grossen
+  /// Netzwerk eine halbe Minute und mehr.
+  ///
+  /// [forceFull]: alles neu holen statt nur das Neue (Herunterziehen).
+  Future<void> _load({bool forceFull = false}) async {
     try {
       final user = await UserProfile.load();
       if (user.nostrNpub.isEmpty) {
         if (mounted) setState(() { _loading = false; _net = null; });
         return;
       }
-      final net = await CoAttendanceService.buildMyNetwork(myNpub: user.nostrNpub);
+      final npub = user.nostrNpub;
+
+      if (_net == null) {
+        final cached = await CoAttendanceService.cachedNetwork(myNpub: npub);
+        if (cached != null && mounted) {
+          setState(() { _net = cached; _loading = false; });
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _updating = true;
+        _doneDepth = 0;
+        _updateFailed = false;
+      });
+
       // Wie viele eigene Teilnahmen sind zugestimmt, aber nicht angekommen?
-      final badges = await MeetupBadge.loadBadges();
-      final failed = await CoAttendanceService.failedBadges(badges);
+      // Laeuft parallel zum Netzwerk — beides ist unabhaengig.
+      final failedFuture = MeetupBadge.loadBadges()
+          .then(CoAttendanceService.failedBadges)
+          .catchError((Object _) => <MeetupBadge>[]);
+
+      final net = await CoAttendanceService.buildMyNetwork(
+        myNpub: npub,
+        forceFull: forceFull,
+        onStage: (partial, depth) {
+          if (!mounted) return;
+          setState(() {
+            _net = partial;
+            _doneDepth = depth;
+            _loading = false;
+          });
+        },
+      );
+      final failed = await failedFuture;
+      if (!mounted) return;
+      setState(() {
+        // Ohne Relay-Antwort und ohne Cache bleibt das, was schon da ist.
+        if (!(net.stale && net.isEmpty && _net != null)) _net = net;
+        _failedCount = failed.length;
+        _updating = false;
+        _updateFailed = net.stale;
+        _loading = false;
+      });
+    } catch (_) {
       if (mounted) {
         setState(() {
-          _net = net;
-          _failedCount = failed.length;
           _loading = false;
+          _updating = false;
+          _updateFailed = _net != null;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() { _loading = false; _net = null; });
     }
+  }
+
+  /// Schmale Statuszeile ueber dem Inhalt: laufende Aktualisierung oder
+  /// Hinweis, dass der gespeicherte Stand gezeigt wird.
+  Widget _statusLine(AppLocalizations t) {
+    if (_updating) {
+      final next = (_doneDepth + 1).clamp(1, 3);
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Row(children: [
+          const SizedBox(
+              width: 12, height: 12,
+              child: CircularProgressIndicator(strokeWidth: 1.6, color: cOrange)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(t.mnUpdating(next),
+                style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+          ),
+        ]),
+      );
+    }
+    if (_updateFailed) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Row(children: [
+          const Icon(Icons.cloud_off_rounded, color: cTextTertiary, size: 14),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(t.mnUpdateFailed,
+                style: const TextStyle(color: cTextTertiary, fontSize: 12)),
+          ),
+        ]),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  /// Erster Aufbau ohne gespeicherten Stand: Spinner mit Fortschritt.
+  Widget _buildFirstLoad(AppLocalizations t) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        const SizedBox(height: 120),
+        const Center(
+            child: CircularProgressIndicator(color: cOrange, strokeWidth: 2)),
+        const SizedBox(height: 18),
+        Text(
+          _doneDepth == 0 ? t.mnLoading : t.mnUpdating((_doneDepth + 1).clamp(1, 3)),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: cTextSecondary, fontSize: 13),
+        ),
+      ],
+    );
   }
 
   @override
@@ -139,16 +247,19 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
           ),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: cOrange, strokeWidth: 2))
-          : RefreshIndicator(
-              color: cOrange,
-              backgroundColor: cCard,
-              onRefresh: _load,
-              child: _net == null || _net!.isEmpty
-                  ? _buildEmpty(t)
-                  : _buildContent(t, _net!),
-            ),
+      body: RefreshIndicator(
+        color: cOrange,
+        backgroundColor: cCard,
+        // Herunterziehen = alles neu holen. Nur so fallen auch Teilnahmen
+        // auf, die von den Relays verschwunden sind — sonst geschieht das
+        // einmal am Tag von selbst.
+        onRefresh: () => _load(forceFull: true),
+        child: _loading || ((_net == null || _net!.isEmpty) && _updating)
+            ? _buildFirstLoad(t)
+            : _net == null || _net!.isEmpty
+                ? _buildEmpty(t)
+                : _buildContent(t, _net!),
+      ),
     );
   }
 
@@ -156,6 +267,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        _statusLine(t),
         // Gerade im LEEREN Netzwerk wichtig: Oft ist es leer, weil die
         // eigenen Teilnahmen nie angekommen sind.
         if (_failedCount > 0) _failedBanner(t),
@@ -204,6 +316,7 @@ class _MyNetworkScreenState extends State<MyNetworkScreen> with SingleTickerProv
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        _statusLine(t),
         if (_failedCount > 0) _failedBanner(t),
         Text(t.mnIntro,
             style: const TextStyle(color: cTextSecondary, fontSize: 13, height: 1.5)),
@@ -648,5 +761,7 @@ class _NetworkGraphPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _NetworkGraphPainter old) =>
-      old.pulse != pulse || old.nodes.length != nodes.length;
+      // Nach jeder Ladestufe kommt ein neuer Graph — gleich viele Knoten
+      // heisst nicht gleiche Knoten.
+      old.pulse != pulse || !identical(old.nodes, nodes);
 }
