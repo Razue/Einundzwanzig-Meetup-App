@@ -1,6 +1,6 @@
 // WECHSELRECHNER — Fiat <-> Satoshi/Bitcoin
 // ============================================
-// Standard: EUR <-> Satoshi.
+// Standard: die app-weit gewählte Währung (Einstellungen oder hier) <-> Satoshi.
 // Fiat-Seite: viele Währungen wählbar (mempool.space unterstützt
 //   EUR/USD/GBP/CHF/CAD/AUD/JPY).
 // Krypto-Seite: zwischen Satoshi und Bitcoin umschaltbar.
@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/mempool.dart';
+import '../services/currency_service.dart';
 
 class ConverterScreen extends StatefulWidget {
   const ConverterScreen({super.key});
@@ -26,7 +27,10 @@ class _ConverterScreenState extends State<ConverterScreen> {
   final TextEditingController _fiatCtrl = TextEditingController();
   final TextEditingController _cryptoCtrl = TextEditingController();
 
-  String _currency = 'EUR';      // gewählte Fiat-Währung
+  /// Gewählte Fiat-Währung — die app-weite Einstellung (Issue #66).
+  /// Vorher stand hier fest 'EUR', und eine Auswahl galt nur, solange der
+  /// Bildschirm offen war.
+  String _currency = CurrencyService.current.value;
   bool _cryptoIsBtc = false;     // false = Satoshi, true = Bitcoin
   bool _fiatIsInput = true;      // welche Seite zuletzt bearbeitet wurde
 
@@ -177,6 +181,8 @@ class _ConverterScreenState extends State<ConverterScreen> {
                     onTap: () {
                       Navigator.pop(ctx);
                       setState(() => _currency = cur);
+                      // Gilt für die ganze App und bleibt gespeichert.
+                      CurrencyService.set(cur);
                       _recalculate();
                     },
                   );
@@ -482,7 +488,7 @@ class _ConverterScreenState extends State<ConverterScreen> {
       ));
     }
     if (_btcPrice <= 0) return const SizedBox.shrink();
-    final priceStr = _btcPrice.toStringAsFixed(0);
+    final priceStr = CurrencyService.groupInt(_btcPrice.round());
     return Column(children: [
       Text(t.convRateInfo(priceStr, _currency),
           style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600)),

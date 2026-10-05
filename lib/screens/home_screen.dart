@@ -89,6 +89,7 @@ import '../tours/home_tour.dart';
 import 'glossary_screen.dart';
 import '../tours/settings_tour.dart';
 import '../l10n/level_labels.dart';
+import '../services/currency_service.dart';
 
 // ============================================================
 // TILE DEFINITION — Jede Kachel hat ID, Span (1-3), Builder
@@ -188,6 +189,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   @override
   void initState() {
     super.initState();
+    // Waehrung umgestellt → Kacheln neu zeichnen (Issue #66).
+    CurrencyService.current.addListener(_onCurrencyChanged);
     _loadTileCounters();
     _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))..repeat(reverse: true);
     _initTileDefs();
@@ -366,7 +369,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'voice_wallet', label: 'Sats',            span: 2, builder: _buildVoiceWalletTile),
       _TileDef(id: 'news',         label: 'News',             span: 2, builder: _buildNewsTile),
       _TileDef(id: 'portal',       label: 'Meine Meetups',    span: 2, builder: _buildPortalTile),
-      _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin),
+      _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin || _user.isReviewDemo),
       // ── Admin-optionale Kacheln ──
     ];
   }
@@ -444,8 +447,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     await prefs.setStringList('tile_hidden', _hiddenTiles.toList());
   }
 
+  void _onCurrencyChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    CurrencyService.current.removeListener(_onCurrencyChanged);
     _favPageCtrl.dispose(); WidgetsBinding.instance.removeObserver(this); _sessionTimer?.cancel(); _midnightTimer?.cancel(); _pulseController.dispose(); super.dispose(); }
   /// Wird von der Huelle gerufen, sobald der Home-Reiter wieder vorne ist.
   ///
@@ -1887,6 +1895,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   /// einzige Weg, bei mehreren Meetups einer Stadt das richtige zu treffen.
   /// Nur wenn der Favorit noch aus einer aelteren Fassung stammt und einen
   /// Stadtnamen enthaelt, greift die alte Namenssuche.
+  ///
+  /// Wirft [ChatRelayUnavailable], wenn das Relay keine Auskunft gab. Dann
+  /// wird bewusst NICHT ueber den Stadtnamen weitergesucht: Dieselbe
+  /// Stoerung traefe auch diese Suche, und ihr leeres Ergebnis saehe aus
+  /// wie "kein Raum".
   Future<ChatRoom?> _findRoomFor(String favKey) async {
     final meetup = MeetupService.resolveFavorite(favKey);
     if (meetup != null) {
@@ -1947,7 +1960,19 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         duration: const Duration(seconds: 4),
         backgroundColor: cCard));
 
-    final room = await _findRoomFor(favKey);
+    ChatRoom? room;
+    try {
+      room = await _findRoomFor(favKey);
+    } on ChatRelayUnavailable {
+      if (!mounted) return;
+      messenger.hideCurrentSnackBar();
+      // Keine Behauptung ueber das Meetup — nur ueber die Verbindung.
+      messenger.showSnackBar(SnackBar(
+          content: Text(t.chatRelayUnavailable),
+          duration: const Duration(seconds: 5),
+          backgroundColor: cCard));
+      return;
+    }
     if (!mounted) return;
     messenger.hideCurrentSnackBar();
 
@@ -1960,8 +1985,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           backgroundColor: cCard));
       return;
     }
+    // Eigene final-Variable: In der Builder-Closure greift die
+    // Null-Pruefung von `room` nicht, weil es vorher zugewiesen wurde.
+    final found = room;
     await navigator.push(
-        MaterialPageRoute(builder: (_) => ChatScreen.room(room)));
+        MaterialPageRoute(builder: (_) => ChatScreen.room(found)));
     // Zurueck aus dem Raum: Der Lesestand hat sich geaendert, also neu
     // zaehlen — sonst bliebe der Punkt stehen, obwohl alles gelesen ist.
     if (mounted) _loadChatUnread();
@@ -2515,15 +2543,22 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   Widget _buildConverterTile() {
     // Echter Wert statt Wegweiser: Der Kurs liegt ohnehin vor, also
-    // zeigt die Kachel gleich, was ein Euro heute in Sats ist.
-    final price = MempoolService.lastDashboard?.priceEur ?? 0;
-    final satsPerEur = price > 0 ? (100000000 / price).round() : 0;
+    // zeigt die Kachel gleich, was eine Einheit der gewählten Währung
+    // heute in Sats ist — "1 € = …", "1 CHF = …" (Issue #66).
+    //
+    // BEWUSST ohne ValueListenableBuilder: Dessen Builder laeuft erst
+    // spaeter, wenn _buildingPinnedTile schon fuer die naechste Gruppe
+    // umgestellt ist — die angeheftete Kachel erschien dadurch grau statt
+    // orange. Neu gezeichnet wird stattdessen ueber _onCurrencyChanged.
+    final cur = CurrencyService.current.value;
+    final price = MempoolService.lastDashboard?.priceIn(cur) ?? 0;
+    final satsPerUnit = price > 0 ? (100000000 / price).round() : 0;
     return _tile(accentColor: cCyan, opacity: 0.07, watermark: Icons.swap_vert_rounded, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ConverterScreen())), child: _heroContent(
       icon: Icons.swap_vert_rounded,
       accent: cCyan,
       label: AppLocalizations.of(context).tileActConvert,
-      value: satsPerEur > 0
-          ? '1 € = ${satsPerEur.toString().replaceAllMapped(RegExp(r"(\d)(?=(\d{3})+$)"), (m) => "${m[1]}.")} sats'
+      value: satsPerUnit > 0
+          ? '1 ${CurrencyService.symbol(cur)} = ${CurrencyService.groupInt(satsPerUnit)} sats'
           : AppLocalizations.of(context).tileConverter,
       valueSize: 17,
       sub: AppLocalizations.of(context).tileConverterSub,
@@ -2917,6 +2952,19 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                       ),
                       ),
                       _sDivider(),
+                      // Währung (Issue #66) — gilt für Umrechner, Kacheln,
+                      // Dashboard und Widget.
+                      ValueListenableBuilder<String>(
+                        valueListenable: CurrencyService.current,
+                        builder: (_, cur, _) => _sRowCustom(
+                          Icons.currency_exchange_rounded, cGreen,
+                          AppLocalizations.of(context).settingsCurrencyTitle,
+                          '$cur · ${_currencyName(cur)}',
+                          trailing: const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 18),
+                          onTap: () => _showCurrencyPopup(),
+                        ),
+                      ),
+                      _sDivider(),
                       // Haptik
                       KeyedSubtree(
                         key: SettingsTour.hapticKey,
@@ -3097,6 +3145,86 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             const SizedBox(height: 8),
           ]),
         ),
+      ),
+    );
+  }
+
+  /// Ausgeschriebener Name einer Währung.
+  String _currencyName(String code) {
+    final t = AppLocalizations.of(context);
+    switch (code) {
+      case 'EUR': return t.curEUR;
+      case 'USD': return t.curUSD;
+      case 'CHF': return t.curCHF;
+      case 'GBP': return t.curGBP;
+      case 'CAD': return t.curCAD;
+      case 'AUD': return t.curAUD;
+      case 'JPY': return t.curJPY;
+      default: return code;
+    }
+  }
+
+  /// Auswahl der Anzeigewährung — wie die Sprachauswahl aufgebaut.
+  void _showCurrencyPopup() {
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => ValueListenableBuilder<String>(
+        valueListenable: CurrencyService.current,
+        builder: (_, current, _) => Dialog(
+          backgroundColor: cCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(dialogCtx).size.height * 0.8),
+            child: SingleChildScrollView(
+              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+                  child: Row(children: [
+                    const Icon(Icons.currency_exchange_rounded, color: cOrange, size: 20),
+                    const SizedBox(width: 10),
+                    Text(AppLocalizations.of(context).convSelectCurrency, style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                  child: Text(AppLocalizations.of(context).settingsCurrencyHint,
+                      style: const TextStyle(color: cTextSecondary, fontSize: 12, height: 1.4)),
+                ),
+                const Divider(color: cBorder, height: 1),
+                for (final code in CurrencyService.supported)
+                  _currencyOption(code, current, dialogCtx),
+                const SizedBox(height: 8),
+              ]),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _currencyOption(String code, String current, BuildContext dialogCtx) {
+    final selected = code == current;
+    return InkWell(
+      onTap: () async {
+        await CurrencyService.set(code);
+        if (dialogCtx.mounted) Navigator.pop(dialogCtx);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        color: selected ? cOrange.withValues(alpha: 0.08) : Colors.transparent,
+        child: Row(children: [
+          SizedBox(
+            width: 44,
+            child: Text(CurrencyService.symbol(code),
+                style: TextStyle(color: selected ? cOrange : cTextSecondary, fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text('$code · ${_currencyName(code)}', style: TextStyle(
+            color: selected ? cOrange : cText,
+            fontSize: 15,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500))),
+          if (selected) const Icon(Icons.check_circle_rounded, color: cOrange, size: 20),
+        ]),
       ),
     );
   }
@@ -3395,11 +3523,21 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
                   ]),
                   const SizedBox(height: 4),
                   const Text('Netzwerk & Kurs', style: TextStyle(color: cTextSecondary, fontSize: 13)),
-                  if (d != null && d.priceEur > 0) ...[
-                    const SizedBox(height: 8),
-                    Text('${_fmtInt(d.priceEur.round())} €',
-                        style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
-                  ],
+                  // Kurs in der gewählten Währung (Issue #66). Lauscht auf
+                  // die Einstellung, damit ein Wechsel sofort sichtbar ist.
+                  if (d != null)
+                    ValueListenableBuilder<String>(
+                      valueListenable: CurrencyService.current,
+                      builder: (_, cur, _) {
+                        final p = d.priceIn(cur);
+                        if (p <= 0) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(CurrencyService.formatPrice(p, cur),
+                              style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+                        );
+                      },
+                    ),
                 ],
               ),
             ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:math';
 
@@ -47,6 +48,11 @@ class CoAttNode {
 
   /// Alles zusammen — fuer Ansichten, die beides zeigen wollen.
   Set<String> get all => {...meetups, ...events};
+
+  /// Unabhaengige Kopie — der Cache darf beim Nachladen nicht mitwachsen.
+  CoAttNode copy() => CoAttNode(npub)
+    ..meetups.addAll(meetups)
+    ..events.addAll(events);
 }
 
 /// Ergebnis der Netzwerk-Analyse zwischen mir und einer Zielperson.
@@ -419,7 +425,134 @@ class CoAttendanceService {
   /// begrenzen die Filtergroesse und antworten sonst gar nicht.
   static const int _authorBatch = 100;
 
-  /// Baut die Knoten GRADWEISE auf.
+  /// Wie viele Meetup-Kennungen eine Abfrage hoechstens enthaelt. Jede
+  /// zaehlt doppelt (mit und ohne Signierer-Anhang).
+  static const int _keyBatch = 60;
+
+  /// Wie viele Abfrage-Pakete gleichzeitig laufen. Jedes Paket geht an alle
+  /// Relays — drei Pakete sind bei vier Relays schon zwoelf Verbindungen.
+  /// Mehr bringt kaum Tempo, aber Relays mit Rate-Limit antworten dann gar
+  /// nicht mehr.
+  static const int _parallelBatches = 3;
+
+  /// Nach dieser Zeit wird einmal alles neu geholt statt nur das Neue.
+  /// Nur so faellt auf, wenn eine Teilnahme von den Relays verschwunden ist.
+  static const Duration _fullSyncEvery = Duration(hours: 24);
+
+  /// Ueberlappung beim inkrementellen Abruf. Eine Teilnahme kann etwas
+  /// spaeter beim Relay ankommen, als ihr Zeitstempel sagt (langsames Netz,
+  /// Signierer-App). Ohne Puffer fiele sie genau zwischen zwei Abrufe.
+  static const Duration _sinceOverlap = Duration(hours: 1);
+
+  static const String _cacheKey = 'coatt_graph_cache_v1';
+
+  // ============================================
+  // NETZWERK-CACHE
+  // ============================================
+  //
+  // Gespeichert wird der VERBINDUNGSGRAPH (wer war bei welchem Meetup),
+  // nicht die fertigen Grade. Die Grade werden bei jedem Oeffnen per
+  // Breitensuche neu berechnet.
+  //
+  // Grund: Grade aendern sich, ohne dass sich an der Person selbst etwas
+  // aendert. War der Weg vorher Ich → A → B → C und bin ich inzwischen mit
+  // B auf einem Meetup gewesen, ist B jetzt Grad 1 und C Grad 2. Gespeicherte
+  // Grade wuessten davon nichts; der Graph liefert es von selbst.
+
+  static String _base(String k) {
+    final i = k.indexOf('@');
+    return i < 0 ? k : k.substring(0, i);
+  }
+
+  /// Dieselbe Regel wie [sharedKeys], fuer zwei einzelne Kennungen.
+  static bool _keysMatch(String a, String b) {
+    if (a == b) return true;
+    final ab = _base(a);
+    final bb = _base(b);
+    if (ab != bb) return false;
+    return a.length == ab.length || b.length == bb.length;
+  }
+
+  /// Kennungen fuer die Relay-Abfrage: jede auch OHNE Signierer-Anhang,
+  /// weil aeltere Teilnahmen in dem Format veroeffentlicht wurden.
+  static Set<String> _wantedKeys(Iterable<String> keys) {
+    final wanted = <String>{};
+    for (final k in keys) {
+      wanted.add(k);
+      final b = _base(k);
+      if (b.length != k.length && b.isNotEmpty) wanted.add(b);
+    }
+    return wanted;
+  }
+
+  static Future<_GraphCache?> _readCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cacheKey);
+      if (raw == null) return null;
+      return _GraphCache.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (e) {
+      // Kaputter Cache ist kein Fehler — dann wird eben alles neu geholt.
+      AppLogger.warn('Netzwerk', 'Cache nicht lesbar, wird neu aufgebaut: $e');
+      return null;
+    }
+  }
+
+  static Future<void> _writeCache(_GraphCache cache) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_cacheKey, jsonEncode(cache.toJson()));
+    } catch (e) {
+      AppLogger.warn('Netzwerk', 'Cache nicht gespeichert: $e');
+    }
+  }
+
+  /// Fuehrt die Aufgaben aus, hoechstens [max] gleichzeitig.
+  static Future<void> _runLimited(
+      List<Future<void> Function()> tasks, int max) async {
+    if (tasks.isEmpty) return;
+    var next = 0;
+    Future<void> worker() async {
+      while (next < tasks.length) {
+        final i = next++;
+        await tasks[i]();
+      }
+    }
+
+    await Future.wait(List.generate(min(max, tasks.length), (_) => worker()));
+  }
+
+  /// Fragt ALLE Relays gleichzeitig und entdoppelt.
+  static Future<_BatchAnswer> _queryRelays(
+    List<String> relays, {
+    Set<String>? keys,
+    List<String>? authorsHex,
+    int? since,
+  }) async {
+    final answers = await Future.wait(relays.map((url) => _fetchFromRelay(url,
+        myKeys: keys, authorsHex: authorsHex, since: since)));
+    final seen = <String>{};
+    final out = <CoAttendanceRecord>[];
+    var any = false;
+    var all = relays.isNotEmpty;
+    for (final a in answers) {
+      if (a == null) {
+        all = false;
+        continue;
+      }
+      if (a.complete) {
+        any = true;
+      } else {
+        all = false;
+      }
+      for (final r in a.records) {
+        if (seen.add('${r.npub}|${r.meetupEventId}')) out.add(r);
+      }
+    }
+    return _BatchAnswer(out, anyComplete: any, allComplete: all);
+  }
+
+  /// Baut den Verbindungsgraphen GRADWEISE auf.
   ///
   /// ============================================
   /// WARUM GESTAFFELT (Issue #57, Punkt 1)
@@ -444,6 +577,26 @@ class CoAttendanceService {
   ///     → deren weitere Teilnahmen
   ///     → Teilnehmer dieser Meetups                     (Grad 3)
   ///
+  /// ============================================
+  /// MIT CACHE (inkrementell)
+  /// ============================================
+  ///
+  /// Ist [cache] gesetzt und [fullSync] aus, startet der Graph mit dem
+  /// gespeicherten Stand. Personen und Meetups, die schon einmal VOLLSTAENDIG
+  /// abgefragt wurden, werden nur noch nach Neuem seit dem letzten Abruf
+  /// gefragt (`since`). Unbekannte werden ganz geholt. Die Stufen bleiben
+  /// dieselben — nur die Antworten werden viel kleiner.
+  ///
+  /// Beim vollstaendigen Abruf startet der Graph leer, damit verschwundene
+  /// Teilnahmen auch verschwinden. Ausnahme: Hat nicht JEDES Relay
+  /// vollstaendig geantwortet, bleibt fuer die betroffenen Personen und
+  /// Meetups der gespeicherte Stand erhalten. Ein haengendes Relay soll
+  /// keine Verbindungen loeschen.
+  ///
+  /// Innerhalb eines Durchlaufs wird keine Person und kein Meetup zweimal
+  /// abgefragt. Die Pakete einer Stufe laufen parallel, hoechstens
+  /// [_parallelBatches] auf einmal.
+  ///
   /// [extraNpubs] werden wie der eigene Schluessel als Ausgangspunkt
   /// behandelt — fuer die Pruefung einer bestimmten Person muessen DEREN
   /// Teilnahmen dabei sein, auch wenn sie weiter als drei Stufen entfernt ist.
@@ -452,56 +605,69 @@ class CoAttendanceService {
   /// Weiterhangeln: Bei fuenfhundert Besuchern ist gemeinsame Anwesenheit
   /// keine Begegnung, und der Graph wuerde sonst ueber jedes Grossevent
   /// explodieren.
-  static Future<Map<String, CoAttNode>> _loadAllNodes({
+  ///
+  /// [onStage] wird nach jeder abgeschlossenen Stufe mit dem bisherigen
+  /// Graphen aufgerufen — die Anzeige kann Grad fuer Grad nachziehen.
+  static Future<_GraphRun> _loadGraph({
     required String myNpub,
     List<String> extraNpubs = const [],
     int maxDepth = 3,
+    _GraphCache? cache,
+    bool fullSync = true,
+    void Function(Map<String, CoAttNode> graph, int depth)? onStage,
   }) async {
     final relays = await RelayConfig.getActiveRelays();
-    final nodes = <String, CoAttNode>{};
+    // Startpunkt des inkrementellen Abrufs — null beim vollstaendigen.
+    final start = (cache != null && !fullSync) ? cache : null;
+    final incremental = start != null;
 
-    void addAll(Iterable<CoAttendanceRecord> recs) {
-      for (final r in recs) {
-        // Fehl-Kennungen ueberspringen — sonst entstehen Verknuepfungen
-        // zwischen Leuten, die sich nie begegnet sind.
-        if (_isDegenerateEventId(r.meetupEventId)) continue;
-        final node = nodes.putIfAbsent(r.npub, () => CoAttNode(r.npub));
-        if (isEventKey(r.meetupEventId)) {
-          node.events.add(r.meetupEventId);
-        } else {
-          node.meetups.add(r.meetupEventId);
-        }
+    final graph = <String, CoAttNode>{};
+    final knownAuthors = <String>{};
+    final knownKeys = <String>{};
+    int? since;
+    if (start != null) {
+      start.nodes.forEach((k, v) => graph[k] = v.copy());
+      knownAuthors.addAll(start.knownAuthors);
+      knownKeys.addAll(start.knownKeys);
+      since = (start.syncAt ~/ 1000) - _sinceOverlap.inSeconds;
+    }
+
+    var batchesTotal = 0;
+    var batchesAnswered = 0;
+    var recordsFetched = 0;
+
+    void add(CoAttendanceRecord r) {
+      // Fehl-Kennungen ueberspringen — sonst entstehen Verknuepfungen
+      // zwischen Leuten, die sich nie begegnet sind.
+      if (_isDegenerateEventId(r.meetupEventId)) return;
+      final node = graph.putIfAbsent(r.npub, () => CoAttNode(r.npub));
+      if (isEventKey(r.meetupEventId)) {
+        node.events.add(r.meetupEventId);
+      } else {
+        node.meetups.add(r.meetupEventId);
       }
     }
 
-    // Holt ueber alle Relays gleichzeitig und entdoppelt.
-    Future<List<CoAttendanceRecord>> fetch({
-      Set<String>? keys,
-      List<String>? authors,
-    }) async {
-      final batches = <List<String>?>[];
-      if (authors != null) {
-        for (var k = 0; k < authors.length; k += _authorBatch) {
-          batches.add(authors.sublist(
-              k, (k + _authorBatch).clamp(0, authors.length)));
-        }
-      } else {
-        batches.add(null);
+    // Gespeicherten Stand fuer Personen behalten, deren Abruf unvollstaendig
+    // war. Im inkrementellen Modus steckt er ohnehin schon im Graphen.
+    void keepCachedAuthors(Iterable<String> npubs) {
+      if (cache == null) return;
+      for (final n in npubs) {
+        final c = cache.nodes[n];
+        if (c == null) continue;
+        final node = graph.putIfAbsent(n, () => CoAttNode(n));
+        node.meetups.addAll(c.meetups);
+        node.events.addAll(c.events);
       }
+    }
 
-      final seen = <String>{};
-      final out = <CoAttendanceRecord>[];
-      for (final batch in batches) {
-        final perRelay = await Future.wait(relays.map((url) =>
-            _fetchFromRelay(url, myKeys: keys, authorsHex: batch)));
-        for (final recs in perRelay) {
-          if (recs == null) continue;
-          for (final r in recs) {
-            if (seen.add('${r.npub}|${r.meetupEventId}')) out.add(r);
-          }
-        }
-      }
-      return out;
+    void keepCachedKeys(Set<String> wanted) {
+      if (cache == null) return;
+      cache.nodes.forEach((npub, c) {
+        final hits = c.meetups.where(wanted.contains);
+        if (hits.isEmpty) return;
+        graph.putIfAbsent(npub, () => CoAttNode(npub)).meetups.addAll(hits);
+      });
     }
 
     String? toHex(String npub) {
@@ -512,27 +678,117 @@ class CoAttendanceService {
       }
     }
 
-    Set<String> meetupKeysOf(Iterable<CoAttendanceRecord> recs) => recs
-        .map((r) => r.meetupEventId)
-        .where((k) => !_isDegenerateEventId(k) && !isEventKey(k))
-        .toSet();
+    // Personen abfragen: bekannte nur nach Neuem, unbekannte ganz.
+    Future<void> fetchAuthors(Iterable<String> npubs) async {
+      final known = <String>[];
+      final fresh = <String>[];
+      for (final n in npubs) {
+        (knownAuthors.contains(n) ? known : fresh).add(n);
+      }
+      final tasks = <Future<void> Function()>[];
+      void plan(List<String> group, int? sinceArg) {
+        for (var k = 0; k < group.length; k += _authorBatch) {
+          final part = group.sublist(k, min(k + _authorBatch, group.length));
+          final hexes = part.map(toHex).whereType<String>().toList();
+          if (hexes.isEmpty) continue;
+          tasks.add(() async {
+            batchesTotal++;
+            final res = await _queryRelays(relays,
+                authorsHex: hexes, since: sinceArg);
+            res.records.forEach(add);
+            recordsFetched += res.records.length;
+            if (res.anyComplete) batchesAnswered++;
+            if (!res.allComplete) keepCachedAuthors(part);
+            if (res.anyComplete) {
+              knownAuthors.addAll(part);
+            } else {
+              // Naechstes Mal komplett — sonst fiele das Fenster weg.
+              knownAuthors.removeAll(part);
+            }
+          });
+        }
+      }
+
+      plan(known, since);
+      plan(fresh, null);
+      await _runLimited(tasks, _parallelBatches);
+    }
+
+    // Meetups abfragen: Wer war dort? Bekannte nur nach Neuem.
+    Future<void> fetchKeys(Set<String> keys) async {
+      final known = <String>[];
+      final fresh = <String>[];
+      for (final k in keys) {
+        (knownKeys.contains(k) ? known : fresh).add(k);
+      }
+      final tasks = <Future<void> Function()>[];
+      void plan(List<String> group, int? sinceArg) {
+        for (var k = 0; k < group.length; k += _keyBatch) {
+          final part = group.sublist(k, min(k + _keyBatch, group.length)).toSet();
+          tasks.add(() async {
+            batchesTotal++;
+            final res =
+                await _queryRelays(relays, keys: part, since: sinceArg);
+            res.records.forEach(add);
+            recordsFetched += res.records.length;
+            if (res.anyComplete) batchesAnswered++;
+            if (!res.allComplete) keepCachedKeys(_wantedKeys(part));
+            if (res.anyComplete) {
+              knownKeys.addAll(part);
+            } else {
+              knownKeys.removeAll(part);
+            }
+          });
+        }
+      }
+
+      plan(known, since);
+      plan(fresh, null);
+      await _runLimited(tasks, _parallelBatches);
+    }
+
+    // Teilnehmer der Meetups [keys] laut aktuellem Graphen — mit derselben
+    // toleranten Regel wie [sharedKeys], damit Alt- und Neuformat sich finden.
+    Set<String> peopleAt(Set<String> keys) {
+      final byBase = <String, List<String>>{};
+      for (final q in keys) {
+        byBase.putIfAbsent(_base(q), () => <String>[]).add(q);
+      }
+      final out = <String>{};
+      graph.forEach((npub, node) {
+        for (final k in node.meetups) {
+          final qs = byBase[_base(k)];
+          if (qs != null && qs.any((q) => _keysMatch(k, q))) {
+            out.add(npub);
+            return;
+          }
+        }
+      });
+      return out;
+    }
+
+    Set<String> meetupKeysOf(Iterable<String> npubs) => {
+          for (final n in npubs) ...?graph[n]?.meetups,
+        };
+
+    final seeds = <String>{myNpub, ...extraNpubs}
+        .where((n) => toHex(n) != null)
+        .toList();
+    if (seeds.isEmpty || relays.isEmpty) {
+      return _GraphRun(graph, knownAuthors, knownKeys,
+          answered: false);
+    }
 
     // --- Stufe 0: eigene Teilnahmen (und die der zu pruefenden Person) ---
-    final seedHex = <String>[
-      for (final n in [myNpub, ...extraNpubs])
-        if (toHex(n) != null) toHex(n)!,
-    ];
-    if (seedHex.isEmpty) return nodes;
+    await fetchAuthors(seeds);
 
-    final own = await fetch(authors: seedHex);
-    addAll(own);
-
-    final seenPeople = <String>{myNpub, ...extraNpubs};
+    final seenPeople = <String>{...seeds};
     final seenKeys = <String>{};
-    var frontierKeys = meetupKeysOf(own);
+    var frontierKeys = meetupKeysOf(seeds);
 
     AppLogger.diag('Netzwerk',
-        'Stufe 0: ${own.length} eigene Teilnahmen, ${frontierKeys.length} Meetups.');
+        'Stufe 0: ${frontierKeys.length} eigene Meetups '
+        '(${incremental ? "nur Neues seit letztem Abruf" : "vollstaendig"}).');
 
     for (var depth = 1; depth <= maxDepth; depth++) {
       frontierKeys = frontierKeys.difference(seenKeys);
@@ -547,13 +803,9 @@ class CoAttendanceService {
       seenKeys.addAll(keys);
 
       // Wer war bei diesen Meetups?
-      final attendees = await fetch(keys: keys);
-      addAll(attendees);
+      await fetchKeys(keys);
 
-      var newPeople = attendees
-          .map((r) => r.npub)
-          .where((n) => !seenPeople.contains(n))
-          .toSet();
+      var newPeople = peopleAt(keys).difference(seenPeople);
       if (newPeople.length > _maxPeoplePerStage) {
         AppLogger.warn('Netzwerk',
             'Grad $depth: ${newPeople.length} Personen, begrenzt auf $_maxPeoplePerStage.');
@@ -564,22 +816,70 @@ class CoAttendanceService {
       AppLogger.diag('Netzwerk',
           'Grad $depth: ${keys.length} Meetups abgefragt, ${newPeople.length} neue Personen.');
 
+      onStage?.call(graph, depth);
+
       if (depth == maxDepth || newPeople.isEmpty) break;
 
       // Wo waren diese Personen sonst noch?
-      final hexes = newPeople.map(toHex).whereType<String>().toList();
-      final theirs = await fetch(authors: hexes);
-      addAll(theirs);
-      frontierKeys = meetupKeysOf(theirs);
+      await fetchAuthors(newPeople);
+      frontierKeys = meetupKeysOf(newPeople);
     }
 
-    return nodes;
+    AppLogger.diag('Netzwerk',
+        'Abruf: $batchesAnswered von $batchesTotal Paketen beantwortet, '
+        '$recordsFetched Eintraege geladen, ${graph.length} Personen im Graphen.');
+
+    return _GraphRun(graph, knownAuthors, knownKeys,
+        answered: batchesAnswered > 0);
   }
 
-  static Future<List<CoAttendanceRecord>?> _fetchFromRelay(
+  /// Kompatibel zu den Aufrufern ohne Cache (Pruefung einer Person).
+  static Future<Map<String, CoAttNode>> _loadAllNodes({
+    required String myNpub,
+    List<String> extraNpubs = const [],
+    int maxDepth = 3,
+  }) async {
+    final run = await _loadGraph(
+        myNpub: myNpub, extraNpubs: extraNpubs, maxDepth: maxDepth);
+    return run.graph;
+  }
+
+  /// Ungerichtete Nachbarschaft: A–B, wenn sie mindestens ein Meetup teilen.
+  ///
+  /// Gruppiert nach Kennung statt jeden mit jedem zu vergleichen. Der
+  /// paarweise Vergleich wuchs quadratisch mit der Zahl der Personen und
+  /// wurde bei tausend Knoten auf dem Handy spuerbar — jetzt, wo die
+  /// Anzeige nach jeder Stufe neu rechnet, erst recht.
+  static Map<String, Set<String>> _adjacency(Map<String, CoAttNode> nodes) {
+    final groups = <String, List<MapEntry<String, String>>>{};
+    nodes.forEach((npub, node) {
+      for (final k in node.meetups) {
+        groups
+            .putIfAbsent(_base(k), () => <MapEntry<String, String>>[])
+            .add(MapEntry(npub, k));
+      }
+    });
+    final adj = <String, Set<String>>{};
+    for (final g in groups.values) {
+      for (var i = 0; i < g.length; i++) {
+        for (var j = i + 1; j < g.length; j++) {
+          final a = g[i];
+          final b = g[j];
+          if (a.key == b.key) continue;
+          if (!_keysMatch(a.value, b.value)) continue;
+          adj.putIfAbsent(a.key, () => <String>{}).add(b.key);
+          adj.putIfAbsent(b.key, () => <String>{}).add(a.key);
+        }
+      }
+    }
+    return adj;
+  }
+
+  static Future<_RelayAnswer?> _fetchFromRelay(
     String relayUrl, {
     Set<String>? myKeys,
     List<String>? authorsHex,
+    int? since,
   }) async {
     RelaySocket? ws;
     final tally = RelayParseTally('CoAttendance', 'Co-Attendance von $relayUrl');
@@ -588,7 +888,8 @@ class CoAttendanceService {
       ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
       final random = Random.secure();
       final subId = 'coatt-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
-      final completer = Completer<List<CoAttendanceRecord>?>();
+      // true = EOSE erhalten, false = Verbindung vorher zu, null = Fehler.
+      final completer = Completer<bool?>();
 
       ws.listen(
         (data) {
@@ -611,17 +912,14 @@ class CoAttendanceService {
               }
             }
             if (msg[0] == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(out);
+              if (!completer.isCompleted) completer.complete(true);
             }
           } catch (e) { tally.failed(e); }
         },
-        onDone: () { if (!completer.isCompleted) completer.complete(out); },
+        onDone: () { if (!completer.isCompleted) completer.complete(false); },
         onError: (_) { if (!completer.isCompleted) completer.complete(null); },
       );
 
-      // Gezielt nach den eigenen Kennungen fragen — und nach denen OHNE
-      // Signierer-Anhang gleich mit, weil aeltere Teilnahmen in dem Format
-      // veroeffentlicht wurden und sonst durchs Raster fielen.
       final filter = <String, dynamic>{'kinds': [kind]};
       if (authorsHex != null && authorsHex.isNotEmpty) {
         filter['authors'] = authorsHex;
@@ -631,20 +929,18 @@ class CoAttendanceService {
         // meldet das Log es weiter unten.
         filter['limit'] = 5000;
       } else if (myKeys != null && myKeys.isNotEmpty) {
-        final wanted = <String>{};
-        for (final k in myKeys) {
-          wanted.add(k);
-          final i = k.indexOf('@');
-          if (i > 0) wanted.add(k.substring(0, i));
-        }
-        filter['#d'] = wanted.toList();
+        // Gezielt nach den Kennungen fragen — und nach denen OHNE
+        // Signierer-Anhang gleich mit, weil aeltere Teilnahmen in dem Format
+        // veroeffentlicht wurden und sonst durchs Raster fielen.
+        filter['#d'] = _wantedKeys(myKeys).toList();
         // Grosszuegiges Limit: Bei einem gut besuchten Meetup kommen leicht
         // dreissig Teilnahmen je Termin zusammen.
         filter['limit'] = 1000;
       }
+      if (since != null && since > 0) filter['since'] = since;
       ws.add(jsonEncode(['REQ', subId, filter]));
 
-      final res = await completer.future.timeout(
+      final state = await completer.future.timeout(
         _timeout,
         onTimeout: () {
           // Teilmenge statt nichts — aber NICHT stillschweigend.
@@ -656,18 +952,21 @@ class CoAttendanceService {
             AppLogger.warn(_tag,
                 '$relayUrl: Zeit abgelaufen, ${out.length} Eintraege erhalten — Ergebnis moeglicherweise unvollstaendig.');
           }
-          return out.isEmpty ? null : out;
+          return null;
         },
       );
       ws.add(jsonEncode(['CLOSE', subId]));
 
+      if (state == null && out.isEmpty) return null;
+
       // Limit erreicht heisst: Es gibt vermutlich mehr, als geliefert wurde.
       final limit = filter['limit'];
-      if (res != null && limit is int && res.length >= limit) {
+      final hitLimit = limit is int && out.length >= limit;
+      if (hitLimit) {
         AppLogger.warn(_tag,
             '$relayUrl: Limit von $limit erreicht — es gibt vermutlich weitere Eintraege.');
       }
-      return res;
+      return _RelayAnswer(out, complete: state == true && !hitLimit);
     } catch (e) {
       AppLogger.warn(_tag, 'Fetch-Fehler $relayUrl: $e');
       return null;
@@ -763,16 +1062,7 @@ class CoAttendanceService {
     }
 
     // Ungerichtete Adjazenz aufbauen (Kante = gemeinsames Meetup)
-    final adj = <String, Set<String>>{};
-    final entries = nodes.entries.toList();
-    for (int i = 0; i < entries.length; i++) {
-      for (int j = i + 1; j < entries.length; j++) {
-        if (sharedKeys(entries[i].value.meetups, entries[j].value.meetups).isNotEmpty) {
-          adj.putIfAbsent(entries[i].key, () => <String>{}).add(entries[j].key);
-          adj.putIfAbsent(entries[j].key, () => <String>{}).add(entries[i].key);
-        }
-      }
-    }
+    final adj = _adjacency(nodes);
 
     final targetInNetwork = nodes.containsKey(targetNpub);
 
@@ -912,6 +1202,26 @@ class CoAttendanceService {
     }
   }
 
+  /// Laufender Netzwerk-Aufbau. Oeffnet jemand den Bildschirm erneut oder
+  /// zieht zum Aktualisieren, waehrend noch geladen wird, haengt er sich an
+  /// den laufenden Durchlauf an, statt dieselben Abfragen ein zweites Mal
+  /// an die Relays zu schicken.
+  static _NetworkJob? _job;
+
+  /// Das Netzwerk aus dem gespeicherten Graphen — ohne Relay-Abfrage.
+  ///
+  /// Fuer die sofortige Anzeige beim Oeffnen. Null, wenn nichts gespeichert
+  /// ist oder der Cache zu einem anderen Schluessel gehoert.
+  static Future<MyNetwork?> cachedNetwork({
+    required String myNpub,
+    int maxDepth = 3,
+  }) async {
+    final cache = await _readCache();
+    if (cache == null || cache.owner != myNpub) return null;
+    return _networkFromGraph(myNpub, cache.nodes, maxDepth,
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(cache.syncAt));
+  }
+
   /// Baut das EIGENE Netzwerk auf — automatisch, ohne npub-Eingabe.
   ///
   /// Grad 1 = Leute, die ich auf Meetups getroffen habe (gemeinsamer Event).
@@ -920,49 +1230,225 @@ class CoAttendanceService {
   ///
   /// Für jeden Kontakt wird festgehalten, über WEN (Brücke, Grad-1-Kontakt)
   /// er erreichbar ist — das ist die Grundlage des transitiven Vertrauens.
+  ///
+  /// Ablauf mit Cache:
+  ///   Cache lesen → Grad 1 aktualisieren → Grad 2 → Grad 3
+  ///   → Grade aus dem Graphen neu berechnen → Cache speichern.
+  ///
+  /// [onStage] meldet nach jeder Stufe ein Zwischenergebnis. Beim
+  /// vollstaendigen Abruf stammen die noch nicht erneuerten Grade dabei aus
+  /// dem Cache — sonst verschwaenden Grad 2 und 3 kurz, waehrend Grad 1 laedt.
+  ///
+  /// [forceFull] erzwingt den vollstaendigen Abruf (Herunterziehen zum
+  /// Aktualisieren). Sonst geschieht das einmal am Tag von selbst.
   static Future<MyNetwork> buildMyNetwork({
     required String myNpub,
     int maxDepth = 3,
-  }) async {
-    final nodes = await _loadAllNodes(myNpub: myNpub, maxDepth: maxDepth);
-
-    // Ungerichtete Adjazenz: A--B wenn sie >=1 Meetup teilen
-    final adj = <String, Set<String>>{};
-    final entries = nodes.entries.toList();
-    for (int i = 0; i < entries.length; i++) {
-      for (int j = i + 1; j < entries.length; j++) {
-        final a = entries[i];
-        final b = entries[j];
-        if (sharedKeys(a.value.meetups, b.value.meetups).isNotEmpty) {
-          adj.putIfAbsent(a.key, () => <String>{}).add(b.key);
-          adj.putIfAbsent(b.key, () => <String>{}).add(a.key);
-        }
-      }
+    bool forceFull = false,
+    void Function(MyNetwork net, int doneDepth)? onStage,
+  }) {
+    final running = _job;
+    if (running != null && running.owner == myNpub) {
+      if (onStage != null) running.listeners.add(onStage);
+      AppLogger.diag('Netzwerk', 'Aufbau laeuft bereits — schliesse mich an.');
+      return running.future;
     }
 
+    final job = _NetworkJob(myNpub);
+    if (onStage != null) job.listeners.add(onStage);
+    _job = job;
+    job.future = _buildMyNetwork(
+      myNpub: myNpub,
+      maxDepth: maxDepth,
+      forceFull: forceFull,
+      emit: (net, d) {
+        for (final l in List.of(job.listeners)) {
+          try {
+            l(net, d);
+          } catch (_) {}
+        }
+      },
+    ).whenComplete(() {
+      if (identical(_job, job)) _job = null;
+    });
+    return job.future;
+  }
+
+  static Future<MyNetwork> _buildMyNetwork({
+    required String myNpub,
+    required int maxDepth,
+    required bool forceFull,
+    required void Function(MyNetwork net, int doneDepth) emit,
+  }) async {
+    final startedAt = DateTime.now().millisecondsSinceEpoch;
+    final stored = await _readCache();
+    final cache = (stored != null && stored.owner == myNpub) ? stored : null;
+    final previous = cache == null
+        ? null
+        : _networkFromGraph(myNpub, cache.nodes, maxDepth,
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(cache.syncAt));
+
+    final fullSync = forceFull ||
+        cache == null ||
+        startedAt - cache.fullSyncAt > _fullSyncEvery.inMilliseconds;
+
+    final incremental = cache != null && !fullSync;
+
+    AppLogger.diag('Netzwerk',
+        cache == null
+            ? 'Kein Cache — baue vollstaendig auf.'
+            : '${fullSync ? "Vollstaendiger" : "Inkrementeller"} Abruf, '
+                'Cache mit ${cache.nodes.length} Personen.');
+
+    final run = await _loadGraph(
+      myNpub: myNpub,
+      maxDepth: maxDepth,
+      cache: cache,
+      fullSync: fullSync,
+      onStage: (graph, depth) {
+        final fresh = _networkFromGraph(myNpub, graph, maxDepth);
+        // Inkrementell enthaelt der Graph schon den ganzen Cache, die
+        // Rechnung stimmt also fuer alle Grade. Beim vollstaendigen Abruf
+        // nur bis zur fertigen Stufe — der Rest kommt aus dem Cache.
+        emit(incremental ? fresh : _mergeStage(fresh, previous, depth),
+            depth);
+      },
+    );
+
+    // Keine einzige Antwort: Den gespeicherten Stand zeigen und NICHT
+    // ueberschreiben — sonst loeschte ein Funkloch das ganze Netzwerk.
+    if (!run.answered) {
+      AppLogger.warn('Netzwerk',
+          'Keine Relay-Antwort — zeige den gespeicherten Stand.');
+      if (previous != null) return previous.markStale();
+      return MyNetwork(
+          myNpub: myNpub,
+          byDegree: {1: [], 2: [], 3: []},
+          myMeetupCount: 0,
+          stale: true);
+    }
+
+    final net = _networkFromGraph(myNpub, run.graph, maxDepth,
+        log: true, updatedAt: DateTime.fromMillisecondsSinceEpoch(startedAt));
+    _logChanges(previous, net);
+
+    await _writeCache(_GraphCache(
+      owner: myNpub,
+      // Ist fullSync falsch, gibt es zwingend einen Cache — das erkennt
+      // auch der Analyzer aus der Bedingung oben.
+      fullSyncAt: fullSync ? startedAt : cache.fullSyncAt,
+      syncAt: startedAt,
+      knownAuthors: run.knownAuthors,
+      knownKeys: run.knownKeys,
+      nodes: run.graph,
+    ));
+    return net;
+  }
+
+  /// Zwischenstand beim vollstaendigen Abruf: Grade bis [doneDepth] aus dem
+  /// neuen Graphen, die tieferen aus dem Cache. Wer schon in einem neuen
+  /// Grad steht, wird aus den alten entfernt — so rueckt B sichtbar von
+  /// Grad 2 auf Grad 1, statt doppelt zu erscheinen.
+  static MyNetwork _mergeStage(
+      MyNetwork fresh, MyNetwork? previous, int doneDepth) {
+    if (previous == null) return fresh;
+    final placed = <String>{};
+    final out = <int, List<NetworkContact>>{};
+    for (var d = 1; d <= 3; d++) {
+      if (d > doneDepth) continue;
+      final list = fresh.byDegree[d] ?? <NetworkContact>[];
+      out[d] = list;
+      placed.addAll(list.map((c) => c.npub));
+    }
+    for (var d = 1; d <= 3; d++) {
+      if (d <= doneDepth) continue;
+      final list = (previous.byDegree[d] ?? const <NetworkContact>[])
+          .where((c) => !placed.contains(c.npub))
+          .toList();
+      out[d] = list;
+      placed.addAll(list.map((c) => c.npub));
+    }
+    return MyNetwork(
+      myNpub: fresh.myNpub,
+      byDegree: out,
+      myMeetupCount: fresh.myMeetupCount,
+      updatedAt: previous.updatedAt,
+      // Fuer die Wege im Detail: alte Teilnahmen, von neuen ueberschrieben.
+      meetupsOf: {...previous.meetupsOf, ...fresh.meetupsOf},
+    );
+  }
+
+  /// Schreibt ins Log, was sich gegenueber dem Cache veraendert hat.
+  static void _logChanges(MyNetwork? before, MyNetwork after) {
+    if (before == null) return;
+    final b = before.degreeOf;
+    final a = after.degreeOf;
+    var added = 0, closer = 0, farther = 0, gone = 0;
+    a.forEach((npub, d) {
+      final old = b[npub];
+      if (old == null) {
+        added++;
+      } else if (d < old) {
+        closer++;
+      } else if (d > old) {
+        farther++;
+      }
+    });
+    for (final npub in b.keys) {
+      if (!a.containsKey(npub)) gone++;
+    }
+    AppLogger.diag('Netzwerk',
+        'Gegenueber Cache: $added neu, $closer naeher gerueckt, '
+        '$farther weiter weg, $gone nicht mehr im Netzwerk.');
+  }
+
+  /// Berechnet die Grade aus dem Graphen (Breitensuche ab mir).
+  static MyNetwork _networkFromGraph(
+    String myNpub,
+    Map<String, CoAttNode> nodes,
+    int maxDepth, {
+    bool log = false,
+    DateTime? updatedAt,
+  }) {
+    final adj = _adjacency(nodes);
     final myMeetups = nodes[myNpub]?.meetups ?? <String>{};
 
     // BFS: Grad pro npub + über welchen Grad-1-Kontakt erreichbar
     final degree = <String, int>{myNpub: 0};
     final bridges = <String, Set<String>>{}; // npub -> Grad-1-Brücken
-    final queue = <String>[myNpub];
+    // Vorgaenger auf EINEM kuerzesten Weg — fuer die Anzeige "Du → Anna →
+    // Carla". Weil die direkten Kontakte nach Zahl gemeinsamer Meetups
+    // geordnet in die Suche gehen, fuehrt der Weg bevorzugt ueber die
+    // staerkste Verbindung.
+    final parent = <String, String>{};
+    final queue = Queue<String>()..add(myNpub);
 
     while (queue.isNotEmpty) {
-      final current = queue.removeAt(0);
+      final current = queue.removeFirst();
       final curDeg = degree[current]!;
       if (curDeg >= maxDepth) continue;
-      for (final neighbor in (adj[current] ?? const <String>{})) {
+      var neighbors = adj[current] ?? const <String>{};
+      if (curDeg == 0) {
+        final strength = <String, int>{
+          for (final n in neighbors)
+            n: sharedKeys(nodes[n]?.meetups ?? <String>{}, myMeetups).length,
+        };
+        neighbors = (neighbors.toList()
+              ..sort((a, b) => strength[b]!.compareTo(strength[a]!)))
+            .toSet();
+      }
+      for (final neighbor in neighbors) {
         if (!degree.containsKey(neighbor)) {
           degree[neighbor] = curDeg + 1;
+          parent[neighbor] = current;
           queue.add(neighbor);
         }
         // Brücke merken: der Grad-1-Knoten auf dem Weg
         if (curDeg == 0) {
           // direkter Nachbar -> er ist seine eigene "Brücke" (Grad 1)
         } else if (degree[neighbor] == curDeg + 1) {
-          final via = (curDeg == 1) ? current : null;
-          if (via != null) {
-            bridges.putIfAbsent(neighbor, () => <String>{}).add(via);
+          if (curDeg == 1) {
+            bridges.putIfAbsent(neighbor, () => <String>{}).add(current);
           } else {
             // tiefer: Brücken des current weiterreichen
             final inherited = bridges[current];
@@ -991,48 +1477,59 @@ class CoAttendanceService {
             degree: deg,
             sharedMeetupsWithMe: shared,
             bridges: deg == 1 ? <String>{} : (bridges[npub] ?? <String>{}),
+            parent: parent[npub],
           ));
     }
 
-    // ── DIAGNOSE ────────────────────────────────────────────────────
-    // Erscheint jemand faelschlich im 1. Grad, laesst sich hier ablesen,
-    // WELCHE Kennung die Verbindung erzeugt. Ohne diese Zeilen bleibt nur
-    // Raten — die Kennung steckt weder in der Oberflaeche noch im Badge.
-    AppLogger.diag('Netzwerk',
-        'Eigene Meetup-Kennungen (${myMeetups.length}): '
-        '${myMeetups.join(", ")}');
-    // Zaehlt mit, ob ueberhaupt fremde Teilnahmen ankamen. Ohne diese Zahl
-    // sieht ein leeres Netzwerk gleich aus, egal ob die Relays nichts
-    // lieferten oder ob die Kennungen nicht zusammenpassten.
-    AppLogger.diag('Netzwerk',
-        '${nodes.length} Teilnehmer aus den Relays, davon ${(byDegree[1] ?? const []).length} im 1. Grad, '
-        '${(byDegree[2] ?? const []).length} im 2. Grad.');
+    if (log) {
+      // ── DIAGNOSE ──────────────────────────────────────────────────
+      // Erscheint jemand faelschlich im 1. Grad, laesst sich hier ablesen,
+      // WELCHE Kennung die Verbindung erzeugt. Ohne diese Zeilen bleibt nur
+      // Raten — die Kennung steckt weder in der Oberflaeche noch im Badge.
+      AppLogger.diag('Netzwerk',
+          'Eigene Meetup-Kennungen (${myMeetups.length}): '
+          '${myMeetups.join(", ")}');
+      // Zaehlt mit, ob ueberhaupt fremde Teilnahmen ankamen. Ohne diese Zahl
+      // sieht ein leeres Netzwerk gleich aus, egal ob die Relays nichts
+      // lieferten oder ob die Kennungen nicht zusammenpassten.
+      AppLogger.diag('Netzwerk',
+          '${nodes.length} Teilnehmer im Graphen, davon ${(byDegree[1] ?? const []).length} im 1. Grad, '
+          '${(byDegree[2] ?? const []).length} im 2. Grad, '
+          '${(byDegree[3] ?? const []).length} im 3. Grad.');
 
-    // Bei NULL Treffern eine Stichprobe der FREMDEN Kennungen ausgeben.
-    //
-    // Ohne sie sieht man nur, dass nichts passt — nicht warum. Und der
-    // Vergleich der beiden Formate nebeneinander beantwortet die Frage
-    // sofort: gleiche Meetups mit anderem Anhang, andere Schreibweise, oder
-    // schlicht andere Meetups.
-    if ((byDegree[1] ?? const []).isEmpty && nodes.isNotEmpty) {
-      final fremde = <String>{};
-      for (final e in nodes.entries) {
-        if (e.key == myNpub) continue;
-        fremde.addAll(e.value.meetups);
-        if (fremde.length >= 15) break;
+      // Bei NULL Treffern eine Stichprobe der FREMDEN Kennungen ausgeben.
+      //
+      // Ohne sie sieht man nur, dass nichts passt — nicht warum. Und der
+      // Vergleich der beiden Formate nebeneinander beantwortet die Frage
+      // sofort: gleiche Meetups mit anderem Anhang, andere Schreibweise, oder
+      // schlicht andere Meetups.
+      if ((byDegree[1] ?? const []).isEmpty && nodes.isNotEmpty) {
+        final fremde = <String>{};
+        for (final e in nodes.entries) {
+          if (e.key == myNpub) continue;
+          fremde.addAll(e.value.meetups);
+          if (fremde.length >= 15) break;
+        }
+        AppLogger.diag('Netzwerk',
+            'Keine Treffer. Fremde Kennungen (Stichprobe): ${fremde.take(15).join(", ")}');
       }
-      AppLogger.diag('Netzwerk',
-          'Keine Treffer. Fremde Kennungen (Stichprobe): ${fremde.take(15).join(", ")}');
-    }
-    for (final c in (byDegree[1] ?? const <NetworkContact>[])) {
-      AppLogger.diag('Netzwerk',
-          '1. Grad ${c.npub.substring(0, c.npub.length > 16 ? 16 : c.npub.length)}… '
-          'ueber: ${c.sharedMeetupsWithMe.join(", ")}');
+      for (final c in (byDegree[1] ?? const <NetworkContact>[])) {
+        AppLogger.diag('Netzwerk',
+            '1. Grad ${c.npub.substring(0, c.npub.length > 16 ? 16 : c.npub.length)}… '
+            'ueber: ${c.sharedMeetupsWithMe.join(", ")}');
+      }
     }
 
-    // Sortierung: Grad 1 nach Anzahl gemeinsamer Meetups, sonst nach Brücken-Anzahl
-    byDegree[1]?.sort((a, b) =>
-        b.sharedMeetupsWithMe.length.compareTo(a.sharedMeetupsWithMe.length));
+    // Sortierung: Grad 1 nach Anzahl gemeinsamer Meetups (bei Gleichstand
+    // das juengste zuerst), sonst nach Brücken-Anzahl
+    byDegree[1]?.sort((a, b) {
+      final c =
+          b.sharedMeetupsWithMe.length.compareTo(a.sharedMeetupsWithMe.length);
+      if (c != 0) return c;
+      final da = AttendanceKeyLabel.newest(a.sharedMeetupsWithMe);
+      final db = AttendanceKeyLabel.newest(b.sharedMeetupsWithMe);
+      return (db ?? DateTime(0)).compareTo(da ?? DateTime(0));
+    });
     byDegree[2]?.sort((a, b) => b.bridges.length.compareTo(a.bridges.length));
     byDegree[3]?.sort((a, b) => b.bridges.length.compareTo(a.bridges.length));
 
@@ -1040,6 +1537,130 @@ class CoAttendanceService {
       myNpub: myNpub,
       byDegree: byDegree,
       myMeetupCount: myMeetups.length,
+      updatedAt: updatedAt,
+      meetupsOf: {
+        for (final n in degree.keys)
+          if (degree[n]! <= maxDepth) n: Set.of(nodes[n]?.meetups ?? const <String>{}),
+      },
+    );
+  }
+}
+
+/// Ein laufender Aufbau des eigenen Netzwerks (siehe [CoAttendanceService.buildMyNetwork]).
+class _NetworkJob {
+  final String owner;
+  final List<void Function(MyNetwork net, int doneDepth)> listeners = [];
+  late Future<MyNetwork> future;
+  _NetworkJob(this.owner);
+}
+
+/// Antwort EINES Relays.
+class _RelayAnswer {
+  final List<CoAttendanceRecord> records;
+
+  /// Ende der gespeicherten Eintraege (EOSE) erreicht und Limit nicht
+  /// ausgeschoepft — die Antwort ist also vollstaendig.
+  final bool complete;
+  const _RelayAnswer(this.records, {required this.complete});
+}
+
+/// Zusammengefasste Antwort aller Relays auf EIN Abfrage-Paket.
+class _BatchAnswer {
+  final List<CoAttendanceRecord> records;
+
+  /// Mindestens ein Relay hat vollstaendig geantwortet. Reicht, um die
+  /// Personen/Meetups als "bekannt" zu fuehren — Teilnahmen gehen an alle
+  /// Relays gleichzeitig raus.
+  final bool anyComplete;
+
+  /// JEDES Relay hat vollstaendig geantwortet. Erst dann darf eine
+  /// fehlende Teilnahme als "nicht mehr vorhanden" gelten.
+  final bool allComplete;
+
+  const _BatchAnswer(this.records,
+      {required this.anyComplete, required this.allComplete});
+}
+
+/// Ergebnis eines Graph-Aufbaus.
+class _GraphRun {
+  final Map<String, CoAttNode> graph;
+  final Set<String> knownAuthors;
+  final Set<String> knownKeys;
+
+  /// Hat ueberhaupt ein Relay geantwortet?
+  final bool answered;
+
+  _GraphRun(this.graph, this.knownAuthors, this.knownKeys,
+      {required this.answered});
+}
+
+/// Der gespeicherte Verbindungsgraph.
+class _GraphCache {
+  /// Wessen Netzwerk. Wechselt der Schluessel, ist der Cache wertlos.
+  final String owner;
+
+  /// Letzter vollstaendiger Abruf (ms).
+  final int fullSyncAt;
+
+  /// Beginn des letzten Abrufs (ms) — Bezugspunkt fuer `since`.
+  final int syncAt;
+
+  /// Personen, deren Teilnahmen schon einmal vollstaendig geholt wurden.
+  final Set<String> knownAuthors;
+
+  /// Meetups, deren Teilnehmer schon einmal vollstaendig geholt wurden.
+  final Set<String> knownKeys;
+
+  final Map<String, CoAttNode> nodes;
+
+  _GraphCache({
+    required this.owner,
+    required this.fullSyncAt,
+    required this.syncAt,
+    required this.knownAuthors,
+    required this.knownKeys,
+    required this.nodes,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'v': 1,
+        'owner': owner,
+        'full': fullSyncAt,
+        'sync': syncAt,
+        'ka': knownAuthors.toList(),
+        'kk': knownKeys.toList(),
+        'n': {
+          for (final e in nodes.entries)
+            e.key: {
+              'm': e.value.meetups.toList(),
+              if (e.value.events.isNotEmpty) 'e': e.value.events.toList(),
+            },
+        },
+      };
+
+  static _GraphCache? fromJson(Map<String, dynamic> j) {
+    if (j['v'] != 1) return null;
+    List<String> strings(Object? v) =>
+        v is List ? v.map((e) => e.toString()).toList() : const <String>[];
+    final nodes = <String, CoAttNode>{};
+    final raw = j['n'];
+    if (raw is Map) {
+      raw.forEach((k, v) {
+        final node = CoAttNode(k.toString());
+        if (v is Map) {
+          node.meetups.addAll(strings(v['m']));
+          node.events.addAll(strings(v['e']));
+        }
+        nodes[node.npub] = node;
+      });
+    }
+    return _GraphCache(
+      owner: (j['owner'] ?? '').toString(),
+      fullSyncAt: j['full'] is int ? j['full'] as int : 0,
+      syncAt: j['sync'] is int ? j['sync'] as int : 0,
+      knownAuthors: strings(j['ka']).toSet(),
+      knownKeys: strings(j['kk']).toSet(),
+      nodes: nodes,
     );
   }
 }
@@ -1051,11 +1672,15 @@ class NetworkContact {
   final Set<String> sharedMeetupsWithMe; // nur bei Grad 1 befüllt
   final Set<String> bridges;           // Grad-1-Kontakte, über die ich diese Person erreiche (Grad 2+)
 
+  /// Vorgaenger auf einem kuerzesten Weg (bei Grad 1: ich selbst).
+  final String? parent;
+
   NetworkContact({
     required this.npub,
     required this.degree,
     required this.sharedMeetupsWithMe,
     required this.bridges,
+    this.parent,
   });
 }
 
@@ -1065,11 +1690,67 @@ class MyNetwork {
   final Map<int, List<NetworkContact>> byDegree;
   final int myMeetupCount;
 
+  /// Stand der Daten (Beginn des Abrufs, aus dem sie stammen).
+  final DateTime? updatedAt;
+
+  /// Die Aktualisierung kam nicht zustande — gezeigt wird der gespeicherte
+  /// Stand.
+  final bool stale;
+
+  /// Meetup-Kennungen je Person (ich und alle Kontakte) — fuer die Angabe,
+  /// bei welchem Meetup sich zwei Personen auf dem Weg begegnet sind.
+  final Map<String, Set<String>> meetupsOf;
+
   MyNetwork({
     required this.myNpub,
     required this.byDegree,
     required this.myMeetupCount,
+    this.updatedAt,
+    this.stale = false,
+    this.meetupsOf = const {},
   });
+
+  MyNetwork markStale() => MyNetwork(
+        myNpub: myNpub,
+        byDegree: byDegree,
+        myMeetupCount: myMeetupCount,
+        updatedAt: updatedAt,
+        stale: true,
+        meetupsOf: meetupsOf,
+      );
+
+  /// Alle Kontakte nach npub.
+  late final Map<String, NetworkContact> contactsByNpub = {
+    for (final list in byDegree.values)
+      for (final c in list) c.npub: c,
+  };
+
+  /// Weg von mir zu [npub], z. B. [ich, Anna, Carla]. Leer, wenn er sich
+  /// nicht vollstaendig zusammensetzen laesst.
+  List<String> pathTo(String npub) {
+    final chain = <String>[npub];
+    var cur = npub;
+    for (var i = 0; i < 4; i++) {
+      final p = contactsByNpub[cur]?.parent;
+      if (p == null) break;
+      chain.add(p);
+      if (p == myNpub) break;
+      cur = p;
+    }
+    if (chain.last != myNpub) return const [];
+    return chain.reversed.toList();
+  }
+
+  /// Gemeinsame Meetups zweier Personen, das juengste zuerst.
+  List<String> sharedBetween(String a, String b) =>
+      AttendanceKeyLabel.newestFirst(CoAttendanceService.sharedKeys(
+          meetupsOf[a] ?? const <String>{}, meetupsOf[b] ?? const <String>{}));
+
+  /// Grad je Person — zum Vergleich zweier Staende.
+  Map<String, int> get degreeOf => {
+        for (final e in byDegree.entries)
+          for (final c in e.value) c.npub: e.key,
+      };
 
   int get degree1Count => byDegree[1]?.length ?? 0;
   int get degree2Count => byDegree[2]?.length ?? 0;
@@ -1099,4 +1780,70 @@ class PresenceCheck {
   bool get found => degree >= 0;
   bool get isDirect => degree == 1;
   bool get isSelf => degree == 0;
+}
+
+/// Macht aus einer Anwesenheits-Kennung etwas Lesbares.
+///
+/// Kennungen sehen so aus: `wuerzburg-2026-09-12@u8qf5q534jzc` — Meetup-Name
+/// in Kleinbuchstaben mit Bindestrichen, Datum, optional der Signierer.
+/// Angezeigt wird daraus "Wuerzburg, 12.09.2026". Der Signierer-Anhang ist
+/// reine Technik und verschwindet.
+class AttendanceKeyLabel {
+  static final RegExp _dated = RegExp(r'^(.*)-(\d{4})-(\d{2})-(\d{2})$');
+
+  static String _strip(String key) {
+    var k = key;
+    if (k.startsWith(CoAttendanceService.eventPrefix)) {
+      k = k.substring(CoAttendanceService.eventPrefix.length);
+    }
+    final i = k.indexOf('@');
+    return i < 0 ? k : k.substring(0, i);
+  }
+
+  static DateTime? date(String key) {
+    final m = _dated.firstMatch(_strip(key));
+    if (m == null) return null;
+    return DateTime(
+        int.parse(m.group(2)!), int.parse(m.group(3)!), int.parse(m.group(4)!));
+  }
+
+  static String place(String key) {
+    final s = _strip(key);
+    final m = _dated.firstMatch(s);
+    final raw = m == null ? s : m.group(1)!;
+    return raw
+        .split('-')
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+  }
+
+  /// "12.09.2026", mit [withYear] = false nur "12.09.".
+  static String dateText(DateTime d, {bool withYear = true}) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return withYear
+        ? '${two(d.day)}.${two(d.month)}.${d.year}'
+        : '${two(d.day)}.${two(d.month)}.';
+  }
+
+  /// "Wuerzburg, 12.09.2026"
+  static String label(String key) {
+    final d = date(key);
+    final p = place(key);
+    return d == null ? p : '$p, ${dateText(d)}';
+  }
+
+  static List<String> newestFirst(Iterable<String> keys) => keys.toList()
+    ..sort((a, b) =>
+        (date(b) ?? DateTime(0)).compareTo(date(a) ?? DateTime(0)));
+
+  /// Datum der juengsten Kennung, null wenn keine ein Datum traegt.
+  static DateTime? newest(Iterable<String> keys) {
+    DateTime? best;
+    for (final k in keys) {
+      final d = date(k);
+      if (d != null && (best == null || d.isAfter(best))) best = d;
+    }
+    return best;
+  }
 }

@@ -6503,4 +6503,129 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vwOffboard =>
       'On its way to the chain. It waits for the next round.';
+
+  @override
+  String get chatRelayUnavailable =>
+      'The chat relay did not respond, or signing in did not complete. Please try again in a moment — if you use an external signer, approve the sign-in there.';
+
+  @override
+  String mnUpdating(int degree) {
+    return 'Updating degree $degree …';
+  }
+
+  @override
+  String get mnUpdateFailed =>
+      'Couldn\'t update right now — showing the saved state. Pull down to try again.';
+
+  @override
+  String get mnReachTitle => 'YOUR REACH';
+
+  @override
+  String mnReachSub(int meetups) {
+    return 'people from $meetups meetups';
+  }
+
+  @override
+  String mnReachSplit(int d1, int d2, int d3) {
+    return '$d1 met in person · $d2 via contacts · $d3 one step further';
+  }
+
+  @override
+  String mnStandAt(String time) {
+    return 'As of $time';
+  }
+
+  @override
+  String get mnSavedState => 'Saved state';
+
+  @override
+  String mnGraphExcerpt(int shown, int total) {
+    return '$shown of $total direct contacts · excerpt';
+  }
+
+  @override
+  String get mnTapShowsPath => 'Tap to see the path';
+
+  @override
+  String get mnFilterAll => 'All';
+
+  @override
+  String get mnSearchHint => 'Search name or npub';
+
+  @override
+  String get mnNoResults => 'Nobody found';
+
+  @override
+  String mnShowAll(int count) {
+    return 'Show all $count';
+  }
+
+  @override
+  String mnLastAt(String place) {
+    return 'last $place';
+  }
+
+  @override
+  String mnVia(String names) {
+    return 'via $names';
+  }
+
+  @override
+  String get mnAnd => 'and';
+
+  @override
+  String get mnHowItWorks => 'How your network is built';
+
+  @override
+  String get mnHowItWorksSub => 'Only meetups count, only people who opted in';
+
+  @override
+  String mnPathTo(String name) {
+    return 'Your path to $name';
+  }
+
+  @override
+  String get mnYou => 'You';
+
+  @override
+  String mnTogetherAt(String place) {
+    return 'together at $place';
+  }
+
+  @override
+  String get mnAlsoVia => 'Also reachable via';
+
+  @override
+  String get mnClose => 'Close';
+
+  @override
+  String get mnCopyNpub => 'Copy npub';
+
+  @override
+  String get settingsCurrencyTitle => 'Currency';
+
+  @override
+  String get settingsCurrencyHint =>
+      'Applies to the converter, home screen, Bitcoin dashboard and widget. Rates from mempool.space.';
+
+  @override
+  String get curEUR => 'Euro';
+
+  @override
+  String get curUSD => 'US dollar';
+
+  @override
+  String get curCHF => 'Swiss franc';
+
+  @override
+  String get curGBP => 'British pound';
+
+  @override
+  String get curCAD => 'Canadian dollar';
+
+  @override
+  String get curAUD => 'Australian dollar';
+
+  @override
+  String get curJPY => 'Japanese yen';
 }

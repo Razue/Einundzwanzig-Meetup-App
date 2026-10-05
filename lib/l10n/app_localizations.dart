@@ -11781,6 +11781,210 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Unterwegs auf die Kette. Das wartet auf die nächste Runde.'**
   String get vwOffboard;
+
+  /// No description provided for @chatRelayUnavailable.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.'**
+  String get chatRelayUnavailable;
+
+  /// No description provided for @mnUpdating.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisiere {degree}. Grad …'**
+  String mnUpdating(int degree);
+
+  /// No description provided for @mnUpdateFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisierung gerade nicht möglich — du siehst den gespeicherten Stand. Zum erneuten Versuch herunterziehen.'**
+  String get mnUpdateFailed;
+
+  /// No description provided for @mnReachTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'DEINE REICHWEITE'**
+  String get mnReachTitle;
+
+  /// No description provided for @mnReachSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Personen aus {meetups} Meetups'**
+  String mnReachSub(int meetups);
+
+  /// No description provided for @mnReachSplit.
+  ///
+  /// In de, this message translates to:
+  /// **'{d1} direkt getroffen · {d2} über Kontakte · {d3} eine Ebene weiter'**
+  String mnReachSplit(int d1, int d2, int d3);
+
+  /// No description provided for @mnStandAt.
+  ///
+  /// In de, this message translates to:
+  /// **'Stand {time}'**
+  String mnStandAt(String time);
+
+  /// No description provided for @mnSavedState.
+  ///
+  /// In de, this message translates to:
+  /// **'Gespeicherter Stand'**
+  String get mnSavedState;
+
+  /// No description provided for @mnGraphExcerpt.
+  ///
+  /// In de, this message translates to:
+  /// **'{shown} von {total} direkten Kontakten · Ausschnitt'**
+  String mnGraphExcerpt(int shown, int total);
+
+  /// No description provided for @mnTapShowsPath.
+  ///
+  /// In de, this message translates to:
+  /// **'Antippen zeigt den Weg'**
+  String get mnTapShowsPath;
+
+  /// No description provided for @mnFilterAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle'**
+  String get mnFilterAll;
+
+  /// No description provided for @mnSearchHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Name oder npub suchen'**
+  String get mnSearchHint;
+
+  /// No description provided for @mnNoResults.
+  ///
+  /// In de, this message translates to:
+  /// **'Niemand gefunden'**
+  String get mnNoResults;
+
+  /// No description provided for @mnShowAll.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle {count} anzeigen'**
+  String mnShowAll(int count);
+
+  /// No description provided for @mnLastAt.
+  ///
+  /// In de, this message translates to:
+  /// **'zuletzt {place}'**
+  String mnLastAt(String place);
+
+  /// No description provided for @mnVia.
+  ///
+  /// In de, this message translates to:
+  /// **'über {names}'**
+  String mnVia(String names);
+
+  /// No description provided for @mnAnd.
+  ///
+  /// In de, this message translates to:
+  /// **'und'**
+  String get mnAnd;
+
+  /// No description provided for @mnHowItWorks.
+  ///
+  /// In de, this message translates to:
+  /// **'So entsteht dein Netzwerk'**
+  String get mnHowItWorks;
+
+  /// No description provided for @mnHowItWorksSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Nur Meetups zählen, nur wer zugestimmt hat'**
+  String get mnHowItWorksSub;
+
+  /// No description provided for @mnPathTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Weg zu {name}'**
+  String mnPathTo(String name);
+
+  /// No description provided for @mnYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get mnYou;
+
+  /// No description provided for @mnTogetherAt.
+  ///
+  /// In de, this message translates to:
+  /// **'gemeinsam bei {place}'**
+  String mnTogetherAt(String place);
+
+  /// No description provided for @mnAlsoVia.
+  ///
+  /// In de, this message translates to:
+  /// **'Auch erreichbar über'**
+  String get mnAlsoVia;
+
+  /// No description provided for @mnClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Schließen'**
+  String get mnClose;
+
+  /// No description provided for @mnCopyNpub.
+  ///
+  /// In de, this message translates to:
+  /// **'npub kopieren'**
+  String get mnCopyNpub;
+
+  /// No description provided for @settingsCurrencyTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Währung'**
+  String get settingsCurrencyTitle;
+
+  /// No description provided for @settingsCurrencyHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Gilt für Umrechner, Startseite, Bitcoin-Dashboard und Widget. Kurse von mempool.space.'**
+  String get settingsCurrencyHint;
+
+  /// No description provided for @curEUR.
+  ///
+  /// In de, this message translates to:
+  /// **'Euro'**
+  String get curEUR;
+
+  /// No description provided for @curUSD.
+  ///
+  /// In de, this message translates to:
+  /// **'US-Dollar'**
+  String get curUSD;
+
+  /// No description provided for @curCHF.
+  ///
+  /// In de, this message translates to:
+  /// **'Schweizer Franken'**
+  String get curCHF;
+
+  /// No description provided for @curGBP.
+  ///
+  /// In de, this message translates to:
+  /// **'Britisches Pfund'**
+  String get curGBP;
+
+  /// No description provided for @curCAD.
+  ///
+  /// In de, this message translates to:
+  /// **'Kanadischer Dollar'**
+  String get curCAD;
+
+  /// No description provided for @curAUD.
+  ///
+  /// In de, this message translates to:
+  /// **'Australischer Dollar'**
+  String get curAUD;
+
+  /// No description provided for @curJPY.
+  ///
+  /// In de, this message translates to:
+  /// **'Japanischer Yen'**
+  String get curJPY;
 }
 
 class _AppLocalizationsDelegate
