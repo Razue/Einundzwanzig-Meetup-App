@@ -6893,4 +6893,136 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get vwOffboard =>
       'Unterwegs auf die Kette. Das wartet auf die nächste Runde.';
+<<<<<<< HEAD
+=======
+
+  @override
+  String get chatRelayUnavailable =>
+      'Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.';
+
+  @override
+  String mnUpdating(int degree) {
+    return 'Aktualisiere $degree. Grad …';
+  }
+
+  @override
+  String get mnUpdateFailed =>
+      'Aktualisierung gerade nicht möglich — du siehst den gespeicherten Stand. Zum erneuten Versuch herunterziehen.';
+
+  @override
+  String get mnReachTitle => 'DEINE REICHWEITE';
+
+  @override
+  String mnReachSub(int meetups) {
+    return 'Personen aus $meetups Meetups';
+  }
+
+  @override
+  String mnReachSplit(int d1, int d2, int d3) {
+    return '$d1 direkt getroffen · $d2 über Kontakte · $d3 eine Ebene weiter';
+  }
+
+  @override
+  String mnStandAt(String time) {
+    return 'Stand $time';
+  }
+
+  @override
+  String get mnSavedState => 'Gespeicherter Stand';
+
+  @override
+  String mnGraphExcerpt(int shown, int total) {
+    return '$shown von $total direkten Kontakten · Ausschnitt';
+  }
+
+  @override
+  String get mnTapShowsPath => 'Antippen zeigt den Weg';
+
+  @override
+  String get mnFilterAll => 'Alle';
+
+  @override
+  String get mnSearchHint => 'Name oder npub suchen';
+
+  @override
+  String get mnNoResults => 'Niemand gefunden';
+
+  @override
+  String mnShowAll(int count) {
+    return 'Alle $count anzeigen';
+  }
+
+  @override
+  String mnLastAt(String place) {
+    return 'zuletzt $place';
+  }
+
+  @override
+  String mnVia(String names) {
+    return 'über $names';
+  }
+
+  @override
+  String get mnAnd => 'und';
+
+  @override
+  String get mnHowItWorks => 'So entsteht dein Netzwerk';
+
+  @override
+  String get mnHowItWorksSub => 'Nur Meetups zählen, nur wer zugestimmt hat';
+
+  @override
+  String mnPathTo(String name) {
+    return 'Dein Weg zu $name';
+  }
+
+  @override
+  String get mnYou => 'Du';
+
+  @override
+  String mnTogetherAt(String place) {
+    return 'gemeinsam bei $place';
+  }
+
+  @override
+  String get mnAlsoVia => 'Auch erreichbar über';
+
+  @override
+  String get mnClose => 'Schließen';
+
+  @override
+  String get mnCopyNpub => 'npub kopieren';
+
+  @override
+  String get settingsCurrencyTitle => 'Währung';
+
+  @override
+  String get settingsCurrencyHint =>
+      'Gilt für Umrechner, Startseite, Bitcoin-Dashboard und Widget. Kurse von mempool.space.';
+
+  @override
+  String get curEUR => 'Euro';
+
+  @override
+  String get curUSD => 'US-Dollar';
+
+  @override
+  String get curCHF => 'Schweizer Franken';
+
+  @override
+  String get curGBP => 'Britisches Pfund';
+
+  @override
+  String get curCAD => 'Kanadischer Dollar';
+
+  @override
+  String get curAUD => 'Australischer Dollar';
+
+  @override
+  String get curJPY => 'Japanischer Yen';
+
+  @override
+  String get chatOffline =>
+      'Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.';
+>>>>>>> feat/voice-cashu-iphone
 }

@@ -2927,5 +2927,123 @@
       "balance": {"type": "int"}
     }
   },
+<<<<<<< HEAD
   "vwOffboard": "Va hacia la cadena. Espera a la siguiente ronda."
+=======
+  "vwOffboard": "Va hacia la cadena. Espera a la siguiente ronda.",
+  "chatRelayUnavailable": "El relé del chat no respondió o el inicio de sesión no se completó. Vuelve a intentarlo enseguida; si usas un firmante externo, aprueba allí el inicio de sesión.",
+  "mnUpdating": "Actualizando grado {degree} …",
+  "@mnUpdating": {
+    "placeholders": {
+      "degree": {
+        "type": "int"
+      }
+    }
+  },
+  "mnUpdateFailed": "No se pudo actualizar ahora — se muestra el estado guardado. Desliza hacia abajo para reintentar.",
+  "mnReachTitle": "TU ALCANCE",
+  "mnReachSub": "personas de {meetups} meetups",
+  "@mnReachSub": {
+    "placeholders": {
+      "meetups": {
+        "type": "int"
+      }
+    }
+  },
+  "mnReachSplit": "{d1} en persona · {d2} vía contactos · {d3} un nivel más",
+  "@mnReachSplit": {
+    "placeholders": {
+      "d1": {
+        "type": "int"
+      },
+      "d2": {
+        "type": "int"
+      },
+      "d3": {
+        "type": "int"
+      }
+    }
+  },
+  "mnStandAt": "Estado {time}",
+  "@mnStandAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "mnSavedState": "Estado guardado",
+  "mnGraphExcerpt": "{shown} de {total} contactos directos · extracto",
+  "@mnGraphExcerpt": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "mnTapShowsPath": "Toca para ver el camino",
+  "mnFilterAll": "Todos",
+  "mnSearchHint": "Buscar nombre o npub",
+  "mnNoResults": "No se encontró a nadie",
+  "mnShowAll": "Mostrar los {count}",
+  "@mnShowAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mnLastAt": "último {place}",
+  "@mnLastAt": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "mnVia": "vía {names}",
+  "@mnVia": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "mnAnd": "y",
+  "mnHowItWorks": "Cómo se forma tu red",
+  "mnHowItWorksSub": "Solo cuentan los meetups, solo quien aceptó",
+  "mnPathTo": "Tu camino hacia {name}",
+  "@mnPathTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "mnYou": "Tú",
+  "mnTogetherAt": "juntos en {place}",
+  "@mnTogetherAt": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "mnAlsoVia": "También accesible vía",
+  "mnClose": "Cerrar",
+  "mnCopyNpub": "Copiar npub",
+  "settingsCurrencyTitle": "Moneda",
+  "settingsCurrencyHint": "Se aplica al conversor, la pantalla de inicio, el panel de Bitcoin y el widget. Tipos de mempool.space.",
+  "curEUR": "Euro",
+  "curUSD": "Dólar estadounidense",
+  "curCHF": "Franco suizo",
+  "curGBP": "Libra esterlina",
+  "curCAD": "Dólar canadiense",
+  "curAUD": "Dólar australiano",
+  "curJPY": "Yen japonés",
+  "chatOffline": "Sin conexión a internet: el chat no está disponible ahora. Revisa el Wi-Fi o los datos móviles e inténtalo de nuevo."
+>>>>>>> feat/voice-cashu-iphone
 }

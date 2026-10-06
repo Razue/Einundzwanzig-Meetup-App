@@ -32,6 +32,22 @@ const String _tag = 'Chat';
 /// Dasselbe `h` auf einem anderen Relay ist ein anderer Raum.
 const String kGroupRelay = 'wss://group.einundzwanzig.space';
 
+/// Das Gruppen-Relay hat keine Auskunft gegeben.
+///
+/// Eigene Ausnahme statt null: null heisst bei der Raumsuche "es gibt
+/// keinen Raum". Eine Stoerung muss davon unterscheidbar sein, sonst
+/// behauptet die App etwas ueber das Meetup, das sie gar nicht weiss.
+class ChatRelayUnavailable implements Exception {
+  /// Das Geraet hatte gar kein Netz (Name nicht aufloesbar, Netz nicht
+  /// erreichbar) — dann liegt es nicht am Relay, und die Meldung soll das
+  /// auch so sagen.
+  final bool offline;
+  const ChatRelayUnavailable({this.offline = false});
+  @override
+  String toString() =>
+      offline ? 'Keine Internetverbindung' : 'Gruppen-Relay ohne Auskunft';
+}
+
 // --- Ereignisarten nach NIP-29 ---
 const int _kMessage = 9;
 const int _kJoin = 9021;
@@ -140,6 +156,23 @@ class ChatService {
 
   static const Duration _timeout = Duration(seconds: 8);
 
+  /// Ob der letzte Verbindungsversuch an fehlendem Netz scheiterte.
+  ///
+  /// Im Feld (Oktober 2026) kam die Meldung "Chat-Relay hat nicht
+  /// geantwortet", waehrend das Protokoll fuer JEDEN Dienst "Failed host
+  /// lookup" zeigte — das Handy war schlicht offline. Die Meldung schickte
+  /// die Leute auf die falsche Faehrte (Relay, Signierer).
+  static bool _lastOffline = false;
+
+  /// Erkennt fehlendes Netz an der Fehlermeldung des Betriebssystems.
+  static bool _looksOffline(Object e) {
+    final s = e.toString();
+    return s.contains('Failed host lookup') ||
+        s.contains('Network is unreachable') ||
+        s.contains('No address associated with hostname') ||
+        s.contains('Connection failed');
+  }
+
   /// Zwischengespeicherte Raumliste.
   ///
   /// Das Dashboard fragt fuer jeden Favoriten nach dem Raum. Ohne Cache
@@ -169,15 +202,30 @@ class ChatService {
   /// [onEvent] bekommt alle Nachrichten, die NICHT zur Anmeldung gehoeren —
   /// so muss keine Aufrufstelle die Anmeldung mitbehandeln.
   static Future<RelaySocket?> _connectAuthed(
-    void Function(List<dynamic> msg) onEvent, {
-    Duration authTimeout = const Duration(seconds: 6),
-  }) async {
+    void Function(List<dynamic> msg) onEvent,
+  ) async {
+    // Wie lange die Anmeldung dauern darf, haengt am SIGNIERER.
+    //
+    // Mit lokalem Schluessel ist die Unterschrift sofort da. Mit Amber oder
+    // einem Bunker (NIP-46) laeuft sie ueber eine andere App oder ein
+    // anderes Relay — und braucht oft laenger als die sechs Sekunden, die
+    // hier frueher fest galten. Die Anmeldung lief dann ins Leere, die
+    // Abfrage kam leer zurueck, und die App meldete "kein Chatraum", obwohl
+    // es ihn gab.
+    final mode = await SigningService.getMode();
+    final effectiveTimeout = mode == SigningMode.local
+        ? const Duration(seconds: 8)
+        : const Duration(seconds: 25);
+
+    _lastOffline = false;
     final RelaySocket ws;
     try {
       ws = await RelaySocket.connect(kGroupRelay)
           .timeout(const Duration(seconds: 5));
     } catch (e) {
-      AppLogger.warn(_tag, 'Verbindung fehlgeschlagen', e);
+      _lastOffline = _looksOffline(e);
+      AppLogger.warn(_tag,
+          _lastOffline ? 'Kein Netz — Relay nicht erreichbar' : 'Verbindung fehlgeschlagen', e);
       return null;
     }
 
@@ -235,14 +283,27 @@ class ChatService {
       if (!ready.isCompleted) ready.complete(false);
     });
 
-    // Manche Relays fordern gar nicht auf. Dann gilt die Verbindung nach
-    // kurzer Wartezeit als nutzbar — laenger zu warten hiesse, gegen ein
-    // Relay zu arbeiten, das gar nichts von uns will.
-    Timer(const Duration(milliseconds: 900), () {
-      if (!ready.isCompleted && authEventId == null) ready.complete(true);
+    // Wartezeit auf die Aufforderung des Relays.
+    //
+    // Frueher 900 ms. Kam die Aufforderung spaeter — bei schwachem
+    // Mobilnetz durchaus —, galt die Verbindung schon als "nutzbar ohne
+    // Anmeldung", die Abfrage ging unangemeldet raus, und das Relay lehnte
+    // sie ab. Dieses Gruppen-Relay verlangt die Anmeldung IMMER, auch zum
+    // Lesen; es lohnt also, laenger auf die Aufforderung zu warten. Kommt
+    // sie, laeuft der Ablauf wie gehabt weiter.
+    Timer(const Duration(milliseconds: 3000), () {
+      if (!ready.isCompleted && authEventId == null) {
+        AppLogger.diag(_tag, 'Keine Anmeldeaufforderung vom Relay — fahre ohne fort.');
+        ready.complete(true);
+      }
     });
 
-    final ok = await ready.future.timeout(authTimeout, onTimeout: () => false);
+    final ok =
+        await ready.future.timeout(effectiveTimeout, onTimeout: () {
+      AppLogger.warn(_tag,
+          'Anmeldung nicht rechtzeitig fertig (${effectiveTimeout.inSeconds} s, Signierer: ${mode.name}).');
+      return false;
+    });
     if (!ok) {
       try {
         ws.close();
@@ -260,34 +321,68 @@ class ChatService {
   static Future<List<Map<String, dynamic>>> _query(
     Map<String, dynamic> filter, {
     Duration timeout = _timeout,
+  }) async =>
+      await _queryStrict(filter, timeout: timeout) ?? <Map<String, dynamic>>[];
+
+  /// Wie [_query], aber mit einer Unterscheidung, die dort fehlt:
+  ///
+  ///   leere Liste = das Relay hat geantwortet, es gibt nichts
+  ///   null        = es gab KEINE Auskunft (keine Verbindung, Anmeldung
+  ///                 gescheitert, Abfrage abgelehnt, Zeit abgelaufen)
+  ///
+  /// Ohne diese Unterscheidung meldete die App "kein Chatraum", wenn das
+  /// Relay nur nicht erreichbar war — eine Aussage ueber das Meetup, die auf
+  /// einer Stoerung beruhte.
+  ///
+  /// Lehnt das Relay mit "auth-required" ab, wird EINMAL neu versucht: Das
+  /// ist fast immer der Fall, dass die Anmeldung zu spaet kam.
+  static Future<List<Map<String, dynamic>>?> _queryStrict(
+    Map<String, dynamic> filter, {
+    Duration timeout = _timeout,
+    bool isRetry = false,
   }) async {
     final out = <Map<String, dynamic>>[];
     final done = Completer<void>();
+    String? closedReason;
+    var gotEose = false;
 
     final ws = await _connectAuthed((msg) {
       if (msg.length >= 3 && msg[0] == 'EVENT') {
         out.add(msg[2] as Map<String, dynamic>);
       } else if (msg[0] == 'EOSE') {
+        gotEose = true;
         if (!done.isCompleted) done.complete();
       } else if (msg[0] == 'CLOSED') {
-        // Das Relay lehnt die Abfrage ab — meist "auth-required". Den Grund
-        // protokollieren, sonst sucht man spaeter an der falschen Stelle.
-        AppLogger.warn(_tag,
-            'Abfrage abgelehnt: ${msg.length >= 3 ? msg[2] : "ohne Grund"}');
+        closedReason = msg.length >= 3 ? msg[2].toString() : 'ohne Grund';
+        AppLogger.warn(_tag, 'Abfrage abgelehnt: $closedReason');
         if (!done.isCompleted) done.complete();
       }
     });
-    if (ws == null) return out;
+    if (ws == null) return null;
 
     try {
       ws.add(jsonEncode(['REQ', 'q', filter]));
       await done.future.timeout(timeout, onTimeout: () {});
     } catch (e) {
       AppLogger.warn(_tag, 'Abfrage fehlgeschlagen', e);
+      return null;
     } finally {
       try {
         ws.close();
       } catch (_) {}
+    }
+
+    if (closedReason != null) {
+      if (!isRetry && closedReason!.startsWith('auth-required')) {
+        AppLogger.diag(_tag, 'Anmeldung kam zu spaet — zweiter Versuch.');
+        return _queryStrict(filter, timeout: timeout, isRetry: true);
+      }
+      return null;
+    }
+    // Ohne EOSE und ohne Ergebnis: Zeit abgelaufen, keine Auskunft.
+    if (!gotEose && out.isEmpty) {
+      AppLogger.warn(_tag, 'Keine Antwort vom Relay binnen ${timeout.inSeconds} s.');
+      return null;
     }
     return out;
   }
@@ -334,7 +429,14 @@ class ChatService {
         DateTime.now().difference(at) < _cacheTtl) {
       return cached;
     }
-    final fresh = await _loadMeetupRoomsUncached();
+    final List<ChatRoom> fresh;
+    try {
+      fresh = await _loadMeetupRoomsUncached();
+    } on ChatRelayUnavailable {
+      // Keine Auskunft — lieber den aelteren Stand als gar keinen.
+      if (cached != null) return cached;
+      rethrow;
+    }
     // Eine leere Antwort NICHT zwischenspeichern: Sie kann auch heissen, dass
     // das Relay gerade nicht erreichbar war, und dann waere der Chat fuenf
     // Minuten lang scheinbar nicht vorhanden.
@@ -346,11 +448,12 @@ class ChatService {
   }
 
   static Future<List<ChatRoom>> _loadMeetupRoomsUncached() async {
-    final events = await _query({
+    final events = await _queryStrict({
       'kinds': [_kRoomMeta],
       '#t': ['meetup'],
       'limit': 500,
     });
+    if (events == null) throw ChatRelayUnavailable(offline: _lastOffline);
     final rooms = <String, ChatRoom>{};
     for (final e in events) {
       final room = ChatRoom.fromEvent(e);
@@ -387,13 +490,17 @@ class ChatService {
   /// Würzburg Meetup. Ueber den Stadtnamen landeten beide im selben Raum —
   /// dem des erstgefundenen. Ueber die ID bekommt jedes Meetup seinen
   /// eigenen.
+  ///
+  /// Wirft [ChatRelayUnavailable], wenn das Relay keine Auskunft gab —
+  /// null heisst ausschliesslich "es gibt keinen Raum".
   static Future<ChatRoom?> findRoomForMeetupId(String portalId) async {
     if (portalId.isEmpty) return null;
-    final events = await _query({
+    final events = await _queryStrict({
       'kinds': [_kRoomMeta],
       '#i': ['meetup:$portalId'],
       'limit': 5,
     });
+    if (events == null) throw ChatRelayUnavailable(offline: _lastOffline);
     for (final e in events) {
       final room = ChatRoom.fromEvent(e);
       if (room != null) {
@@ -401,7 +508,7 @@ class ChatService {
         return room;
       }
     }
-    AppLogger.debug(_tag, 'Kein Raum mit i-Tag meetup:$portalId.');
+    AppLogger.diag(_tag, 'Relay antwortete: kein Raum mit i-Tag meetup:$portalId.');
     return null;
   }
 
@@ -433,7 +540,7 @@ class ChatService {
     for (final r in rooms) {
       if (_slugify(r.name) == needle) return r;
     }
-    AppLogger.debug(_tag, 'Kein Raum fuer Stadt "$city" (gesucht: $needle).');
+    AppLogger.diag(_tag, 'Relay antwortete: kein Raum fuer Stadt "$city" (gesucht: $needle).');
     return null;
   }
 

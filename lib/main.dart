@@ -15,6 +15,7 @@ import 'screens/app_shell.dart';
 import 'models/user.dart';
 import 'services/secure_key_store.dart';
 import 'services/locale_controller.dart';
+import 'services/currency_service.dart';
 import 'services/widget_service.dart';
 import 'services/app_logger.dart';
 import 'services/diagnostics_service.dart';
@@ -159,6 +160,9 @@ Future<void> _start() async {
 
   // Gespeicherte Sprache laden, bevor die App startet
   await LocaleController.load();
+  // Gewählte Anzeigewährung (Issue #66) — vor dem ersten Bild, sonst
+  // blitzte auf der Startseite kurz € auf.
+  await CurrencyService.load();
 
   // Immersiver Vollbild-Modus: blendet die Android-Navigationsleiste aus.
   // Ab Android 15/16 erzwingt das System Edge-to-Edge und ignoriert

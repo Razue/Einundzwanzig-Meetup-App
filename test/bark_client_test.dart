@@ -94,7 +94,7 @@ class _Scripted extends http.BaseClient {
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     requests.add(request as http.Request);
-    bodies.add((request as http.Request).body);
+    bodies.add(request.body);
     final response = _left.removeAt(0);
     return http.StreamedResponse(
       Stream<List<int>>.value(response.bodyBytes),

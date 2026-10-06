@@ -41,6 +41,10 @@ class BitcoinDashboardData {
   final int feeHigh;     // sat/vB (fastest / high)
   final double priceEur; // BTC/EUR
   final double priceUsd; // BTC/USD (für Moscow Time)
+
+  /// BTC-Kurs in allen unterstützten Währungen, z. B. {'EUR': 95000, 'CHF': 84000}.
+  /// Grundlage für die frei wählbare Anzeigewährung (Issue #66).
+  final Map<String, double> prices;
   final int supply;      // aktuell existierende BTC (ganze Coins, berechnet)
   final double hashrateEhs; // EH/s
   final double difficultyChangePct; // z.B. -3.7
@@ -71,6 +75,7 @@ class BitcoinDashboardData {
     required this.feeHigh,
     required this.priceEur,
     required this.priceUsd,
+    this.prices = const {},
     required this.supply,
     required this.hashrateEhs,
     required this.difficultyChangePct,
@@ -90,6 +95,15 @@ class BitcoinDashboardData {
 
   /// Gar nichts geliefert — echter Offline-/Blockier-Zustand.
   bool get isDead => sourcesOk == 0;
+
+  /// BTC-Kurs in [code] (z. B. 'CHF'), 0 wenn unbekannt.
+  double priceIn(String code) {
+    final p = prices[code];
+    if (p != null && p > 0) return p;
+    if (code == 'EUR') return priceEur;
+    if (code == 'USD') return priceUsd;
+    return 0;
+  }
 
   /// Moscow Time = Sats pro 1 USD, gelesen wie eine Uhrzeit.
   /// Beispiel: 1827 Sats/USD -> "18:27".
@@ -620,6 +634,9 @@ class MempoolService {
       feeHigh: fees[2],
       priceEur: prices['EUR'] ?? prev?.priceEur ?? 0,
       priceUsd: prices['USD'] ?? prev?.priceUsd ?? 0,
+      // Fehlt der Abruf, bleiben die letzten Kurse stehen — sonst zeigte
+      // die Kachel bei einem Aussetzer plötzlich "––".
+      prices: prices.isNotEmpty ? prices : (prev?.prices ?? const {}),
       supply: height > 0 ? _circulatingSupply(height) : (prev?.supply ?? 0),
       hashrateEhs: hashrate,
       difficultyChangePct: diff[0],

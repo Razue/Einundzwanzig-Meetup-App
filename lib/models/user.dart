@@ -29,6 +29,11 @@ class UserProfile {
   bool adminViaVouch  = false;  // WoT-Bürgschaft / Trust Score
   bool adminViaSeed   = false;  // Seed-Admin (fest)
 
+  /// Apple-Review-Demo-Identität. Rein kosmetisch: Darf Organisator-UI
+  /// SEHEN, ist aber bewusst KEINE Admin-Quelle — isAdmin bleibt false,
+  /// Badge-Ausstellung und Claims laufen weiter über Registry/Portal.
+  bool isReviewDemo = false;
+
   /// Abgeleiteter Admin-Status: true, sobald eine Quelle greift.
   bool get isAdmin => adminViaPortal || adminViaVouch || adminViaSeed;
   set isAdmin(bool v) {
@@ -142,6 +147,7 @@ class UserProfile {
       profile.adminViaVouch  = prefs.getBool('admin_via_vouch') ?? false;
       profile.adminViaSeed   = prefs.getBool('admin_via_seed') ?? false;
     }
+    profile.isReviewDemo = prefs.getBool('review_demo') ?? false;
     return profile;
     // HINWEIS: _adminCryptoVerified bleibt false bis reVerifyAdmin() läuft
   }
@@ -164,6 +170,10 @@ class UserProfile {
     if (verification.source == 'seed_admin') {
       adminViaSeed = verification.isAdmin;
     } else {
+      // Der Verifier kennt die Seed-Admins (hardcodierte npubs). Sagt er
+      // etwas anderes, ist ein gesetztes Seed-Flag ein Liegengebliebenes
+      // (z. B. aus einer alten Review-Demo) und wird entfernt.
+      adminViaSeed = false;
       adminViaVouch = verification.isAdmin;
     }
     isAdminVerified = isAdmin; // abgeleitet
@@ -188,6 +198,7 @@ class UserProfile {
     await prefs.setBool('admin_via_portal', adminViaPortal);
     await prefs.setBool('admin_via_vouch', adminViaVouch);
     await prefs.setBool('admin_via_seed', adminViaSeed);
+    await prefs.setBool('review_demo', isReviewDemo);
     await prefs.setString('home_meetup', homeMeetupId);
     await prefs.setStringList('favorite_meetups', favoriteMeetupIds);
     await prefs.setString('promotion_source', promotionSource);

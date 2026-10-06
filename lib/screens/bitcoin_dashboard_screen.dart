@@ -3,7 +3,7 @@
 // ============================================
 //  Zeigt die wichtigsten Netzwerk-Kennzahlen im Einundzwanzig-Design,
 //  nachempfunden der Blockclock-Optik: große Blockhöhe oben, darunter
-//  Detailzeilen (Fees, Moscow, EUR/BTC, Supply, Hashrate, Difficulty) +
+//  Detailzeilen (Fees, Moscow, Kurs in gewählter Währung, Supply, Hashrate, Difficulty) +
 //  Lightning-Netzwerk-Daten. Daten von der konfigurierten Mempool-Instanz
 //  (Standard: mempool.space). Aktualisierung: beim Öffnen + alle 60 s.
 //
@@ -24,6 +24,7 @@ import '../l10n/app_localizations.dart';
 import '../services/mempool.dart';
 import '../services/mempool_config.dart';
 import 'mempool_settings_screen.dart';
+import '../services/currency_service.dart';
 
 class BitcoinDashboardScreen extends StatefulWidget {
   const BitcoinDashboardScreen({super.key});
@@ -159,7 +160,11 @@ class _BitcoinDashboardScreenState extends State<BitcoinDashboardScreen> {
                     _row('FEES  L·M·H',
                         d.feeHigh > 0 ? '${d.feeLow}·${d.feeMedium}·${d.feeHigh}' : '––'),
                     _row('MOSCOW', d.moscowTime),
-                    _row('EUR/BTC', d.priceEur > 0 ? _fmtInt(d.priceEur.round()) : '––'),
+                    // Gewählte Anzeigewährung statt fest EUR (Issue #66).
+                    _row('${CurrencyService.current.value}/BTC',
+                        d.priceIn(CurrencyService.current.value) > 0
+                            ? _fmtInt(d.priceIn(CurrencyService.current.value).round())
+                            : '––'),
                     _row('SUPPLY', d.supply > 0 ? _fmtInt(d.supply) : '––'),
                     _row('HASHRATE', d.hashrateEhs > 0 ? '${d.hashrateEhs.toStringAsFixed(0)} EH/s' : '––'),
                     _row('DIFFICULTY',

@@ -9,4 +9,11 @@ void main() {
     expect(AppReviewDemo.matches('21:something'), isFalse);
     expect(AppReviewDemo.matches(null), isFalse);
   });
+
+  test('Demo-Login nur mit den Apple-Testinformationen', () {
+    expect(AppReviewDemo.isDemoLogin('AppReview', 'ReviewDemo1'), isTrue);
+    expect(AppReviewDemo.isDemoLogin(' AppReview ', 'ReviewDemo1'), isTrue);
+    expect(AppReviewDemo.isDemoLogin('AppReview', 'wrong'), isFalse);
+    expect(AppReviewDemo.isDemoLogin('', 'ReviewDemo1'), isFalse);
+  });
 }
