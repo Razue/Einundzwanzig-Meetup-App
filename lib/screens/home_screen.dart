@@ -1072,8 +1072,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           child: LayoutBuilder(builder: (context, c) {
             final hasAvailable =
                 _buildTileRows(excludeHomeMeetup: true, pinned: false).isNotEmpty;
-            final pinnedHeight =
-                hasAvailable ? (c.maxHeight - 34).clamp(120.0, c.maxHeight) : c.maxHeight;
+            // Untergrenze nie ueber der verfuegbaren Hoehe: clamp(120, x)
+            // mit x < 120 wirft einen ArgumentError — passiert im Feld,
+            // wenn eine Snackbar oder die Tastatur den Platz kurz verkleinert
+            // (Fehler "Invalid argument(s): 120.0", Oktober 2026).
+            final minPinned = c.maxHeight < 120.0 ? c.maxHeight : 120.0;
+            final pinnedHeight = hasAvailable
+                ? (c.maxHeight - 34).clamp(minPinned, c.maxHeight)
+                : c.maxHeight;
             // Ziehen zum Aktualisieren.
             //
             // Der Knopf oben bleibt — er ist der sichtbare Weg —, aber die
@@ -1961,12 +1967,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     ChatRoom? room;
     try {
       room = await _findRoomFor(favKey);
-    } on ChatRelayUnavailable {
+    } on ChatRelayUnavailable catch (e) {
       if (!mounted) return;
       messenger.hideCurrentSnackBar();
-      // Keine Behauptung ueber das Meetup — nur ueber die Verbindung.
+      // Keine Behauptung ueber das Meetup — nur ueber die Verbindung. Und
+      // unterscheiden: Ohne Netz liegt es weder am Relay noch am Signierer.
       messenger.showSnackBar(SnackBar(
-          content: Text(t.chatRelayUnavailable),
+          content: Text(e.offline ? t.chatOffline : t.chatRelayUnavailable),
           duration: const Duration(seconds: 5),
           backgroundColor: cCard));
       return;

@@ -6389,4 +6389,8 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get curJPY => 'Japanischer Yen';
+
+  @override
+  String get chatOffline =>
+      'Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.';
 }
