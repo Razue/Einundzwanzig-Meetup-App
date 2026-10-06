@@ -207,25 +207,6 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
     }
   }
 
-  Future<void> _witnessKickstr(String code) async {
-    final round = KickstrWitness.parse(code);
-    if (round == null) {
-      _showFailed(title: 'Kein Kickstr-Code', subtitle: 'Der QR gehört nicht zu einer offenen Runde.');
-      return;
-    }
-    final sent = await showDialog<bool>(
-      context: context,
-      builder: (_) => KickstrWitnessDialog(round: round),
-    );
-    if (!mounted) return;
-    setState(() => _isScanned = false);
-    if (sent == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tipp ist bei Kickstr. Auf der Seite ist der Punkt gold, wenn Badges mitgingen.')),
-      );
-    }
-  }
-
   void _verifyAndShow(String fullCode) {
     try {
       final bool isV3 = fullCode.startsWith("21v3:");
