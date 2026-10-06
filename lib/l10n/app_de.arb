@@ -2973,9 +2973,6 @@
       "balance": {"type": "int"}
     }
   },
-<<<<<<< HEAD
-  "vwOffboard": "Unterwegs auf die Kette. Das wartet auf die nächste Runde."
-=======
   "vwOffboard": "Unterwegs auf die Kette. Das wartet auf die nächste Runde.",
   "chatRelayUnavailable": "Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.",
   "mnUpdating": "Aktualisiere {degree}. Grad …",
@@ -3091,5 +3088,4 @@
   "curAUD": "Australischer Dollar",
   "curJPY": "Japanischer Yen",
   "chatOffline": "Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal."
->>>>>>> feat/voice-cashu-iphone
 }

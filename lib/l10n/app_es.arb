@@ -2927,9 +2927,6 @@
       "balance": {"type": "int"}
     }
   },
-<<<<<<< HEAD
-  "vwOffboard": "Va hacia la cadena. Espera a la siguiente ronda."
-=======
   "vwOffboard": "Va hacia la cadena. Espera a la siguiente ronda.",
   "chatRelayUnavailable": "El relé del chat no respondió o el inicio de sesión no se completó. Vuelve a intentarlo enseguida; si usas un firmante externo, aprueba allí el inicio de sesión.",
   "mnUpdating": "Actualizando grado {degree} …",
@@ -3045,5 +3042,4 @@
   "curAUD": "Dólar australiano",
   "curJPY": "Yen japonés",
   "chatOffline": "Sin conexión a internet: el chat no está disponible ahora. Revisa el Wi-Fi o los datos móviles e inténtalo de nuevo."
->>>>>>> feat/voice-cashu-iphone
 }

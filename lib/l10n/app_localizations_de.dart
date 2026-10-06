@@ -6893,8 +6893,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get vwOffboard =>
       'Unterwegs auf die Kette. Das wartet auf die nächste Runde.';
-<<<<<<< HEAD
-=======
 
   @override
   String get chatRelayUnavailable =>
@@ -7024,5 +7022,4 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatOffline =>
       'Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.';
->>>>>>> feat/voice-cashu-iphone
 }

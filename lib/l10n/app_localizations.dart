@@ -12321,8 +12321,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Unterwegs auf die Kette. Das wartet auf die nächste Runde.'**
   String get vwOffboard;
-<<<<<<< HEAD
-=======
 
   /// No description provided for @chatRelayUnavailable.
   ///
@@ -12533,7 +12531,6 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.'**
   String get chatOffline;
->>>>>>> feat/voice-cashu-iphone
 }
 
 class _AppLocalizationsDelegate

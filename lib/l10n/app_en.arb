@@ -2927,9 +2927,6 @@
       "balance": {"type": "int"}
     }
   },
-<<<<<<< HEAD
-  "vwOffboard": "On its way to the chain. It waits for the next round."
-=======
   "vwOffboard": "On its way to the chain. It waits for the next round.",
   "chatRelayUnavailable": "The chat relay did not respond, or signing in did not complete. Please try again in a moment — if you use an external signer, approve the sign-in there.",
   "mnUpdating": "Updating degree {degree} …",
@@ -3045,5 +3042,4 @@
   "curAUD": "Australian dollar",
   "curJPY": "Japanese yen",
   "chatOffline": "No internet connection — the chat can't be reached right now. Check Wi-Fi or mobile data and try again."
->>>>>>> feat/voice-cashu-iphone
 }
