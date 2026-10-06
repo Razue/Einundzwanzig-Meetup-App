@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'bark_destination.dart';
-import 'bark_local.dart';
 
 enum BarkFail { unset, down, rejected, notEnough }
 
@@ -46,7 +45,15 @@ class BarkSettings {
   bool get configured =>
       baseUrl.trim().isNotEmpty && token.trim().isNotEmpty;
 
-  static const local = BarkSettings(barkLocalUrl, barkLocalToken);
+  /// Lokales barkd. Die Werte kommen per `--dart-define` beim Build:
+  /// `flutter run --dart-define=BARK_URL=http://127.0.0.1:3537 --dart-define=BARK_TOKEN=…`
+  /// Ohne Defines bleibt die Konfiguration leer und `configured` ist false —
+  /// so bleibt das Zugriffstoken ausserhalb von git und die CI ohne Datei
+  /// lauffaehig.
+  static const local = BarkSettings(
+    String.fromEnvironment('BARK_URL'),
+    String.fromEnvironment('BARK_TOKEN'),
+  );
 }
 
 /// Kleiner Client für das barkd auf diesem Rechner.
