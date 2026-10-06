@@ -26,12 +26,16 @@ class NostrAvatar extends StatefulWidget {
   /// pubkey der aktiven Identität verwendet (lokal oder Amber).
   final String? pubkeyHex;
 
+  /// Optional metadata source for embedding and deterministic widget tests.
+  final Future<String?> Function(String pubkey)? pictureLoader;
+
   const NostrAvatar({
     super.key,
     required this.fallbackText,
     this.backgroundColor = cOrange,
     this.radius = 20,
     this.pubkeyHex,
+    this.pictureLoader,
   });
 
   @override
@@ -40,6 +44,7 @@ class NostrAvatar extends StatefulWidget {
 
 class _NostrAvatarState extends State<NostrAvatar> {
   String? _pictureUrl;
+  int _request = 0;
 
   @override
   void initState() {
@@ -52,12 +57,15 @@ class _NostrAvatarState extends State<NostrAvatar> {
     super.didUpdateWidget(old);
     // Identität gewechselt? Neu laden.
     if (old.pubkeyHex != widget.pubkeyHex ||
-        old.fallbackText != widget.fallbackText) {
+        old.fallbackText != widget.fallbackText ||
+        old.pictureLoader != widget.pictureLoader) {
       _load();
     }
   }
 
   Future<void> _load() async {
+    final request = ++_request;
+    setState(() => _pictureUrl = null);
     try {
       String? hex = widget.pubkeyHex;
       if (hex == null || hex.isEmpty) {
@@ -71,8 +79,10 @@ class _NostrAvatarState extends State<NostrAvatar> {
         }
       }
       if (hex == null || hex.isEmpty) return;
-      final url = await NostrProfileService.fetchProfilePicture(hex);
-      if (mounted) setState(() => _pictureUrl = url);
+      final url =
+          await (widget.pictureLoader ??
+              NostrProfileService.fetchProfilePicture)(hex);
+      if (mounted && request == _request) setState(() => _pictureUrl = url);
     } catch (_) {
       // Kein Profilbild erreichbar — der Buchstaben-Kreis bleibt stehen.
     }
@@ -101,13 +111,16 @@ class _NostrAvatarState extends State<NostrAvatar> {
       return fallback;
     }
 
+    final pictureUrl = _pictureUrl!;
     return CircleAvatar(
       radius: widget.radius,
       backgroundColor: widget.backgroundColor,
-      backgroundImage: NetworkImage(_pictureUrl!),
+      backgroundImage: NetworkImage(pictureUrl),
       // Wenn das Bild nicht lädt, bleibt der farbige Kreis als Hintergrund.
       onBackgroundImageError: (_, _) {
-        if (mounted) setState(() => _pictureUrl = null);
+        if (mounted && _pictureUrl == pictureUrl) {
+          setState(() => _pictureUrl = null);
+        }
       },
     );
   }
