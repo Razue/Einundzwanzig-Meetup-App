@@ -2950,5 +2950,6 @@
   "curGBP": "Libra esterlina",
   "curCAD": "Dólar canadiense",
   "curAUD": "Dólar australiano",
-  "curJPY": "Yen japonés"
+  "curJPY": "Yen japonés",
+  "chatOffline": "Sin conexión a internet: el chat no está disponible ahora. Revisa el Wi-Fi o los datos móviles e inténtalo de nuevo."
 }

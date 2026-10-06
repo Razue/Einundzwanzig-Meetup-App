@@ -6664,4 +6664,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get curJPY => 'Yen japonés';
+
+  @override
+  String get chatOffline =>
+      'Sin conexión a internet: el chat no está disponible ahora. Revisa el Wi-Fi o los datos móviles e inténtalo de nuevo.';
 }

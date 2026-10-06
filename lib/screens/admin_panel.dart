@@ -18,6 +18,7 @@ import '../services/meetup_location_service.dart';
 import '../features.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
+import '../services/meetup_key.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -219,7 +220,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       meetupCountry = chosen.meetup.country;
     }
 
-    final compactId = meetupId.toLowerCase().replaceAll(' ', '-');
+    // Signierte Meetup-Kennung: Stadt-Slug PLUS Land ("bad-neuenahr-de").
+    //
+    // Frueher nur der Slug — und die Teilnehmer-App zerlegte "bad-neuenahr"
+    // in Stadt "bad" und Land "NEUENAHR". Mit dem Land am Ende zerlegen
+    // auch aeltere Teilnehmer-Apps richtig. Ohne Land (frei eingegebener
+    // Name) bleibt es beim Slug.
+    final compactId =
+        MeetupKey.compose(MeetupKey.slug(meetupId), meetupCountry);
 
     if (!mounted) return;
     showDialog(

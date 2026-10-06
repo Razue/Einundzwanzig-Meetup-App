@@ -4,6 +4,7 @@
 //
 // KOMPAKT-FORMAT (für NFC Tags — max 492B):
 //   {"v":2,"t":"B","m":"city-cc","b":875432,"x":1739927280,
+//   (m = Stadt-Slug + ISO-Land, z. B. "bad-neuenahr-de" — siehe meetup_key.dart)
 //    "c":1739905680,"p":"64hex","s":"128hex"}
 //
 //   ~285 Bytes → passt auf NTAG215 (492B)
@@ -38,6 +39,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:nostr/nostr.dart';
 import 'signing_service.dart';
+import 'meetup_key.dart';
 
 class BadgeSecurity {
   // 4 statt 6 Stunden: Das Zeitfenster, in dem ein ausgelesener
@@ -387,16 +389,23 @@ class BadgeSecurity {
         normalized['meetup_id'] = m;
         normalized['meetup_name'] = m;
       }
-    } else if (m.contains('-')) {
-      final parts = m.split('-');
-      final country = parts.last.toUpperCase();
-      final city = parts.sublist(0, parts.length - 1).join('-');
-      normalized['meetup_id'] = city;
-      normalized['meetup_name'] = city[0].toUpperCase() + city.substring(1);
-      normalized['meetup_country'] = country;
     } else {
-      normalized['meetup_id'] = m;
-      normalized['meetup_name'] = m;
+      // GEWOEHNLICHES MEETUP: "<stadt-slug>-<land>" oder nur "<stadt-slug>".
+      //
+      // Frueher wurde JEDE Kennung am letzten Bindestrich zerlegt — aus
+      // "bad-neuenahr" wurde Stadt "bad", Land "NEUENAHR", und die
+      // Netzwerk-Kennung des Teilnehmers passte nicht mehr zu der des
+      // Organisators. Jetzt wird nur abgetrennt, was ein echter ISO-Code
+      // ist (siehe MeetupKey).
+      final parsed = MeetupKey.parse(m);
+      normalized['meetup_id'] = parsed.slug;
+      // Der SIGNIERTE Slug — Grundlage der Netzwerk-Kennung. Bewusst ein
+      // eigenes Feld: meetup_name ist nur fuer die Anzeige und darf sich
+      // aendern (Portal-Name statt Slug), ohne die Kennung zu beruehren.
+      normalized['meetup_slug'] = parsed.slug;
+      normalized['meetup_name'] =
+          parsed.slug.isEmpty ? m : MeetupKey.displayFromSlug(parsed.slug);
+      normalized['meetup_country'] = parsed.country;
     }
 
     if (data['meetup_name'] != null) normalized['meetup_name'] = data['meetup_name'];
