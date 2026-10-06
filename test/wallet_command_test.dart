@@ -58,4 +58,30 @@ void main() {
   test('Eine gesprochene Summe ueber ein Bitcoin wird nicht angenommen', () {
     expect(parseSpokenSats('send 100000001 sats'), isNull);
   });
+
+  test('Bark und Cashu', () {
+    final bark = parseWalletCommand('Bark');
+    expect(bark.kind, WalletCommandKind.rail);
+    expect(bark.rail, WalletRail.bark);
+    expect(parseWalletCommand('Ark Wallet').rail, WalletRail.bark);
+    expect(parseWalletCommand('Cashu').rail, WalletRail.cashu);
+    final both = parseWalletCommand('Bark Kontostand');
+    expect(both.kind, WalletCommandKind.balance);
+    expect(both.rail, WalletRail.bark);
+    expect(parseWalletCommand('empfangen').kind, WalletCommandKind.scan);
+    expect(
+      parseWalletCommand('empfangen', rail: WalletRail.bark).kind,
+      WalletCommandKind.address,
+    );
+    final invoice = parseWalletCommand('Bark empfangen zweitausend');
+    expect(invoice.kind, WalletCommandKind.invoice);
+    expect(invoice.sats, 2000);
+    expect(parseWalletCommand('Rechnung 2100').kind, WalletCommandKind.invoice);
+    expect(parseWalletCommand('Rechnung 2100').sats, 2100);
+    expect(parseWalletCommand('Adresse').kind, WalletCommandKind.address);
+    expect(parseWalletCommand('bezahlen').kind, WalletCommandKind.pay);
+    expect(parseWalletCommand('auszahlen 5000').sats, 5000);
+    expect(parseWalletCommand('pay a hundred').kind, WalletCommandKind.send);
+    expect(parseWalletCommand('pay the invoice').kind, WalletCommandKind.pay);
+  });
 }

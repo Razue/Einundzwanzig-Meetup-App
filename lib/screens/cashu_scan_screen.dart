@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/voice_wallet/bark_destination.dart';
 import '../services/voice_wallet/cashu_token.dart';
 import '../services/voice_wallet/cashu_ur.dart';
 import '../theme.dart';
@@ -15,7 +16,10 @@ import '../theme.dart';
 /// Ein feststehender Code wird sofort zurueckgegeben. Ein wechselnder
 /// Code (mehrere `ur:`-Teile) bleibt offen, bis alle Teile da sind.
 class CashuScanScreen extends StatefulWidget {
-  const CashuScanScreen({super.key});
+  /// Auch Lightning, Ark und Bitcoin annehmen, nicht nur Cashu.
+  final bool payments;
+
+  const CashuScanScreen({super.key, this.payments = false});
 
   @override
   State<CashuScanScreen> createState() => _CashuScanScreenState();
@@ -55,6 +59,10 @@ class _CashuScanScreenState extends State<CashuScanScreen> {
         continue;
       }
       if (_cashuScore(code) > 0 || cashuReadHint(code) == 'lightning') {
+        _finish(code);
+        return;
+      }
+      if (widget.payments && parsePayDestination(code) != null) {
         _finish(code);
         return;
       }

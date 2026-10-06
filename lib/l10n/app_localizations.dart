@@ -11398,6 +11398,546 @@ abstract class AppLocalizations {
   /// **'Lied wird geladen ({percent} %) — Springen ist möglich, sobald es vollständig da ist. Danach bleibt es gespeichert.'**
   String prCaching(int percent);
 
+  /// No description provided for @tileDeckel.
+  ///
+  /// In de, this message translates to:
+  /// **'Deckel'**
+  String get tileDeckel;
+
+  /// No description provided for @tileDeckelValue.
+  ///
+  /// In de, this message translates to:
+  /// **'Runden'**
+  String get tileDeckelValue;
+
+  /// No description provided for @tileDeckelSub.
+  ///
+  /// In de, this message translates to:
+  /// **'anschreiben'**
+  String get tileDeckelSub;
+
+  /// No description provided for @dkTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Deckel'**
+  String get dkTitle;
+
+  /// No description provided for @dkIntro.
+  ///
+  /// In de, this message translates to:
+  /// **'Anschreiben wie am Stammtisch. Am Ende zahlt jeder nur die Differenz.'**
+  String get dkIntro;
+
+  /// No description provided for @dkNew.
+  ///
+  /// In de, this message translates to:
+  /// **'Neuer Deckel'**
+  String get dkNew;
+
+  /// No description provided for @dkScan.
+  ///
+  /// In de, this message translates to:
+  /// **'Deckel scannen'**
+  String get dkScan;
+
+  /// No description provided for @dkDemo.
+  ///
+  /// In de, this message translates to:
+  /// **'Demo-Tisch'**
+  String get dkDemo;
+
+  /// No description provided for @dkDemoSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Zwei erfundene Gäste, Spielgeld, nichts wird veröffentlicht.'**
+  String get dkDemoSub;
+
+  /// No description provided for @dkDemoBanner.
+  ///
+  /// In de, this message translates to:
+  /// **'Demo-Tisch · Spielgeld'**
+  String get dkDemoBanner;
+
+  /// No description provided for @dkTableName.
+  ///
+  /// In de, this message translates to:
+  /// **'Name des Tisches'**
+  String get dkTableName;
+
+  /// No description provided for @dkTableNameDefault.
+  ///
+  /// In de, this message translates to:
+  /// **'Stammtisch'**
+  String get dkTableNameDefault;
+
+  /// No description provided for @dkYourName.
+  ///
+  /// In de, this message translates to:
+  /// **'Dein Name am Tisch'**
+  String get dkYourName;
+
+  /// No description provided for @dkOk.
+  ///
+  /// In de, this message translates to:
+  /// **'Los'**
+  String get dkOk;
+
+  /// No description provided for @dkCancel.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get dkCancel;
+
+  /// No description provided for @dkYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Ja'**
+  String get dkYes;
+
+  /// No description provided for @dkNo.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein'**
+  String get dkNo;
+
+  /// No description provided for @dkYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du'**
+  String get dkYou;
+
+  /// No description provided for @dkSit.
+  ///
+  /// In de, this message translates to:
+  /// **'Platz nehmen'**
+  String get dkSit;
+
+  /// No description provided for @dkLeave.
+  ///
+  /// In de, this message translates to:
+  /// **'Tisch verlassen'**
+  String get dkLeave;
+
+  /// No description provided for @dkShowQr.
+  ///
+  /// In de, this message translates to:
+  /// **'Bierdeckel zeigen'**
+  String get dkShowQr;
+
+  /// No description provided for @dkNoIdentity.
+  ///
+  /// In de, this message translates to:
+  /// **'Für den Deckel brauchst du eine Nostr-Identität. Richte sie im Profil ein.'**
+  String get dkNoIdentity;
+
+  /// No description provided for @dkNotDeckel.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist kein Bierdeckel.'**
+  String get dkNotDeckel;
+
+  /// No description provided for @dkPublishFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Kein Relay hat das angenommen. Versuch es noch einmal.'**
+  String get dkPublishFailed;
+
+  /// No description provided for @dkNeedTwo.
+  ///
+  /// In de, this message translates to:
+  /// **'Zum Anschreiben braucht es mindestens zwei am Tisch.'**
+  String get dkNeedTwo;
+
+  /// No description provided for @dkAlone.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch sitzt du allein. Lass die anderen diesen Code scannen.'**
+  String get dkAlone;
+
+  /// No description provided for @dkGets.
+  ///
+  /// In de, this message translates to:
+  /// **'bekommst du'**
+  String get dkGets;
+
+  /// No description provided for @dkOwes.
+  ///
+  /// In de, this message translates to:
+  /// **'schuldest du'**
+  String get dkOwes;
+
+  /// No description provided for @dkEven.
+  ///
+  /// In de, this message translates to:
+  /// **'quitt'**
+  String get dkEven;
+
+  /// No description provided for @dkSheet.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Blatt'**
+  String get dkSheet;
+
+  /// No description provided for @dkSheetEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch nichts angeschrieben.'**
+  String get dkSheetEmpty;
+
+  /// No description provided for @dkRound.
+  ///
+  /// In de, this message translates to:
+  /// **'Runde'**
+  String get dkRound;
+
+  /// No description provided for @dkRoundBy.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} hat ausgelegt'**
+  String dkRoundBy(String name);
+
+  /// No description provided for @dkEach.
+  ///
+  /// In de, this message translates to:
+  /// **'je {sats}'**
+  String dkEach(String sats);
+
+  /// No description provided for @dkClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Kassensturz'**
+  String get dkClose;
+
+  /// No description provided for @dkBefore.
+  ///
+  /// In de, this message translates to:
+  /// **'{debts} Schulden · {sats} Sats'**
+  String dkBefore(int debts, String sats);
+
+  /// No description provided for @dkAfter.
+  ///
+  /// In de, this message translates to:
+  /// **'{payments, plural, =1{1 Zahlung} other{{payments} Zahlungen}} · {sats} Sats'**
+  String dkAfter(int payments, String sats);
+
+  /// No description provided for @dkAllPaid.
+  ///
+  /// In de, this message translates to:
+  /// **'Alles beglichen.'**
+  String get dkAllPaid;
+
+  /// No description provided for @dkPay.
+  ///
+  /// In de, this message translates to:
+  /// **'Zahlen'**
+  String get dkPay;
+
+  /// No description provided for @dkRedeem.
+  ///
+  /// In de, this message translates to:
+  /// **'Einlösen'**
+  String get dkRedeem;
+
+  /// No description provided for @dkRoundTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Runde anschreiben'**
+  String get dkRoundTitle;
+
+  /// No description provided for @dkAmount.
+  ///
+  /// In de, this message translates to:
+  /// **'Betrag in Sats'**
+  String get dkAmount;
+
+  /// No description provided for @dkSubject.
+  ///
+  /// In de, this message translates to:
+  /// **'Wofür?'**
+  String get dkSubject;
+
+  /// No description provided for @dkPerHead.
+  ///
+  /// In de, this message translates to:
+  /// **'pro Kopf'**
+  String get dkPerHead;
+
+  /// No description provided for @dkWrite.
+  ///
+  /// In de, this message translates to:
+  /// **'Anschreiben'**
+  String get dkWrite;
+
+  /// No description provided for @dkPayTo.
+  ///
+  /// In de, this message translates to:
+  /// **'{sats} Sats an {name}'**
+  String dkPayTo(String sats, String name);
+
+  /// No description provided for @dkShowTo.
+  ///
+  /// In de, this message translates to:
+  /// **'Lass {name} diesen Code scannen.'**
+  String dkShowTo(String name);
+
+  /// No description provided for @dkPayAgain.
+  ///
+  /// In de, this message translates to:
+  /// **'Derselbe Code wie vorhin. Es geht kein zweites Mal Geld raus.'**
+  String get dkPayAgain;
+
+  /// No description provided for @dkPaidLine.
+  ///
+  /// In de, this message translates to:
+  /// **'Angekommen und quittiert.'**
+  String get dkPaidLine;
+
+  /// No description provided for @dkNotEnough.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu wenig in der Wallet: {balance} Sats.'**
+  String dkNotEnough(String balance);
+
+  /// No description provided for @dkWrongAmount.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieser Token hat einen anderen Betrag.'**
+  String get dkWrongAmount;
+
+  /// No description provided for @dkNotToken.
+  ///
+  /// In de, this message translates to:
+  /// **'Das ist kein Cashu-Token.'**
+  String get dkNotToken;
+
+  /// No description provided for @dkRejected.
+  ///
+  /// In de, this message translates to:
+  /// **'Der Mint hat den Token nicht angenommen.'**
+  String get dkRejected;
+
+  /// No description provided for @dkReceiptFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Eingelöst, aber die Quittung ging nicht raus. Tipp noch einmal.'**
+  String get dkReceiptFailed;
+
+  /// No description provided for @dkConfirmGot.
+  ///
+  /// In de, this message translates to:
+  /// **'{sats} Sats von {name} auf anderem Weg bekommen?'**
+  String dkConfirmGot(String name, String sats);
+
+  /// No description provided for @dkHintIdle.
+  ///
+  /// In de, this message translates to:
+  /// **'Sag: Runde 12600 für Bier. Oder: Kassensturz.'**
+  String get dkHintIdle;
+
+  /// No description provided for @dkHintListening.
+  ///
+  /// In de, this message translates to:
+  /// **'Ich höre zu.'**
+  String get dkHintListening;
+
+  /// No description provided for @dkAskAmount.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie viel?'**
+  String get dkAskAmount;
+
+  /// No description provided for @dkAskRound.
+  ///
+  /// In de, this message translates to:
+  /// **'{sats} Sats für alle {heads} am Tisch?'**
+  String dkAskRound(String sats, int heads);
+
+  /// No description provided for @dkAskClose.
+  ///
+  /// In de, this message translates to:
+  /// **'{rounds, plural, =1{Kassensturz über eine Runde?} other{Kassensturz über {rounds} Runden?}}'**
+  String dkAskClose(int rounds);
+
+  /// No description provided for @dkAskPay.
+  ///
+  /// In de, this message translates to:
+  /// **'{sats} Sats an {name} zahlen?'**
+  String dkAskPay(String sats, String name);
+
+  /// No description provided for @dkSaidRound.
+  ///
+  /// In de, this message translates to:
+  /// **'Angeschrieben.'**
+  String get dkSaidRound;
+
+  /// No description provided for @dkSaidGets.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bekommst {sats} Sats.'**
+  String dkSaidGets(String sats);
+
+  /// No description provided for @dkSaidOwes.
+  ///
+  /// In de, this message translates to:
+  /// **'Du schuldest {sats} Sats.'**
+  String dkSaidOwes(String sats);
+
+  /// No description provided for @dkSaidEven.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist quitt.'**
+  String get dkSaidEven;
+
+  /// No description provided for @dkSaidGot.
+  ///
+  /// In de, this message translates to:
+  /// **'{sats} Sats von {name} bekommen.'**
+  String dkSaidGot(String sats, String name);
+
+  /// No description provided for @dkSaidClosed.
+  ///
+  /// In de, this message translates to:
+  /// **'{payments, plural, =1{Aus {debts} Schulden wird eine Zahlung.} other{Aus {debts} Schulden werden {payments} Zahlungen.}}'**
+  String dkSaidClosed(int debts, int payments);
+
+  /// No description provided for @dkNothingToClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Es ist nichts angeschrieben.'**
+  String get dkNothingToClose;
+
+  /// No description provided for @dkNothingToPay.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast nichts zu zahlen.'**
+  String get dkNothingToPay;
+
+  /// No description provided for @dkNothingToRedeem.
+  ///
+  /// In de, this message translates to:
+  /// **'Dir schuldet gerade niemand etwas.'**
+  String get dkNothingToRedeem;
+
+  /// No description provided for @dkFirstClose.
+  ///
+  /// In de, this message translates to:
+  /// **'Erst Kassensturz, dann zahlen.'**
+  String get dkFirstClose;
+
+  /// No description provided for @dkUnknown.
+  ///
+  /// In de, this message translates to:
+  /// **'Das habe ich nicht verstanden.'**
+  String get dkUnknown;
+
+  /// No description provided for @dkHelp.
+  ///
+  /// In de, this message translates to:
+  /// **'Sag: Runde und einen Betrag. Wette 2000 auf Ja. Deckel. Kassensturz. Zahlen. Einlösen.'**
+  String get dkHelp;
+
+  /// No description provided for @dkQuestionTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Frage des Orakels'**
+  String get dkQuestionTitle;
+
+  /// No description provided for @dkQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitcoin um {time} bei oder über {strike} USD?'**
+  String dkQuestion(String time, String strike);
+
+  /// No description provided for @dkMarketYes.
+  ///
+  /// In de, this message translates to:
+  /// **'Markt: Ja {percent} %'**
+  String dkMarketYes(int percent);
+
+  /// No description provided for @dkBetAmount.
+  ///
+  /// In de, this message translates to:
+  /// **'Einsatz in Sats'**
+  String get dkBetAmount;
+
+  /// No description provided for @dkBetOn.
+  ///
+  /// In de, this message translates to:
+  /// **'{sats} auf {side}'**
+  String dkBetOn(String sats, String side);
+
+  /// No description provided for @dkBetPlace.
+  ///
+  /// In de, this message translates to:
+  /// **'Wetten'**
+  String get dkBetPlace;
+
+  /// No description provided for @dkWagerOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'{name}: {sats} auf {side} · sucht Gegenseite'**
+  String dkWagerOpen(String name, String sats, String side);
+
+  /// No description provided for @dkWagerMatched.
+  ///
+  /// In de, this message translates to:
+  /// **'{yes} Ja ↔ {no} Nein · {sats} · wartet auf {time}'**
+  String dkWagerMatched(String yes, String no, String sats, String time);
+
+  /// No description provided for @dkBetRound.
+  ///
+  /// In de, this message translates to:
+  /// **'Wette: {strike} oder mehr?'**
+  String dkBetRound(String strike);
+
+  /// No description provided for @dkBetWon.
+  ///
+  /// In de, this message translates to:
+  /// **'{name} hat gewonnen'**
+  String dkBetWon(String name);
+
+  /// No description provided for @dkAskBet.
+  ///
+  /// In de, this message translates to:
+  /// **'{sats} Sats auf {side}: Bitcoin um {time} bei oder über {strike}?'**
+  String dkAskBet(String sats, String side, String time, String strike);
+
+  /// No description provided for @dkSaidBetOpen.
+  ///
+  /// In de, this message translates to:
+  /// **'Wette steht. Jetzt muss jemand dagegen halten.'**
+  String get dkSaidBetOpen;
+
+  /// No description provided for @dkSaidBetMatched.
+  ///
+  /// In de, this message translates to:
+  /// **'Wette steht gegen {name}.'**
+  String dkSaidBetMatched(String name);
+
+  /// No description provided for @dkNoQuestion.
+  ///
+  /// In de, this message translates to:
+  /// **'Gerade gibt es keine offene Frage.'**
+  String get dkNoQuestion;
+
+  /// No description provided for @dkBetHow.
+  ///
+  /// In de, this message translates to:
+  /// **'Sag: Wette 2000 auf Ja. Oder auf Nein.'**
+  String get dkBetHow;
+
+  /// No description provided for @dkRoundByYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast ausgelegt'**
+  String get dkRoundByYou;
+
+  /// No description provided for @dkBetWonYou.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast gewonnen'**
+  String get dkBetWonYou;
+
   /// No description provided for @tileVoiceWallet.
   ///
   /// In de, this message translates to:
@@ -11491,7 +12031,7 @@ abstract class AppLocalizations {
   /// No description provided for @vwHelp.
   ///
   /// In de, this message translates to:
-  /// **'Kontostand. Kamera. Einfügen. Bild. Sats senden. Nur Ton, nur Text oder beides.'**
+  /// **'Bark oder Cashu. Kontostand. Rechnung mit Betrag. Adresse. Bezahlen. Kamera. Einfügen. Sats senden.'**
   String get vwHelp;
 
   /// No description provided for @vwOutBoth.
@@ -11679,6 +12219,108 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Zum Weitergeben. Stand {balance}.'**
   String vwSent(int balance);
+
+  /// No description provided for @vwHintBark.
+  ///
+  /// In de, this message translates to:
+  /// **'Sag Kontostand, Rechnung, Adresse oder Bezahlen.'**
+  String get vwHintBark;
+
+  /// No description provided for @vwRailBark.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark. Ark und Lightning.'**
+  String get vwRailBark;
+
+  /// No description provided for @vwRailCashu.
+  ///
+  /// In de, this message translates to:
+  /// **'Cashu.'**
+  String get vwRailCashu;
+
+  /// No description provided for @vwBarkBalance.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei Bark.'**
+  String get vwBarkBalance;
+
+  /// No description provided for @vwBarkEmpty.
+  ///
+  /// In de, this message translates to:
+  /// **'Bei Bark liegt nichts.'**
+  String get vwBarkEmpty;
+
+  /// No description provided for @vwBarkDown.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark ist nicht erreichbar. Der Rechner muss wach und im selben Netz sein.'**
+  String get vwBarkDown;
+
+  /// No description provided for @vwBarkUnset.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark ist nicht eingerichtet.'**
+  String get vwBarkUnset;
+
+  /// No description provided for @vwBarkServer.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark erreicht den Ark-Server nicht.'**
+  String get vwBarkServer;
+
+  /// No description provided for @vwInvoiceReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Rechnung liegt als Code bereit.'**
+  String get vwInvoiceReady;
+
+  /// No description provided for @vwInvoiceWait.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Zahlung ist unterwegs.'**
+  String get vwInvoiceWait;
+
+  /// No description provided for @vwAddressReady.
+  ///
+  /// In de, this message translates to:
+  /// **'Die Ark-Adresse liegt als Code bereit.'**
+  String get vwAddressReady;
+
+  /// No description provided for @vwAskDest.
+  ///
+  /// In de, this message translates to:
+  /// **'Füge die Rechnung oder die Adresse ein.'**
+  String get vwAskDest;
+
+  /// No description provided for @vwNotPay.
+  ///
+  /// In de, this message translates to:
+  /// **'Das kann Bark nicht zahlen.'**
+  String get vwNotPay;
+
+  /// No description provided for @vwPayFail.
+  ///
+  /// In de, this message translates to:
+  /// **'Bark hat nicht gezahlt.'**
+  String get vwPayFail;
+
+  /// No description provided for @vwPaid.
+  ///
+  /// In de, this message translates to:
+  /// **'Bezahlt. Stand {balance}.'**
+  String vwPaid(int balance);
+
+  /// No description provided for @vwArrived.
+  ///
+  /// In de, this message translates to:
+  /// **'Angekommen. Stand {balance}.'**
+  String vwArrived(int balance);
+
+  /// No description provided for @vwOffboard.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterwegs auf die Kette. Das wartet auf die nächste Runde.'**
+  String get vwOffboard;
 }
 
 class _AppLocalizationsDelegate

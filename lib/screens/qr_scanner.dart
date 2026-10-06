@@ -28,6 +28,10 @@ import '../widgets/scanner_overlay.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/shadows.dart';
 import '../services/app_review_demo.dart';
+import '../services/deckel/deckel_events.dart';
+import '../services/kickstr_witness.dart';
+import 'deckel_screen.dart';
+import 'kickstr_witness_dialog.dart';
 
 class SecureQRScanner extends StatefulWidget {
   const SecureQRScanner({super.key});
@@ -38,6 +42,11 @@ class SecureQRScanner extends StatefulWidget {
 
 class _SecureQRScannerState extends State<SecureQRScanner> {
   bool _isScanned = false;
+
+  // Bierdeckel und Kickstr-Tipp, die diese Kamera schon einmal geöffnet hat.
+  // Der Code liegt nach dem Schließen meist noch im Bild; ohne dieses Merken
+  // ginge derselbe Dialog sofort wieder auf.
+  final Set<String> _opened = {};
   late final MobileScannerController _scannerController;
 
   @override
@@ -69,6 +78,48 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
         _verifyAndShow(code);
         break;
       }
+      if (code.startsWith("21d:") && _opened.add(code)) {
+        setState(() => _isScanned = true);
+        _openDeckel(code);
+        break;
+      }
+      if (code.startsWith("21k:") && _opened.add(code)) {
+        setState(() => _isScanned = true);
+        _witnessKickstr(code);
+        break;
+      }
+    }
+  }
+
+  // Ein Bierdeckel: an den Tisch setzen statt ein Badge pruefen.
+  Future<void> _openDeckel(String code) async {
+    final deckel = parseDeckelQr(code);
+    if (deckel == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).dkNotDeckel), backgroundColor: Colors.orange),
+      );
+    } else {
+      await Navigator.push(context, MaterialPageRoute(builder: (_) => DeckelScreen(join: deckel)));
+    }
+    if (mounted) setState(() => _isScanned = false);
+  }
+
+  Future<void> _witnessKickstr(String code) async {
+    final round = KickstrWitness.parse(code);
+    if (round == null) {
+      _showFailed(title: 'Kein Kickstr-Code', subtitle: 'Der QR gehört nicht zu einer offenen Runde.');
+      return;
+    }
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (_) => KickstrWitnessDialog(round: round),
+    );
+    if (!mounted) return;
+    setState(() => _isScanned = false);
+    if (sent == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tipp ist bei Kickstr. Auf der Seite ist der Punkt gold, wenn Badges mitgingen.')),
+      );
     }
   }
 
@@ -112,6 +163,16 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
         if (code != null && (code.startsWith("21:") || code.startsWith("21v2:") || code.startsWith("21v3:"))) {
           setState(() => _isScanned = true);
           _verifyAndShow(code);
+          return;
+        }
+        if (code != null && code.startsWith("21d:")) {
+          setState(() => _isScanned = true);
+          await _openDeckel(code);
+          return;
+        }
+        if (code != null && code.startsWith("21k:")) {
+          setState(() => _isScanned = true);
+          await _witnessKickstr(code);
           return;
         }
       }

@@ -60,6 +60,7 @@ import 'package:just_audio/just_audio.dart';
 import 'v4v_screen.dart';
 import 'bitcoin_dashboard_screen.dart';
 import 'voice_wallet_screen.dart';
+import 'deckel_screen.dart';
 import 'log_screen.dart';
 import '../services/mempool.dart';
 import '../services/widget_service.dart';
@@ -179,7 +180,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   // diese Reihenfolge — was nicht drin ist, wird nie gezeichnet, egal was
   // in _tileDefs steht. "event_chats" fehlte hier, deshalb blieb die Kachel
   // "Meine Termine" unsichtbar, obwohl Zusagen vorlagen.
-  static const _defaultOrder = ['home_meetup', 'event_chats', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'voice_wallet', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator'];
+  static const _defaultOrder = ['home_meetup', 'event_chats', 'reputation', 'trust_network', 'community', 'nostr', 'converter', 'btc_dashboard', 'voice_wallet', 'deckel', 'news', 'portal', 'events', 'shoutout', 'podcast', 'satoshiduell', 'portal_area', 'plebrap', 'organisator'];
   static const _defaultHidden = {'news', 'shoutout', 'podcast', 'nostr', 'portal', 'events', 'satoshiduell', 'portal_area', 'plebrap'};
 
   late List<_TileDef> _tileDefs;
@@ -364,6 +365,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _TileDef(id: 'converter',    label: 'Rechner',          span: 1, builder: _buildConverterTile),
       _TileDef(id: 'btc_dashboard', label: 'Bitcoin',         span: 2, builder: _buildBtcDashboardTile),
       _TileDef(id: 'voice_wallet', label: 'Sats',            span: 2, builder: _buildVoiceWalletTile),
+      // Ein Drittel: fuellt die Zeile neben der Sprach Wallet.
+      _TileDef(id: 'deckel',       label: 'Deckel',          span: 1, builder: _buildDeckelTile),
       _TileDef(id: 'news',         label: 'News',             span: 2, builder: _buildNewsTile),
       _TileDef(id: 'portal',       label: 'Meine Meetups',    span: 2, builder: _buildPortalTile),
       _TileDef(id: 'organisator',  label: 'Organisator',      span: 3, builder: _buildOrganisatorTile, visible: () => _user.isAdmin),
@@ -2503,6 +2506,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       value: AppLocalizations.of(context).tileVoiceWalletValue,
       valueSize: 17,
       sub: AppLocalizations.of(context).tileVoiceWalletSub,
+    ),
+  );
+
+  Widget _buildDeckelTile() => _tile(
+    accentColor: cOrange,
+    opacity: 0.07,
+    watermark: Icons.sports_bar_rounded,
+    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DeckelScreen())),
+    child: _heroContent(
+      icon: Icons.sports_bar_rounded,
+      accent: cOrange,
+      label: AppLocalizations.of(context).tileDeckel,
+      value: AppLocalizations.of(context).tileDeckelValue,
+      valueSize: 17,
+      sub: AppLocalizations.of(context).tileDeckelSub,
     ),
   );
 

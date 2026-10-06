@@ -6294,6 +6294,349 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get tileDeckel => 'Tab';
+
+  @override
+  String get tileDeckelValue => 'Rounds';
+
+  @override
+  String get tileDeckelSub => 'on the tab';
+
+  @override
+  String get dkTitle => 'Tab';
+
+  @override
+  String get dkIntro =>
+      'Run a tab like at the pub. At the end everyone pays only the difference.';
+
+  @override
+  String get dkNew => 'New tab';
+
+  @override
+  String get dkScan => 'Scan a tab';
+
+  @override
+  String get dkDemo => 'Demo table';
+
+  @override
+  String get dkDemoSub =>
+      'Two made-up guests, play money, nothing is published.';
+
+  @override
+  String get dkDemoBanner => 'Demo table · play money';
+
+  @override
+  String get dkTableName => 'Name of the table';
+
+  @override
+  String get dkTableNameDefault => 'Our table';
+
+  @override
+  String get dkYourName => 'Your name at the table';
+
+  @override
+  String get dkOk => 'Go';
+
+  @override
+  String get dkCancel => 'Cancel';
+
+  @override
+  String get dkYes => 'Yes';
+
+  @override
+  String get dkNo => 'No';
+
+  @override
+  String get dkYou => 'You';
+
+  @override
+  String get dkSit => 'Take a seat';
+
+  @override
+  String get dkLeave => 'Leave the table';
+
+  @override
+  String get dkShowQr => 'Show the coaster';
+
+  @override
+  String get dkNoIdentity =>
+      'The tab needs a Nostr identity. Set one up in your profile.';
+
+  @override
+  String get dkNotDeckel => 'That is not a tab.';
+
+  @override
+  String get dkPublishFailed => 'No relay took that. Try again.';
+
+  @override
+  String get dkNeedTwo => 'A tab needs at least two at the table.';
+
+  @override
+  String get dkAlone => 'You are alone so far. Let the others scan this code.';
+
+  @override
+  String get dkGets => 'you get';
+
+  @override
+  String get dkOwes => 'you owe';
+
+  @override
+  String get dkEven => 'even';
+
+  @override
+  String get dkSheet => 'This sheet';
+
+  @override
+  String get dkSheetEmpty => 'Nothing on the tab yet.';
+
+  @override
+  String get dkRound => 'Round';
+
+  @override
+  String dkRoundBy(String name) {
+    return '$name paid';
+  }
+
+  @override
+  String dkEach(String sats) {
+    return '$sats each';
+  }
+
+  @override
+  String get dkClose => 'Settle up';
+
+  @override
+  String dkBefore(int debts, String sats) {
+    return '$debts debts · $sats sats';
+  }
+
+  @override
+  String dkAfter(int payments, String sats) {
+    String _temp0 = intl.Intl.pluralLogic(
+      payments,
+      locale: localeName,
+      other: '$payments payments',
+      one: '1 payment',
+    );
+    return '$_temp0 · $sats sats';
+  }
+
+  @override
+  String get dkAllPaid => 'All settled.';
+
+  @override
+  String get dkPay => 'Pay';
+
+  @override
+  String get dkRedeem => 'Redeem';
+
+  @override
+  String get dkRoundTitle => 'Put a round on the tab';
+
+  @override
+  String get dkAmount => 'Amount in sats';
+
+  @override
+  String get dkSubject => 'What for?';
+
+  @override
+  String get dkPerHead => 'per head';
+
+  @override
+  String get dkWrite => 'Put it on the tab';
+
+  @override
+  String dkPayTo(String sats, String name) {
+    return '$sats sats to $name';
+  }
+
+  @override
+  String dkShowTo(String name) {
+    return 'Let $name scan this code.';
+  }
+
+  @override
+  String get dkPayAgain =>
+      'The same code as before. No money leaves a second time.';
+
+  @override
+  String get dkPaidLine => 'Received and confirmed.';
+
+  @override
+  String dkNotEnough(String balance) {
+    return 'Too little in the wallet: $balance sats.';
+  }
+
+  @override
+  String get dkWrongAmount => 'This token is for a different amount.';
+
+  @override
+  String get dkNotToken => 'That is not a Cashu token.';
+
+  @override
+  String get dkRejected => 'The mint did not accept the token.';
+
+  @override
+  String get dkReceiptFailed =>
+      'Redeemed, but the receipt did not go out. Tap again.';
+
+  @override
+  String dkConfirmGot(String name, String sats) {
+    return 'Got $sats sats from $name some other way?';
+  }
+
+  @override
+  String get dkHintIdle => 'Say: round 12600 for beer. Or: settle up.';
+
+  @override
+  String get dkHintListening => 'Listening.';
+
+  @override
+  String get dkAskAmount => 'How much?';
+
+  @override
+  String dkAskRound(String sats, int heads) {
+    return '$sats sats for all $heads at the table?';
+  }
+
+  @override
+  String dkAskClose(int rounds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rounds,
+      locale: localeName,
+      other: 'Settle up $rounds rounds?',
+      one: 'Settle up one round?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dkAskPay(String sats, String name) {
+    return 'Pay $sats sats to $name?';
+  }
+
+  @override
+  String get dkSaidRound => 'On the tab.';
+
+  @override
+  String dkSaidGets(String sats) {
+    return 'You get $sats sats.';
+  }
+
+  @override
+  String dkSaidOwes(String sats) {
+    return 'You owe $sats sats.';
+  }
+
+  @override
+  String get dkSaidEven => 'You are even.';
+
+  @override
+  String dkSaidGot(String sats, String name) {
+    return 'Got $sats sats from $name.';
+  }
+
+  @override
+  String dkSaidClosed(int debts, int payments) {
+    String _temp0 = intl.Intl.pluralLogic(
+      payments,
+      locale: localeName,
+      other: '$debts debts become $payments payments.',
+      one: '$debts debts become one payment.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dkNothingToClose => 'There is nothing on the tab.';
+
+  @override
+  String get dkNothingToPay => 'You have nothing to pay.';
+
+  @override
+  String get dkNothingToRedeem => 'Nobody owes you anything right now.';
+
+  @override
+  String get dkFirstClose => 'Settle up first, then pay.';
+
+  @override
+  String get dkUnknown => 'I did not get that.';
+
+  @override
+  String get dkHelp =>
+      'Say: round and an amount. Bet 2000 on yes. Tab. Settle up. Pay. Redeem.';
+
+  @override
+  String get dkQuestionTitle => 'The oracle\'s question';
+
+  @override
+  String dkQuestion(String time, String strike) {
+    return 'Bitcoin at or above $strike USD at $time?';
+  }
+
+  @override
+  String dkMarketYes(int percent) {
+    return 'Market: yes $percent %';
+  }
+
+  @override
+  String get dkBetAmount => 'Stake in sats';
+
+  @override
+  String dkBetOn(String sats, String side) {
+    return '$sats on $side';
+  }
+
+  @override
+  String get dkBetPlace => 'Place the bet';
+
+  @override
+  String dkWagerOpen(String name, String sats, String side) {
+    return '$name: $sats on $side · looking for a taker';
+  }
+
+  @override
+  String dkWagerMatched(String yes, String no, String sats, String time) {
+    return '$yes yes ↔ $no no · $sats · waiting for $time';
+  }
+
+  @override
+  String dkBetRound(String strike) {
+    return 'Bet: $strike or more?';
+  }
+
+  @override
+  String dkBetWon(String name) {
+    return '$name won';
+  }
+
+  @override
+  String dkAskBet(String sats, String side, String time, String strike) {
+    return '$sats sats on $side: Bitcoin at or above $strike at $time?';
+  }
+
+  @override
+  String get dkSaidBetOpen =>
+      'The bet is on the table. Now someone has to take the other side.';
+
+  @override
+  String dkSaidBetMatched(String name) {
+    return 'The bet is on, against $name.';
+  }
+
+  @override
+  String get dkNoQuestion => 'There is no open question right now.';
+
+  @override
+  String get dkBetHow => 'Say: bet 2000 on yes. Or on no.';
+
+  @override
+  String get dkRoundByYou => 'You paid';
+
+  @override
+  String get dkBetWonYou => 'You won';
+
+  @override
   String get tileVoiceWallet => 'Sats';
 
   @override
@@ -6341,7 +6684,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get vwHelp =>
-      'Balance. Camera. Paste. Picture. Send sats. Sound only, text only, or both.';
+      'Bark or Cashu. Balance. Invoice with an amount. Address. Pay. Camera. Paste. Send sats.';
 
   @override
   String get vwOutBoth => 'Both';
@@ -6446,4 +6789,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String vwSent(int balance) {
     return 'Ready to pass on. Balance $balance.';
   }
+
+  @override
+  String get vwHintBark => 'Say balance, invoice, address or pay.';
+
+  @override
+  String get vwRailBark => 'Bark. Ark and Lightning.';
+
+  @override
+  String get vwRailCashu => 'Cashu.';
+
+  @override
+  String get vwBarkBalance => 'On Bark.';
+
+  @override
+  String get vwBarkEmpty => 'Nothing on Bark.';
+
+  @override
+  String get vwBarkDown =>
+      'Bark is unreachable. The computer has to be awake and on the same network.';
+
+  @override
+  String get vwBarkUnset => 'Bark is not set up.';
+
+  @override
+  String get vwBarkServer => 'Bark cannot reach the Ark server.';
+
+  @override
+  String get vwInvoiceReady => 'The invoice is ready as a code.';
+
+  @override
+  String get vwInvoiceWait => 'The payment is on its way.';
+
+  @override
+  String get vwAddressReady => 'The Ark address is ready as a code.';
+
+  @override
+  String get vwAskDest => 'Paste the invoice or the address.';
+
+  @override
+  String get vwNotPay => 'Bark cannot pay that.';
+
+  @override
+  String get vwPayFail => 'Bark did not pay.';
+
+  @override
+  String vwPaid(int balance) {
+    return 'Paid. Balance $balance.';
+  }
+
+  @override
+  String vwArrived(int balance) {
+    return 'Arrived. Balance $balance.';
+  }
+
+  @override
+  String get vwOffboard =>
+      'On its way to the chain. It waits for the next round.';
 }

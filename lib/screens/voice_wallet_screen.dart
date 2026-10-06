@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,8 @@ import '../services/speech/on_device_speech.dart';
 import '../services/speech/on_device_voice.dart';
 import '../services/speech/system_on_device_speech.dart';
 import '../services/speech/system_on_device_voice.dart';
+import '../services/voice_wallet/bark_client.dart';
+import '../services/voice_wallet/bark_destination.dart';
 import '../services/voice_wallet/cashu_image.dart';
 import '../services/voice_wallet/clipboard_picture.dart';
 import '../services/voice_wallet/cashu_mint.dart';
@@ -31,8 +34,15 @@ class VoiceWalletScreen extends StatefulWidget {
   final OnDeviceSpeech? speech;
   final OnDeviceVoice? voice;
   final CashuWallet? wallet;
+  final BarkClient? bark;
 
-  const VoiceWalletScreen({super.key, this.speech, this.voice, this.wallet});
+  const VoiceWalletScreen({
+    super.key,
+    this.speech,
+    this.voice,
+    this.wallet,
+    this.bark,
+  });
 
   @override
   State<VoiceWalletScreen> createState() => _VoiceWalletScreenState();
@@ -43,6 +53,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   late final OnDeviceSpeech _speech;
   late final OnDeviceVoice _voice;
   late final CashuWallet _wallet;
+  late final BarkClient _bark;
   late final AnimationController _pulse;
 
   bool _listening = false;
@@ -51,8 +62,13 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   int _loop = 0;
   bool _busy = false;
   bool _awaitingAmount = false;
+  bool _awaitingInvoice = false;
+  bool _awaitingDest = false;
   int? _pendingSats;
+  String? _pendingDest;
   String? _outgoing;
+  WalletRail _rail = WalletRail.cashu;
+  int _watchGen = 0;
 
   String _primary = '';
   String _caption = '';
@@ -61,6 +77,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   WalletOutput _output = WalletOutput.both;
 
   static const _outputKey = 'voice_wallet_output_v1';
+  static const _railKey = 'voice_wallet_rail_v1';
 
   @override
   void initState() {
@@ -68,6 +85,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     _speech = widget.speech ?? SystemOnDeviceSpeech();
     _voice = widget.voice ?? SystemOnDeviceVoice();
     _wallet = widget.wallet ?? CashuWallet();
+    _bark = widget.bark ?? BarkClient();
     _pulse = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -79,6 +97,7 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
   void dispose() {
     _handsFree = false;
     _loop++;
+    _watchGen++;
     _pulse.dispose();
     _speech.stop();
     _voice.stop();
@@ -207,7 +226,14 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
       'text' => WalletOutput.text,
       _ => WalletOutput.both,
     };
-    if (mounted && next != _output) setState(() => _output = next);
+    final rail = prefs.getString(_railKey) == 'bark'
+        ? WalletRail.bark
+        : WalletRail.cashu;
+    if (!mounted) return;
+    setState(() {
+      _output = next;
+      _rail = rail;
+    });
   }
 
   Future<void> _setOutput(WalletOutput next) async {
@@ -235,10 +261,19 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
 
   Future<void> _apply(String words) async {
     final t = AppLocalizations.of(context);
-    var command = parseWalletCommand(words);
+    var command = parseWalletCommand(words, rail: _rail);
 
     if (_awaitingAmount && command.kind == WalletCommandKind.unknown) {
       final sats = parseSpokenSats(words);
+      if (sats != null && _awaitingInvoice) {
+        setState(() => _awaitingInvoice = false);
+        await _makeInvoice(sats);
+        return;
+      }
+      if (sats != null && _pendingDest != null) {
+        await _stagePay(_pendingDest!, amount: sats);
+        return;
+      }
       if (sats != null) {
         command = WalletCommand(WalletCommandKind.send, sats: sats);
       }
@@ -247,70 +282,99 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     if (_pendingSats != null) {
       if (command.kind == WalletCommandKind.confirm) {
         final amount = _pendingSats!;
+        final dest = _pendingDest;
+        _stopWatch();
         setState(() {
           _pendingSats = null;
+          _pendingDest = null;
           _awaitingAmount = false;
+          _awaitingInvoice = false;
+          _awaitingDest = false;
           _busy = true;
           _outgoing = null;
           _huge = false;
           _primary = t.vwWorking;
           _caption = '';
         });
-        await _send(amount);
+        if (dest != null) {
+          await _payNow(dest, amount);
+        } else {
+          await _send(amount);
+        }
         return;
       }
       if (command.kind == WalletCommandKind.cancel) {
-        await _voice.stop();
-        setState(() {
-          _pendingSats = null;
-          _awaitingAmount = false;
-          _outgoing = null;
-          _huge = false;
-          _primary = '';
-          _caption = '';
-        });
+        await _clearPending();
         return;
       }
+    } else if (command.kind == WalletCommandKind.cancel) {
+      await _clearPending();
+      return;
     }
 
+    if (command.rail != null) await _rememberRail(command.rail!);
+
     switch (command.kind) {
+      case WalletCommandKind.rail:
+        await _announceRail();
       case WalletCommandKind.balance:
+        _stopWatch();
         setState(() {
           _awaitingAmount = false;
+          _awaitingDest = false;
           _pendingSats = null;
+          _pendingDest = null;
           _outgoing = null;
           _busy = true;
           _huge = false;
           _primary = t.vwWorking;
           _caption = '';
         });
-        await _showBalance();
+        if (_rail == WalletRail.bark) {
+          await _showBarkBalance();
+        } else {
+          await _showBalance();
+        }
+      case WalletCommandKind.invoice:
+        _stopWatch();
+        await _makeInvoice(command.sats);
+      case WalletCommandKind.address:
+        _stopWatch();
+        await _showAddress();
+      case WalletCommandKind.pay:
+        _stopWatch();
+        await _beginPay(amount: command.sats);
       case WalletCommandKind.scan:
         setState(() {
           _awaitingAmount = false;
-          _pendingSats = null;
+          if (!_awaitingDest) _pendingSats = null;
           _outgoing = null;
         });
         await _scan();
       case WalletCommandKind.paste:
         setState(() {
           _awaitingAmount = false;
-          _pendingSats = null;
+          if (!_awaitingDest) _pendingSats = null;
           _outgoing = null;
         });
         await _paste();
       case WalletCommandKind.gallery:
         setState(() {
           _awaitingAmount = false;
-          _pendingSats = null;
+          if (!_awaitingDest) _pendingSats = null;
           _outgoing = null;
         });
         await _gallery();
       case WalletCommandKind.send:
+        if (_rail == WalletRail.bark) {
+          await _beginPay(amount: command.sats);
+          return;
+        }
         if (command.sats == null) {
           setState(() {
             _awaitingAmount = true;
             _pendingSats = null;
+            _pendingDest = null;
             _outgoing = null;
             _huge = false;
             _primary = t.vwAskAmount;
@@ -321,15 +385,15 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         }
         setState(() {
           _awaitingAmount = false;
+          _awaitingDest = false;
           _pendingSats = command.sats;
+          _pendingDest = null;
           _outgoing = null;
           _huge = true;
           _primary = _group(command.sats!);
           _caption = t.vwHintConfirm;
         });
-        await _say(
-          spokenReply(amount: command.sats, sentence: t.vwHintConfirm),
-        );
+        await _say(spokenReply(amount: command.sats, sentence: t.vwHintConfirm));
       case WalletCommandKind.output:
         await _setOutput(command.output ?? WalletOutput.both);
       case WalletCommandKind.help:
@@ -361,6 +425,51 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     }
   }
 
+  Future<void> _rememberRail(WalletRail rail) async {
+    if (_rail == rail) return;
+    _rail = rail;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_railKey, rail.name);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _announceRail() async {
+    final t = AppLocalizations.of(context);
+    final line = _rail == WalletRail.bark ? t.vwRailBark : t.vwRailCashu;
+    _stopWatch();
+    setState(() {
+      _pendingSats = null;
+      _pendingDest = null;
+      _awaitingAmount = false;
+      _awaitingInvoice = false;
+      _awaitingDest = false;
+      _outgoing = null;
+      _huge = false;
+      _primary = line;
+      _caption = '';
+    });
+    await _say(line);
+  }
+
+  Future<void> _clearPending() async {
+    _stopWatch();
+    await _voice.stop();
+    if (!mounted) return;
+    setState(() {
+      _pendingSats = null;
+      _pendingDest = null;
+      _awaitingAmount = false;
+      _awaitingInvoice = false;
+      _awaitingDest = false;
+      _outgoing = null;
+      _huge = false;
+      _primary = '';
+      _caption = '';
+    });
+  }
+
+  void _stopWatch() => _watchGen++;
+
   Future<void> _showBalance() async {
     try {
       final balance = await _wallet.balance();
@@ -376,6 +485,254 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     } on CashuException catch (e) {
       await _showFail(e.fail);
     }
+  }
+
+  Future<void> _showBarkBalance() async {
+    try {
+      final connected = await _bark.connected();
+      if (!mounted) return;
+      if (!connected) {
+        await _tell(AppLocalizations.of(context).vwBarkServer);
+        return;
+      }
+      final balance = await _bark.balance();
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      setState(() {
+        _busy = false;
+        _huge = true;
+        _primary = _group(balance.spendableSat);
+        _caption = balance.spendableSat == 0 ? t.vwBarkEmpty : t.vwBarkBalance;
+      });
+      await _say(spokenReply(amount: balance.spendableSat));
+    } on BarkException catch (e) {
+      await _showBarkFail(e.fail);
+    }
+  }
+
+  Future<void> _makeInvoice(int? amount) async {
+    await _rememberRail(WalletRail.bark);
+    if (!mounted) return;
+    final t = AppLocalizations.of(context);
+    if (amount == null) {
+      setState(() {
+        _awaitingAmount = true;
+        _awaitingInvoice = true;
+        _pendingDest = null;
+        _pendingSats = null;
+        _outgoing = null;
+        _huge = false;
+        _primary = t.vwAskAmount;
+        _caption = '';
+      });
+      await _say(t.vwAskAmount);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _awaitingAmount = false;
+      _pendingDest = null;
+      _pendingSats = null;
+      _outgoing = null;
+      _huge = false;
+      _primary = t.vwWorking;
+      _caption = '';
+    });
+    try {
+      final invoice = await _bark.invoice(amount);
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _huge = true;
+        _primary = _group(invoice.amountSat);
+        _caption = t.vwInvoiceReady;
+        _outgoing = invoice.invoice;
+      });
+      await _say(spokenReply(amount: invoice.amountSat, sentence: t.vwInvoiceReady));
+      final gen = _watchGen;
+      unawaited(_watchInvoice(invoice.invoice, gen));
+    } on BarkException catch (e) {
+      await _showBarkFail(e.fail);
+    }
+  }
+
+  Future<void> _watchInvoice(String invoice, int gen) async {
+    for (var i = 0; i < 90; i++) {
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!mounted || gen != _watchGen) return;
+      try {
+        final state = await _bark.receiveState(invoice);
+        if (!mounted || gen != _watchGen) return;
+        if (state == 'settled') {
+          final balance = await _bark.balance();
+          if (!mounted || gen != _watchGen) return;
+          final t = AppLocalizations.of(context);
+          setState(() {
+            _busy = false;
+            _huge = true;
+            _outgoing = null;
+            _primary = _group(balance.spendableSat);
+            _caption = t.vwArrived(balance.spendableSat);
+          });
+          await _say(
+            spokenReply(
+              amount: balance.spendableSat,
+              sentence: t.vwArrived(balance.spendableSat),
+            ),
+          );
+          return;
+        }
+        if (state == 'htlcs-ready' ||
+            state == 'preimage-revealed' ||
+            state == 'delivering') {
+          final t = AppLocalizations.of(context);
+          if (_caption != t.vwInvoiceWait) {
+            setState(() => _caption = t.vwInvoiceWait);
+          }
+        }
+      } on BarkException {
+        // Ein einzelner Fehlversuch beendet das Warten nicht.
+      }
+    }
+  }
+
+  Future<void> _showAddress() async {
+    await _rememberRail(WalletRail.bark);
+    if (!mounted) return;
+    final t = AppLocalizations.of(context);
+    setState(() {
+      _busy = true;
+      _awaitingAmount = false;
+      _awaitingDest = false;
+      _pendingSats = null;
+      _pendingDest = null;
+      _outgoing = null;
+      _huge = false;
+      _primary = t.vwWorking;
+      _caption = '';
+    });
+    try {
+      final address = await _bark.nextAddress();
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _huge = false;
+        _primary = 'Ark';
+        _caption = t.vwAddressReady;
+        _outgoing = address;
+      });
+      await _say(t.vwAddressReady);
+    } on BarkException catch (e) {
+      await _showBarkFail(e.fail);
+    }
+  }
+
+  Future<void> _beginPay({int? amount, String? dest}) async {
+    await _rememberRail(WalletRail.bark);
+    if (!mounted) return;
+    final raw = dest ?? await _clipboardText();
+    if (!mounted) return;
+    final parsed = raw == null ? null : parsePayDestination(raw);
+    if (parsed == null) {
+      final t = AppLocalizations.of(context);
+      setState(() {
+        _awaitingDest = true;
+        _awaitingAmount = false;
+        _pendingDest = null;
+        _pendingSats = amount;
+        _outgoing = null;
+        _huge = false;
+        _primary = t.vwAskDest;
+        _caption = '';
+      });
+      await _say(t.vwAskDest);
+      return;
+    }
+    await _stagePay(parsed.raw, amount: parsed.amountSat ?? amount);
+  }
+
+  Future<void> _stagePay(String raw, {int? amount}) async {
+    final t = AppLocalizations.of(context);
+    final parsed = parsePayDestination(raw);
+    if (parsed == null) {
+      await _tell(t.vwNotPay);
+      return;
+    }
+    final sats = parsed.amountSat ?? amount;
+    if (parsed.needsAmount && sats == null) {
+      setState(() {
+        _awaitingAmount = true;
+        _awaitingDest = false;
+        _pendingDest = parsed.raw;
+        _pendingSats = null;
+        _outgoing = null;
+        _huge = false;
+        _primary = t.vwAskAmount;
+        _caption = '';
+      });
+      await _say(t.vwAskAmount);
+      return;
+    }
+    setState(() {
+      _awaitingAmount = false;
+      _awaitingDest = false;
+      _pendingDest = parsed.raw;
+      _pendingSats = sats;
+      _outgoing = null;
+      _huge = sats != null;
+      _primary = sats == null ? t.vwHintConfirm : _group(sats);
+      _caption = t.vwHintConfirm;
+    });
+    await _say(spokenReply(amount: sats, sentence: t.vwHintConfirm));
+  }
+
+  Future<void> _payNow(String raw, int? amount) async {
+    final parsed = parsePayDestination(raw);
+    if (parsed == null) {
+      await _tell(AppLocalizations.of(context).vwNotPay);
+      return;
+    }
+    try {
+      final result = await _bark.pay(parsed, amountSat: amount);
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      final line = result.inRound ? t.vwOffboard : t.vwPaid(result.balanceSat);
+      setState(() {
+        _busy = false;
+        _huge = true;
+        _primary = _group(result.balanceSat);
+        _caption = line;
+        _outgoing = null;
+      });
+      await _say(spokenReply(amount: result.balanceSat, sentence: line));
+    } on BarkException catch (e) {
+      await _showBarkFail(e.fail);
+    }
+  }
+
+  Future<void> _showBarkFail(BarkFail fail) async {
+    if (!mounted) return;
+    final t = AppLocalizations.of(context);
+    final text = switch (fail) {
+      BarkFail.unset => t.vwBarkUnset,
+      BarkFail.down => t.vwBarkDown,
+      BarkFail.notEnough => t.vwNotEnough,
+      BarkFail.rejected => t.vwPayFail,
+    };
+    setState(() {
+      _busy = false;
+      _huge = false;
+      _outgoing = null;
+      _primary = text;
+      _caption = '';
+    });
+    await _say(text);
+  }
+
+  Future<String?> _clipboardText() async {
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = data?.text?.trim() ?? '';
+    return text.isEmpty ? null : text;
   }
 
   Future<void> _send(int amount) async {
@@ -398,12 +755,20 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     }
   }
 
+  bool get _takesPayment => _rail == WalletRail.bark || _awaitingDest;
+
   Future<void> _scan() async {
     final code = await Navigator.push<String>(
       context,
-      MaterialPageRoute(builder: (_) => const CashuScanScreen()),
+      MaterialPageRoute(
+        builder: (_) => CashuScanScreen(payments: _takesPayment),
+      ),
     );
     if (!mounted || code == null) return;
+    if (_takesPayment && parsePayDestination(code) != null) {
+      await _beginPay(dest: code, amount: _pendingSats);
+      return;
+    }
     await _redeem(code);
   }
 
@@ -412,6 +777,10 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
     final text = data?.text?.trim() ?? '';
     if (!mounted) return;
     final t = AppLocalizations.of(context);
+    if (_takesPayment && parsePayDestination(text) != null) {
+      await _beginPay(dest: text, amount: _pendingSats);
+      return;
+    }
     final token = _tokenFromText(text);
     if (token != null) {
       if (token.isEmpty) {
@@ -462,7 +831,17 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         path,
         formats: const [BarcodeFormat.qrCode],
       );
-      final picture = readCashuPicture(capture?.barcodes ?? const []);
+      final barcodes = capture?.barcodes ?? const <Barcode>[];
+      if (_takesPayment) {
+        for (final barcode in barcodes) {
+          final raw = barcode.rawValue;
+          if (raw != null && parsePayDestination(raw) != null) {
+            await _beginPay(dest: raw, amount: _pendingSats);
+            return;
+          }
+        }
+      }
+      final picture = readCashuPicture(barcodes);
       if (picture.code != null) {
         await _redeem(picture.code!);
         return;
@@ -565,7 +944,9 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         ? t.vwHintListening
         : (_pendingSats != null
               ? t.vwHintConfirm
-              : (_handsFree || soundOnly ? '' : t.vwHintIdle));
+              : (_handsFree || soundOnly
+                    ? ''
+                    : (_rail == WalletRail.bark ? t.vwHintBark : t.vwHintIdle)));
     final showDots = soundOnly && (_speaking || _busy);
 
     // Derselbe Rand links und rechts. Ein einseitiger Zuschlag
@@ -580,6 +961,19 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         foregroundColor: cTextSecondary,
         centerTitle: true,
         title: _outputSwitch(t),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(40),
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _railPill(WalletRail.cashu, 'Cashu'),
+                _railPill(WalletRail.bark, 'Bark'),
+              ],
+            ),
+          ),
+        ),
       ),
       body: Padding(
         padding: EdgeInsets.fromLTRB(28 + side, 0, 28 + side, 28 + pad.bottom),
@@ -625,7 +1019,10 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
                 padding: const EdgeInsets.all(8),
                 child: QrImageView(
                   data: _outgoing!,
-                  size: 220,
+                  size: _outgoing!.length > 180 ? 260 : 220,
+                  errorCorrectionLevel: _outgoing!.length > 180
+                      ? QrErrorCorrectLevel.L
+                      : QrErrorCorrectLevel.M,
                   padding: EdgeInsets.zero,
                   backgroundColor: Colors.white,
                   eyeStyle: const QrEyeStyle(color: Colors.black),
@@ -695,6 +1092,41 @@ class _VoiceWalletScreenState extends State<VoiceWalletScreen>
         _outputPill(WalletOutput.sound, t.vwOutSound),
         _outputPill(WalletOutput.text, t.vwOutText),
       ],
+    );
+  }
+
+  Widget _railPill(WalletRail rail, String label) {
+    final on = _rail == rail;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3),
+      child: GestureDetector(
+        onTap: () async {
+          if (rail == _rail) return;
+          await _rememberRail(rail);
+          if (!mounted) return;
+          await _announceRail();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: on ? cOrange.withValues(alpha: 0.18) : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: on ? cOrange : cTileBorder,
+              width: on ? 1.4 : 0.6,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: on ? cOrange : cTextTertiary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

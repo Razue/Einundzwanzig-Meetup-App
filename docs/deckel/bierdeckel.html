@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<title>Bierdeckel zum Ausdrucken</title>
+<!-- Vier Deckel auf A4. Jeder QR-Code ist ein eigener Tisch: 21d:1:<Kennung>:<Name>.
+     Ausschneiden, auf einen echten Bierdeckel kleben. Mit der Einundzwanzig-App scannen. -->
+<style>
+  @page { size: A4; margin: 12mm; }
+  body { margin: 0; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; background: #fff; color: #111; }
+  .bogen { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; justify-items: center; padding: 6mm 0; }
+  .deckel { width: 88mm; height: 88mm; border-radius: 12mm; border: 0.5mm solid #111; box-sizing: border-box; padding: 2.5mm; }
+  .rand { width: 100%; height: 100%; border-radius: 10mm; border: 1.2mm solid #f7931a; box-sizing: border-box;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .oben { margin: 0 0 2mm; font-size: 7mm; font-weight: 800; letter-spacing: 0.6mm; text-transform: uppercase; }
+  .qr { width: 44mm; height: 44mm; }
+  .qr svg { width: 100%; height: 100%; display: block; }
+  .name { margin: 2.5mm 0 0; font-size: 5.5mm; font-weight: 700; }
+  .unten { margin: 0.8mm 0 0; font-size: 3.2mm; color: #555; }
+</style>
+<div class="bogen">
+  <div class="deckel">
+    <div class="rand">
+      <p class="oben">Deckel</p>
+      <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m1 0h5m2 0h2m1 0h3m1 0h7m-29 1h1m5 0h1m3 0h3m1 0h1m3 0h1m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h2m2 0h1m1 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h4m3 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h1m1 0h1m3 0h1m2 0h1m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-19 1h1m2 0h1m1 0h2m-16 1h7m1 0h1m2 0h2m1 0h1m7 0h2m3 0h1m-29 1h2m1 0h1m3 0h1m3 0h1m1 0h1m4 0h7m3 0h1m-28 1h2m3 0h1m1 0h2m1 0h1m1 0h2m2 0h2m2 0h3m3 0h1m-28 1h1m4 0h1m1 0h3m2 0h1m1 0h1m1 0h1m1 0h2m1 0h4m2 0h2m-28 1h1m2 0h1m1 0h2m5 0h1m2 0h2m2 0h1m2 0h1m1 0h3m-27 1h5m1 0h2m1 0h4m3 0h6m1 0h1m3 0h1m-28 1h3m2 0h1m4 0h1m3 0h1m4 0h1m1 0h4m1 0h1m-27 1h4m3 0h1m2 0h2m1 0h1m4 0h1m1 0h1m2 0h2m1 0h2m-28 1h2m2 0h2m2 0h2m1 0h1m2 0h1m4 0h1m3 0h1m1 0h1m1 0h1m-29 1h3m2 0h1m1 0h1m1 0h1m1 0h6m2 0h1m2 0h3m3 0h1m-29 1h1m2 0h1m2 0h1m1 0h1m1 0h1m9 0h2m3 0h1m1 0h1m-28 1h1m3 0h2m1 0h1m1 0h1m2 0h1m1 0h1m1 0h1m4 0h4m2 0h2m-29 1h1m2 0h1m2 0h2m1 0h2m1 0h2m3 0h1m1 0h8m1 0h1m-21 1h4m2 0h1m1 0h1m3 0h1m3 0h2m1 0h2m-29 1h7m1 0h4m3 0h1m2 0h3m1 0h1m1 0h1m-25 1h1m5 0h1m1 0h2m3 0h1m1 0h2m2 0h2m3 0h1m-25 1h1m1 0h3m1 0h1m1 0h1m1 0h1m1 0h3m3 0h1m1 0h9m-29 1h1m1 0h3m1 0h1m1 0h3m3 0h2m2 0h1m4 0h1m2 0h1m-27 1h1m1 0h3m1 0h1m1 0h1m3 0h1m1 0h2m1 0h3m2 0h1m1 0h1m1 0h2m-28 1h1m5 0h1m1 0h1m6 0h1m2 0h2m1 0h2m2 0h1m1 0h1m-28 1h7m3 0h1m2 0h3m1 0h1m1 0h1m1 0h2m2 0h1"/></svg></div>
+      <p class="name">Tisch 1</p>
+      <p class="unten">Scannen, hinsetzen, anschreiben.</p>
+    </div>
+  </div>
+  <div class="deckel">
+    <div class="rand">
+      <p class="oben">Deckel</p>
+      <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m1 0h2m1 0h2m3 0h1m1 0h3m1 0h7m-29 1h1m5 0h1m3 0h1m1 0h1m1 0h3m1 0h1m1 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h2m1 0h1m2 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h2m3 0h1m2 0h1m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h3m1 0h2m1 0h1m2 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h3m2 0h2m2 0h1m4 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-20 1h1m3 0h1m1 0h2m-16 1h7m1 0h2m3 0h2m7 0h2m3 0h1m-29 1h2m3 0h1m1 0h2m2 0h3m2 0h1m1 0h7m3 0h1m-28 1h1m1 0h1m2 0h2m1 0h1m3 0h2m1 0h3m2 0h3m3 0h1m-28 1h1m1 0h2m1 0h1m2 0h2m2 0h1m1 0h3m1 0h2m1 0h4m2 0h2m-28 1h1m2 0h1m1 0h2m5 0h1m2 0h2m2 0h1m2 0h1m1 0h3m-27 1h5m1 0h2m1 0h4m3 0h6m1 0h1m3 0h1m-27 1h5m2 0h3m1 0h3m4 0h1m1 0h4m1 0h1m-27 1h3m1 0h1m2 0h1m1 0h4m5 0h1m1 0h1m2 0h2m1 0h2m-29 1h1m1 0h5m1 0h1m5 0h2m1 0h1m2 0h1m3 0h1m1 0h1m1 0h1m-29 1h1m7 0h3m2 0h4m1 0h2m2 0h3m3 0h1m-29 1h1m1 0h2m2 0h1m1 0h1m1 0h1m1 0h1m7 0h2m4 0h2m-28 1h1m3 0h2m3 0h1m1 0h2m1 0h1m1 0h1m4 0h4m2 0h2m-29 1h1m2 0h1m2 0h2m1 0h2m1 0h2m3 0h1m1 0h8m1 0h1m-21 1h1m1 0h2m1 0h2m1 0h1m3 0h1m3 0h2m1 0h2m-29 1h7m1 0h4m2 0h2m1 0h1m1 0h2m1 0h1m1 0h1m-25 1h1m5 0h1m1 0h1m6 0h2m2 0h2m3 0h1m-25 1h1m1 0h3m1 0h1m1 0h1m1 0h1m2 0h2m3 0h1m1 0h9m-29 1h1m1 0h3m1 0h1m1 0h5m2 0h1m2 0h1m4 0h1m2 0h1m-27 1h1m1 0h3m1 0h1m1 0h1m2 0h2m1 0h2m1 0h3m2 0h1m1 0h1m1 0h2m-28 1h1m5 0h1m1 0h1m2 0h1m3 0h1m2 0h2m1 0h2m2 0h1m1 0h1m-28 1h7m3 0h2m1 0h3m1 0h1m1 0h1m1 0h2m2 0h1"/></svg></div>
+      <p class="name">Tisch 2</p>
+      <p class="unten">Scannen, hinsetzen, anschreiben.</p>
+    </div>
+  </div>
+  <div class="deckel">
+    <div class="rand">
+      <p class="oben">Deckel</p>
+      <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m1 0h1m2 0h2m1 0h1m1 0h1m1 0h2m2 0h7m-29 1h1m5 0h1m4 0h1m2 0h2m1 0h1m2 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m2 0h2m3 0h4m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h1m4 0h1m2 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h2m1 0h1m1 0h1m3 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h2m2 0h3m2 0h4m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h2m1 0h5m1 0h2m-18 1h1m1 0h1m1 0h5m1 0h3m2 0h2m3 0h3m1 0h2m1 0h1m-22 1h2m2 0h2m3 0h2m2 0h3m2 0h1m2 0h1m-27 1h2m2 0h1m1 0h1m6 0h6m1 0h2m1 0h2m-26 1h1m1 0h1m1 0h1m3 0h1m2 0h2m1 0h2m3 0h4m1 0h4m-28 1h1m1 0h1m2 0h5m2 0h3m1 0h1m3 0h3m1 0h1m2 0h1m-28 1h3m3 0h2m4 0h1m2 0h1m2 0h3m1 0h1m-23 1h2m1 0h3m3 0h1m2 0h2m1 0h2m2 0h2m2 0h2m2 0h1m-28 1h3m3 0h2m1 0h1m2 0h2m2 0h2m2 0h1m1 0h1m3 0h2m-28 1h1m4 0h5m1 0h3m2 0h1m1 0h1m1 0h1m2 0h2m1 0h2m-27 1h1m2 0h1m1 0h1m1 0h1m1 0h1m2 0h3m1 0h1m1 0h1m1 0h2m1 0h2m1 0h1m-29 1h1m2 0h2m1 0h1m1 0h2m4 0h3m5 0h1m2 0h1m2 0h1m-27 1h1m5 0h3m3 0h1m2 0h2m2 0h1m5 0h1m-28 1h1m3 0h3m4 0h3m1 0h2m2 0h9m-20 1h1m1 0h1m1 0h1m1 0h1m1 0h5m3 0h1m2 0h2m-29 1h7m1 0h1m1 0h2m1 0h1m3 0h1m2 0h1m1 0h1m1 0h4m-28 1h1m5 0h1m1 0h1m3 0h1m2 0h2m1 0h1m1 0h1m3 0h3m-27 1h1m1 0h3m1 0h1m2 0h2m2 0h4m1 0h1m1 0h6m-26 1h1m1 0h3m1 0h1m1 0h2m2 0h1m1 0h4m4 0h1m1 0h1m1 0h1m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h4m1 0h1m1 0h1m1 0h2m1 0h1m1 0h2m1 0h1m1 0h1m-29 1h1m5 0h1m1 0h1m2 0h3m1 0h1m1 0h1m3 0h4m2 0h1m-28 1h7m2 0h3m5 0h1m2 0h1m1 0h1m3 0h2"/></svg></div>
+      <p class="name">Tisch 3</p>
+      <p class="unten">Scannen, hinsetzen, anschreiben.</p>
+    </div>
+  </div>
+  <div class="deckel">
+    <div class="rand">
+      <p class="oben">Deckel</p>
+      <div class="qr"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" class="segno"><path class="qrline" stroke="#000" d="M0 0.5h7m1 0h1m2 0h2m1 0h2m2 0h2m2 0h7m-29 1h1m5 0h1m5 0h1m1 0h2m1 0h1m2 0h1m1 0h1m5 0h1m-29 1h1m1 0h3m1 0h1m1 0h2m1 0h3m3 0h4m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h1m2 0h3m1 0h1m1 0h3m1 0h1m-29 1h1m1 0h3m1 0h1m3 0h1m1 0h1m1 0h1m3 0h1m3 0h1m1 0h3m1 0h1m-29 1h1m5 0h1m1 0h1m3 0h2m3 0h4m1 0h1m5 0h1m-29 1h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7m-21 1h1m1 0h3m1 0h2m1 0h2m-18 1h1m1 0h1m1 0h9m3 0h1m3 0h3m1 0h2m1 0h1m-28 1h3m3 0h2m2 0h2m1 0h2m1 0h1m2 0h3m2 0h1m2 0h1m-26 1h1m2 0h3m3 0h1m3 0h5m1 0h2m1 0h2m-26 1h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h3m6 0h4m1 0h4m-28 1h3m2 0h5m2 0h3m1 0h1m3 0h3m1 0h1m2 0h1m-29 1h5m2 0h2m4 0h1m2 0h1m2 0h3m1 0h1m-24 1h1m1 0h1m1 0h1m1 0h1m6 0h1m2 0h1m3 0h2m2 0h2m2 0h1m-27 1h4m1 0h4m2 0h2m2 0h1m3 0h1m1 0h1m3 0h2m-28 1h1m1 0h2m1 0h2m1 0h1m2 0h1m6 0h1m1 0h1m2 0h2m1 0h2m-28 1h1m3 0h1m3 0h2m3 0h3m3 0h1m1 0h2m2 0h1m1 0h1m-29 1h1m2 0h2m1 0h1m2 0h1m1 0h2m1 0h3m5 0h1m3 0h1m1 0h1m-27 1h2m3 0h1m1 0h3m2 0h1m2 0h2m2 0h1m5 0h1m-28 1h1m3 0h4m4 0h2m1 0h2m2 0h9m-20 1h3m1 0h1m1 0h1m1 0h5m3 0h1m2 0h2m-29 1h7m1 0h4m6 0h1m1 0h1m1 0h1m1 0h4m-28 1h1m5 0h1m1 0h2m2 0h1m1 0h3m1 0h1m1 0h1m3 0h3m-27 1h1m1 0h3m1 0h1m3 0h1m2 0h1m1 0h2m1 0h1m1 0h6m-26 1h1m1 0h3m1 0h1m1 0h2m4 0h4m4 0h1m1 0h1m1 0h1m1 0h1m-29 1h1m1 0h3m1 0h1m2 0h4m1 0h1m1 0h1m1 0h2m1 0h1m1 0h2m1 0h1m1 0h1m-29 1h1m5 0h1m1 0h1m3 0h2m1 0h1m1 0h1m3 0h4m2 0h1m-28 1h7m2 0h3m5 0h1m2 0h1m1 0h1m3 0h2"/></svg></div>
+      <p class="name">Tisch 4</p>
+      <p class="unten">Scannen, hinsetzen, anschreiben.</p>
+    </div>
+  </div>
+</div>
+</html>
