@@ -246,6 +246,24 @@ Sobald die App im Freedom Store gelistet ist, reicht alternativ dessen Source
 
 ## 9. Fehlersuche
 
+- **„Invalid License" / „No Valid License" bei der Installation:** Das Paket ist
+  in Ordnung — Apples Lizenzserver verweigert die Installationslizenz. Das ist
+  ein Zustand am ENTWICKLER-ACCOUNT, nicht an den Release-Dateien. Geprüft am
+  04.10.2026 für 1.6.6 (29): frisch von Apple via AltStore-API gezogenes ADP ist
+  byte-identisch mit dem veröffentlichten (`POST https://api.altstore.io/adps`
+  mit `{"adpID": "…"}` anstoßen, dann `GET /adps/<id>` bis `downloadURL` kommt).
+  Übliche Ursachen, in dieser Reihenfolge prüfen:
+  1. **Ausstehende Lizenzvereinbarung** im Developer-Account
+     (developer.apple.com/account → Agreements, bzw. Banner in App Store
+     Connect). Die EU-Zusatzvereinbarung (Attachment 14) ist verpflichtend seit
+     01.10.2026 — ohne Annahme stellt Apple ab dem Stichtag keine
+     Installationslizenzen mehr aus, für ALLE Versionen.
+  2. **Marktplatz-Verknüpfung weg:** App Store Connect → Users and Access →
+     Integrations → Marketplace — AltStore PAL muss eingetragen und die App
+     ausgewählt sein.
+  3. **Mitgliedschaft abgelaufen:** developer.apple.com/account → Membership.
+  Nach dem Beheben (Vereinbarung annehmen) sofort erneut auf dem Gerät
+  probieren — die Assets müssen nicht neu veröffentlicht werden.
 - **Keine `downloadURL` von api.altstore.io:** Notarization noch nicht bestanden,
   oder AltStore PAL ist in App Store Connect nicht als Marktplatz für diese App
   ausgewählt. Das Skript stößt die Verarbeitung per `POST /adps` an und wartet
