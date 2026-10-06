@@ -108,10 +108,13 @@ Release-Webbuild entsprechen zusätzlich den Gates in `pr_checks.yml`.
 - Chrome: Profil-Discovery und die CI-Prüfungen für PBKDF2, NIP-44 und NIP-49 bestanden.
 - Release-Webbuild erfolgreich.
 - iOS-Debugbuild erfolgreich; die App wurde auf dem iPhone-18-Pro-Simulator gestartet.
+- Visuelle Kontrolle im Simulator: Das Profilbild ist auf der Startseite sichtbar
+  und wird auch nach abgeschlossener Aktualisierung korrekt angezeigt.
 
 Die automatisierten Profiltests ersetzen keine Garantie für die Verfügbarkeit
-öffentlicher Relays. Eine visuelle Kontrolle des live geladenen Profilbilds konnte
-bei diesem Prüfstand wegen des gesperrten Macs noch nicht erfolgen.
+öffentlicher Relays. Die Sichtprüfung bestätigt die Darstellung im bestehenden
+Profil; ein frischer Cache kann dabei verwendet werden. Erstabruf ohne Cache,
+Cache-Ablauf und Fehlerfälle wurden separat mit den Regressionstests geprüft.
 
 Protokollreferenzen:
 [NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md),
