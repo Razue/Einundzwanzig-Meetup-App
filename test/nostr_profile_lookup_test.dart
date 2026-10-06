@@ -94,7 +94,10 @@ void main() {
         await lookup.fetchPicture(pubkey),
         'https://images.example/new.png',
       );
-      expect(calls, contains('wss://write.example')); // persisted relay hints
+      expect(
+        calls,
+        contains('wss://write.example'),
+      ); // Gespeicherte Relay-Hinweise
     },
   );
 
@@ -235,7 +238,7 @@ void main() {
       expect(
         await lookup.fetchPicture('0' * 64),
         isNull,
-      ); // another identity cannot borrow this cache
+      ); // Andere Identität darf diesen Cache nicht verwenden
     },
   );
 
@@ -379,10 +382,10 @@ void main() {
         '0.0.0.0',
         '999.1.1.1',
         '[::1]',
-      'relay.local',
-      'relay.local.',
-      'localhost.localdomain',
-      '127.0.0.1.',
+        'relay.local',
+        'relay.local.',
+        'localhost.localdomain',
+        '127.0.0.1.',
       ]) {
         expect(
           NostrProfileLookup.relayUrl('wss://$host', discovered: true),

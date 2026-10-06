@@ -545,7 +545,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       return;
     }
     setState(() => _localProfilePic = null);
-    // Public metadata only needs the active identity, including external signers.
+    // Öffentliche Metadaten benötigen nur die aktive Identität,
+    // auch bei externen Signern.
     if (npub.isEmpty) return;
     try {
       final pk = Nip19.decodePubkey(npub);

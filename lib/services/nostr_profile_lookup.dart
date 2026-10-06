@@ -12,11 +12,11 @@ import 'profile_relay_connection_io.dart'
 typedef ProfileRelayQuery =
     Future<List<Map<String, dynamic>>> Function(String relay, String pubkey);
 
-/// Bounded, read-only profile discovery. No private key or signer is needed.
+/// Begrenzte Profil-Discovery mit Leseanfragen, ohne privaten Schlüssel/Signer.
 ///
-/// Queries configured relays and a profile index, then the author's NIP-65
-/// write relays. All responses compete by NIP-01 replacement order, including
-/// metadata that deliberately removes a picture. An outage keeps stale data.
+/// Fragt App-Relays und einen Profil-Index ab, danach die NIP-65-Write-Relays
+/// des Autors. Es gilt die Ersetzungsreihenfolge nach NIP-01, auch bei einer
+/// Bildentfernung. Bei Ausfall bleibt das zuletzt bekannte Profil erhalten.
 class NostrProfileLookup {
   NostrProfileLookup({
     Future<List<String>> Function()? relays,
@@ -48,7 +48,7 @@ class NostrProfileLookup {
     });
   }
 
-  /// Prevents an in-flight lookup from repopulating a cleared cache.
+  /// Verhindert, dass eine laufende alte Abfrage einen geleerten Cache befüllt.
   void invalidate() {
     _generation++;
     _pending.clear();
@@ -65,7 +65,7 @@ class NostrProfileLookup {
       if (cached?.kind != 0) cached = null;
       fetchedAt = value['fetchedAt'] as int;
     } catch (_) {
-      // Invalid or pre-v2 cache: use the legacy URL only as an outage fallback.
+      // Ungültiger Cache oder Altbestand: alte URL als Fallback nutzen.
     }
     final now = _now();
     if (cached != null && _isFresh(fetchedAt, now)) return _picture(cached);
@@ -82,7 +82,7 @@ class NostrProfileLookup {
     } catch (_) {
       configured = RelayConfig.defaultRelays;
     }
-    // Reserve one slot for discovery, even with many custom app relays.
+    // Auch bei vielen eigenen App-Relays einen Discovery-Platz reservieren.
     final initial = <String>{
       ...configured
           .map((r) => relayUrl(r))
@@ -118,8 +118,8 @@ class NostrProfileLookup {
       }
       events.addAll(await _queryAll(authorRelays, pubkey, now));
     }
-    // Keep newer hints learned from author relays for the next lookup, without
-    // recursively expanding this lookup's bounded second stage.
+    // Neuere Hinweise aus Autor-Relays für den nächsten Abruf speichern.
+    // Die zweite Stufe wird hier nicht rekursiv erweitert.
     final latestRelays = _newest([
       ?cachedRelays,
       ...events.where((e) => e.kind == 10002),
@@ -138,7 +138,7 @@ class NostrProfileLookup {
           'fetchedAt': _now().millisecondsSinceEpoch,
         }),
       );
-      // Once signed metadata is known, never resurrect a pre-v2 avatar.
+      // Ein bekanntes signiertes Profil darf keine alte URL wiederbeleben.
       await prefs.remove('nostr_profile_picture_$pubkey');
       await prefs.remove('nostr_profile_picture_time_$pubkey');
     }
@@ -183,7 +183,7 @@ class NostrProfileLookup {
       if (at is! int || at < 0 || at > now.millisecondsSinceEpoch ~/ 1000) {
         return null;
       }
-      // Checks event ID and BIP-340 signature.
+      // Prüft Event-ID und BIP-340-Signatur.
       final event = Event.fromJson(raw);
       if (event.kind == 0 &&
           jsonDecode(event.content) is! Map<String, dynamic>) {
@@ -224,8 +224,8 @@ class NostrProfileLookup {
     return uri.toString();
   }
 
-  /// Signed relay hints are still untrusted network destinations. Require TLS
-  /// and reject local/private literal addresses; DNS rebinding is not prevented.
+  /// Auch signierte Relay-Hinweise können auf unsichere Netzwerkziele zeigen.
+  /// TLS verlangen, lokale/private Literale ablehnen; kein DNS-Rebinding-Schutz.
   static String? relayUrl(String value, {bool discovered = false}) {
     final uri = Uri.tryParse(value.trim());
     if (uri == null ||
@@ -248,7 +248,7 @@ class NostrProfileLookup {
       }
       final parts = host.split('.').map(int.tryParse).toList();
       if (parts.every((p) => p != null)) {
-        // Also reject abbreviated IPv4 forms such as 127.1.
+        // Auch verkürzte IPv4-Adressen wie 127.1 ablehnen.
         if (parts.length != 4 || parts.any((p) => p! < 0 || p > 255)) {
           return null;
         }
@@ -266,15 +266,15 @@ class NostrProfileLookup {
         }
       }
     }
-    // A trailing root slash names the same endpoint, unlike non-root paths.
+    // Ein Root-Slash benennt denselben Endpunkt; andere Pfade bleiben erhalten.
     return uri.path == '/' && !uri.hasQuery
         ? uri.replace(path: '').toString()
         : uri.toString();
   }
 }
 
-/// One connection/subscription per relay, querying both metadata kinds.
-/// The deadline covers handshake and response; every exit closes the channel.
+/// Eine Verbindung/Subscription pro Relay für beide Metadaten-Typen.
+/// Das Zeitlimit umfasst Handshake und Antwort. Jeder Ausgang schließt den Kanal.
 class ProfileRelayClient {
   const ProfileRelayClient({this.timeout = const Duration(seconds: 6)});
 
@@ -290,12 +290,12 @@ class ProfileRelayClient {
     final events = <Map<String, dynamic>>[];
     final done = Completer<void>();
     final deadline = Stopwatch()..start();
-    const subId = 'profile'; // Unique on this dedicated connection.
+    const subId = 'profile'; // Auf dieser eigenen Verbindung eindeutig.
     try {
       final connection = openProfileRelay(Uri.parse(relay));
       channel = connection.channel;
       abort = connection.abort;
-      // Listen before ready: some transports emit a stream error on handshake.
+      // Vor ready zuhören: Manche Transporte melden Handshake-Fehler im Stream.
       var messages = 0;
       subscription = channel.stream.listen(
         (data) {
@@ -320,7 +320,7 @@ class ProfileRelayClient {
               done.complete();
             }
           } catch (_) {
-            // Malformed frames must not abort other relays or valid later frames.
+            // Ungültige Frames dürfen spätere gültige Antworten nicht stören.
           }
         },
         onError: (Object _) {
@@ -345,10 +345,10 @@ class ProfileRelayClient {
       final remaining = timeout - deadline.elapsed;
       if (remaining > Duration.zero) await done.future.timeout(remaining);
     } catch (_) {
-      // Partial results are useful even when a relay never sends EOSE.
+      // Teilantworten sind auch nützlich, wenn ein Relay kein EOSE sendet.
     } finally {
-      // Do not await the WebSocket close handshake: an unresponsive peer can
-      // hold it open. Cancel our listener and consume cleanup errors instead.
+      // Den Close-Handshake nicht abwarten: Ein unantwortendes Relay kann ihn
+      // blockieren. Listener beenden und Fehler beim Aufräumen abfangen.
       unawaited(subscription?.cancel().catchError((Object _) {}));
       unawaited(channel?.sink.close().catchError((Object _) {}));
       abort?.call();

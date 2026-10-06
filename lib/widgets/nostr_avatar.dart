@@ -26,7 +26,7 @@ class NostrAvatar extends StatefulWidget {
   /// pubkey der aktiven Identität verwendet (lokal oder Amber).
   final String? pubkeyHex;
 
-  /// Optional metadata source for embedding and deterministic widget tests.
+  /// Optionale Metadaten-Quelle für Einbettung und deterministische Widgettests.
   final Future<String?> Function(String pubkey)? pictureLoader;
 
   const NostrAvatar({

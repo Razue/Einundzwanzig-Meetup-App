@@ -146,7 +146,7 @@ void main() {
     Socket? accepted;
     stalled.listen((socket) {
       accepted = socket;
-      // Consume the request but never answer the HTTP upgrade.
+      // Anfrage lesen, aber den HTTP-Upgrade nicht beantworten.
       socket.listen((_) {}, onDone: disconnected.complete);
     });
     try {

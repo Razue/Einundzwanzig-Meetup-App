@@ -17,7 +17,7 @@ class NostrProfileService {
   static const String _localPicKey = 'local_profile_picture';
   static final _pictureLookup = NostrProfileLookup();
 
-  /// Public metadata lookup: independent of the active signing mode.
+  /// Öffentliche Metadaten abrufen, unabhängig vom aktiven Signiermodus.
   static Future<String?> fetchProfilePicture(String pubkeyHex) =>
       _pictureLookup.fetchPicture(pubkeyHex);
 

@@ -10,8 +10,8 @@ import 'package:einundzwanzig_meetup_app/models/user.dart';
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
 import 'package:einundzwanzig_meetup_app/widgets/nostr_avatar.dart';
 
-// Keep image downloads pending: these tests exercise metadata/UI ordering, not
-// Flutter's image decoder, and never contact a real image host.
+// Bilddownloads offen halten: Die Tests prüfen die Reihenfolge der Metadaten-
+// und UI-Aktualisierung. Es wird kein echter Bildserver kontaktiert.
 class _ImageClient extends Fake implements HttpClient {
   final downloads = <Completer<HttpClientResponse>>[];
   @override
