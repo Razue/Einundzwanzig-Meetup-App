@@ -2779,7 +2779,7 @@
   "vwNotToken": "Kein Cashu-Token.",
   "vwTokenNoAmount": "Cashu-Token. Den Betrag kann diese Fassung noch nicht lesen.",
   "vwUnknown": "Noch einmal.",
-  "vwHelp": "Bark oder Cashu. Kontostand. Rechnung mit Betrag. Adresse. Bezahlen. Kamera. Einfügen. Sats senden.",
+  "vwHelp": "Kontostand. Kamera. Einfügen. Galerie. Sats senden. Ton oder Text.",
   "vwOutBoth": "Beides",
   "vwOutSound": "Ton",
   "vwOutText": "Text",
@@ -2833,33 +2833,6 @@
       "balance": {"type": "int"}
     }
   },
-  "vwHintBark": "Sag Kontostand, Rechnung, Adresse oder Bezahlen.",
-  "vwRailBark": "Bark. Ark und Lightning.",
-  "vwRailCashu": "Cashu.",
-  "vwBarkBalance": "Bei Bark.",
-  "vwBarkEmpty": "Bei Bark liegt nichts.",
-  "vwBarkDown": "Bark ist nicht erreichbar. Der Rechner muss wach und im selben Netz sein.",
-  "vwBarkUnset": "Bark ist nicht eingerichtet.",
-  "vwBarkServer": "Bark erreicht den Ark-Server nicht.",
-  "vwInvoiceReady": "Die Rechnung liegt als Code bereit.",
-  "vwInvoiceWait": "Die Zahlung ist unterwegs.",
-  "vwAddressReady": "Die Ark-Adresse liegt als Code bereit.",
-  "vwAskDest": "Füge die Rechnung oder die Adresse ein.",
-  "vwNotPay": "Das kann Bark nicht zahlen.",
-  "vwPayFail": "Bark hat nicht gezahlt.",
-  "vwPaid": "Bezahlt. Stand {balance}.",
-  "@vwPaid": {
-    "placeholders": {
-      "balance": {"type": "int"}
-    }
-  },
-  "vwArrived": "Angekommen. Stand {balance}.",
-  "@vwArrived": {
-    "placeholders": {
-      "balance": {"type": "int"}
-    }
-  },
-  "vwOffboard": "Unterwegs auf die Kette. Das wartet auf die nächste Runde.",
   "chatRelayUnavailable": "Das Chat-Relay hat gerade nicht geantwortet oder die Anmeldung kam nicht zustande. Versuch es gleich noch einmal — wer einen externen Signierer nutzt, muss die Anmeldung dort bestätigen.",
   "mnUpdating": "Aktualisiere {degree}. Grad …",
   "@mnUpdating": {

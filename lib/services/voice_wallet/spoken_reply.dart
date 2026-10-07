@@ -22,8 +22,7 @@ String? _safe(String? sentence) {
       lower.contains('ur:') ||
       lower.contains('lnbc') ||
       lower.contains('lntb') ||
-      lower.contains('lnurl') ||
-      lower.contains('ark1')) {
+      lower.contains('lnurl')) {
     return null;
   }
   return line;
