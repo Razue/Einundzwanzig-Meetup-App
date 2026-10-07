@@ -5,8 +5,6 @@
 // in einem gesprochenen Auftrag nehmen wir nicht an — ein verhoerter
 // Satz soll keine grosse Summe vormerken.
 
-enum WalletRail { cashu, bark }
-
 enum WalletCommandKind {
   balance,
   scan,
@@ -17,10 +15,6 @@ enum WalletCommandKind {
   cancel,
   help,
   output,
-  rail,
-  invoice,
-  address,
-  pay,
   unknown,
 }
 
@@ -36,118 +30,41 @@ class WalletCommand {
   /// Nur bei [WalletCommandKind.output] gesetzt.
   final WalletOutput? output;
 
-  /// Gesetzt, wenn der Satz Cashu oder Bark nennt.
-  final WalletRail? rail;
-
-  const WalletCommand(this.kind, {this.sats, this.output, this.rail});
+  const WalletCommand(this.kind, {this.sats, this.output});
 
   static const unknown = WalletCommand(WalletCommandKind.unknown);
 }
 
 const int _maxSpokenSats = 100000000;
 
-WalletCommand parseWalletCommand(
-  String raw, {
-  WalletRail rail = WalletRail.cashu,
-}) {
+WalletCommand parseWalletCommand(String raw) {
   final text = _normalize(raw);
   if (text.isEmpty) return WalletCommand.unknown;
-  final named = _namedRail(text);
-  final effective = named ?? rail;
 
-  WalletCommand pack(WalletCommandKind kind, {int? sats, WalletOutput? output}) {
-    return WalletCommand(kind, sats: sats, output: output, rail: named);
-  }
-
-  if (_exact(text, _confirm)) return pack(WalletCommandKind.confirm);
+  if (_exact(text, _confirm)) return WalletCommand(WalletCommandKind.confirm);
   final output = _outputOf(text);
-  if (output != null) return pack(WalletCommandKind.output, output: output);
-  if (_exact(text, _cancel) || _startsWithWord(text, _cancel)) {
-    return pack(WalletCommandKind.cancel);
+  if (output != null) {
+    return WalletCommand(WalletCommandKind.output, output: output);
   }
-  if (_hasPhrase(text, _help)) return pack(WalletCommandKind.help);
+  if (_exact(text, _cancel) || _startsWithWord(text, _cancel)) {
+    return WalletCommand(WalletCommandKind.cancel);
+  }
+  if (_hasPhrase(text, _help)) return WalletCommand(WalletCommandKind.help);
 
   final sats = parseSpokenSats(text);
-  if (_isPay(text)) {
-    return pack(
-      WalletCommandKind.pay,
-      sats: sats,
-    );
+  if (_hasPhrase(text, _balance)) {
+    return WalletCommand(WalletCommandKind.balance);
   }
-  if (_isInvoice(text) ||
-      (effective == WalletRail.bark &&
-          _isReceive(text) &&
-          !_isCamera(text) &&
-          sats != null)) {
-    return pack(WalletCommandKind.invoice, sats: sats);
-  }
-  if (_isAddress(text) ||
-      (effective == WalletRail.bark &&
-          _isReceive(text) &&
-          !_isCamera(text) &&
-          sats == null)) {
-    return pack(WalletCommandKind.address);
-  }
-  if (_hasPhrase(text, _balance)) return pack(WalletCommandKind.balance);
 
   final send = _hasWord(text, _send) || _hasPhrase(text, _sendPhrases);
-  if (send && sats != null) return pack(WalletCommandKind.send, sats: sats);
-  if (send) return pack(WalletCommandKind.send);
-  if (_hasWord(text, _gallery)) return pack(WalletCommandKind.gallery);
-  if (_hasWord(text, _paste)) return pack(WalletCommandKind.paste);
-  if (_isScan(text)) return pack(WalletCommandKind.scan);
-  if (named != null) return pack(WalletCommandKind.rail);
-  return pack(WalletCommandKind.unknown);
-}
-
-WalletRail? _namedRail(String text) {
-  if (_hasWord(text, {'bark', 'ark'}) ||
-      _hasPhrase(text, {'bark wallet', 'ark wallet'})) {
-    return WalletRail.bark;
+  if (send && sats != null) {
+    return WalletCommand(WalletCommandKind.send, sats: sats);
   }
-  if (_hasWord(text, {'cashu'}) ||
-      _hasPhrase(text, {'cashu wallet', 'token wallet'})) {
-    return WalletRail.cashu;
-  }
-  return null;
-}
-
-bool _isPay(String text) {
-  if (_hasPhrase(text, {
-    'rechnung begleichen',
-    'rechnung bezahlen',
-    'pay invoice',
-    'pay the invoice',
-  })) {
-    return true;
-  }
-  return _hasWord(text, {'bezahlen', 'begleichen', 'begleiche', 'auszahlen'});
-}
-
-bool _isInvoice(String text) =>
-    _hasWord(text, {'rechnung', 'invoice', 'einzahlen', 'einzahle'});
-
-bool _isAddress(String text) =>
-    _hasWord(text, {'adresse', 'address', 'empfangsadresse'});
-
-bool _isReceive(String text) =>
-    _hasWord(text, {'empfangen', 'empfang', 'receive'});
-
-bool _isCamera(String text) {
-  if (_hasWord(text, {
-    'kamera',
-    'camera',
-    'foto',
-    'photo',
-    'qr',
-    'code',
-    'token',
-    'tokens',
-    'tocken',
-  })) {
-    return true;
-  }
-  return text.split(' ').any((w) => w.startsWith('scan') || w.startsWith('skan'));
+  if (send) return WalletCommand(WalletCommandKind.send);
+  if (_hasWord(text, _gallery)) return WalletCommand(WalletCommandKind.gallery);
+  if (_hasWord(text, _paste)) return WalletCommand(WalletCommandKind.paste);
+  if (_isScan(text)) return WalletCommand(WalletCommandKind.scan);
+  return WalletCommand(WalletCommandKind.unknown);
 }
 
 /// Erste Zahl im Satz, oder null.

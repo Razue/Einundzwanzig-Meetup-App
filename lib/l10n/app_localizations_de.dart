@@ -6731,7 +6731,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get vwHelp =>
-      'Bark oder Cashu. Kontostand. Rechnung mit Betrag. Adresse. Bezahlen. Kamera. Einfügen. Sats senden.';
+      'Kontostand. Kamera. Einfügen. Galerie. Sats senden. Ton oder Text.';
 
   @override
   String get vwOutBoth => 'Beides';
@@ -6836,63 +6836,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String vwSent(int balance) {
     return 'Zum Weitergeben. Stand $balance.';
   }
-
-  @override
-  String get vwHintBark => 'Sag Kontostand, Rechnung, Adresse oder Bezahlen.';
-
-  @override
-  String get vwRailBark => 'Bark. Ark und Lightning.';
-
-  @override
-  String get vwRailCashu => 'Cashu.';
-
-  @override
-  String get vwBarkBalance => 'Bei Bark.';
-
-  @override
-  String get vwBarkEmpty => 'Bei Bark liegt nichts.';
-
-  @override
-  String get vwBarkDown =>
-      'Bark ist nicht erreichbar. Der Rechner muss wach und im selben Netz sein.';
-
-  @override
-  String get vwBarkUnset => 'Bark ist nicht eingerichtet.';
-
-  @override
-  String get vwBarkServer => 'Bark erreicht den Ark-Server nicht.';
-
-  @override
-  String get vwInvoiceReady => 'Die Rechnung liegt als Code bereit.';
-
-  @override
-  String get vwInvoiceWait => 'Die Zahlung ist unterwegs.';
-
-  @override
-  String get vwAddressReady => 'Die Ark-Adresse liegt als Code bereit.';
-
-  @override
-  String get vwAskDest => 'Füge die Rechnung oder die Adresse ein.';
-
-  @override
-  String get vwNotPay => 'Das kann Bark nicht zahlen.';
-
-  @override
-  String get vwPayFail => 'Bark hat nicht gezahlt.';
-
-  @override
-  String vwPaid(int balance) {
-    return 'Bezahlt. Stand $balance.';
-  }
-
-  @override
-  String vwArrived(int balance) {
-    return 'Angekommen. Stand $balance.';
-  }
-
-  @override
-  String get vwOffboard =>
-      'Unterwegs auf die Kette. Das wartet auf die nächste Runde.';
 
   @override
   String get chatRelayUnavailable =>
