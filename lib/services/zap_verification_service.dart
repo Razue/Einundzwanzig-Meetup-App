@@ -128,7 +128,16 @@ class ZapVerificationService {
       if (lookups++ >= 15) break;
       final provider = await ZapReceiptValidator.providerPubkeyFor(entry.key);
       if (provider == null) continue;
-      kept.addAll(entry.value.where((r) => r.receiptPubkey.toLowerCase() == provider));
+      kept.addAll(entry.value.where((r) {
+        final receipt = r.receiptPubkey.toLowerCase();
+        if (receipt == provider) {
+          // Aussteller darf nicht der Zahler oder der Empfänger selbst sein.
+          if (receipt == r.senderPubkey.toLowerCase()) return false;
+          if (receipt == r.recipientPubkey.toLowerCase()) return false;
+          return true;
+        }
+        return false;
+      }));
     }
     if (kept.length != receipts.length) {
       AppLogger.debug('ZapVerification',

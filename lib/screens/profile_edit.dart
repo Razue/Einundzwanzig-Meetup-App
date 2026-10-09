@@ -8,6 +8,7 @@ import '../services/nostr_service.dart';
 import '../services/signing_service.dart';
 import '../services/nip49.dart';
 import '../services/local_key_vault.dart';
+import '../services/screen_secure.dart';
 import '../services/secure_key_store.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
@@ -759,6 +760,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   // --- NSEC BACKUP DIALOG ---
   void _showNsecBackupDialog(String nsec) {
+    ScreenSecure.set(true);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -810,8 +812,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: cOrange),
             icon: const Icon(Icons.copy, color: Colors.white, size: 18),
             label: Text(AppLocalizations.of(context).profileCopy, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: nsec));
+            onPressed: () async {
+              await ScreenSecure.copySecret(nsec);
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(AppLocalizations.of(context).profileNsecCopied), backgroundColor: cOrange),
               );
@@ -823,7 +826,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ),
         ],
       ),
-    );
+    ).whenComplete(() => ScreenSecure.set(false));
   }
 
   bool _exportingKey = false;
@@ -997,6 +1000,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     String ncryptsec, {
     bool fromVault = false,
   }) {
+    ScreenSecure.set(true);
     showModalBottomSheet(
       context: context,
       backgroundColor: cCard,
@@ -1048,8 +1052,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: cGreen),
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: ncryptsec));
+                onPressed: () async {
+                  await ScreenSecure.copySecret(ncryptsec);
+                  if (!mounted || !ctx.mounted) return;
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(t.keyExportCopied),
@@ -1077,7 +1082,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ],
         ),
       ),
-    );
+    ).whenComplete(() => ScreenSecure.set(false));
   }
 
   // --- NSEC ANZEIGEN (für bestehende Keys) ---

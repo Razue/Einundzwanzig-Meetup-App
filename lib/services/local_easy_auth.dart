@@ -4,8 +4,10 @@
 // kickstr-Parität ohne Backend: Key client-seitig, NIP-49 Wrap lokal.
 // ============================================
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:nostr/nostr.dart';
 
+import '../features.dart';
 import '../models/user.dart';
 import 'local_key_vault.dart';
 import 'nip49.dart';
@@ -37,6 +39,12 @@ class LocalEasyAuth {
     if (password.length < 8) {
       throw const LocalEasyAuthException(
           'Passwort muss mindestens 8 Zeichen haben.');
+    }
+    // Security Audit H4: kein neuer lokaler nsec im Browser.
+    if (kIsWeb && !kWebLocalNsecLoginEnabled) {
+      throw const LocalEasyAuthException(
+          'Im Browser wird kein lokaler Schlüssel angelegt. '
+          'Nutze die Erweiterung (NIP-07) oder einen Bunker.');
     }
 
     // Reihenfolge ist wichtig: Schluessel erst IM SPEICHER erzeugen, den Wrap

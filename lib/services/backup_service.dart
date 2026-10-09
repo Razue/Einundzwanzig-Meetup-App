@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:flutter/foundation.dart' show compute;
+import 'package:flutter/foundation.dart' show compute, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:shared_preferences/shared_preferences.dart'; // NEU: Für Humanity-Proof Restore
+import '../features.dart';
 import '../models/user.dart';
 import '../models/badge.dart';
 import 'admin_registry.dart';
@@ -816,7 +817,17 @@ class BackupService {
             final npub = nostrData['npub'] ?? '';
             final privHex = nostrData['priv_hex'] ?? '';
 
-            if (nsec.isNotEmpty && npub.isNotEmpty && privHex.isNotEmpty) {
+            // Security Audit H4: im Browser den nsec nicht in den
+            // Speicher schreiben. Profil und Badges bleiben erhalten.
+            final allowLocalKey = !kIsWeb || kWebLocalNsecLoginEnabled;
+            if (!allowLocalKey && nsec.isNotEmpty) {
+              AppLogger.warn('BackupService',
+                  'Lokaler nsec aus dem Backup im Web nicht übernommen.');
+            }
+            if (allowLocalKey &&
+                nsec.isNotEmpty &&
+                npub.isNotEmpty &&
+                privHex.isNotEmpty) {
               await SecureKeyStore.saveKeys(
                 nsec: nsec,
                 npub: npub,

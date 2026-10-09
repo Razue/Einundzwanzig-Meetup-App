@@ -1,7 +1,8 @@
 # Rolling QR: signierte Koordinaten und Sitzungsschlüssel (Security Audit H1)
 
-Stand: 2026-10-09, Branch `security-fixes`. Dieses Dokument beschreibt das
-Konzept; die Umsetzung steht noch aus (siehe „Offen“).
+Stand: 2026-10-09, Branch `security-fixes`. Der Scanner vertraut `la`/`lo`
+nicht mehr, solange sie nicht im signierten Content stehen. Die Signatur
+pro Zeitschritt steht noch aus (siehe „Offen“).
 
 ## Befund
 
@@ -76,7 +77,12 @@ Scanner:
 
 ## Offen
 
-- Umsetzung in `BadgeSecurity` (Content-Keys, Delegationsprüfung),
+- Scannerseite erledigt: `BadgeSecurity.signedCoordinates` liefert nur
+  Koordinaten aus `compactSignedKeys`. Unsignierte `la`/`lo` fallen auf
+  die Portal-Referenz (50 km) zurück. Wer den QR in einer anderen Stadt
+  umschreibt, besteht den Umkreis-Check nicht mehr.
+- Weiterhin offen, weil es das Badge-Format ändert: Umsetzung in
+  `BadgeSecurity` (Content-Keys, Delegationsprüfung),
   `RollingQRService` (Sitzungsschlüssel, Signatur pro Zeitschritt),
   `meetup_verification.dart` (Referenz nur bei signierten Koordinaten
   „gemessen“) und `badge-verifier.html`.

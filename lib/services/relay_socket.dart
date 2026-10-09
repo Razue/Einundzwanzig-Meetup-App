@@ -25,7 +25,19 @@ import 'app_logger.dart';
 class RelaySocket {
   final WebSocketChannel _channel;
 
+  /// Obergrenze für eine Relay-Nachricht. Darüber wird der Frame verworfen,
+  /// statt ihn zu parsen (Security Audit M4).
+  static const int maxMessageChars = 512 * 1024;
+
   RelaySocket._(this._channel);
+
+  static bool _withinLimit(dynamic data) {
+    final tooBig = (data is String && data.length > maxMessageChars) ||
+        (data is List<int> && data.length > maxMessageChars);
+    if (!tooBig) return true;
+    AppLogger.debug('RelaySocket', 'Frame über $maxMessageChars verworfen');
+    return false;
+  }
 
   /// Baut die Verbindung auf und wartet, bis sie steht.
   ///
@@ -61,12 +73,15 @@ class RelaySocket {
     void Function()? onDone,
     bool? cancelOnError,
   }) =>
-      _channel.stream.listen(onData,
+      _channel.stream.listen(
+          (data) {
+            if (_withinLimit(data)) onData(data);
+          },
           onError: onError, onDone: onDone, cancelOnError: cancelOnError);
 
   /// Für Aufrufstellen, die den Socket direkt als Stream verwenden
   /// (`await for (final data in ws.stream.timeout(...))`).
-  Stream get stream => _channel.stream;
+  Stream get stream => _channel.stream.where(_withinLimit);
 
   /// Nachricht senden. Entspricht `ws.add(...)`.
   void add(String data) => _channel.sink.add(data);

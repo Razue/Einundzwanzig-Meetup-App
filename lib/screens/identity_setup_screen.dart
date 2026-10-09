@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
 import '../models/meetup.dart';
 import '../models/user.dart';
+import '../features.dart';
 import '../services/app_review_demo.dart';
 import '../services/backup_service.dart';
 import '../services/local_easy_auth.dart';
@@ -624,6 +625,10 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
 
   Future<void> _importKey() async {
     final t = AppLocalizations.of(context);
+    if (kIsWeb && !kWebLocalNsecLoginEnabled) {
+      setState(() => _error = '${t.webKeyWarnH}. ${t.webKeyWarnAdvice}');
+      return;
+    }
     final raw = _importCtrl.text.trim();
     if (raw.isEmpty) {
       setState(() => _error = t.idSetupImportEmpty);

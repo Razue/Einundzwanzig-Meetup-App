@@ -167,9 +167,8 @@ class BadgeSecurity {
         }
       }
 
-      const contentKeys = {'v', 't', 'm', 'b', 'x'};
       final Map<String, dynamic> content = {};
-      for (final key in contentKeys) {
+      for (final key in compactSignedKeys) {
         if (data.containsKey(key)) {
           content[key] = data[key];
         }
@@ -343,6 +342,27 @@ class BadgeSecurity {
     return VerifyResult(isValid: false, version: 1, adminNpub: '', adminPubkey: '',
       message: 'Legacy-Badges (v1) werden nicht mehr akzeptiert. '
                'Bitte Organisator um neuen v2-Tag (Schnorr-signiert).');
+  }
+
+  /// Schlüssel, die `verifyCompact` in die Schnorr-Signatur nimmt.
+  /// `la`/`lo` stehen bewusst nicht darin: am Rolling-QR hängen sie
+  /// unsigniert und sind vom Fotografen frei setzbar (Security Audit H1).
+  static const Set<String> compactSignedKeys = {'v', 't', 'm', 'b', 'x'};
+
+  /// Standort nur, wenn er mit signiert wurde. Sonst 0/0, damit der
+  /// Scanner auf die Portal-Referenz zurückfällt statt auf `la`/`lo`
+  /// aus dem unsignierten QR-Anhang.
+  static ({double lat, double lng}) signedCoordinates(Map<String, dynamic> data) {
+    if (!compactSignedKeys.contains('la') ||
+        !compactSignedKeys.contains('lo') ||
+        data['la'] is! num ||
+        data['lo'] is! num) {
+      return (lat: 0, lng: 0);
+    }
+    return (
+      lat: (data['la'] as num).toDouble(),
+      lng: (data['lo'] as num).toDouble(),
+    );
   }
 
   // =============================================

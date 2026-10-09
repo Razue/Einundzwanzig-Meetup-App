@@ -287,6 +287,7 @@ class HumanityProofService {
                     zapTimestamp: createdAt,
                     receiptPubkey: check.receiptPubkey,
                     recipientPubkey: check.recipientPubkey,
+                    senderPubkey: check.senderPubkey,
                   ));
                 }
               }
@@ -368,6 +369,7 @@ class HumanityProofService {
         final fromProvider = await ZapReceiptValidator.isFromRecipientProvider(
           receiptPubkey: c.receiptPubkey,
           recipientPubkey: c.recipientPubkey,
+          senderPubkey: c.senderPubkey,
         );
         if (fromProvider) {
           return _ZapSearchResult(
@@ -458,8 +460,16 @@ class HumanityProofService {
           tally.message();
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
-            if (message[0] == 'EVENT') {
-              if (!completer.isCompleted) completer.complete(true);
+            if (message[0] == 'EVENT' && message.length >= 3) {
+              // Ein Relay darf nicht mit einem beliebigen EVENT behaupten,
+              // der Beleg existiere. ID, Kind und Signatur müssen stimmen.
+              final ev = RelaySocket.verifiedEvent(message[2], tag: 'HumanityProof');
+              if (ev != null &&
+                  ev['id'] == eventId &&
+                  ev['kind'] == 9735 &&
+                  !completer.isCompleted) {
+                completer.complete(true);
+              }
             } else if (message[0] == 'EOSE') {
               if (!completer.isCompleted) completer.complete(false);
             }
@@ -498,11 +508,13 @@ class _ZapCandidate {
   final int zapTimestamp;
   final String receiptPubkey;
   final String recipientPubkey;
+  final String senderPubkey;
   _ZapCandidate({
     required this.receiptEventId,
     required this.zapTimestamp,
     required this.receiptPubkey,
     required this.recipientPubkey,
+    required this.senderPubkey,
   });
 }
 

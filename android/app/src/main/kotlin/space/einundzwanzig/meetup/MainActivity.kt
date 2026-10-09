@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -36,6 +37,7 @@ class MainActivity : FlutterActivity() {
     // Stattdessen schreibt die WidgetRouterActivity das Ziel in den
     // lokalen Speicher; Dart fragt es bei jedem Aufwachen hier ab.
     private val widgetChannelName = "einundzwanzig/widget"
+    private val screenChannelName = "einundzwanzig/screen"
 
     // Request-Codes für die Vordergrund-Intents
     private val reqGetPublicKey = 9551
@@ -57,6 +59,23 @@ class MainActivity : FlutterActivity() {
                         val t = prefs.getString("pending_target", null)
                         if (t != null) prefs.edit().remove("pending_target").commit()
                         result.success(t)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        // Screenshot-Sperre, solange ein nsec oder ncryptsec auf dem Schirm steht.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, screenChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "setSecure" -> {
+                        val on = call.argument<Boolean>("on") == true
+                        if (on) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        }
+                        result.success(null)
                     }
                     else -> result.notImplemented()
                 }

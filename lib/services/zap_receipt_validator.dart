@@ -184,8 +184,18 @@ class ZapReceiptValidator {
   static Future<bool> isFromRecipientProvider({
     required String receiptPubkey,
     required String recipientPubkey,
+    String senderPubkey = '',
   }) async {
     if (receiptPubkey.isEmpty || recipientPubkey.isEmpty) return false;
+    final receipt = receiptPubkey.toLowerCase();
+    final recipient = recipientPubkey.toLowerCase();
+    // Derselbe Schlüssel als Aussteller und Empfänger (oder Zahler) ist
+    // kein fremder LNURL-Server. Damit fällt die Quittung weg, die ein
+    // Account sich selbst signiert.
+    if (receipt == recipient) return false;
+    if (senderPubkey.isNotEmpty && receipt == senderPubkey.toLowerCase()) {
+      return false;
+    }
     final provider = await providerPubkeyFor(recipientPubkey);
     if (provider == null || provider.isEmpty) {
       AppLogger.debug(_tag,
@@ -196,7 +206,9 @@ class ZapReceiptValidator {
   }
 
   /// nostrPubkey des LNURL-Providers hinter der lud16 des Empfängers.
-  /// Ergebnis (auch "keiner") wird 7 Tage gecacht.
+  /// Nur ein gefundener Schlüssel wird 7 Tage gecacht. Ein Fehlschlag
+  /// bleibt ein Fehlschlag für diesen Aufruf und wird beim nächsten
+  /// erneut versucht.
   static Future<String?> providerPubkeyFor(String recipientPubkey) async {
     final mem = _providerCache[recipientPubkey];
     if (mem != null) return mem.isEmpty ? null : mem;
@@ -208,10 +220,13 @@ class ZapReceiptValidator {
       if (raw != null) {
         final j = jsonDecode(raw) as Map<String, dynamic>;
         final ts = j['ts'] as int? ?? 0;
-        if (DateTime.now().millisecondsSinceEpoch - ts < _cacheTtl.inMilliseconds) {
-          final pk = (j['pk'] ?? '').toString();
+        final pk = (j['pk'] ?? '').toString();
+        // Leere Treffer nicht sieben Tage lang glauben: ein Netzfehler
+        // hätte sonst echte Quittungen bis zum Ablauf unsichtbar gemacht.
+        if (pk.isNotEmpty &&
+            DateTime.now().millisecondsSinceEpoch - ts < _cacheTtl.inMilliseconds) {
           _providerCache[recipientPubkey] = pk;
-          return pk.isEmpty ? null : pk;
+          return pk;
         }
       }
     } catch (_) {}
@@ -222,12 +237,13 @@ class ZapReceiptValidator {
     } catch (e) {
       AppLogger.debug(_tag, 'Provider-Auflösung fehlgeschlagen: $e');
     }
+    if (pk.isEmpty) return null;
     _providerCache[recipientPubkey] = pk;
     try {
       await prefs?.setString('$_cachePrefix$recipientPubkey',
           jsonEncode({'pk': pk, 'ts': DateTime.now().millisecondsSinceEpoch}));
     } catch (_) {}
-    return pk.isEmpty ? null : pk;
+    return pk;
   }
 
   static Future<String?> _resolveProvider(String recipientPubkey) async {

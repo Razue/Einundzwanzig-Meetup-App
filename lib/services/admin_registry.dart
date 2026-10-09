@@ -22,6 +22,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'nostr_service.dart';
@@ -55,6 +56,13 @@ class AdminEntry {
     name: json['name'] ?? '',
     addedAt: json['added_at'] ?? 0,
   );
+
+  /// Automatisch vergebener Name des alten organischen Admin-Claims
+  /// (`Organic (3 Badges)`). Solche Einträge kamen ohne echte Bürgschaft
+  /// in den Cache (Security Audit K1) und dürfen nie als Admin gelten.
+  static final RegExp legacyOrganicName = RegExp(r'^Organic \(\d+ Badges\)$');
+
+  bool get isLegacyOrganicClaim => legacyOrganicName.hasMatch(name);
 }
 
 class AdminCheckResult {
@@ -260,6 +268,13 @@ class AdminRegistry {
   // =============================================
   // RELAY FETCH (WEB OF TRUST LOGIK)
   // =============================================
+
+  /// Nur für Tests: ersetzt die echte Relay-Abfrage. Liefert die ROHE Liste,
+  /// so wie ein Relay sie schicken würde — die Filterung dahinter bleibt aktiv.
+  @visibleForTesting
+  static Future<({List<AdminEntry> admins, int uniqueAuthors})?> Function(
+      String relayUrl, List<String> authorsHex)? relayFetchOverride;
+
   static Future<List<AdminEntry>?> fetchFromRelays() async {
     List<String> authorsToQuery = [];
     final bool isSunset = await isSunsetActive();
@@ -307,17 +322,22 @@ class AdminRegistry {
     // Versuche jeden Relay der Reihe nach
     for (final relayUrl in _relays) {
       try {
-        final result = await _fetchFromSingleRelay(relayUrl, queryChunk);
+        final result = await (relayFetchOverride ?? _fetchFromSingleRelay)(relayUrl, queryChunk);
         if (result != null) {
           // Einzigartige Autoren für Sunset-Berechnung aktualisieren
           await _updateUniqueAuthorsCount(result.uniqueAuthors);
-          
+
+          // Organische Alt-Claims (K1) schon HIER verwerfen, nicht erst beim
+          // Speichern: checkAdmin (Schritt 4), forceRefresh und der
+          // Hintergrund-Refresh arbeiten direkt mit dieser Liste.
+          final admins = _withoutLegacyOrganic(result.admins);
+
           // Wenn Sunset aktiv ist, mergen wir die Ergebnisse mit dem Cache
           if (isSunset) {
-            return await _mergeWithCache(result.admins);
+            return await _mergeWithCache(admins);
           } else {
             // In der Bootstrap-Phase überschreibt das Super-Admin-Event alles
-            return result.admins;
+            return admins;
           }
         }
       } catch (e) {
@@ -511,13 +531,29 @@ class AdminRegistry {
   // =============================================
   // CACHE: Laden
   // =============================================
+  static List<AdminEntry> _withoutLegacyOrganic(List<AdminEntry> admins) =>
+      admins.where((e) => !e.isLegacyOrganicClaim).toList();
+
+  /// Einzige Lesestelle des Netzwerk-Caches. Organische Alt-Claims aus dem
+  /// K1-Bug (`Organic (N Badges)`) werden HIER verworfen, damit kein Leser —
+  /// checkAdmin, Sunset-Autorenliste, Merge, getAdminList — sie je als Admin
+  /// sieht. Ein vergifteter Cache wird dabei gleich mitbereinigt.
   static Future<List<AdminEntry>?> _loadFromCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final json = prefs.getString(_cacheKey);
       if (json == null) return null;
       final List<dynamic> list = jsonDecode(json);
-      return list.map((e) => AdminEntry.fromJson(e as Map<String, dynamic>)).toList();
+      final raw = list.map((e) => AdminEntry.fromJson(e as Map<String, dynamic>)).toList();
+      final clean = _withoutLegacyOrganic(raw);
+      if (clean.length != raw.length) {
+        // Nur die Liste neu schreiben, nicht den Zeitstempel: Das ist keine
+        // frische Relay-Antwort und darf den Hintergrund-Refresh nicht bremsen.
+        await prefs.setString(_cacheKey, jsonEncode(clean.map((e) => e.toJson()).toList()));
+        AppLogger.debug('AdminRegistry',
+            '${raw.length - clean.length} organische Alt-Claims aus dem Admin-Cache entfernt');
+      }
+      return clean;
     } catch (e) {
       return null;
     }
@@ -527,8 +563,11 @@ class AdminRegistry {
   // CACHE: Speichern
   // =============================================
   static Future<void> _saveToCache(List<AdminEntry> admins) async {
+    // Auch Relay-Listen: ein früher veröffentlichtes Event kann den
+    // automatischen Organic-Namen noch tragen.
+    final clean = _withoutLegacyOrganic(admins);
     final prefs = await SharedPreferences.getInstance();
-    final json = jsonEncode(admins.map((e) => e.toJson()).toList());
+    final json = jsonEncode(clean.map((e) => e.toJson()).toList());
     await prefs.setString(_cacheKey, json);
     await prefs.setInt(_cacheTimestampKey, DateTime.now().millisecondsSinceEpoch);
   }
@@ -707,6 +746,9 @@ class AdminRegistry {
   /// Legacy: addAdmin → Netzwerk-Cache (für promotion_claim_service, backup_service)
   /// ACHTUNG: NICHT für persönliches Bürgen verwenden! Dafür → addVouch()
   static Future<void> addAdmin(AdminEntry admin) async {
+    if (admin.isLegacyOrganicClaim) {
+      throw StateError('Organische Claims werden nicht als Admin übernommen.');
+    }
     final list = await getAdminList();
     if (list.any((e) => e.npub == admin.npub)) return; // Duplikat ignorieren
     if (!NostrService.isValidNpub(admin.npub)) {
