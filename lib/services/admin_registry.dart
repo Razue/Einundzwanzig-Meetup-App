@@ -79,6 +79,13 @@ class AdminCheckResult {
   });
 }
 
+/// Ergebnis einer Relay-Abfrage: hex-Pubkey des SIGNERS (event.pubkey nach
+/// bestandener Signaturprüfung) → die in seinem Event gelisteten Einträge.
+/// Die Sunset-Zählung zählt die Schlüssel dieser Map (Signer), niemals die
+/// gelisteten npubs — sonst würde ein einzelnes Event mit 20 npubs Sunset
+/// auslösen (Audit-2 Fund 6).
+typedef AdminsBySigner = Map<String, List<AdminEntry>>;
+
 class AdminRegistry {
   // =============================================
   // SUPER-ADMIN NPUB & SUNSET CONFIG
@@ -111,6 +118,13 @@ class AdminRegistry {
   // Sunset wird NUR durch verschiedene Autoren ausgelöst, nicht durch
   // einen einzelnen Admin der 20 npubs auf seine Liste setzt.
   static const String _uniqueAuthorsKey = 'admin_unique_authors_count';
+  // K1-Folgefix: Beim ersten Lauf mit der gefilterten Zählung wird die alte,
+  // aus ungefiltertem Cache aufsummierte Zahl verworfen. Sie konnte durch
+  // vergiftete Organic-Einträge künstlich hoch sein.
+  static const String _sunsetCountResetKey = 'sunset_count_reset_v1_done';
+  // Zählt Autoren über ihre hex-Pubkeys (nicht npub-Strings), dedupliziert
+  // und akkumuliert über Relays/Fetches hinweg.
+  static const String _sunsetAuthorsSetKey = 'sunset_authors_set_v1';
 
   // Timeout für Relay-Verbindung
   static const Duration _relayTimeout = Duration(seconds: 8);
@@ -127,6 +141,7 @@ class AdminRegistry {
   /// VORHER (Bug): Zählte Cache-Einträge → Super-Admin fügt 20 npubs hinzu → sofort Sunset
   /// JETZT:  Zählt einzigartige Autoren → 20 verschiedene Admins müssen publizieren
   static Future<bool> isSunsetActive() async {
+    await _resetSunsetCountOnce();
     final prefs = await SharedPreferences.getInstance();
 
     // Wenn Sunset schon mal erreicht wurde, bleibt es für immer true
@@ -160,10 +175,46 @@ class AdminRegistry {
     return false;
   }
 
-  /// Aktualisiert die Anzahl einzigartiger Autoren (wird nach Relay-Fetch aufgerufen)
-  static Future<void> _updateUniqueAuthorsCount(int count) async {
+  /// Aktualisiert die Sunset-Autorenmenge. [authorPubkeysHex] sind die
+  /// hex-Pubkeys der SIGNER (event.pubkey), die in DIESEM Fetch mindestens
+  /// einen gefilterten (legitimen) Eintrag geliefert haben — nie die im
+  /// Event gelisteten npubs.
+  ///
+  /// Akkumuliert in ein Set statt eine Zahl zu überschreiben: Die alte
+  /// Implementierung ersetzte die Zahl bei jedem Fetch, sodass ein einzelnes
+  /// Relay mit vielen Autoren den Zähler hoch-, das nächste mit wenigen
+  /// wieder runtersetzen konnte.
+  static Future<void> _recordSunsetAuthors(Set<String> authorPubkeysHex) async {
+    if (authorPubkeysHex.isEmpty) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_uniqueAuthorsKey, count);
+    final existing =
+        (prefs.getStringList(_sunsetAuthorsSetKey) ?? <String>[]).toSet();
+    final before = existing.length;
+    existing.addAll(authorPubkeysHex);
+    if (existing.length != before) {
+      await prefs.setStringList(_sunsetAuthorsSetKey, existing.toList());
+      await prefs.setInt(_uniqueAuthorsKey, existing.length);
+    }
+  }
+
+  /// Einmalig: alte, aus ungefiltertem Cache aufsummierte Sunset-Zählung
+  /// verwerfen (K1-Folgefix). Läuft genau einmal pro Installation.
+  static Future<void> _resetSunsetCountOnce() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_sunsetCountResetKey) == true) return;
+    await prefs.setBool(_sunsetCountResetKey, true);
+    final hadAuthors = prefs.getInt(_uniqueAuthorsKey) ?? 0;
+    if (hadAuthors > 0) {
+      AppLogger.security('AdminRegistry',
+          'Sunset-Zählung zurückgesetzt (K1): $hadAuthors Autoren waren '
+          'ungefiltert gezählt und konnten vergiftet sein.');
+    }
+    await prefs.remove(_uniqueAuthorsKey);
+    await prefs.remove(_sunsetAuthorsSetKey);
+    // Inkonsistentes Sunset-Flag ebenfalls zurücksetzen: es konnte auf der
+    // vergifteten Zahl beruhen. Bei echtem Sunset baut sich die Zählung aus
+    // gefilterten Relay-Fetches neu auf.
+    await prefs.setBool(_sunsetFlagKey, false);
   }
 
   // =============================================
@@ -269,10 +320,11 @@ class AdminRegistry {
   // RELAY FETCH (WEB OF TRUST LOGIK)
   // =============================================
 
-  /// Nur für Tests: ersetzt die echte Relay-Abfrage. Liefert die ROHE Liste,
-  /// so wie ein Relay sie schicken würde — die Filterung dahinter bleibt aktiv.
+  /// Nur für Tests: ersetzt die echte Relay-Abfrage. Liefert die ROHEN Listen
+  /// je Signer, so wie ein Relay sie schicken würde — die Filterung dahinter
+  /// bleibt aktiv.
   @visibleForTesting
-  static Future<({List<AdminEntry> admins, int uniqueAuthors})?> Function(
+  static Future<AdminsBySigner?> Function(
       String relayUrl, List<String> authorsHex)? relayFetchOverride;
 
   static Future<List<AdminEntry>?> fetchFromRelays() async {
@@ -324,13 +376,27 @@ class AdminRegistry {
       try {
         final result = await (relayFetchOverride ?? _fetchFromSingleRelay)(relayUrl, queryChunk);
         if (result != null) {
-          // Einzigartige Autoren für Sunset-Berechnung aktualisieren
-          await _updateUniqueAuthorsCount(result.uniqueAuthors);
-
           // Organische Alt-Claims (K1) schon HIER verwerfen, nicht erst beim
-          // Speichern: checkAdmin (Schritt 4), forceRefresh und der
-          // Hintergrund-Refresh arbeiten direkt mit dieser Liste.
-          final admins = _withoutLegacyOrganic(result.admins);
+          // Speichern: checkAdmin (Schritt 4), forceRefresh, die Sunset-Zählung
+          // und der Hintergrund-Refresh arbeiten direkt mit dieser Liste.
+          //
+          // Sunset-Autoren sind die SIGNER der Events (Map-Schlüssel), nicht
+          // die darin gelisteten npubs. Ein Signer zählt nur, wenn nach dem
+          // Organic-Filter mindestens ein Eintrag von ihm übrig bleibt. Ein
+          // einzelnes Super-Admin-Event mit 20+ npubs ist damit genau EIN
+          // Autor und kann Sunset nicht auslösen (Audit-2 Fund 6).
+          final legitSigners = <String>{};
+          final uniqueMap = <String, AdminEntry>{};
+          for (final signer in result.entries) {
+            final clean = _withoutLegacyOrganic(signer.value);
+            if (clean.isEmpty) continue;
+            legitSigners.add(signer.key);
+            for (final e in clean) {
+              uniqueMap[e.npub] = e;
+            }
+          }
+          final admins = uniqueMap.values.toList();
+          await _recordSunsetAuthors(legitSigners);
 
           // Wenn Sunset aktiv ist, mergen wir die Ergebnisse mit dem Cache
           if (isSunset) {
@@ -395,14 +461,16 @@ class AdminRegistry {
   // EINZELNEN RELAY ABFRAGEN (MEHRERE AUTHORS)
   // =============================================
 
-  /// Ergebnis eines Relay-Fetchs (Admin-Liste + Anzahl einzigartiger Autoren)
-  static Future<({List<AdminEntry> admins, int uniqueAuthors})?> _fetchFromSingleRelay(
+  /// Ergebnis eines Relay-Fetchs: Signer (hex) → seine Admin-Einträge.
+  /// Nur Events mit gültiger Signatur von einem der angefragten Autoren
+  /// landen hier; der Schlüssel ist immer event.pubkey, nie ein npub aus
+  /// dem Event-Inhalt.
+  static Future<AdminsBySigner?> _fetchFromSingleRelay(
     String relayUrl, 
     List<String> authorsHex,
   ) async {
     RelaySocket? ws;
-    List<AdminEntry> collectedAdmins = [];
-    final Set<String> seenAuthors = {}; // Einzigartige Autoren tracken
+    final AdminsBySigner collectedBySigner = {};
     // Zaehlt verworfene Nachrichten und meldet sie EINMAL im finally.
     // Vorher stand hier eine warn-Zeile pro Nachricht — ein Relay mit
     // kaputten Events fuellte damit den Ringpuffer.
@@ -410,7 +478,7 @@ class AdminRegistry {
 
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
-      final completer = Completer<List<AdminEntry>?>();
+      final completer = Completer<AdminsBySigner?>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
@@ -442,23 +510,25 @@ class AdminRegistry {
               if (!authorsHex.contains(event.pubkey)) return;
               if (!event.isValid()) return;
 
-              // Einzigartigen Autor tracken (für Sunset-Berechnung)
-              seenAuthors.add(event.pubkey);
-
               try {
                 final content = jsonDecode(event.content) as Map<String, dynamic>;
                 final adminsInEvent = (content['admins'] as List<dynamic>?)
                     ?.map((e) => AdminEntry.fromJson(e as Map<String, dynamic>))
                     .toList() ?? [];
 
-                // Sammeln aller Admins aus allen Events
-                collectedAdmins.addAll(adminsInEvent);
+                // Einträge unter ihrem SIGNER sammeln (Sunset zählt Signer,
+                // nicht gelistete npubs).
+                if (adminsInEvent.isNotEmpty) {
+                  collectedBySigner
+                      .putIfAbsent(event.pubkey, () => [])
+                      .addAll(adminsInEvent);
+                }
               } catch (e) {
                 tally.failed(e);
               }
             } 
             else if (type == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(collectedAdmins);
+              if (!completer.isCompleted) completer.complete(collectedBySigner);
             }
           } catch (e) {
             tally.failed(e);
@@ -488,15 +558,17 @@ class AdminRegistry {
 
       final result = await completer.future.timeout(
         _relayTimeout,
-        onTimeout: () => collectedAdmins.isNotEmpty ? collectedAdmins : null,
+        onTimeout: () => collectedBySigner.isNotEmpty ? collectedBySigner : null,
       );
 
       ws.add(jsonEncode(['CLOSE', subscriptionId]));
       
-      // Duplikate aus der gesammelten Liste filtern
+      // Duplikate je Signer filtern (mehrere Events desselben Autors)
       if (result != null) {
-        final uniqueMap = { for (var e in result) e.npub : e };
-        return (admins: uniqueMap.values.toList(), uniqueAuthors: seenAuthors.length);
+        return {
+          for (final e in result.entries)
+            e.key: {for (final a in e.value) a.npub: a}.values.toList(),
+        };
       }
       return null;
 
@@ -708,6 +780,7 @@ class AdminRegistry {
       try {
         final result = await _fetchFromSingleRelay(relayUrl, [myHex]);
         if (result != null) {
+          final mine = result[myHex] ?? const <AdminEntry>[];
           // Schutz: Eine LEERE Antwort kann zweierlei bedeuten —
           //  (a) ich habe nie publiziert, oder
           //  (b) ich habe bewusst alles widerrufen.
@@ -715,9 +788,9 @@ class AdminRegistry {
           // publizierter lokaler Stand NICHT stillschweigend gelöscht
           // werden. Nur überschreiben, wenn das Relay tatsächlich
           // Bürgschaften liefert.
-          if (result.admins.isNotEmpty) {
-            await _saveMyVouches(result.admins);
-            return result.admins.length;
+          if (mine.isNotEmpty) {
+            await _saveMyVouches(mine);
+            return mine.length;
           }
           // Relay hat geantwortet, aber kein/leeres Event → nichts ändern.
           return 0;
