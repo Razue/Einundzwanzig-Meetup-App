@@ -671,6 +671,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(c.meetup.city, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                    if (c.meetup.groupName != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(c.meetup.groupName!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 11.5)),
+                      ),
                     Text(t.gpsDistanceKm(c.distanceKm.toStringAsFixed(1)), style: const TextStyle(color: cTextTertiary, fontSize: 12)),
                   ])),
                   const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 20),

@@ -18,6 +18,11 @@ class Meetup {
   final String nostrNpub;
   final String coverImagePath;
 
+  String? get groupName =>
+      name.isNotEmpty && name.toLowerCase() != city.toLowerCase()
+          ? name
+          : null;
+
   Meetup({
     required this.id, 
     this.name = "",
