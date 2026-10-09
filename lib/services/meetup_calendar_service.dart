@@ -141,7 +141,7 @@ class MeetupCalendarService {
 
   Future<List<CalendarEvent>> fetchMeetups() async {
     try {
-      final response = await http.get(Uri.parse(calendarUrl));
+      final response = await http.get(Uri.parse(calendarUrl)).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
         final iCalString = utf8.decode(response.bodyBytes);

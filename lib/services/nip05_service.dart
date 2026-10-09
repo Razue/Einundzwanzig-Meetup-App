@@ -26,6 +26,7 @@ import 'relay_socket.dart';
 
 class Nip05Service {
   static const Duration _timeout = Duration(seconds: 5);
+  static const int _maxBodyBytes = 64 * 1024;
 
   // Bekannte Community-Domains (höherer Vertrauenswert)
   static const List<String> communityDomains = [
@@ -75,6 +76,11 @@ class Nip05Service {
       final response = await http.get(url).timeout(_timeout);
 
       if (response.statusCode != 200) {
+        return Nip05Result(valid: false, nip05: nip05, domain: domain);
+      }
+      // Security Audit M4: Groessenlimit — eine nostr.json ist wenige KB,
+      // alles darueber ist Unsinn oder Absicht.
+      if (response.bodyBytes.length > _maxBodyBytes) {
         return Nip05Result(valid: false, nip05: nip05, domain: domain);
       }
 
