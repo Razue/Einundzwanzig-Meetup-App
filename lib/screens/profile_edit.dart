@@ -19,6 +19,7 @@ import 'platform_proof_screen.dart';
 import 'humanity_proof_screen.dart';
 import '../services/platform_proof_service.dart';
 import '../services/humanity_proof_service.dart';
+import '../features.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -319,6 +320,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   );
 
   void _generateNostrKey() async {
+    // Security Audit H4: Im Browser keinen lokalen nsec anlegen — NIP-07
+    // oder Bunker verwenden (siehe kWebLocalNsecLoginEnabled).
+    if (kIsWeb && !kWebLocalNsecLoginEnabled) {
+      final t = AppLocalizations.of(context);
+      _showError('${t.webKeyWarnH}: ${t.webKeyWarnAdvice}');
+      return;
+    }
     final confirm = await _showKeyEducationDialog();
     if (confirm != true) return;
 
@@ -646,6 +654,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   void _importNsec() {
+    // Security Audit H4: siehe _generateNostrKey().
+    if (kIsWeb && !kWebLocalNsecLoginEnabled) {
+      final t = AppLocalizations.of(context);
+      _showError('${t.webKeyWarnH}: ${t.webKeyWarnAdvice}');
+      return;
+    }
     final nsecController = TextEditingController();
 
     showDialog(

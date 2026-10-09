@@ -26,3 +26,18 @@
 /// der Info.plist, und ob das Badge-Payload noch auf ein NTAG215 passt —
 /// Event-Badges tragen inzwischen einen Event-Verweis von rund 110 Zeichen.
 const bool kNfcEnabled = false;
+
+/// Lokaler nsec im Browser — Anlegen oder Importieren eines Schluessels,
+/// der dann (verschluesselt, aber im selben Origin wie jedes geladene
+/// Skript) im Browser-Speicher liegt.
+///
+/// Abgeschaltet seit Oktober 2026 (Security Audit H4): Im Web ist der
+/// Schluessel schwaecher geschuetzt als in den nativen Apps — ein einziges
+/// XSS reicht, um ihn abzugreifen. Web-Nutzer werden auf NIP-07
+/// (Browsererweiterung) oder Bunker (NIP-46) gelenkt; dort verlaesst der
+/// nsec die Erweiterung bzw. den Signer nie.
+///
+/// Beim Wiedereinschalten pruefen: Speicherung ausschliesslich als
+/// ncryptsec (NIP-49) mit Passwort, kein Klartext-Aequivalent im
+/// localStorage, CSP in web/index.html aktuell.
+const bool kWebLocalNsecLoginEnabled = false;

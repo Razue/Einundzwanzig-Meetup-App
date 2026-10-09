@@ -17,6 +17,22 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <!--
+    Content-Security-Policy (Security Audit H4). Strikt, aber auf das
+    zugeschnitten, was Flutter Web wirklich braucht:
+      - script-src: eigene Skripte, der PasskeyAuthenticator-Stub unten
+        (per SHA-256-Hash, kein 'unsafe-inline'), CanvasKit/WebAssembly
+        von gstatic ('wasm-unsafe-eval').
+      - style-src 'unsafe-inline': Flutter setzt Styles programmatisch.
+      - connect-src https:/wss:: Relays, Portal, LNURL, mempool, Blossom.
+      - img-src https:: Profilbilder und Badge-Grafiken beliebiger Hosts.
+    Wird der Stub unten geaendert, muss der Hash neu berechnet werden:
+      sha256 des Skript-Inhalts (ohne <script>-Tags), base64-kodiert.
+    frame-ancestors laesst sich per <meta> nicht setzen — dafuer ist ein
+    HTTP-Header des Hosters noetig (X-Frame-Options / CSP-Header).
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-jGJ9mhDWleCiYiVuupMHwRD28jiL0EygcnqNyTIhJzs=' 'wasm-unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; worker-src 'self' blob:; manifest-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'">
+  <meta http-equiv="Referrer-Policy" content="no-referrer">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Badge-System für Einundzwanzig-Bitcoin-Meetups — mit QR, Nostr Web of Trust und Meetup-Kalender.">
 
