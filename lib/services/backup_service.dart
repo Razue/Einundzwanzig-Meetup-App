@@ -22,6 +22,7 @@ import 'humanity_proof_service.dart'; // NEU
 import 'pbkdf2/pbkdf2_dart.dart';
 import 'pbkdf2/pbkdf2_fast.dart';
 import 'app_logger.dart';
+import 'share_origin.dart';
 
 class BackupService {
   /// Laeuft gerade ein Export oder ein Import?
@@ -327,20 +328,7 @@ class BackupService {
       // Widget sicher gebaut ist. Ohne gueltiges sharePositionOrigin wirft
       // UIKit (reproduziert auf iPhone/iOS 26, ebenso iPad) — und dieser Wurf
       // war der Ausloeser der schwarzen Seite.
-      final renderBox = context.findRenderObject() as RenderBox?;
-      final Rect shareOrigin;
-      if (renderBox != null &&
-          renderBox.hasSize &&
-          renderBox.size.width > 0 &&
-          renderBox.size.height > 0) {
-        shareOrigin = renderBox.localToGlobal(Offset.zero) & renderBox.size;
-      } else {
-        // Fallback: iOS lehnt {{0,0},{0,0}} ab. Besser die aktuelle
-        // Bildschirmflaeche als Anker als gar keinen / Null-Rect.
-        final size = MediaQuery.sizeOf(context);
-        shareOrigin = Offset.zero &
-            (size.width > 0 && size.height > 0 ? size : const Size(1, 1));
-      }
+      final shareOrigin = shareOriginFor(context);
 
       if (context.mounted) {
         loadingOpen = true;

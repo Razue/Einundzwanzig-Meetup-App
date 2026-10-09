@@ -16,6 +16,7 @@ import '../services/news_reactions_service.dart';
 import '../services/news_service.dart';
 import '../services/news_zap_service.dart';
 import '../widgets/markdown_view.dart';
+import '../services/share_origin.dart';
 
 const String _websiteUrl = 'https://media.einundzwanzig.space/s/einundzwanzig-news';
 
@@ -508,7 +509,8 @@ class _ArticleDetailState extends State<_ArticleDetail> {
 
   void _share() {
     final a = widget.article;
-    Share.share('${a.title}\n\n${_articleUrl(a)}');
+    Share.share('${a.title}\n\n${_articleUrl(a)}',
+        sharePositionOrigin: shareOriginFor(context));
   }
 
   /// Teilen und Herz. Steht unter dem Artikel, weil beides erst nach dem

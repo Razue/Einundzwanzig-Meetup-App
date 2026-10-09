@@ -12,6 +12,7 @@ import '../models/meetup.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/event_details_sheet.dart';
+import '../services/share_origin.dart';
 
 class CalendarScreen extends StatefulWidget {
   // Wir erlauben einen optionalen Suchbegriff beim Start (z.B. vom Dashboard kommend)
@@ -556,7 +557,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 const SizedBox(width: 10),
               ],
               action(t.evShare, Icons.share_rounded, () {
-                Share.share('${event.title} · $when${event.location.isNotEmpty ? '\n${event.location}' : ''}${event.url.isNotEmpty ? '\n${event.url}' : ''}');
+                Share.share('${event.title} · $when${event.location.isNotEmpty ? '\n${event.location}' : ''}${event.url.isNotEmpty ? '\n${event.url}' : ''}',
+                    sharePositionOrigin: shareOriginFor(ctx));
               }),
             ]),
             const SizedBox(height: 10),

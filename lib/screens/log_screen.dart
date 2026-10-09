@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 import '../services/app_logger.dart';
+import '../services/share_origin.dart';
 
 class LogScreen extends StatefulWidget {
   const LogScreen({super.key});
@@ -88,7 +89,10 @@ class _LogScreenState extends State<LogScreen> {
             tooltip: 'Teilen',
             onPressed: () {
               final text = AppLogger.exportText();
-              if (text.isNotEmpty) Share.share(text, subject: '21Meetup Diagnose-Log');
+              if (text.isNotEmpty) {
+                Share.share(text, subject: '21Meetup Diagnose-Log',
+                    sharePositionOrigin: shareOriginFor(context));
+              }
             },
           ),
         ],
