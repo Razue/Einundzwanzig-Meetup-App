@@ -47,6 +47,7 @@ import 'nostr_service.dart';
 import 'app_logger.dart';
 import 'dart:math';
 import 'relay_socket.dart';
+import 'zap_receipt_validator.dart';
 
 class HumanityProofService {
   // Cache-Keys
@@ -249,7 +250,7 @@ class HumanityProofService {
       final subId1 = 'zap-recv-$hex1';   // empfangen  (#p)
       final subId2 = 'zap-req-$hex2';    // Zap-Request (selten auf Relays)
       final subId3 = 'zap-sent-$hex3';   // gesendet    (#P) — der neue Weg
-      _ZapSearchResult? found;
+      final candidates = <_ZapCandidate>[];
       int eoseCount = 0;
 
       ws.listen(
@@ -259,7 +260,7 @@ class HumanityProofService {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
 
-            if (type == 'EVENT' && message.length >= 3 && found == null) {
+            if (type == 'EVENT' && message.length >= 3) {
               final eventData = RelaySocket.verifiedEvent(message[2], tag: 'HumanityProof');
               if (eventData == null) return;
               final eventId = eventData['id'] as String? ?? '';
@@ -267,66 +268,35 @@ class HumanityProofService {
               final kind = eventData['kind'] as int? ?? 0;
 
               if (kind == 9735) {
-                // Strategie 1: Empfangenes Zap Receipt
-                // Prüfe ob der Nutzer der Empfänger ist (#p Tag)
-                final tags = eventData['tags'] as List<dynamic>? ?? [];
-                for (final tag in tags) {
-                  final t = tag as List<dynamic>;
-                  if (t.length >= 2 && t[0] == 'p' && t[1] == pubkeyHex) {
-                    found = _ZapSearchResult(
-                      receiptEventId: eventId,
-                      zapTimestamp: createdAt,
-                    );
-                    if (!completer.isCompleted) completer.complete(found);
-                    return;
-                  }
+                // Security Audit H3: Nur Quittungen, die lokal bestehen
+                // (Signaturen, Zap-Request, bolt11-Description-Hash). Der
+                // Absender kommt aus dem SIGNIERTEN Zap-Request, nicht aus
+                // dem unsignierten P-Tag. Der Provider-Abgleich (Netz)
+                // folgt nach dem Sammeln.
+                final check = ZapReceiptValidator.checkLocal(eventData);
+                if (!check.ok) {
+                  tally.failed('zap_receipt:${check.reason}');
+                  return;
                 }
-
-                // Bin ich der SENDER? Grosses "P" nach NIP-57.
-                for (final tag in tags) {
-                  final t = tag as List<dynamic>;
-                  if (t.length >= 2 && t[0] == 'P' && t[1] == pubkeyHex) {
-                    found = _ZapSearchResult(
-                      receiptEventId: eventId,
-                      zapTimestamp: createdAt,
-                    );
-                    if (!completer.isCompleted) completer.complete(found);
-                    return;
-                  }
+                final mine = check.recipientPubkey == pubkeyHex ||
+                    check.senderPubkey == pubkeyHex;
+                if (!mine) return;
+                if (candidates.length < 6) {
+                  candidates.add(_ZapCandidate(
+                    receiptEventId: eventId,
+                    zapTimestamp: createdAt,
+                    receiptPubkey: check.receiptPubkey,
+                    recipientPubkey: check.recipientPubkey,
+                  ));
                 }
-
-                // Rueckfall: Manche Quittungen tragen kein "P". Dann steckt
-                // der Absender im eingebetteten Zap-Request im description-Tag.
-                for (final tag in tags) {
-                  final t = tag as List<dynamic>;
-                  if (t.length >= 2 && t[0] == 'description') {
-                    try {
-                      final zapReq = jsonDecode(t[1] as String) as Map<String, dynamic>;
-                      if (zapReq['pubkey'] == pubkeyHex) {
-                        found = _ZapSearchResult(
-                          receiptEventId: eventId,
-                          zapTimestamp: createdAt,
-                        );
-                        if (!completer.isCompleted) completer.complete(found);
-                        return;
-                      }
-                    } catch (_) {}
-                  }
-                }
-              } else if (kind == 9734) {
-                // Strategie 2: Gesendeter Zap Request
-                found = _ZapSearchResult(
-                  receiptEventId: eventId,
-                  zapTimestamp: createdAt,
-                );
-                if (!completer.isCompleted) completer.complete(found);
-                return;
               }
+              // Kind 9734 (selbst signierter Zap-Request) zählt nicht mehr:
+              // Den kann jeder kostenlos erzeugen, er beweist keine Zahlung.
             } else if (type == 'EOSE') {
               eoseCount++;
               // Warte auf beide Subscriptions
               if (eoseCount >= 3 && !completer.isCompleted) {
-                completer.complete(found);
+                completer.complete(null);
               }
             }
           } catch (e) { tally.failed(e); }
@@ -385,10 +355,30 @@ class HumanityProofService {
         }
       ]));
 
-      return await completer.future.timeout(
+      await completer.future.timeout(
         const Duration(seconds: 12),
-        onTimeout: () => found,
+        onTimeout: () => null,
       );
+      try { ws.close(); } catch (_) {}
+      ws = null;
+
+      // Provider-Abgleich: Die Quittung muss vom LNURL-Server des
+      // Empfängers stammen. Erste bestandene Quittung gewinnt.
+      for (final c in candidates) {
+        final fromProvider = await ZapReceiptValidator.isFromRecipientProvider(
+          receiptPubkey: c.receiptPubkey,
+          recipientPubkey: c.recipientPubkey,
+        );
+        if (fromProvider) {
+          return _ZapSearchResult(
+            receiptEventId: c.receiptEventId,
+            zapTimestamp: c.zapTimestamp,
+          );
+        }
+        AppLogger.debug('HumanityProof',
+            'Quittung ${c.receiptEventId.substring(0, 8)}… nicht vom Provider des Empfängers — ignoriert');
+      }
+      return null;
     } finally {
       tally.report();
       ws?.close();
@@ -502,6 +492,19 @@ class HumanityProofService {
 // =============================================
 // DATENMODELLE
 // =============================================
+
+class _ZapCandidate {
+  final String receiptEventId;
+  final int zapTimestamp;
+  final String receiptPubkey;
+  final String recipientPubkey;
+  _ZapCandidate({
+    required this.receiptEventId,
+    required this.zapTimestamp,
+    required this.receiptPubkey,
+    required this.recipientPubkey,
+  });
+}
 
 class _ZapSearchResult {
   final String receiptEventId;

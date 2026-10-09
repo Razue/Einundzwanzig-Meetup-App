@@ -36,6 +36,7 @@ import 'nostr_service.dart';
 import 'dart:math';
 import 'app_logger.dart';
 import 'relay_socket.dart';
+import 'zap_receipt_validator.dart';
 
 class ZapVerificationService {
   // Cache
@@ -110,7 +111,30 @@ class ZapVerificationService {
       }
     }
 
-    return allReceipts;
+    return _onlyFromProviders(allReceipts);
+  }
+
+  /// Security Audit H3: Behält nur Quittungen, deren Aussteller der
+  /// LNURL-Provider des jeweiligen Empfängers ist (gecacht, max. 15
+  /// verschiedene Empfänger pro Lauf).
+  static Future<List<ZapReceipt>> _onlyFromProviders(List<ZapReceipt> receipts) async {
+    final byRecipient = <String, List<ZapReceipt>>{};
+    for (final r in receipts) {
+      byRecipient.putIfAbsent(r.recipientPubkey, () => []).add(r);
+    }
+    final kept = <ZapReceipt>[];
+    var lookups = 0;
+    for (final entry in byRecipient.entries) {
+      if (lookups++ >= 15) break;
+      final provider = await ZapReceiptValidator.providerPubkeyFor(entry.key);
+      if (provider == null) continue;
+      kept.addAll(entry.value.where((r) => r.receiptPubkey.toLowerCase() == provider));
+    }
+    if (kept.length != receipts.length) {
+      AppLogger.debug('ZapVerification',
+          '${receipts.length - kept.length} von ${receipts.length} Quittungen ohne Provider-Nachweis verworfen');
+    }
+    return kept;
   }
 
   static Future<List<ZapReceipt>> _fetchFromRelay(
@@ -198,31 +222,13 @@ class ZapVerificationService {
     try {
       final eventId = eventData['id'] as String? ?? '';
       final createdAt = eventData['created_at'] as int? ?? 0;
-      final tags = eventData['tags'] as List<dynamic>? ?? [];
 
-      String recipientPubkey = '';
-      String senderPubkey = '';
-      String? bolt11;
-
-      for (final tag in tags) {
-        final t = tag as List<dynamic>;
-        if (t.isEmpty) continue;
-        final key = t[0] as String;
-
-        if (key == 'p' && t.length >= 2) {
-          recipientPubkey = t[1] as String;
-        } else if (key == 'bolt11' && t.length >= 2) {
-          bolt11 = t[1] as String;
-        } else if (key == 'description' && t.length >= 2) {
-          // Zap Request (Kind 9734) ist als JSON im description-Tag
-          try {
-            final zapRequest = jsonDecode(t[1] as String) as Map<String, dynamic>;
-            senderPubkey = zapRequest['pubkey'] as String? ?? '';
-          } catch (_) {}
-        }
-      }
-
-      if (recipientPubkey.isEmpty && senderPubkey.isEmpty) return null;
+      // Security Audit H3: Signaturen, Zap-Request und bolt11-Description-
+      // Hash müssen zusammenpassen — sonst zählt die Quittung nicht.
+      final check = ZapReceiptValidator.checkLocal(eventData);
+      if (!check.ok) return null;
+      final recipientPubkey = check.recipientPubkey;
+      final senderPubkey = check.senderPubkey;
 
       final isSent = senderPubkey == contextPubkey;
       final isReceived = recipientPubkey == contextPubkey;
@@ -236,7 +242,8 @@ class ZapVerificationService {
         createdAt: createdAt,
         isSent: isSent,
         isReceived: isReceived,
-        hasBolt11: bolt11 != null && bolt11.isNotEmpty,
+        hasBolt11: true, // checkLocal verlangt eine passende bolt11
+        receiptPubkey: check.receiptPubkey,
       );
     } catch (e) {
       return null;
@@ -363,6 +370,8 @@ class ZapReceipt {
   final bool isSent;
   final bool isReceived;
   final bool hasBolt11;
+  /// Aussteller der Quittung (LNURL-Server des Empfängers).
+  final String receiptPubkey;
 
   ZapReceipt({
     required this.eventId,
@@ -372,6 +381,7 @@ class ZapReceipt {
     required this.isSent,
     required this.isReceived,
     required this.hasBolt11,
+    this.receiptPubkey = '',
   });
 }
 
