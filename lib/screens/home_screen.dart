@@ -165,6 +165,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
 
   // Profil
   String? _profilePicUrl;
+  int _profilePictureRequest = 0;
   String? _localProfilePic;
 
   // Nostr
@@ -499,6 +500,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     }
     try {
       await _loadUser(skipOrgCheck: true); // Org-Check unten kontrolliert
+      _loadProfilePicture();
       await _loadBadges();
       await _calculateTrustScore();
       // REIHENFOLGE WICHTIG: Portal-Check ZUERST (räumt bei Entzug den
@@ -534,17 +536,30 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   }
 
   void _loadProfilePicture() async {
-    // Lokales Bild hat Vorrang
+    final request = ++_profilePictureRequest;
+    final npub = _user.nostrNpub;
     final local = await NostrProfileService.getLocalPicture();
-    if (local != null && local.isNotEmpty && mounted) { setState(() => _localProfilePic = local); return; }
-    // Nostr-Profilbild laden
-    if (_user.hasNostrKey && _user.nostrNpub.isNotEmpty) {
-      try {
-        final pk = Nip19.decodePubkey(_user.nostrNpub);
-        final url = await NostrProfileService.fetchProfilePicture(pk);
-        if (url != null && mounted) setState(() => _profilePicUrl = url);
-      } catch (_) {}
+    if (!mounted || request != _profilePictureRequest || npub != _user.nostrNpub) {
+      return;
     }
+    if (local != null && local.isNotEmpty) {
+      setState(() {
+        _localProfilePic = local;
+        _profilePicUrl = null;
+      });
+      return;
+    }
+    setState(() => _localProfilePic = null);
+    // Öffentliche Metadaten benötigen nur die aktive Identität,
+    // auch bei externen Signern.
+    if (npub.isEmpty) return;
+    try {
+      final pk = Nip19.decodePubkey(npub);
+      final url = await NostrProfileService.fetchProfilePicture(pk);
+      if (mounted && request == _profilePictureRequest && npub == _user.nostrNpub) {
+        setState(() => _profilePicUrl = url);
+      }
+    } catch (_) {}
   }
 
   void _checkNostrNew() async {
@@ -583,7 +598,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       final image = await picker.pickImage(source: ImageSource.gallery, maxWidth: 400, maxHeight: 400, imageQuality: 80);
       if (image != null) {
         await NostrProfileService.setLocalPicture(image.path);
-        if (mounted) setState(() { _localProfilePic = image.path; });
+        if (mounted) {
+          setState(() {
+            _profilePictureRequest++;
+            _localProfilePic = image.path;
+            _profilePicUrl = null;
+          });
+        }
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).homeImageLoadError(e.toString()))));
@@ -741,7 +762,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       _allMeetupsCache = m;
       hm = m.where((x) => x.city == u.homeMeetupId).firstOrNull;
     }
-    if (mounted) setState(() { _user = u; _homeMeetup = hm; }); if (!skipOrgCheck) _checkPortalOrganizer(); _refreshPortalConnected(); }
+    if (mounted) {
+      setState(() {
+        if (_user.nostrNpub != u.nostrNpub) {
+          _profilePictureRequest++;
+          _profilePicUrl = null;
+          _localProfilePic = null;
+        }
+        _user = u;
+        _homeMeetup = hm;
+      });
+    }
+    if (!skipOrgCheck) _checkPortalOrganizer();
+    _refreshPortalConnected();
+  }
   Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
   /// PORTAL-ORGANISATOR = APP-ADMIN (robust, mit sicherem Entzug):
   /// - Portal-Login (Nostr) + my-meetups nicht leer  -> Admin VERGEBEN
@@ -1444,7 +1478,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     return Row(children: [
       // Avatar — simpler Kreis, kein Gradient
       GestureDetector(
-        onTap: _user.hasNostrKey && _profilePicUrl != null ? null : _pickLocalProfilePicture,
+        onTap: _profilePicUrl != null ? null : _pickLocalProfilePicture,
         child: Container(
           width: 40, height: 40,
           decoration: BoxDecoration(
