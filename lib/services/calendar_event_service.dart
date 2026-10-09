@@ -306,7 +306,8 @@ class CalendarEventService {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg.length >= 3 && msg[0] == 'EVENT') {
-              final ev = NostrCalendarEvent.fromEvent(msg[2] as Map<String, dynamic>);
+              final raw = RelaySocket.verifiedEvent(msg[2], tag: 'Calendar');
+              final ev = raw == null ? null : NostrCalendarEvent.fromEvent(raw);
               // Ersetzbare Events: Die neueste Fassung gewinnt.
               if (ev != null && !ev.isCancelled &&
                   (newest == null || ev.start.isAfter(newest!.start))) {
@@ -368,7 +369,8 @@ class CalendarEventService {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
             if (type == 'EVENT' && message.length >= 3) {
-              final ev = NostrCalendarEvent.fromEvent(message[2] as Map<String, dynamic>);
+              final raw = RelaySocket.verifiedEvent(message[2], tag: 'Calendar');
+              final ev = raw == null ? null : NostrCalendarEvent.fromEvent(raw);
               // Abgesagte Termine gar nicht erst aufnehmen. Sie bleiben im
               // Netz stehen — Nostr kennt kein Loeschen —, gehoeren aber in
               // keinen Kalender.

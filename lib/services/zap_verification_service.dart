@@ -138,7 +138,8 @@ class ZapVerificationService {
             final type = message[0] as String;
 
             if (type == 'EVENT' && message.length >= 3) {
-              final eventData = message[2] as Map<String, dynamic>;
+              final eventData = RelaySocket.verifiedEvent(message[2], tag: 'ZapVerification');
+              if (eventData == null) return;
               final receipt = _parseZapReceipt(eventData, pubkeyHex);
               if (receipt != null) {
                 receipts.add(receipt);

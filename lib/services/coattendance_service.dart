@@ -897,7 +897,8 @@ class CoAttendanceService {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'EVENT' && msg.length >= 3) {
-              final ev = msg[2] as Map<String, dynamic>;
+              final ev = RelaySocket.verifiedEvent(msg[2], tag: 'CoAttendance');
+              if (ev == null) return;
               final authorHex = ev['pubkey'] as String;
               final authorNpub = Nip19.encodePubkey(authorHex);
               final content = jsonDecode(ev['content'] as String) as Map<String, dynamic>;

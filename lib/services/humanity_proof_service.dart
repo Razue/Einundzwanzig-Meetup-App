@@ -260,7 +260,8 @@ class HumanityProofService {
             final type = message[0] as String;
 
             if (type == 'EVENT' && message.length >= 3 && found == null) {
-              final eventData = message[2] as Map<String, dynamic>;
+              final eventData = RelaySocket.verifiedEvent(message[2], tag: 'HumanityProof');
+              if (eventData == null) return;
               final eventId = eventData['id'] as String? ?? '';
               final createdAt = eventData['created_at'] as int? ?? 0;
               final kind = eventData['kind'] as int? ?? 0;

@@ -154,7 +154,8 @@ class Nip05Service {
             final type = message[0] as String;
 
             if (type == 'EVENT' && message.length >= 3) {
-              final eventData = message[2] as Map<String, dynamic>;
+              final eventData = RelaySocket.verifiedEvent(message[2], tag: 'NIP05');
+              if (eventData == null) return;
               final content = eventData['content'] as String? ?? '';
               try {
                 final profile = jsonDecode(content) as Map<String, dynamic>;

@@ -109,7 +109,8 @@ class NewsZapService {
             try {
               final msg = jsonDecode(data as String) as List<dynamic>;
               if (msg.length < 3 || msg[0] != 'EVENT') return;
-              final event = msg[2] as Map<String, dynamic>;
+              final event = RelaySocket.verifiedEvent(msg[2], tag: 'NewsZap');
+              if (event == null) return;
               final profile =
                   jsonDecode((event['content'] ?? '{}').toString())
                       as Map<String, dynamic>;

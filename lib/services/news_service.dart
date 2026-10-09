@@ -210,7 +210,8 @@ class NewsService {
             try {
               final msg = jsonDecode(data as String) as List<dynamic>;
               if (msg.isNotEmpty && msg[0] == 'EVENT' && msg.length >= 3) {
-                final event = msg[2] as Map<String, dynamic>;
+                final event = RelaySocket.verifiedEvent(msg[2], tag: 'News');
+                if (event == null) return;
                 final content = (event['content'] ?? '').toString();
                 if (content.isNotEmpty) finish(content);
               }

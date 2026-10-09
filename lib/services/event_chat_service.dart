@@ -146,7 +146,8 @@ class EventChatService {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg.length >= 3 && msg[0] == 'EVENT') {
-              final m = ChatMessage.fromEvent(msg[2] as Map<String, dynamic>);
+              final ev = RelaySocket.verifiedEvent(msg[2], tag: 'EventChat');
+              final m = ev == null ? null : ChatMessage.fromEvent(ev);
               if (m != null) onMessage(m);
             }
           } catch (_) {}
@@ -256,7 +257,8 @@ class EventChatService {
         try {
           final msg = jsonDecode(data as String) as List<dynamic>;
           if (msg.length >= 3 && msg[0] == 'EVENT') {
-            out.add(msg[2] as Map<String, dynamic>);
+            final ev = RelaySocket.verifiedEvent(msg[2], tag: 'EventChat');
+            if (ev != null) out.add(ev);
           } else if (msg.isNotEmpty &&
               (msg[0] == 'EOSE' || msg[0] == 'CLOSED')) {
             if (!done.isCompleted) done.complete();

@@ -323,7 +323,8 @@ class ChatService {
 
     final ws = await _connectAuthed((msg) {
       if (msg.length >= 3 && msg[0] == 'EVENT') {
-        out.add(msg[2] as Map<String, dynamic>);
+        final ev = RelaySocket.verifiedEvent(msg[2], tag: 'Chat');
+        if (ev != null) out.add(ev);
       } else if (msg[0] == 'EOSE') {
         gotEose = true;
         if (!done.isCompleted) done.complete();
@@ -724,7 +725,8 @@ class ChatService {
   }) async {
     final ws = await _connectAuthed((msg) {
       if (msg.length >= 3 && msg[0] == 'EVENT') {
-        final m = ChatMessage.fromEvent(msg[2] as Map<String, dynamic>);
+        final ev = RelaySocket.verifiedEvent(msg[2], tag: 'Chat');
+        final m = ev == null ? null : ChatMessage.fromEvent(ev);
         if (m != null) onMessage(m);
       }
     });

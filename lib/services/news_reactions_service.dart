@@ -210,7 +210,8 @@ class NewsReactionsService {
                 return;
               }
               if (msg.length >= 3 && msg[0] == 'EVENT') {
-                final event = msg[2] as Map<String, dynamic>;
+                final event = RelaySocket.verifiedEvent(msg[2], tag: 'NewsReactions');
+                if (event == null) return;
                 final content = (event['content'] ?? '').toString();
                 final pubkey = (event['pubkey'] ?? '').toString();
                 if (pubkey.isEmpty || !_isPositive(content)) return;

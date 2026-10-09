@@ -146,7 +146,8 @@ class EventRsvpService {
         try {
           final msg = jsonDecode(data as String) as List<dynamic>;
           if (msg.length >= 3 && msg[0] == 'EVENT') {
-            out.add(msg[2] as Map<String, dynamic>);
+            final ev = RelaySocket.verifiedEvent(msg[2], tag: 'RSVP');
+            if (ev != null) out.add(ev);
           } else if (msg.isNotEmpty &&
               (msg[0] == 'EOSE' || msg[0] == 'CLOSED')) {
             if (!done.isCompleted) done.complete();

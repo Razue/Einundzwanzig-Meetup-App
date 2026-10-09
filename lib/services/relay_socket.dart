@@ -17,7 +17,10 @@
 
 import 'dart:async';
 
+import 'package:nostr/nostr.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+import 'app_logger.dart';
 
 class RelaySocket {
   final WebSocketChannel _channel;
@@ -70,4 +73,54 @@ class RelaySocket {
 
   /// Verbindung schließen. Entspricht `ws.close()`.
   Future<void> close() => _channel.sink.close();
+
+  // ===========================================================
+  // ZENTRALE SIGNATURPRÜFUNG (Security Audit H2/M1)
+  // ===========================================================
+  //
+  // Jedes Event, das aus einer ["EVENT", subId, {...}]-Nachricht in die
+  // App gelangt, läuft hier durch: ID nachrechnen, Schnorr-Signatur
+  // prüfen. Ein Relay (oder wer sich dazwischenschaltet) kann damit keine
+  // Kalender-Termine, Profile, Chats, Zusagen oder Follow-Listen unter
+  // fremdem Pubkey unterschieben.
+  //
+  // Verworfene Events werden gezählt und sparsam protokolliert — nie
+  // geworfen, damit ein kaputtes Relay die Verarbeitung nicht abbricht.
+
+  static int _rejectedCount = 0;
+
+  /// Anzahl der seit App-Start wegen ungültiger Signatur verworfenen Events.
+  static int get rejectedEventCount => _rejectedCount;
+
+  /// Liefert das Event-Objekt zurück, wenn ID und Signatur stimmen —
+  /// sonst null. [raw] ist typischerweise `msg[2]` einer EVENT-Nachricht.
+  static Map<String, dynamic>? verifiedEvent(dynamic raw, {String tag = 'RelaySocket'}) {
+    if (raw is! Map<String, dynamic>) return null;
+    bool ok = false;
+    try {
+      final event = Event(
+        raw['id'] ?? '',
+        raw['pubkey'] ?? '',
+        raw['created_at'] ?? 0,
+        raw['kind'] ?? 0,
+        (raw['tags'] as List<dynamic>?)
+                ?.map((t) => (t as List<dynamic>).map((e) => e.toString()).toList())
+                .toList() ??
+            [],
+        raw['content'] ?? '',
+        raw['sig'] ?? '',
+      );
+      ok = event.isValid();
+    } catch (_) {
+      ok = false;
+    }
+    if (ok) return raw;
+    _rejectedCount++;
+    // Nur jedes 1., 10., 100., … verworfene Event loggen — kein Log-Sturm.
+    if (_rejectedCount == 1 || _rejectedCount % 10 == 0) {
+      AppLogger.debug(tag,
+          'Event mit ungültiger Signatur verworfen (kind ${raw['kind']}, gesamt: $_rejectedCount)');
+    }
+    return null;
+  }
 }

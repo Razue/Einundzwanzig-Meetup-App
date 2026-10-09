@@ -108,7 +108,8 @@ class SocialGraphService {
             final type = message[0] as String;
 
             if (type == 'EVENT' && message.length >= 3) {
-              final eventData = message[2] as Map<String, dynamic>;
+              final eventData = RelaySocket.verifiedEvent(message[2], tag: 'SocialGraph');
+              if (eventData == null) return;
               final tags = eventData['tags'] as List<dynamic>? ?? [];
 
               // Kind 3: Tags sind [["p", "pubkey_hex", "relay_url", "petname"], ...]

@@ -295,7 +295,8 @@ class NostrProfileService {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'EVENT' && msg.length >= 3) {
-              final ev = msg[2] as Map<String, dynamic>;
+              final ev = RelaySocket.verifiedEvent(msg[2], tag: 'Profile');
+              if (ev == null) return;
               final hex = ev['pubkey'] as String? ?? '';
               final at = ev['created_at'] is int ? ev['created_at'] as int : 0;
               final name = parse(ev['content'] as String? ?? '');
@@ -345,8 +346,9 @@ class NostrProfileService {
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
-              final content =
-                  (message[2] as Map<String, dynamic>)['content'] as String? ?? '';
+              final ev = RelaySocket.verifiedEvent(message[2], tag: 'Profile');
+              if (ev == null) return;
+              final content = ev['content'] as String? ?? '';
               final body = jsonDecode(content) as Map<String, dynamic>;
               final identity = body['identity'];
               final nick = identity is Map
@@ -396,9 +398,9 @@ class NostrProfileService {
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
-              final content =
-                  (message[2] as Map<String, dynamic>)['content'] as String? ??
-                      '';
+              final ev = RelaySocket.verifiedEvent(message[2], tag: 'Profile');
+              if (ev == null) return;
+              final content = ev['content'] as String? ?? '';
               final profile = jsonDecode(content) as Map<String, dynamic>;
               // display_name hat Vorrang — das ist der Name, den Leute fuer
               // die Anzeige waehlen; name ist oft der technische Kurzname.
@@ -441,7 +443,9 @@ class NostrProfileService {
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
-              final content = (message[2] as Map<String, dynamic>)['content'] as String? ?? '';
+              final ev = RelaySocket.verifiedEvent(message[2], tag: 'Profile');
+              if (ev == null) return;
+              final content = ev['content'] as String? ?? '';
               final profile = jsonDecode(content) as Map<String, dynamic>;
               final picture = profile['picture'] as String?;
               if (!completer.isCompleted) completer.complete(picture);
