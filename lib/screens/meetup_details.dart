@@ -7,6 +7,7 @@ import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../services/meetup_calendar_service.dart';
 import '../models/calendar_event.dart';
+import '../services/safe_url_launcher.dart';
 
 class MeetupDetailsScreen extends StatefulWidget {
   final Meetup meetup;
@@ -45,8 +46,8 @@ class _MeetupDetailsScreenState extends State<MeetupDetailsScreen> {
 
   Future<void> _launchURL(String urlString) async {
     if (urlString.isEmpty) return;
-    final Uri url = Uri.parse(urlString);
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+    // Nur http(s) — die Adresse stammt aus Portal-/Nostr-Daten (M2).
+    if (!await launchHttpUrl(urlString)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).errorOpenLink)));
       }
