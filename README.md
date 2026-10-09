@@ -223,6 +223,10 @@ Meetup-Historie und persoenliche Profildaten bleiben lokal. Auf Relays werden nu
 
 Default-Relays koennen durch eigene Relays ersetzt werden. Relay-Abfragen haben Timeouts; bei der Admin-Registry kann ein lokaler Cache verwendet werden. Portal-Zeitstempel werden je nach Endpoint ueber die zentrale Kalenderlogik zeitzonenbewusst in die lokale Anzeige umgerechnet.
 
+Profilbilder werden zusätzlich über einen Profil-Index und die NIP-65-Relays des
+Autors gesucht. Ablauf, Netzwerkgrenzen und Cache-Verhalten sind unter
+[Nostr-Profilbilder](docs/NOSTR_PROFILE_DISCOVERY.md) dokumentiert.
+
 ## Architektur
 
 ```text
