@@ -134,7 +134,10 @@ class BadgeSecurity {
   // v2 KOMPAKT: Verifizierung (unverändert)
   // =============================================
 
-  static VerifyResult verifyCompact(Map<String, dynamic> data) {
+  /// [checkExpiry] = false: Nur Signatur prüfen, Ablauf ignorieren. Für
+  /// Beweise über längst vergangene Badges (Promotion-Claims), bei denen
+  /// das Ablaufdatum des Tags keine Rolle mehr spielt.
+  static VerifyResult verifyCompact(Map<String, dynamic> data, {bool checkExpiry = true}) {
     try {
       final String pubkey = data['p'] ?? '';
       final String sig = data['s'] ?? '';
@@ -156,7 +159,7 @@ class BadgeSecurity {
       }
 
       final int expiresAt = data['x'] ?? 0;
-      if (expiresAt > 0) {
+      if (checkExpiry && expiresAt > 0) {
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
         if (now > expiresAt) {
           return VerifyResult(isValid: false, version: 2, adminNpub: '', adminPubkey: pubkey,
@@ -320,9 +323,9 @@ class BadgeSecurity {
     return 'evt:$eventAddress:$slug';
   }
 
-  static VerifyResult verify(Map<String, dynamic> data) {
+  static VerifyResult verify(Map<String, dynamic> data, {bool checkExpiry = true}) {
     if (data.containsKey('p') && data.containsKey('s') && !data.containsKey('sig')) {
-      return verifyCompact(data);
+      return verifyCompact(data, checkExpiry: checkExpiry);
     }
 
     final int version = data['v'] ?? 1;
