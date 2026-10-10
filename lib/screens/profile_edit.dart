@@ -353,7 +353,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       });
 
       if (mounted) {
-        _showNsecBackupDialog(keys['nsec']!);
+        // Security Audit M3: Geräteauthentifizierung, bevor der neue nsec
+        // sichtbar wird.
+        final ok = await ScreenSecure.authenticate(
+          reason: 'Bitte Identität bestätigen, um den Schlüssel anzuzeigen');
+        if (ok && mounted) {
+          _showNsecBackupDialog(keys['nsec']!);
+        }
       }
     } catch (e) {
       setState(() => _isGeneratingKey = false);
@@ -847,6 +853,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // (je ~64 MB bei log_n=16).
   Future<void> _exportNcryptsec({bool forceNewPassword = false}) async {
     if (_exportingKey) return;
+    // Security Audit M3: Geräteauthentifizierung vor dem Schlüssel-Export.
+    final authed = await ScreenSecure.authenticate(
+      reason: 'Bitte Identität bestätigen, um den Schlüssel zu exportieren');
+    if (!authed || !mounted) return;
     setState(() => _exportingKey = true);
     try {
       final t = AppLocalizations.of(context);
@@ -1114,7 +1124,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
 
     if (confirm == true && mounted) {
-      _showNsecBackupDialog(keys['nsec']!);
+      // Security Audit M3: Geräteauthentifizierung, bevor der nsec sichtbar
+      // wird — sonst reicht ein entsperrtes, kurz liegengelassenes Gerät.
+      final ok = await ScreenSecure.authenticate(
+        reason: 'Bitte Identität bestätigen, um den Schlüssel anzuzeigen');
+      if (ok && mounted) {
+        _showNsecBackupDialog(keys['nsec']!);
+      }
     }
   }
 

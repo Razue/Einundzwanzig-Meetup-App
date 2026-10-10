@@ -78,6 +78,8 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Die App nutzt die Gerätesperre, um geheime Schlüssel (nsec) vor dem Anzeigen oder Exportieren zu schützen.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

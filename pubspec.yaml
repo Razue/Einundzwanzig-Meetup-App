@@ -56,6 +56,9 @@ dependencies:
   # Secure Storage (Android Keystore / iOS Keychain)
   flutter_secure_storage: ^9.2.4
 
+  # Geräteauthentifizierung (PIN/Biometrie) vor dem Anzeigen geheimer Schlüssel
+  local_auth: ^2.3.0
+
   # Backup & Sharing
   add_2_calendar: ^3.0.1
   share_plus: ^10.1.4
