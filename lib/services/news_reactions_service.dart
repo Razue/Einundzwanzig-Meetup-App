@@ -192,15 +192,12 @@ class NewsReactionsService {
             return;
           }
           sockets.add(ws);
-          ws.add(jsonEncode([
-            'REQ',
-            'likes',
-            {
-              'kinds': [7],
-              '#a': [articleAddress],
-              'limit': 500,
-            }
-          ]));
+          final filter = <String, dynamic>{
+            'kinds': [7],
+            '#a': [articleAddress],
+            'limit': 500,
+          };
+          ws.add(jsonEncode(['REQ', 'likes', filter]));
           ws.listen((data) {
             try {
               final msg = jsonDecode(data as String) as List<dynamic>;
@@ -210,7 +207,10 @@ class NewsReactionsService {
                 return;
               }
               if (msg.length >= 3 && msg[0] == 'EVENT') {
-                final event = msg[2] as Map<String, dynamic>;
+                final event = RelaySocket.verifiedEvent(msg[2], tag: 'NewsReactions');
+                if (event == null || !RelaySocket.answersFilter(event, filter)) {
+                  return;
+                }
                 final content = (event['content'] ?? '').toString();
                 final pubkey = (event['pubkey'] ?? '').toString();
                 if (pubkey.isEmpty || !_isPositive(content)) return;

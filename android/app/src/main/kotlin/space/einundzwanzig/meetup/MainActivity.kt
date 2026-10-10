@@ -7,7 +7,8 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
-import io.flutter.embedding.android.FlutterActivity
+import android.view.WindowManager
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import org.json.JSONArray
@@ -27,7 +28,10 @@ import org.json.JSONObject
 // Der private Schlüssel verlässt Amber dabei niemals.
 // ============================================
 
-class MainActivity : FlutterActivity() {
+// local_auth verlangt eine FragmentActivity. FlutterActivity allein
+// liefert auf Android no_fragment_activity, und die Schlüsselanzeige
+// bricht dann still ab (ScreenSecure.authenticate gibt false zurück).
+class MainActivity : FlutterFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         applyPhoneOrientation(resources.configuration)
@@ -62,6 +66,7 @@ class MainActivity : FlutterActivity() {
     // Stattdessen schreibt die WidgetRouterActivity das Ziel in den
     // lokalen Speicher; Dart fragt es bei jedem Aufwachen hier ab.
     private val widgetChannelName = "einundzwanzig/widget"
+    private val screenChannelName = "einundzwanzig/screen"
 
     // Request-Codes für die Vordergrund-Intents
     private val reqGetPublicKey = 9551
@@ -83,6 +88,23 @@ class MainActivity : FlutterActivity() {
                         val t = prefs.getString("pending_target", null)
                         if (t != null) prefs.edit().remove("pending_target").commit()
                         result.success(t)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        // Screenshot-Sperre, solange ein nsec oder ncryptsec auf dem Schirm steht.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, screenChannelName)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "setSecure" -> {
+                        val on = call.argument<Boolean>("on") == true
+                        if (on) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                        }
+                        result.success(null)
                     }
                     else -> result.notImplemented()
                 }

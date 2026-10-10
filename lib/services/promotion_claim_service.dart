@@ -34,10 +34,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:nostr/nostr.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/badge.dart';
 import 'signing_service.dart';
 import 'nostr_service.dart';
 import 'badge_security.dart';
+import 'badge_claim_service.dart';
 import 'admin_registry.dart';
 import 'app_logger.dart';
 import 'relay_socket.dart';
@@ -76,9 +78,19 @@ class PromotionClaimService {
   }) async {
     final npub = await SigningService.npub();
     if (npub == null || !await SigningService.canSign()) return false;
+    String ownPubkey;
+    try {
+      ownPubkey = Nip19.decodePubkey(npub);
+    } catch (_) {
+      return false;
+    }
 
-    // Nur Badges mit kryptographischem Beweis
-    final verifiedBadges = badges.where((b) => b.hasCryptoProof).toList();
+    // Security Audit K1: Nur Badges, die der Claimer SELBST gebunden hat
+    // (Claim-Signatur mit dem eigenen Schlüssel). Fremde oder ungebundene
+    // Badges würden von den Prüfern ohnehin verworfen.
+    final verifiedBadges = badges
+        .where((b) => b.isFullyBound && b.claimPubkey == ownPubkey)
+        .toList();
     if (verifiedBadges.length < minVerifiedBadges) return false;
 
     // Badge-Beweise kompakt verpacken
@@ -91,6 +103,11 @@ class PromotionClaimService {
       'admin_pubkey': b.adminPubkey,
       'sig_version': b.sigVersion,
       'sig_content': b.sigContent,
+      // Teilnehmer-Bindung (K1): beweist, dass der Claimer dieses Badge
+      // selbst entgegengenommen hat.
+      'claim_sig': b.claimSig,
+      'claim_event_id': b.claimEventId,
+      'claim_timestamp': b.claimTimestamp,
     }).toList();
 
     // Unique Signers zählen
@@ -162,9 +179,16 @@ class PromotionClaimService {
   //
   // Wird beim App-Start aufgerufen. Lädt alle
   // Admin Claims und verifiziert sie mathematisch.
-  // Gültige Claims werden in die lokale Admin-Liste
-  // aufgenommen.
   //
+  // Security Audit K1: Gültige Claims landen NICHT mehr in der
+  // Admin-Registry (dort zählten sie sofort als bekannte Signierer
+  // und konnten weitere Claims "beglaubigen" — Selbst-Promotion in
+  // Kette). Sie werden stattdessen in einer eigenen, sichtbar als
+  // "organisch" markierten Liste gehalten, die für die Prüfung
+  // weiterer Claims NICHT als bekannte Admins zählt.
+  //
+  static const String _organicKey = 'organic_admin_claims';
+
   static Future<List<VerifiedClaim>> syncOrganicAdmins() async {
     final List<VerifiedClaim> verifiedClaims = [];
 
@@ -172,7 +196,8 @@ class PromotionClaimService {
       final claims = await _fetchClaimsFromRelays();
       if (claims == null || claims.isEmpty) return verifiedClaims;
 
-      // Bekannte Admins laden (Genesis + Registry)
+      // Bekannte Admins laden (Genesis + Registry) — die organische
+      // Liste gehört bewusst NICHT dazu.
       final knownAdmins = await AdminRegistry.getAdminList();
       final knownPubkeys = <String>{};
 
@@ -190,36 +215,53 @@ class PromotionClaimService {
 
       for (final claim in claims) {
         try {
-          final result = _verifyClaim(claim, knownPubkeys);
+          final result = verifyClaim(claim, knownPubkeys);
           if (result != null) {
             verifiedClaims.add(result);
-
-            // In die lokale Admin-Registry aufnehmen
-            try {
-              final claimerNpub = Nip19.encodePubkey(claim.pubkey);
-              await AdminRegistry.addAdmin(AdminEntry(
-                npub: claimerNpub,
-                meetup: result.meetup,
-                name: 'Organic (${result.verifiedBadgeCount} Badges)',
-                addedAt: claim.createdAt,
-              ));
-              AppLogger.debug('PromotionClaim', 'Organic Admin akzeptiert: ${NostrService.shortenNpub(claimerNpub)}');
-
-            } catch (e) {
-              // Duplikat — bereits in der Liste
-            }
+            AppLogger.debug('PromotionClaim',
+                'Organischer Claim akzeptiert: ${NostrService.shortenNpub(Nip19.encodePubkey(claim.pubkey))}');
           }
         } catch (e) {
           AppLogger.debug('PromotionClaim', 'Claim-Verifikation fehlgeschlagen: $e');
 
         }
       }
+
+      await _saveOrganicClaims(verifiedClaims);
     } catch (e) {
       AppLogger.debug('PromotionClaim', 'Sync fehlgeschlagen: $e');
 
     }
 
     return verifiedClaims;
+  }
+
+  /// Zuletzt verifizierte organische Claims (nur Anzeige/Information,
+  /// KEINE Admin-Rechte).
+  static Future<List<VerifiedClaim>> getOrganicAdmins() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_organicKey);
+      if (raw == null || raw.isEmpty) return [];
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => VerifiedClaim.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> _saveOrganicClaims(List<VerifiedClaim> claims) async {
+    // Pro Claimer nur der neueste Claim.
+    final byClaimer = <String, VerifiedClaim>{};
+    for (final c in claims) {
+      final cur = byClaimer[c.claimerPubkey];
+      if (cur == null || c.claimedAt > cur.claimedAt) byClaimer[c.claimerPubkey] = c;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_organicKey,
+        jsonEncode(byClaimer.values.map((c) => c.toJson()).toList()));
   }
 
   // =============================================
@@ -229,8 +271,10 @@ class PromotionClaimService {
   // Das Herzstück: Prüft ob die Badge-Beweise
   // echt sind und von bekannten Admins stammen.
   //
-  static VerifiedClaim? _verifyClaim(
-    _RawClaim claim,
+  /// Öffentlich für Regressionstests. [knownAdminPubkeys] sind die
+  /// Hex-Pubkeys der aktuell bekannten Admins (Genesis + Registry).
+  static VerifiedClaim? verifyClaim(
+    RawClaim claim,
     Set<String> knownAdminPubkeys,
   ) {
     // 1. Claim-Content parsen
@@ -260,8 +304,21 @@ class PromotionClaimService {
     }
 
     // 2. Jeden Badge-Beweis einzeln verifizieren
+    //
+    // Security Audit K1 — ein Beweis zählt nur, wenn ALLE Punkte stimmen:
+    //   a) Signatur noch nicht gesehen (keine Duplikate)
+    //   b) Organisator-Signatur mathematisch gültig und der SIGNIERENDE
+    //      Pubkey (nicht das unsignierte admin_pubkey-Feld) ist ein
+    //      bekannter Admin
+    //   c) Teilnehmer-Bindung: Der CLAIMER selbst hat das Badge mit seinem
+    //      Schlüssel geclaimt (claim_sig über genau diese Organisator-
+    //      Signatur)
+    //   d) Mindestens drei verschiedene Sessions (Signierer + Meetup +
+    //      signierter Tag)
     int validBadgeCount = 0;
     final verifiedSigners = <String>{};
+    final seenSigs = <String>{};
+    final sessions = <String>{};
 
     for (final proof in proofs) {
       try {
@@ -270,8 +327,16 @@ class PromotionClaimService {
         final adminPubkey = proofMap['admin_pubkey'] as String? ?? '';
         final sigVersion = proofMap['sig_version'] as int? ?? 0;
         final sigContent = proofMap['sig_content'] as String? ?? '';
+        final sigId = proofMap['sig_id'] as String? ?? '';
+        final block = proofMap['block'] as int? ?? 0;
+        final claimSig = proofMap['claim_sig'] as String? ?? '';
+        final claimEventId = proofMap['claim_event_id'] as String? ?? '';
+        final claimTimestamp = proofMap['claim_timestamp'] as int? ?? 0;
 
         if (sig.isEmpty || adminPubkey.isEmpty) continue;
+
+        // a) Duplikate verwerfen
+        if (!seenSigs.add(sig)) continue;
 
         // Ist der Signer ein bekannter Admin?
         if (!knownAdminPubkeys.contains(adminPubkey)) {
@@ -279,23 +344,48 @@ class PromotionClaimService {
           continue;
         }
 
-        // Signatur mathematisch prüfen
-        bool isValid = false;
-        if (sigVersion >= 2 && sigContent.isNotEmpty) {
-          // v2: Nostr Event Signatur prüfen
-          try {
-            final data = jsonDecode(sigContent) as Map<String, dynamic>;
-            final verifyResult = BadgeSecurity.verify(data);
-            isValid = verifyResult.isValid;
-          } catch (_) {
-            isValid = false;
-          }
+        // b) Organisator-Signatur mathematisch prüfen
+        if (sigVersion < 2 || sigContent.isEmpty) continue;
+        Map<String, dynamic> data;
+        VerifyResult verifyResult;
+        try {
+          data = jsonDecode(sigContent) as Map<String, dynamic>;
+          // Ablauf ignorieren: Das Badge liegt naturgemäß Wochen zurück.
+          verifyResult = BadgeSecurity.verify(data, checkExpiry: false);
+        } catch (_) {
+          continue;
         }
+        if (!verifyResult.isValid) continue;
+        // Der Pubkey, der tatsächlich signiert hat, muss der angegebene
+        // bekannte Admin sein — und die Signatur im Beweis muss die
+        // signierte sein.
+        if (verifyResult.adminPubkey != adminPubkey) continue;
+        final signedSig = (data['s'] ?? data['sig'] ?? '').toString();
+        if (signedSig != sig) continue;
 
-        if (isValid) {
-          validBadgeCount++;
-          verifiedSigners.add(adminPubkey);
-        }
+        // c) Teilnehmer-Bindung durch den Claimer
+        if (claimSig.isEmpty || claimEventId.isEmpty || claimTimestamp == 0) continue;
+        final binding = BadgeClaimService.verifyClaim(
+          claimSig: claimSig,
+          claimEventId: claimEventId,
+          claimPubkey: claim.pubkey,
+          claimTimestamp: claimTimestamp,
+          orgSig: sig,
+          orgEventId: sigId,
+          orgPubkey: adminPubkey,
+          blockHeight: block,
+        );
+        if (!binding.isValid) continue;
+
+        // d) Session-Schlüssel aus SIGNIERTEN Feldern ableiten
+        final normalized = BadgeSecurity.normalize(data);
+        final signedAt = (data['c'] ?? data['created_at'] ?? 0) as int;
+        final day = DateTime.fromMillisecondsSinceEpoch(signedAt * 1000, isUtc: true);
+        final dayKey = '${day.year}-${day.month}-${day.day}';
+        sessions.add('$adminPubkey|${normalized['meetup_id']}|$dayKey');
+
+        validBadgeCount++;
+        verifiedSigners.add(adminPubkey);
       } catch (_) {
         continue;
       }
@@ -303,6 +393,11 @@ class PromotionClaimService {
 
     // 3. Schwellenwert-Check
     if (validBadgeCount < minVerifiedBadges) return null;
+    if (sessions.length < minVerifiedBadges) {
+      AppLogger.debug('PromotionClaim',
+        'Claim abgelehnt: Nur ${sessions.length} verschiedene Sessions');
+      return null;
+    }
     if (verifiedSigners.length < minUniqueSigners) return null;
 
     // Security Audit 2, Fund #5: Sicherstellen dass die Signer
@@ -333,7 +428,7 @@ class PromotionClaimService {
   // =============================================
   // CLAIMS VON RELAYS FETCHEN
   // =============================================
-  static Future<List<_RawClaim>?> _fetchClaimsFromRelays() async {
+  static Future<List<RawClaim>?> _fetchClaimsFromRelays() async {
     for (final relayUrl in _relays) {
       try {
         final result = await _fetchFromSingleRelay(relayUrl);
@@ -349,15 +444,15 @@ class PromotionClaimService {
     return null;
   }
 
-  static Future<List<_RawClaim>?> _fetchFromSingleRelay(String relayUrl) async {
+  static Future<List<RawClaim>?> _fetchFromSingleRelay(String relayUrl) async {
     RelaySocket? ws;
     final tally = RelayParseTally('PromotionClaim', 'Promotion-Claims von $relayUrl');
 
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
 
-      final completer = Completer<List<_RawClaim>>();
-      final claims = <_RawClaim>[];
+      final completer = Completer<List<RawClaim>>();
+      final claims = <RawClaim>[];
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
@@ -374,6 +469,8 @@ class PromotionClaimService {
               final eventData = message[2] as Map<String, dynamic>;
 
               // Event-Signatur prüfen
+              // (verify: false — isValid() unten ist die einzige Prüfung;
+              // der Konstruktor würde dieselbe Signatur doppelt prüfen.)
               final event = Event(
                 eventData['id'] ?? '',
                 eventData['pubkey'] ?? '',
@@ -384,14 +481,18 @@ class PromotionClaimService {
                     .toList() ?? [],
                 eventData['content'] ?? '',
                 eventData['sig'] ?? '',
+                verify: false,
               );
 
               if (event.isValid()) {
-                claims.add(_RawClaim(
+                claims.add(RawClaim(
                   pubkey: event.pubkey,
                   content: event.content,
                   createdAt: event.createdAt,
                 ));
+              } else {
+                // Vorher warf der Konstruktor und der catch unten zählte das.
+                tally.failed('Ungültige Signatur');
               }
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) {
@@ -401,7 +502,7 @@ class PromotionClaimService {
           } catch (e) { tally.failed(e); }
         },
         onError: (_) {
-          if (!completer.isCompleted) completer.complete(<_RawClaim>[]);
+          if (!completer.isCompleted) completer.complete(<RawClaim>[]);
         },
         onDone: () {
           if (!completer.isCompleted) completer.complete(claims);
@@ -423,7 +524,7 @@ class PromotionClaimService {
 
       final result = await completer.future.timeout(
         _relayTimeout,
-        onTimeout: () => <_RawClaim>[],
+        onTimeout: () => <RawClaim>[],
       );
 
       ws.add(jsonEncode(['CLOSE', subscriptionId]));
@@ -442,12 +543,12 @@ class PromotionClaimService {
 // DATENKLASSEN
 // =============================================
 
-class _RawClaim {
+class RawClaim {
   final String pubkey;
   final String content;
   final int createdAt;
 
-  _RawClaim({
+  RawClaim({
     required this.pubkey,
     required this.content,
     required this.createdAt,
@@ -468,6 +569,23 @@ class VerifiedClaim {
     required this.uniqueSignerCount,
     required this.claimedAt,
   });
+
+  Map<String, dynamic> toJson() => {
+        'claimer_pubkey': claimerPubkey,
+        'meetup': meetup,
+        'verified_badges': verifiedBadgeCount,
+        'unique_signers': uniqueSignerCount,
+        'claimed_at': claimedAt,
+        'organic': true,
+      };
+
+  factory VerifiedClaim.fromJson(Map<String, dynamic> j) => VerifiedClaim(
+        claimerPubkey: j['claimer_pubkey'] as String? ?? '',
+        meetup: j['meetup'] as String? ?? '',
+        verifiedBadgeCount: j['verified_badges'] as int? ?? 0,
+        uniqueSignerCount: j['unique_signers'] as int? ?? 0,
+        claimedAt: j['claimed_at'] as int? ?? 0,
+      );
 }
 
 

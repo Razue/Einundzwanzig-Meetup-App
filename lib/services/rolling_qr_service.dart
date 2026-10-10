@@ -440,10 +440,11 @@ class RollingQRService {
     payload['d'] = 'rolling_qr';// delivery methode
 
     // 4. Organisator-Standort als UNSIGNIERTE Zusatzfelder anhängen.
-    //    Wie n/ts/d NICHT von der Schnorr-Signatur abgedeckt. Dient dem
-    //    5km-Präsenz-Check des Teilnehmers. Manipulation ist durch die
-    //    10s-Rolling-Gültigkeit praktisch wertlos: Wer einen frischen QR
-    //    hat, ist bereits vor Ort.
+    //    Der Scanner ignoriert sie als Referenz (Security Audit H1):
+    //    `ts` lässt sich auf „jetzt“ setzen, ohne die Nonce zu kennen,
+    //    und `la`/`lo` wären dann frei wählbar. Bis die Koordinaten im
+    //    signierten Content stehen (docs/ROLLING_QR_SESSION_KEY.md),
+    //    gilt nur die Portal-Referenz.
     if (session.lat != 0 || session.lng != 0) {
       payload['la'] = session.lat;
       payload['lo'] = session.lng;

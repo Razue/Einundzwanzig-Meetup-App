@@ -136,7 +136,10 @@ class BadgeSecurity {
   // v2 KOMPAKT: Verifizierung (unverändert)
   // =============================================
 
-  static VerifyResult verifyCompact(Map<String, dynamic> data) {
+  /// [checkExpiry] = false: Nur Signatur prüfen, Ablauf ignorieren. Für
+  /// Beweise über längst vergangene Badges (Promotion-Claims), bei denen
+  /// das Ablaufdatum des Tags keine Rolle mehr spielt.
+  static VerifyResult verifyCompact(Map<String, dynamic> data, {bool checkExpiry = true}) {
     try {
       final String pubkey = data['p'] ?? '';
       final String sig = data['s'] ?? '';
@@ -158,7 +161,7 @@ class BadgeSecurity {
       }
 
       final int expiresAt = data['x'] ?? 0;
-      if (expiresAt > 0) {
+      if (checkExpiry && expiresAt > 0) {
         final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
         if (now > expiresAt) {
           return VerifyResult(isValid: false, version: 2, adminNpub: '', adminPubkey: pubkey,
@@ -166,9 +169,8 @@ class BadgeSecurity {
         }
       }
 
-      const contentKeys = {'v', 't', 'm', 'b', 'x'};
       final Map<String, dynamic> content = {};
-      for (final key in contentKeys) {
+      for (final key in compactSignedKeys) {
         if (data.containsKey(key)) {
           content[key] = data[key];
         }
@@ -322,9 +324,9 @@ class BadgeSecurity {
     return 'evt:$eventAddress:$slug';
   }
 
-  static VerifyResult verify(Map<String, dynamic> data) {
+  static VerifyResult verify(Map<String, dynamic> data, {bool checkExpiry = true}) {
     if (data.containsKey('p') && data.containsKey('s') && !data.containsKey('sig')) {
-      return verifyCompact(data);
+      return verifyCompact(data, checkExpiry: checkExpiry);
     }
 
     final int version = data['v'] ?? 1;
@@ -342,6 +344,39 @@ class BadgeSecurity {
     return VerifyResult(isValid: false, version: 1, adminNpub: '', adminPubkey: '',
       message: 'Legacy-Badges (v1) werden nicht mehr akzeptiert. '
                'Bitte Organisator um neuen v2-Tag (Schnorr-signiert).');
+  }
+
+  /// Schlüssel, die `verifyCompact` in die Schnorr-Signatur nimmt.
+  /// `la`/`lo` stehen bewusst nicht darin: am Rolling-QR hängen sie
+  /// unsigniert und sind vom Fotografen frei setzbar (Security Audit H1).
+  static const Set<String> compactSignedKeys = {'v', 't', 'm', 'b', 'x'};
+
+  /// Felder, deren Koordinaten von der Signatur gedeckt sind. Leer bis
+  /// Format v3 die Koordinaten in den signierten Content aufnimmt
+  /// (Konzept: docs/ROLLING_QR_SESSION_KEY.md) — bis dahin ist `la`/`lo`
+  /// am Rolling-QR ein frei setzbarer Anhang und keine gemessene Referenz.
+  ///
+  /// ACHTUNG: `la`/`lo` NIEMALS in [compactSignedKeys] ergänzen, um sie
+  /// hier zu aktivieren — jenes Set bestimmt zugleich, welche Felder
+  /// kanonisch in die Schnorr-Signatur eingehen. Ein Nachtrag würde jede
+  /// bestehende Badge-Signatur ungültig machen. v3 braucht eigene
+  /// signierte Koordinatenfelder oder ein neues Format.
+  static const Set<String> signedCoordinateKeys = {};
+
+  /// Standort nur, wenn er mit signiert wurde. Sonst 0/0, damit der
+  /// Scanner auf die Portal-Referenz zurückfällt statt auf `la`/`lo`
+  /// aus dem unsignierten QR-Anhang.
+  static ({double lat, double lng}) signedCoordinates(Map<String, dynamic> data) {
+    if (signedCoordinateKeys.contains('la') &&
+        signedCoordinateKeys.contains('lo') &&
+        data['la'] is num &&
+        data['lo'] is num) {
+      return (
+        lat: (data['la'] as num).toDouble(),
+        lng: (data['lo'] as num).toDouble(),
+      );
+    }
+    return (lat: 0, lng: 0);
   }
 
   // =============================================

@@ -22,6 +22,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:nostr/nostr.dart';
 import 'nostr_service.dart';
@@ -55,6 +56,13 @@ class AdminEntry {
     name: json['name'] ?? '',
     addedAt: json['added_at'] ?? 0,
   );
+
+  /// Automatisch vergebener Name des alten organischen Admin-Claims
+  /// (`Organic (3 Badges)`). Solche Einträge kamen ohne echte Bürgschaft
+  /// in den Cache (Security Audit K1) und dürfen nie als Admin gelten.
+  static final RegExp legacyOrganicName = RegExp(r'^Organic \(\d+ Badges\)$');
+
+  bool get isLegacyOrganicClaim => legacyOrganicName.hasMatch(name);
 }
 
 class AdminCheckResult {
@@ -70,6 +78,13 @@ class AdminCheckResult {
     required this.source,
   });
 }
+
+/// Ergebnis einer Relay-Abfrage: hex-Pubkey des SIGNERS (event.pubkey nach
+/// bestandener Signaturprüfung) → die in seinem Event gelisteten Einträge.
+/// Die Sunset-Zählung zählt die Schlüssel dieser Map (Signer), niemals die
+/// gelisteten npubs — sonst würde ein einzelnes Event mit 20 npubs Sunset
+/// auslösen (Audit-2 Fund 6).
+typedef AdminsBySigner = Map<String, List<AdminEntry>>;
 
 class AdminRegistry {
   // =============================================
@@ -103,6 +118,13 @@ class AdminRegistry {
   // Sunset wird NUR durch verschiedene Autoren ausgelöst, nicht durch
   // einen einzelnen Admin der 20 npubs auf seine Liste setzt.
   static const String _uniqueAuthorsKey = 'admin_unique_authors_count';
+  // K1-Folgefix: Beim ersten Lauf mit der gefilterten Zählung wird die alte,
+  // aus ungefiltertem Cache aufsummierte Zahl verworfen. Sie konnte durch
+  // vergiftete Organic-Einträge künstlich hoch sein.
+  static const String _sunsetCountResetKey = 'sunset_count_reset_v1_done';
+  // Zählt Autoren über ihre hex-Pubkeys (nicht npub-Strings), dedupliziert
+  // und akkumuliert über Relays/Fetches hinweg.
+  static const String _sunsetAuthorsSetKey = 'sunset_authors_set_v1';
 
   // Timeout für Relay-Verbindung
   static const Duration _relayTimeout = Duration(seconds: 8);
@@ -119,6 +141,7 @@ class AdminRegistry {
   /// VORHER (Bug): Zählte Cache-Einträge → Super-Admin fügt 20 npubs hinzu → sofort Sunset
   /// JETZT:  Zählt einzigartige Autoren → 20 verschiedene Admins müssen publizieren
   static Future<bool> isSunsetActive() async {
+    await _resetSunsetCountOnce();
     final prefs = await SharedPreferences.getInstance();
 
     // Wenn Sunset schon mal erreicht wurde, bleibt es für immer true
@@ -152,10 +175,46 @@ class AdminRegistry {
     return false;
   }
 
-  /// Aktualisiert die Anzahl einzigartiger Autoren (wird nach Relay-Fetch aufgerufen)
-  static Future<void> _updateUniqueAuthorsCount(int count) async {
+  /// Aktualisiert die Sunset-Autorenmenge. [authorPubkeysHex] sind die
+  /// hex-Pubkeys der SIGNER (event.pubkey), die in DIESEM Fetch mindestens
+  /// einen gefilterten (legitimen) Eintrag geliefert haben — nie die im
+  /// Event gelisteten npubs.
+  ///
+  /// Akkumuliert in ein Set statt eine Zahl zu überschreiben: Die alte
+  /// Implementierung ersetzte die Zahl bei jedem Fetch, sodass ein einzelnes
+  /// Relay mit vielen Autoren den Zähler hoch-, das nächste mit wenigen
+  /// wieder runtersetzen konnte.
+  static Future<void> _recordSunsetAuthors(Set<String> authorPubkeysHex) async {
+    if (authorPubkeysHex.isEmpty) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_uniqueAuthorsKey, count);
+    final existing =
+        (prefs.getStringList(_sunsetAuthorsSetKey) ?? <String>[]).toSet();
+    final before = existing.length;
+    existing.addAll(authorPubkeysHex);
+    if (existing.length != before) {
+      await prefs.setStringList(_sunsetAuthorsSetKey, existing.toList());
+      await prefs.setInt(_uniqueAuthorsKey, existing.length);
+    }
+  }
+
+  /// Einmalig: alte, aus ungefiltertem Cache aufsummierte Sunset-Zählung
+  /// verwerfen (K1-Folgefix). Läuft genau einmal pro Installation.
+  static Future<void> _resetSunsetCountOnce() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_sunsetCountResetKey) == true) return;
+    await prefs.setBool(_sunsetCountResetKey, true);
+    final hadAuthors = prefs.getInt(_uniqueAuthorsKey) ?? 0;
+    if (hadAuthors > 0) {
+      AppLogger.security('AdminRegistry',
+          'Sunset-Zählung zurückgesetzt (K1): $hadAuthors Autoren waren '
+          'ungefiltert gezählt und konnten vergiftet sein.');
+    }
+    await prefs.remove(_uniqueAuthorsKey);
+    await prefs.remove(_sunsetAuthorsSetKey);
+    // Inkonsistentes Sunset-Flag ebenfalls zurücksetzen: es konnte auf der
+    // vergifteten Zahl beruhen. Bei echtem Sunset baut sich die Zählung aus
+    // gefilterten Relay-Fetches neu auf.
+    await prefs.setBool(_sunsetFlagKey, false);
   }
 
   // =============================================
@@ -260,6 +319,14 @@ class AdminRegistry {
   // =============================================
   // RELAY FETCH (WEB OF TRUST LOGIK)
   // =============================================
+
+  /// Nur für Tests: ersetzt die echte Relay-Abfrage. Liefert die ROHEN Listen
+  /// je Signer, so wie ein Relay sie schicken würde — die Filterung dahinter
+  /// bleibt aktiv.
+  @visibleForTesting
+  static Future<AdminsBySigner?> Function(
+      String relayUrl, List<String> authorsHex)? relayFetchOverride;
+
   static Future<List<AdminEntry>?> fetchFromRelays() async {
     List<String> authorsToQuery = [];
     final bool isSunset = await isSunsetActive();
@@ -307,17 +374,46 @@ class AdminRegistry {
     // Versuche jeden Relay der Reihe nach
     for (final relayUrl in _relays) {
       try {
-        final result = await _fetchFromSingleRelay(relayUrl, queryChunk);
+        final result = await (relayFetchOverride ?? _fetchFromSingleRelay)(relayUrl, queryChunk);
         if (result != null) {
-          // Einzigartige Autoren für Sunset-Berechnung aktualisieren
-          await _updateUniqueAuthorsCount(result.uniqueAuthors);
-          
+          // Organische Alt-Claims (K1) schon HIER verwerfen, nicht erst beim
+          // Speichern: checkAdmin (Schritt 4), forceRefresh, die Sunset-Zählung
+          // und der Hintergrund-Refresh arbeiten direkt mit dieser Liste.
+          //
+          // Sunset-Autoren sind die SIGNER der Events (Map-Schlüssel), nicht
+          // die darin gelisteten npubs. Ein Signer zählt nur, wenn nach dem
+          // Organic-Filter mindestens ein Eintrag von ihm übrig bleibt. Ein
+          // einzelnes Super-Admin-Event mit 20+ npubs ist damit genau EIN
+          // Autor und kann Sunset nicht auslösen (Audit-2 Fund 6).
+          final legitSigners = <String>{};
+          final uniqueMap = <String, AdminEntry>{};
+          // Nur Signer, nach denen diese Abfrage gefragt hat. In der
+          // Bootstrap-Phase ist das allein der Super-Admin. Ein Relay oder
+          // ein Test-Override, das weitere Schlüssel mitschickt, darf damit
+          // weder die Admin-Liste noch den Sunset-Zähler füllen. Die Schwelle
+          // bleibt so unerreichbar, solange nur eine Person gefragt wird —
+          // das ist die sichere Richtung, kein Übergang, den es zu bauen gilt.
+          var sawQueried = false;
+          for (final signer in result.entries) {
+            if (!queryChunk.contains(signer.key)) continue;
+            sawQueried = true;
+            final clean = _withoutLegacyOrganic(signer.value);
+            if (clean.isEmpty) continue;
+            legitSigners.add(signer.key);
+            for (final e in clean) {
+              uniqueMap[e.npub] = e;
+            }
+          }
+          if (!sawQueried) continue;
+          final admins = uniqueMap.values.toList();
+          await _recordSunsetAuthors(legitSigners);
+
           // Wenn Sunset aktiv ist, mergen wir die Ergebnisse mit dem Cache
           if (isSunset) {
-            return await _mergeWithCache(result.admins);
+            return await _mergeWithCache(admins);
           } else {
             // In der Bootstrap-Phase überschreibt das Super-Admin-Event alles
-            return result.admins;
+            return admins;
           }
         }
       } catch (e) {
@@ -375,14 +471,16 @@ class AdminRegistry {
   // EINZELNEN RELAY ABFRAGEN (MEHRERE AUTHORS)
   // =============================================
 
-  /// Ergebnis eines Relay-Fetchs (Admin-Liste + Anzahl einzigartiger Autoren)
-  static Future<({List<AdminEntry> admins, int uniqueAuthors})?> _fetchFromSingleRelay(
+  /// Ergebnis eines Relay-Fetchs: Signer (hex) → seine Admin-Einträge.
+  /// Nur Events mit gültiger Signatur von einem der angefragten Autoren
+  /// landen hier; der Schlüssel ist immer event.pubkey, nie ein npub aus
+  /// dem Event-Inhalt.
+  static Future<AdminsBySigner?> _fetchFromSingleRelay(
     String relayUrl, 
     List<String> authorsHex,
   ) async {
     RelaySocket? ws;
-    List<AdminEntry> collectedAdmins = [];
-    final Set<String> seenAuthors = {}; // Einzigartige Autoren tracken
+    final AdminsBySigner collectedBySigner = {};
     // Zaehlt verworfene Nachrichten und meldet sie EINMAL im finally.
     // Vorher stand hier eine warn-Zeile pro Nachricht — ein Relay mit
     // kaputten Events fuellte damit den Ringpuffer.
@@ -390,11 +488,20 @@ class AdminRegistry {
 
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_relayTimeout);
-      final completer = Completer<List<AdminEntry>?>();
+      final completer = Completer<AdminsBySigner?>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final subscriptionId = 'admin-$subIdHex';
+      // Dieselbe Map geht in den REQ. answersFilter prüft Art, Autor und d,
+      // nicht nur die Signatur: ein anderes Event desselben Signers ist
+      // keine Admin-Liste.
+      final filter = <String, dynamic>{
+        'kinds': [_eventKind],
+        'authors': authorsHex,
+        '#d': [_eventDTag],
+        'limit': 50,
+      };
 
       ws.listen(
         (data) {
@@ -416,14 +523,19 @@ class AdminRegistry {
                     .toList() ?? [],
                 eventData['content'] ?? '',
                 eventData['sig'] ?? '',
+                // verify: false — isValid() unten ist die einzige nötige Prüfung
+                // (der Konstruktor würde dieselbe Signatur doppelt prüfen).
+                verify: false,
               );
 
               // Ist der Author überhaupt jemand, nach dem wir gefragt haben?
               if (!authorsHex.contains(event.pubkey)) return;
-              if (!event.isValid()) return;
-
-              // Einzigartigen Autor tracken (für Sunset-Berechnung)
-              seenAuthors.add(event.pubkey);
+              if (!event.isValid()) {
+                // Vorher warf der Konstruktor und der catch unten zählte das.
+                tally.failed('Ungültige Signatur');
+                return;
+              }
+              if (!RelaySocket.answersFilter(eventData, filter)) return;
 
               try {
                 final content = jsonDecode(event.content) as Map<String, dynamic>;
@@ -431,14 +543,19 @@ class AdminRegistry {
                     ?.map((e) => AdminEntry.fromJson(e as Map<String, dynamic>))
                     .toList() ?? [];
 
-                // Sammeln aller Admins aus allen Events
-                collectedAdmins.addAll(adminsInEvent);
+                // Einträge unter ihrem SIGNER sammeln (Sunset zählt Signer,
+                // nicht gelistete npubs).
+                if (adminsInEvent.isNotEmpty) {
+                  collectedBySigner
+                      .putIfAbsent(event.pubkey, () => [])
+                      .addAll(adminsInEvent);
+                }
               } catch (e) {
                 tally.failed(e);
               }
             } 
             else if (type == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(collectedAdmins);
+              if (!completer.isCompleted) completer.complete(collectedBySigner);
             }
           } catch (e) {
             tally.failed(e);
@@ -452,31 +569,23 @@ class AdminRegistry {
         },
       );
 
-      final request = jsonEncode([
-        'REQ',
-        subscriptionId,
-        {
-          'kinds': [_eventKind],
-          'authors': authorsHex,
-          '#d': [_eventDTag],
-          // Wir holen die letzten 50 Events, falls viele Admins Vouchings gepostet haben
-          'limit': 50, 
-        }
-      ]);
+      final request = jsonEncode(['REQ', subscriptionId, filter]);
 
       ws.add(request);
 
       final result = await completer.future.timeout(
         _relayTimeout,
-        onTimeout: () => collectedAdmins.isNotEmpty ? collectedAdmins : null,
+        onTimeout: () => collectedBySigner.isNotEmpty ? collectedBySigner : null,
       );
 
       ws.add(jsonEncode(['CLOSE', subscriptionId]));
       
-      // Duplikate aus der gesammelten Liste filtern
+      // Duplikate je Signer filtern (mehrere Events desselben Autors)
       if (result != null) {
-        final uniqueMap = { for (var e in result) e.npub : e };
-        return (admins: uniqueMap.values.toList(), uniqueAuthors: seenAuthors.length);
+        return {
+          for (final e in result.entries)
+            e.key: {for (final a in e.value) a.npub: a}.values.toList(),
+        };
       }
       return null;
 
@@ -511,13 +620,29 @@ class AdminRegistry {
   // =============================================
   // CACHE: Laden
   // =============================================
+  static List<AdminEntry> _withoutLegacyOrganic(List<AdminEntry> admins) =>
+      admins.where((e) => !e.isLegacyOrganicClaim).toList();
+
+  /// Einzige Lesestelle des Netzwerk-Caches. Organische Alt-Claims aus dem
+  /// K1-Bug (`Organic (N Badges)`) werden HIER verworfen, damit kein Leser —
+  /// checkAdmin, Sunset-Autorenliste, Merge, getAdminList — sie je als Admin
+  /// sieht. Ein vergifteter Cache wird dabei gleich mitbereinigt.
   static Future<List<AdminEntry>?> _loadFromCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final json = prefs.getString(_cacheKey);
       if (json == null) return null;
       final List<dynamic> list = jsonDecode(json);
-      return list.map((e) => AdminEntry.fromJson(e as Map<String, dynamic>)).toList();
+      final raw = list.map((e) => AdminEntry.fromJson(e as Map<String, dynamic>)).toList();
+      final clean = _withoutLegacyOrganic(raw);
+      if (clean.length != raw.length) {
+        // Nur die Liste neu schreiben, nicht den Zeitstempel: Das ist keine
+        // frische Relay-Antwort und darf den Hintergrund-Refresh nicht bremsen.
+        await prefs.setString(_cacheKey, jsonEncode(clean.map((e) => e.toJson()).toList()));
+        AppLogger.debug('AdminRegistry',
+            '${raw.length - clean.length} organische Alt-Claims aus dem Admin-Cache entfernt');
+      }
+      return clean;
     } catch (e) {
       return null;
     }
@@ -527,8 +652,11 @@ class AdminRegistry {
   // CACHE: Speichern
   // =============================================
   static Future<void> _saveToCache(List<AdminEntry> admins) async {
+    // Auch Relay-Listen: ein früher veröffentlichtes Event kann den
+    // automatischen Organic-Namen noch tragen.
+    final clean = _withoutLegacyOrganic(admins);
     final prefs = await SharedPreferences.getInstance();
-    final json = jsonEncode(admins.map((e) => e.toJson()).toList());
+    final json = jsonEncode(clean.map((e) => e.toJson()).toList());
     await prefs.setString(_cacheKey, json);
     await prefs.setInt(_cacheTimestampKey, DateTime.now().millisecondsSinceEpoch);
   }
@@ -669,6 +797,7 @@ class AdminRegistry {
       try {
         final result = await _fetchFromSingleRelay(relayUrl, [myHex]);
         if (result != null) {
+          final mine = result[myHex] ?? const <AdminEntry>[];
           // Schutz: Eine LEERE Antwort kann zweierlei bedeuten —
           //  (a) ich habe nie publiziert, oder
           //  (b) ich habe bewusst alles widerrufen.
@@ -676,9 +805,9 @@ class AdminRegistry {
           // publizierter lokaler Stand NICHT stillschweigend gelöscht
           // werden. Nur überschreiben, wenn das Relay tatsächlich
           // Bürgschaften liefert.
-          if (result.admins.isNotEmpty) {
-            await _saveMyVouches(result.admins);
-            return result.admins.length;
+          if (mine.isNotEmpty) {
+            await _saveMyVouches(mine);
+            return mine.length;
           }
           // Relay hat geantwortet, aber kein/leeres Event → nichts ändern.
           return 0;
@@ -707,6 +836,9 @@ class AdminRegistry {
   /// Legacy: addAdmin → Netzwerk-Cache (für promotion_claim_service, backup_service)
   /// ACHTUNG: NICHT für persönliches Bürgen verwenden! Dafür → addVouch()
   static Future<void> addAdmin(AdminEntry admin) async {
+    if (admin.isLegacyOrganicClaim) {
+      throw StateError('Organische Claims werden nicht als Admin übernommen.');
+    }
     final list = await getAdminList();
     if (list.any((e) => e.npub == admin.npub)) return; // Duplikat ignorieren
     if (!NostrService.isValidNpub(admin.npub)) {

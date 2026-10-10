@@ -6,7 +6,6 @@
 // ============================================
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +17,7 @@ import '../services/event_chat_service.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
 import '../widgets/nostr_avatar.dart';
+import '../services/safe_url_launcher.dart';
 
 /// Die Vereinsseite. Dort wird die Mitgliedschaft beantragt, die das
 /// Gruppen-Relay zum Schreiben voraussetzt.
@@ -236,10 +236,7 @@ class _ChatScreenState extends State<ChatScreen> {
           label: t.chatMemberLink,
           textColor: Colors.white,
           onPressed: () async {
-            final uri = Uri.parse(kVereinUrl);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            }
+            await launchHttpUrl(kVereinUrl);
           },
         ),
       ));
@@ -559,10 +556,7 @@ class _ChatScreenState extends State<ChatScreen> {
             // nicht, warum — die Ursache liegt ausserhalb der App.
             GestureDetector(
               onTap: () async {
-                final uri = Uri.parse(kVereinUrl);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
+                await launchHttpUrl(kVereinUrl);
               },
               child: Container(
                 padding: const EdgeInsets.all(12),

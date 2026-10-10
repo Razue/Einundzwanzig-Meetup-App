@@ -122,8 +122,11 @@ class BunkerPointer {
     return key;
   }
 
-  static bool _isRelayUrl(String value) =>
-      value.startsWith('wss://') || value.startsWith('ws://');
+  // Nur wss:// (Security Audit N2): ws:// legt Metadaten und
+  // Verfügbarkeit des Signer-Relays offen. Die Nutzlast bleibt zwar
+  // NIP-44-verschlüsselt, aber wer den Relay-Verkehr beobachtet oder
+  // unterbricht, kann den Bunker unbrauchbar machen.
+  static bool _isRelayUrl(String value) => value.startsWith('wss://');
 
   static bool _isHex(String value) {
     for (final c in value.codeUnits) {

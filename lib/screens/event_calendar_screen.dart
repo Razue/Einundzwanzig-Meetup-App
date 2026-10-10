@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart' show Geolocator;
 import 'package:nostr/nostr.dart' show Nip19;
 import '../widgets/npub_chip.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
@@ -35,6 +34,7 @@ import 'location_picker_screen.dart';
 import '../services/meetup_calendar_service.dart';
 import '../services/portal_api_service.dart';
 import '../models/calendar_event.dart' as ical;
+import '../services/safe_url_launcher.dart';
 
 enum _CalView { month, year, list }
 
@@ -1539,7 +1539,7 @@ class _EventCalendarScreenState extends State<EventCalendarScreen> {
               for (final url in links)
                 GestureDetector(
                   onTap: () async {
-                    try { await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication); } catch (_) {}
+                    await launchHttpUrl(url);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),

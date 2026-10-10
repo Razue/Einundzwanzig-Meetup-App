@@ -64,15 +64,15 @@ class SocialGraphService {
 
   static Future<Set<String>> fetchContactList(String pubkeyHex) async {
     final relays = await RelayConfig.getActiveRelays();
-    Set<String> allFollows = {};
+    // Kind 3 ist ersetzbar. Das neueste Event über alle Relays gewinnt,
+    // auch wenn die Liste leer ist — ein älteres von einem schnelleren
+    // Relay darf gelöschte Kontakte nicht zurückholen.
+    (int, Set<String>)? best;
 
     for (final relayUrl in relays) {
       try {
-        final follows = await _fetchContactListFromRelay(relayUrl, pubkeyHex);
-        if (follows.isNotEmpty) {
-          allFollows = follows; // Neuestes Event gewinnt
-          break; // Ein Relay reicht für Kind 3
-        }
+        final hit = await _fetchContactListFromRelay(relayUrl, pubkeyHex);
+        if (hit != null && (best == null || hit.$1 > best.$1)) best = hit;
       } catch (e) {
         // Nächstes Relay versuchen. debug und nicht warn: dass einzelne
         // Relays nicht antworten, ist Alltag — im Log waere das Rauschen.
@@ -82,10 +82,11 @@ class SocialGraphService {
       }
     }
 
-    return allFollows;
+    return best?.$2 ?? {};
   }
 
-  static Future<Set<String>> _fetchContactListFromRelay(
+  /// Neuestes Kind-3 auf diesem Relay. Null, wenn keines kam.
+  static Future<(int, Set<String>)?> _fetchContactListFromRelay(
     String relayUrl,
     String pubkeyHex,
   ) async {
@@ -93,12 +94,17 @@ class SocialGraphService {
     final tally = RelayParseTally('SocialGraph', 'Kontaktliste von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(RelayConfig.relayTimeout);
-      final completer = Completer<Set<String>>();
+      final completer = Completer<(int, Set<String>)?>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final subId = 'contacts-$subIdHex';
-      Set<String> follows = {};
+      final filter = <String, dynamic>{
+        'kinds': [3],
+        'authors': [pubkeyHex],
+        'limit': 1,
+      };
+      (int, Set<String>)? best;
 
       ws.listen(
         (data) {
@@ -108,8 +114,15 @@ class SocialGraphService {
             final type = message[0] as String;
 
             if (type == 'EVENT' && message.length >= 3) {
-              final eventData = message[2] as Map<String, dynamic>;
+              final eventData = RelaySocket.verifiedEvent(message[2], tag: 'SocialGraph');
+              if (eventData == null ||
+                  !RelaySocket.answersFilter(eventData, filter)) {
+                return;
+              }
+              final at = RelaySocket.replaceableCreatedAt(eventData);
+              if (at == null || (best != null && at < best!.$1)) return;
               final tags = eventData['tags'] as List<dynamic>? ?? [];
+              final follows = <String>{};
 
               // Kind 3: Tags sind [["p", "pubkey_hex", "relay_url", "petname"], ...]
               for (final tag in tags) {
@@ -121,35 +134,26 @@ class SocialGraphService {
                   }
                 }
               }
+              best = (at, follows);
             } else if (type == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(follows);
+              if (!completer.isCompleted) completer.complete(best);
             }
           } catch (e) { tally.failed(e); }
         },
         onError: (_) {
-          if (!completer.isCompleted) completer.complete({});
+          if (!completer.isCompleted) completer.complete(best);
         },
         onDone: () {
-          if (!completer.isCompleted) completer.complete(follows);
+          if (!completer.isCompleted) completer.complete(best);
         },
       );
 
-      final request = jsonEncode([
-        'REQ', subId,
-        {
-          'kinds': [3],
-          'authors': [pubkeyHex],
-          'limit': 1, // Nur das neueste Kind 3 Event
-        }
-      ]);
-      ws.add(request);
+      ws.add(jsonEncode(['REQ', subId, filter]));
 
-      final result = await completer.future.timeout(
+      return await completer.future.timeout(
         RelayConfig.relayTimeout,
-        onTimeout: () => follows,
+        onTimeout: () => best,
       );
-
-      return result;
     } finally {
       tally.report();
       ws?.close();

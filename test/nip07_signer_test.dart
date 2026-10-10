@@ -8,7 +8,11 @@
 //
 // Moeglich wird das durch die debugSignFn-Naht: nip07SignEvent ist eine
 // Top-Level-Funktion hinter einem bedingten Export und nicht ersetzbar.
+//
+// Eine nicht leere Signatur reicht nicht. Die guten Fälle sind echt
+// signiert; eine Platzhalter-Signatur wird abgewiesen.
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nostr/nostr.dart' show Event, Keychain;
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
 
 const _mine =
@@ -16,9 +20,8 @@ const _mine =
 const _someoneElse =
     '0000000000000000000000000000000000000000000000000000000000000001';
 
-// Platzhalter in plausibler Laenge. Der Signer prueft die Signatur nicht
-// kryptographisch — das tut die Erweiterung — sondern nur, dass ueberhaupt
-// eine da ist.
+// Platzhalter in plausibler Laenge. Kind, Inhalt und Konto können stimmen
+// und die Signatur trotzdem nicht dazu gehören.
 const _sig =
     'abababababababababababababababababababababababababababababababab'
     'abababababababababababababababababababababababababababababababab';
@@ -46,38 +49,93 @@ Map<String, dynamic> reply({
 Nip07NostrSigner signerReturning(Map<String, dynamic> r) =>
     Nip07NostrSigner(expectedPubkeyHex: _mine, debugSignFn: (_) async => r);
 
+/// Echt signierte Antwort. [pubkey] der Erweiterung ist der des Schlüsselpaars.
+Map<String, dynamic> signedReply(
+  Keychain kc, {
+  int kind = 1,
+  String content = 'hallo',
+  List<List<String>>? tags,
+}) {
+  final ev = Event.from(
+    kind: kind,
+    tags: tags ?? const [
+      ['t', 'test'],
+    ],
+    content: content,
+    privkey: kc.private,
+    createdAt: 1786000000,
+  );
+  return {
+    'id': ev.id,
+    'pubkey': ev.pubkey,
+    'created_at': ev.createdAt,
+    'kind': ev.kind,
+    'tags': ev.tags,
+    'content': ev.content,
+    'sig': ev.sig,
+  };
+}
+
 void main() {
   group('Der gute Fall', () {
     test('uebernimmt id, sig und created_at der Erweiterung', () async {
-      final signed = await signerReturning(reply()).signEvent(
-          kind: 1, tags: [['t', 'test']], content: 'hallo');
+      final kc = Keychain.generate();
+      final raw = signedReply(kc);
+      final signed = await Nip07NostrSigner(
+        expectedPubkeyHex: kc.public,
+        debugSignFn: (_) async => raw,
+      ).signEvent(kind: 1, tags: [
+        ['t', 'test']
+      ], content: 'hallo');
 
-      expect(signed.pubkey, _mine);
-      expect(signed.id, _eventId);
-      expect(signed.sig, _sig);
+      expect(signed.pubkey, kc.public);
+      expect(signed.id, raw['id']);
+      expect(signed.sig, raw['sig']);
       // created_at MUSS von der Erweiterung kommen: id und sig sind darueber
       // berechnet, ein eigener Zeitstempel machte das Event ungueltig.
       expect(signed.createdAt, 1786000000);
     });
 
     test('uebernimmt normalisierte Tags der Erweiterung', () async {
-      // Legitimer Fall: die Erweiterung sortiert oder ergaenzt Tags. Die
-      // Caller-Kopie waere dann falsch, weil id/sig ueber die normalisierte
-      // Form berechnet sind.
-      final signed = await signerReturning(
-        reply(tags: [['t', 'test'], ['client', 'alby']]),
-      ).signEvent(kind: 1, tags: [['t', 'test']], content: 'hallo');
-
-      expect(signed.tags, [
+      // Legitimer Fall: die Erweiterung sortiert oder ergaenzt Tags und
+      // signiert diese Fassung. Die Caller-Kopie waere dann falsch.
+      final kc = Keychain.generate();
+      final tags = [
         ['t', 'test'],
         ['client', 'alby'],
-      ]);
+      ];
+      final raw = signedReply(kc, tags: tags);
+      final signed = await Nip07NostrSigner(
+        expectedPubkeyHex: kc.public,
+        debugSignFn: (_) async => raw,
+      ).signEvent(kind: 1, tags: [
+        ['t', 'test']
+      ], content: 'hallo');
+
+      expect(signed.tags, tags);
     });
 
-    test('faellt bei kaputtem tags-Format auf die Caller-Tags zurueck', () async {
-      final signed = await signerReturning(reply(tags: ['kein-array']))
-          .signEvent(kind: 1, tags: [['t', 'test']], content: 'hallo');
-      expect(signed.tags, [['t', 'test']]);
+    test('kaputtes tags-Format wird abgewiesen', () async {
+      // Unlesbare Tags kann man nicht gegen die Signatur halten. Auf die
+      // Caller-Kopie auszuweichen und eine ungeprüfte Signatur anzunehmen
+      // würde genau die Lücke öffnen, die isValid schließt.
+      await expectLater(
+        signerReturning(reply(tags: ['kein-array'])).signEvent(
+            kind: 1, tags: [
+          ['t', 'test']
+        ], content: 'hallo'),
+        throwsA(isA<SigningException>()),
+      );
+    });
+
+    test('Platzhaltersignatur wird abgewiesen', () async {
+      await expectLater(
+        signerReturning(reply()).signEvent(
+            kind: 1, tags: [
+          ['t', 'test']
+        ], content: 'hallo'),
+        throwsA(isA<SigningException>()),
+      );
     });
   });
 
