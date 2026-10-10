@@ -384,21 +384,19 @@ class AmberNostrSigner implements NostrSigner {
       throw SigningException('Amber-Antwort nicht lesbar: $e');
     }
 
-    final signedPubkey = (signed['pubkey'] ?? '') as String;
-    // Schutz: Falls der User in Amber zwischenzeitlich das Konto
-    // gewechselt hat, würde sonst eine fremde Signatur akzeptiert.
-    if (signedPubkey.toLowerCase() != expectedPubkeyHex.toLowerCase()) {
-      throw const WrongAccountException();
-    }
-
-    return SignedEvent(
-      id: (signed['id'] ?? '') as String,
-      pubkey: signedPubkey,
-      createdAt: (signed['created_at'] ?? createdAt) as int,
+    // Security Audit N1: Amber ist FREMDER Code wie die Browsererweiterung
+    // oder der Remote-Signer. Dieselbe Prüfung anwenden — Kontowechsel,
+    // veränderter Event-Typ, veränderter Inhalt — statt nur den Pubkey
+    // zu vergleichen. Die Prüfung ist deckungsgleich mit NIP-07/NIP-46,
+    // damit kein Signer schwächer abgesichert ist als ein anderer.
+    return verifySignerResponse(
+      signed: signed,
+      expectedPubkeyHex: expectedPubkeyHex,
       kind: kind,
       tags: tags,
       content: content,
-      sig: (signed['sig'] ?? '') as String,
+      fallbackCreatedAt: createdAt,
+      actor: 'Amber',
     );
   }
 }
@@ -551,19 +549,45 @@ SignedEvent verifySignerResponse({
     throw SigningException('$actor hat den Inhalt des Events verändert.');
   }
 
+  final id = (signed['id'] ?? '').toString();
+  // created_at der Gegenstelle gewinnt: id und sig sind darüber
+  // berechnet, ein abweichender Wert würde das Event ungültig machen.
+  final createdAt = signed['created_at'] is int
+      ? signed['created_at'] as int
+      : fallbackCreatedAt;
+  final parsedTags = _tagsFromSigned(signed['tags'], tags);
+
+  // Die Felder oben können stimmen und die Signatur trotzdem nicht dazu
+  // gehören. Eine nicht leere Platzhalter-Signatur reicht nicht.
+  var signatureOk = false;
+  try {
+    final event = Event(
+      id,
+      signedPubkey,
+      createdAt,
+      kind,
+      parsedTags,
+      content,
+      sig,
+      verify: false,
+    );
+    signatureOk = event.isValid();
+  } catch (_) {
+    signatureOk = false;
+  }
+  if (!signatureOk) {
+    throw SigningException('$actor hat keine gültige Signatur geliefert.');
+  }
+
   return SignedEvent(
-    id: (signed['id'] ?? '').toString(),
+    id: id,
     pubkey: signedPubkey,
-    // created_at der Gegenstelle gewinnt: id und sig sind darüber
-    // berechnet, ein abweichender Wert würde das Event ungültig machen.
-    createdAt: signed['created_at'] is int
-        ? signed['created_at'] as int
-        : fallbackCreatedAt,
+    createdAt: createdAt,
     // kind und content stammen aus dem Aufruf, nicht aus der Antwort — die
     // Prüfung oben stellt sicher, dass beides übereinstimmt. So steht die
     // Invariante im Code, statt sie aus zwei Stellen erschliessen zu müssen.
     kind: kind,
-    tags: _tagsFromSigned(signed['tags'], tags),
+    tags: parsedTags,
     content: content,
     sig: sig,
   );

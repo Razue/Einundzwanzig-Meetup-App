@@ -284,69 +284,93 @@ class CalendarEventService {
     final parts = address.split(':');
     if (parts.length < 3) return null;
     final kind = int.tryParse(parts[0]);
-    final author = parts[1];
+    final author = parts[1].toLowerCase();
     final dTag = parts.sublist(2).join(':');
     if (kind == null || author.length != 64 || dTag.isEmpty) return null;
 
+    final filter = <String, dynamic>{
+      'kinds': [kind],
+      'authors': [author],
+      '#d': [dTag],
+      'limit': 1,
+    };
     final relays = <String>{
       kCommunityRelay,
       ...await RelayConfig.getActiveRelays(),
     };
 
-    NostrCalendarEvent? newest;
-    for (final relayUrl in relays) {
+    // Adressierbare Events: das größte created_at gewinnt, nicht das
+    // spätere Startdatum und nicht das erste Relay. Eine abgesagte neuere
+    // Fassung verdrängt die ältere aktive — sonst bliebe eine zurückgezogene
+    // Ausstellerliste in Kraft.
+    final hits = await Future.wait(relays.map((relayUrl) async {
       RelaySocket? ws;
       try {
         ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
-        final completer = Completer<void>();
+        final completer = Completer<(int, NostrCalendarEvent)?>();
         final random = Random.secure();
         final subId = 'cal1-${List.generate(6, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+        var bestAt = -1;
+        NostrCalendarEvent? best;
 
         ws.listen((data) {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg.length >= 3 && msg[0] == 'EVENT') {
-              final ev = NostrCalendarEvent.fromEvent(msg[2] as Map<String, dynamic>);
-              // Ersetzbare Events: Die neueste Fassung gewinnt.
-              if (ev != null && !ev.isCancelled &&
-                  (newest == null || ev.start.isAfter(newest!.start))) {
-                newest = ev;
+              final raw = RelaySocket.verifiedEvent(msg[2], tag: 'Calendar');
+              if (raw == null || !RelaySocket.answersFilter(raw, filter)) {
+                return;
               }
+              final at = RelaySocket.replaceableCreatedAt(raw);
+              final ev = at == null ? null : NostrCalendarEvent.fromEvent(raw);
+              if (ev == null || at! < bestAt) return;
+              if (ev.pubkey.toLowerCase() != author ||
+                  ev.dTag != dTag ||
+                  ev.kind != kind) {
+                return;
+              }
+              bestAt = at;
+              best = ev;
             } else if (msg.isNotEmpty && msg[0] == 'EOSE') {
-              if (!completer.isCompleted) completer.complete();
+              if (!completer.isCompleted) {
+                completer.complete(best == null ? null : (bestAt, best!));
+              }
             }
           } catch (_) {}
         }, onError: (_) {
-          if (!completer.isCompleted) completer.complete();
+          if (!completer.isCompleted) completer.complete(null);
         }, onDone: () {
-          if (!completer.isCompleted) completer.complete();
+          if (!completer.isCompleted) {
+            completer.complete(best == null ? null : (bestAt, best!));
+          }
         });
 
-        ws.add(jsonEncode([
-          'REQ',
-          subId,
-          {
-            'kinds': [kind],
-            'authors': [author],
-            '#d': [dTag],
-            'limit': 1,
-          }
-        ]));
-        await completer.future.timeout(_timeout, onTimeout: () {});
+        ws.add(jsonEncode(['REQ', subId, filter]));
+        return await completer.future.timeout(_timeout, onTimeout: () {
+          return best == null ? null : (bestAt, best!);
+        });
       } catch (e) {
         AppLogger.debug(_tag, 'fetchByAddress $relayUrl: $e');
+        return null;
       } finally {
         try {
           ws?.close();
         } catch (_) {}
       }
-      // Gefunden reicht — weitere Relays wuerden dasselbe liefern.
-      if (newest != null) break;
+    }));
+
+    var winnerAt = -1;
+    NostrCalendarEvent? winner;
+    for (final hit in hits) {
+      if (hit == null || hit.$1 < winnerAt) continue;
+      winnerAt = hit.$1;
+      winner = hit.$2;
     }
 
     AppLogger.debug(_tag,
-        'fetchByAddress $address -> ${newest == null ? "nicht gefunden" : "gefunden"}');
-    return newest;
+        'fetchByAddress $address -> ${winner == null || winner.isCancelled ? "nicht gefunden" : "gefunden"}');
+    if (winner == null || winner.isCancelled) return null;
+    return winner;
   }
 
   static Future<List<NostrCalendarEvent>?> _fetchFromRelay(String relayUrl, int limit) async {
@@ -360,6 +384,10 @@ class CalendarEventService {
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final subId = 'cal-$subIdHex';
+      final filter = <String, dynamic>{
+        'kinds': [kTimeEventKind, kDateEventKind],
+        'limit': limit,
+      };
 
       ws.listen(
         (data) {
@@ -368,7 +396,9 @@ class CalendarEventService {
             final message = jsonDecode(data as String) as List<dynamic>;
             final type = message[0] as String;
             if (type == 'EVENT' && message.length >= 3) {
-              final ev = NostrCalendarEvent.fromEvent(message[2] as Map<String, dynamic>);
+              final raw = RelaySocket.verifiedEvent(message[2], tag: 'Calendar');
+              if (raw == null || !RelaySocket.answersFilter(raw, filter)) return;
+              final ev = NostrCalendarEvent.fromEvent(raw);
               // Abgesagte Termine gar nicht erst aufnehmen. Sie bleiben im
               // Netz stehen — Nostr kennt kein Loeschen —, gehoeren aber in
               // keinen Kalender.
@@ -382,7 +412,7 @@ class CalendarEventService {
         onDone: () { if (!completer.isCompleted) completer.complete(results); },
       );
 
-      ws.add(jsonEncode(['REQ', subId, {'kinds': [kTimeEventKind, kDateEventKind], 'limit': limit}]));
+      ws.add(jsonEncode(['REQ', subId, filter]));
       final res = await completer.future.timeout(_timeout, onTimeout: () => results);
       return res;
     } catch (e) {

@@ -9,6 +9,7 @@ import '../services/nostr_service.dart';
 import '../services/signing_service.dart';
 import '../services/nip49.dart';
 import '../services/local_key_vault.dart';
+import '../services/screen_secure.dart';
 import '../services/secure_key_store.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
@@ -20,6 +21,7 @@ import 'platform_proof_screen.dart';
 import 'humanity_proof_screen.dart';
 import '../services/platform_proof_service.dart';
 import '../services/humanity_proof_service.dart';
+import '../features.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -320,6 +322,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   );
 
   void _generateNostrKey() async {
+    // Security Audit H4: Im Browser keinen lokalen nsec anlegen — NIP-07
+    // oder Bunker verwenden (siehe kWebLocalNsecLoginEnabled).
+    if (kIsWeb && !kWebLocalNsecLoginEnabled) {
+      final t = AppLocalizations.of(context);
+      _showError('${t.webKeyWarnH}: ${t.webKeyWarnAdvice}');
+      return;
+    }
     final confirm = await _showKeyEducationDialog();
     if (confirm != true) return;
 
@@ -345,7 +354,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       });
 
       if (mounted) {
-        _showNsecBackupDialog(keys['nsec']!);
+        // Security Audit M3: Geräteauthentifizierung, bevor der neue nsec
+        // sichtbar wird.
+        final ok = await ScreenSecure.authenticate(
+          reason: 'Bitte Identität bestätigen, um den Schlüssel anzuzeigen');
+        if (ok && mounted) {
+          _showNsecBackupDialog(keys['nsec']!);
+        }
       }
     } catch (e) {
       setState(() => _isGeneratingKey = false);
@@ -647,6 +662,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   void _importNsec() {
+    // Security Audit H4: siehe _generateNostrKey().
+    if (kIsWeb && !kWebLocalNsecLoginEnabled) {
+      final t = AppLocalizations.of(context);
+      _showError('${t.webKeyWarnH}: ${t.webKeyWarnAdvice}');
+      return;
+    }
     final nsecController = TextEditingController();
 
     showDialog(
@@ -746,6 +767,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
   // --- NSEC BACKUP DIALOG ---
   void _showNsecBackupDialog(String nsec) {
+    ScreenSecure.set(true);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -797,8 +819,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: cOrange),
             icon: const Icon(Icons.copy, color: Colors.white, size: 18),
             label: Text(AppLocalizations.of(context).profileCopy, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: nsec));
+            onPressed: () async {
+              await ScreenSecure.copySecret(nsec);
+              if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(AppLocalizations.of(context).profileNsecCopied), backgroundColor: cOrange),
               );
@@ -810,7 +833,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ),
         ],
       ),
-    );
+    ).whenComplete(() => ScreenSecure.set(false));
   }
 
   bool _exportingKey = false;
@@ -831,8 +854,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // (je ~64 MB bei log_n=16).
   Future<void> _exportNcryptsec({bool forceNewPassword = false}) async {
     if (_exportingKey) return;
+    // Riegel vor der Geräteabfrage. Sonst starten Mehrfach-Tipps mehrere
+    // Abfragen und danach parallele scrypt-Läufe.
     setState(() => _exportingKey = true);
     try {
+      // Security Audit M3: Geräteauthentifizierung vor dem Schlüssel-Export.
+      final authed = await ScreenSecure.authenticate(
+        reason: 'Bitte Identität bestätigen, um den Schlüssel zu exportieren');
+      if (!authed || !mounted) return;
       final t = AppLocalizations.of(context);
 
       final privHex = await SecureKeyStore.getPrivHex();
@@ -984,6 +1013,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     String ncryptsec, {
     bool fromVault = false,
   }) {
+    ScreenSecure.set(true);
     showModalBottomSheet(
       context: context,
       backgroundColor: cCard,
@@ -1035,8 +1065,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: cGreen),
-                onPressed: () {
-                  Clipboard.setData(ClipboardData(text: ncryptsec));
+                onPressed: () async {
+                  await ScreenSecure.copySecret(ncryptsec);
+                  if (!mounted || !ctx.mounted) return;
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text(t.keyExportCopied),
@@ -1064,7 +1095,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           ],
         ),
       ),
-    );
+    ).whenComplete(() => ScreenSecure.set(false));
   }
 
   // --- NSEC ANZEIGEN (für bestehende Keys) ---
@@ -1096,7 +1127,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
 
     if (confirm == true && mounted) {
-      _showNsecBackupDialog(keys['nsec']!);
+      // Security Audit M3: Geräteauthentifizierung, bevor der nsec sichtbar
+      // wird — sonst reicht ein entsperrtes, kurz liegengelassenes Gerät.
+      final ok = await ScreenSecure.authenticate(
+        reason: 'Bitte Identität bestätigen, um den Schlüssel anzuzeigen');
+      if (ok && mounted) {
+        _showNsecBackupDialog(keys['nsec']!);
+      }
     }
   }
 

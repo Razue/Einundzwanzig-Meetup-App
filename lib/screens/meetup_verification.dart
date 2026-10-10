@@ -734,12 +734,12 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       }
 
       // Badge vorbereiten — noch NICHT speichern (erst nach Bestätigung)
-      // Organisator-Standort aus den unsignierten QR-Feldern la/lo lesen
-      // (Referenz für den 5km-Check beim Bestätigen).
-      _pendingOrgLat = (tagData['la'] as num?)?.toDouble()
-          ?? (normalized['la'] as num?)?.toDouble() ?? 0;
-      _pendingOrgLng = (tagData['lo'] as num?)?.toDouble()
-          ?? (normalized['lo'] as num?)?.toDouble() ?? 0;
+      // Nur signierte Koordinaten gelten als gemessene Referenz.
+      // `la`/`lo` am Rolling-QR sind nicht von der Signatur gedeckt und
+      // ließen sich auf einen beliebigen Ort umschreiben (Security Audit H1).
+      final measured = BadgeSecurity.signedCoordinates(tagData);
+      _pendingOrgLat = measured.lat;
+      _pendingOrgLng = measured.lng;
 
       _pendingBadge = MeetupBadge(
         id: meetupId,

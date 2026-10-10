@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'services/guide_service.dart';
+import 'services/safe_url_launcher.dart';
 import 'widgets/guide_overlay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'l10n/app_localizations.dart';
 import 'theme.dart';
 import 'screens/intro.dart';
@@ -37,14 +37,28 @@ final GlobalKey<ScaffoldMessengerState> rootMessengerKey =
 /// Gezeigt wird ein Balken mit KNOPF statt eines automatisch geoeffneten
 /// Fensters: im Web blockiert der Browser das Oeffnen ohne Nutzer-Gestik. Ein
 /// Tipp auf den Knopf ist eine.
+/// Host einer URL ohne Token/Query — für Logs, in denen die volle
+/// auth_url nicht landen darf (Security Audit N5).
+String _hostOf(String url) {
+  try {
+    final host = Uri.parse(url).host;
+    return host.isEmpty ? 'unbekannt' : host;
+  } catch (_) {
+    return 'unbekannt';
+  }
+}
+
 void _installNip46AuthUrlHandler() {
   SigningService.onNip46AuthUrl = (url) {
     final messenger = rootMessengerKey.currentState;
     final context = rootMessengerKey.currentContext;
     if (messenger == null || context == null) {
+      // Security Audit N5: Die auth_url NICHT vollständig loggen — sie
+      // enthält ein Freigabe-Token und das Log wird geteilt. Nur der Host
+      // ist für die Diagnose relevant.
       AppLogger.warn('Nip46',
           'Freigabe-Aufforderung des Signers kam an, aber die App war noch '
-          'nicht bereit sie zu zeigen: $url');
+          'nicht bereit sie zu zeigen (Host: ${_hostOf(url)}).');
       return;
     }
     final t = AppLocalizations.of(context);
@@ -59,10 +73,18 @@ void _installNip46AuthUrlHandler() {
         label: t.bunkerAuthAction,
         textColor: Colors.black,
         onPressed: () {
-          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)
-              .catchError((Object e) {
-            AppLogger.warn('Nip46', 'Freigabe-Seite liess sich nicht oeffnen', e);
-            return false;
+          // Security Audit M2 (Review-Fund): Die auth_url kommt vom REMOTEN
+          // Signer — sie darf nicht ungeprüft als Intent rausgehen. Nur
+          // http(s) öffnen; NIP-46-Freigabeseiten sind Web-URLs.
+          // Security Audit N5: launchHttpUrl wirft nie und liefert nur
+          // true/false — es gibt kein Fehlerobjekt, das die volle auth_url
+          // samt Token in den Log tragen könnte. Geloggt wird nur der Host.
+          launchHttpUrl(url).then((opened) {
+            if (!opened) {
+              AppLogger.warn('Nip46',
+                  'Freigabe-Seite nicht geöffnet (Schema nicht http(s) oder '
+                  'kein Browser), Host: ${_hostOf(url)}');
+            }
           });
         },
       ),

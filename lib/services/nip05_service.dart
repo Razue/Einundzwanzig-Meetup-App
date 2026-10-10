@@ -26,6 +26,7 @@ import 'relay_socket.dart';
 
 class Nip05Service {
   static const Duration _timeout = Duration(seconds: 5);
+  static const int _maxBodyBytes = 64 * 1024;
 
   // Bekannte Community-Domains (höherer Vertrauenswert)
   static const List<String> communityDomains = [
@@ -77,6 +78,11 @@ class Nip05Service {
       if (response.statusCode != 200) {
         return Nip05Result(valid: false, nip05: nip05, domain: domain);
       }
+      // Security Audit M4: Groessenlimit — eine nostr.json ist wenige KB,
+      // alles darueber ist Unsinn oder Absicht.
+      if (response.bodyBytes.length > _maxBodyBytes) {
+        return Nip05Result(valid: false, nip05: nip05, domain: domain);
+      }
 
       // bodyBytes + utf8.decode statt response.body: letzteres richtet sich
       // nach dem charset im Content-Type und faellt ohne Angabe auf latin1
@@ -123,16 +129,24 @@ class Nip05Service {
     String pubkeyHex,
     List<String> relays,
   ) async {
+    // Kind 0 ist ersetzbar. Das neueste Profil gilt, auch wenn es keine
+    // NIP-05 mehr trägt — eine ältere Kennung von einem schnelleren Relay
+    // darf sie nicht wiederbeleben.
+    (int, String?)? best;
     for (final relayUrl in relays.take(2)) {
       try {
-        final nip05 = await _fetchProfileNip05(relayUrl, pubkeyHex);
-        if (nip05 != null && nip05.isNotEmpty) return nip05;
+        final hit = await _fetchProfileNip05(relayUrl, pubkeyHex);
+        if (hit != null && (best == null || hit.$1 > best.$1)) best = hit;
       } catch (_) {}
     }
+    final nip05 = best?.$2;
+    if (nip05 != null && nip05.isNotEmpty) return nip05;
     return null;
   }
 
-  static Future<String?> _fetchProfileNip05(
+  /// Neuestes Profil auf diesem Relay: Zeitstempel und NIP-05 (oder null,
+  /// wenn das Profil keine trägt). Null, wenn kein passendes Event kam.
+  static Future<(int, String?)?> _fetchProfileNip05(
     String relayUrl,
     String pubkeyHex,
   ) async {
@@ -140,11 +154,17 @@ class Nip05Service {
     final tally = RelayParseTally('NIP05', 'Profil-NIP-05 von $relayUrl');
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
-      final completer = Completer<String?>();
+      final completer = Completer<(int, String?)?>();
       // Security Audit M4: Kryptographisch sichere Subscription-ID
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final subId = 'nip05-$subIdHex';
+      final filter = <String, dynamic>{
+        'kinds': [0],
+        'authors': [pubkeyHex],
+        'limit': 1,
+      };
+      (int, String?)? best;
 
       ws.listen(
         (data) {
@@ -154,38 +174,40 @@ class Nip05Service {
             final type = message[0] as String;
 
             if (type == 'EVENT' && message.length >= 3) {
-              final eventData = message[2] as Map<String, dynamic>;
+              final eventData = RelaySocket.verifiedEvent(message[2], tag: 'NIP05');
+              if (eventData == null ||
+                  !RelaySocket.answersFilter(eventData, filter)) {
+                return;
+              }
+              final at = RelaySocket.replaceableCreatedAt(eventData);
+              if (at == null || (best != null && at < best!.$1)) return;
               final content = eventData['content'] as String? ?? '';
+              String? nip05;
               try {
                 final profile = jsonDecode(content) as Map<String, dynamic>;
-                final nip05 = profile['nip05'] as String?;
-                if (!completer.isCompleted) completer.complete(nip05);
-              } catch (_) {}
+                nip05 = profile['nip05'] as String?;
+              } catch (_) {
+                nip05 = null;
+              }
+              best = (at, nip05);
             } else if (type == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(null);
+              if (!completer.isCompleted) completer.complete(best);
             }
           } catch (e) { tally.failed(e); }
         },
         onError: (_) {
-          if (!completer.isCompleted) completer.complete(null);
+          if (!completer.isCompleted) completer.complete(best);
         },
         onDone: () {
-          if (!completer.isCompleted) completer.complete(null);
+          if (!completer.isCompleted) completer.complete(best);
         },
       );
 
-      ws.add(jsonEncode([
-        'REQ', subId,
-        {
-          'kinds': [0], // Metadata/Profile
-          'authors': [pubkeyHex],
-          'limit': 1,
-        }
-      ]));
+      ws.add(jsonEncode(['REQ', subId, filter]));
 
       return await completer.future.timeout(
         _timeout,
-        onTimeout: () => null,
+        onTimeout: () => best,
       );
     } finally {
       tally.report();

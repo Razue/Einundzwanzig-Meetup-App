@@ -11,6 +11,7 @@ import 'package:einundzwanzig_meetup_app/services/nip46/nip46_exception.dart';
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nostr/nostr.dart' show Event, Keychain;
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _mine =
@@ -101,24 +102,51 @@ void main() {
 
   group('Signer: guter Fall', () {
     test('uebernimmt id, sig, created_at und normalisierte Tags', () async {
-      final signed = await signerReturning(
-        reply(tags: [
-          ['d', 'badge'],
-          ['client', 'nsec.app']
-        ]),
+      final kc = Keychain.generate();
+      final tags = [
+        ['d', 'badge'],
+        ['client', 'nsec.app'],
+      ];
+      final event = Event.from(
+        kind: 21000,
+        tags: tags,
+        content: 'Badge',
+        privkey: kc.private,
+        createdAt: 1786000000,
+      );
+      final signed = await Nip46NostrSigner(
+        expectedPubkeyHex: kc.public,
+        clientProvider: () async =>
+            throw StateError('darf im Test nicht gerufen werden'),
+        debugSignFn: (_) async => {
+          'id': event.id,
+          'pubkey': event.pubkey,
+          'created_at': event.createdAt,
+          'kind': event.kind,
+          'tags': event.tags,
+          'content': event.content,
+          'sig': event.sig,
+        },
       ).signEvent(kind: 21000, tags: [
         ['d', 'badge']
       ], content: 'Badge');
 
-      expect(signed.id, _eventId);
-      expect(signed.sig, _sig);
+      expect(signed.id, event.id);
+      expect(signed.sig, event.sig);
       expect(signed.createdAt, 1786000000);
-      expect(signed.tags, [
-        ['d', 'badge'],
-        ['client', 'nsec.app'],
-      ]);
+      expect(signed.tags, tags);
       expect(signed.kind, 21000);
       expect(signed.content, 'Badge');
+    });
+
+    test('Platzhaltersignatur wird abgewiesen', () async {
+      await expectLater(
+        signerReturning(reply()).signEvent(
+            kind: 21000, tags: [
+          ['d', 'badge']
+        ], content: 'Badge'),
+        throwsA(isA<SigningException>()),
+      );
     });
   });
 

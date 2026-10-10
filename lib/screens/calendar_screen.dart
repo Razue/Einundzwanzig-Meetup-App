@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/user.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:add_2_calendar/add_2_calendar.dart' as cal;
 import '../services/meetup_calendar_service.dart';
@@ -14,6 +13,7 @@ import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/event_details_sheet.dart';
 import '../utils/share_origin.dart';
+import '../services/safe_url_launcher.dart';
 
 class CalendarScreen extends StatefulWidget {
   // Wir erlauben einen optionalen Suchbegriff beim Start (z.B. vom Dashboard kommend)
@@ -553,7 +553,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Row(children: [
               if (event.url.isNotEmpty) ...[
                 action(t.evOpenLink, Icons.link_rounded, () async {
-                  try { await launchUrl(Uri.parse(event.url), mode: LaunchMode.externalApplication); } catch (_) {}
+                  await launchHttpUrl(event.url);
                 }),
                 const SizedBox(width: 10),
               ],

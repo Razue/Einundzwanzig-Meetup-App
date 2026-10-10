@@ -10,8 +10,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
+import '../services/safe_url_launcher.dart';
 
 class MarkdownView extends StatefulWidget {
   final String data;
@@ -387,10 +387,7 @@ class _MarkdownViewState extends State<MarkdownView> {
   }
 
   Future<void> _open(String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    // Nur http(s) — Markdown kommt aus fremden Quellen (Security Audit M2).
+    await launchHttpUrl(url);
   }
 }
