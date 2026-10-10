@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'services/guide_service.dart';
+import 'services/safe_url_launcher.dart';
 import 'widgets/guide_overlay.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'l10n/app_localizations.dart';
 import 'theme.dart';
 import 'screens/intro.dart';
@@ -73,17 +73,18 @@ void _installNip46AuthUrlHandler() {
         label: t.bunkerAuthAction,
         textColor: Colors.black,
         onPressed: () {
-          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)
-              .catchError((Object e) {
-            // Security Audit N5: Das Fehlerobjekt NICHT mitloggen — die
-            // PlatformException von url_launcher (z. B. fehlender Browser)
-            // trägt die volle auth_url samt Token in ihrer Nachricht. Nur
-            // Typ und stabiler Fehlercode sind für die Diagnose nötig.
-            final code = e is PlatformException ? ' (${e.code})' : '';
-            AppLogger.warn('Nip46',
-                'Freigabe-Seite liess sich nicht oeffnen: '
-                '${e.runtimeType}$code, Host: ${_hostOf(url)}');
-            return false;
+          // Security Audit M2 (Review-Fund): Die auth_url kommt vom REMOTEN
+          // Signer — sie darf nicht ungeprüft als Intent rausgehen. Nur
+          // http(s) öffnen; NIP-46-Freigabeseiten sind Web-URLs.
+          // Security Audit N5: launchHttpUrl wirft nie und liefert nur
+          // true/false — es gibt kein Fehlerobjekt, das die volle auth_url
+          // samt Token in den Log tragen könnte. Geloggt wird nur der Host.
+          launchHttpUrl(url).then((opened) {
+            if (!opened) {
+              AppLogger.warn('Nip46',
+                  'Freigabe-Seite nicht geöffnet (Schema nicht http(s) oder '
+                  'kein Browser), Host: ${_hostOf(url)}');
+            }
           });
         },
       ),

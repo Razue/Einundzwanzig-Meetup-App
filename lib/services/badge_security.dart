@@ -351,20 +351,32 @@ class BadgeSecurity {
   /// unsigniert und sind vom Fotografen frei setzbar (Security Audit H1).
   static const Set<String> compactSignedKeys = {'v', 't', 'm', 'b', 'x'};
 
+  /// Felder, deren Koordinaten von der Signatur gedeckt sind. Leer bis
+  /// Format v3 die Koordinaten in den signierten Content aufnimmt
+  /// (Konzept: docs/ROLLING_QR_SESSION_KEY.md) — bis dahin ist `la`/`lo`
+  /// am Rolling-QR ein frei setzbarer Anhang und keine gemessene Referenz.
+  ///
+  /// ACHTUNG: `la`/`lo` NIEMALS in [compactSignedKeys] ergänzen, um sie
+  /// hier zu aktivieren — jenes Set bestimmt zugleich, welche Felder
+  /// kanonisch in die Schnorr-Signatur eingehen. Ein Nachtrag würde jede
+  /// bestehende Badge-Signatur ungültig machen. v3 braucht eigene
+  /// signierte Koordinatenfelder oder ein neues Format.
+  static const Set<String> signedCoordinateKeys = {};
+
   /// Standort nur, wenn er mit signiert wurde. Sonst 0/0, damit der
   /// Scanner auf die Portal-Referenz zurückfällt statt auf `la`/`lo`
   /// aus dem unsignierten QR-Anhang.
   static ({double lat, double lng}) signedCoordinates(Map<String, dynamic> data) {
-    if (!compactSignedKeys.contains('la') ||
-        !compactSignedKeys.contains('lo') ||
-        data['la'] is! num ||
-        data['lo'] is! num) {
-      return (lat: 0, lng: 0);
+    if (signedCoordinateKeys.contains('la') &&
+        signedCoordinateKeys.contains('lo') &&
+        data['la'] is num &&
+        data['lo'] is num) {
+      return (
+        lat: (data['la'] as num).toDouble(),
+        lng: (data['lo'] as num).toDouble(),
+      );
     }
-    return (
-      lat: (data['la'] as num).toDouble(),
-      lng: (data['lo'] as num).toDouble(),
-    );
+    return (lat: 0, lng: 0);
   }
 
   // =============================================

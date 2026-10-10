@@ -469,6 +469,8 @@ class PromotionClaimService {
               final eventData = message[2] as Map<String, dynamic>;
 
               // Event-Signatur prüfen
+              // (verify: false — isValid() unten ist die einzige Prüfung;
+              // der Konstruktor würde dieselbe Signatur doppelt prüfen.)
               final event = Event(
                 eventData['id'] ?? '',
                 eventData['pubkey'] ?? '',
@@ -479,6 +481,7 @@ class PromotionClaimService {
                     .toList() ?? [],
                 eventData['content'] ?? '',
                 eventData['sig'] ?? '',
+                verify: false,
               );
 
               if (event.isValid()) {
@@ -487,6 +490,9 @@ class PromotionClaimService {
                   content: event.content,
                   createdAt: event.createdAt,
                 ));
+              } else {
+                // Vorher warf der Konstruktor und der catch unten zählte das.
+                tally.failed('Ungültige Signatur');
               }
             } else if (type == 'EOSE') {
               if (!completer.isCompleted) {

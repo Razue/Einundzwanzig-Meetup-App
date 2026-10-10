@@ -504,11 +504,18 @@ class AdminRegistry {
                     .toList() ?? [],
                 eventData['content'] ?? '',
                 eventData['sig'] ?? '',
+                // verify: false — isValid() unten ist die einzige nötige Prüfung
+                // (der Konstruktor würde dieselbe Signatur doppelt prüfen).
+                verify: false,
               );
 
               // Ist der Author überhaupt jemand, nach dem wir gefragt haben?
               if (!authorsHex.contains(event.pubkey)) return;
-              if (!event.isValid()) return;
+              if (!event.isValid()) {
+                // Vorher warf der Konstruktor und der catch unten zählte das.
+                tally.failed('Ungültige Signatur');
+                return;
+              }
 
               try {
                 final content = jsonDecode(event.content) as Map<String, dynamic>;

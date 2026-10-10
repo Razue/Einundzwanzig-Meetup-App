@@ -113,6 +113,10 @@ class RelaySocket {
     if (raw is! Map<String, dynamic>) return null;
     bool ok = false;
     try {
+      // verify: false — der Konstruktor würde sonst schon werfen und
+      // isValid() unten prüfte dieselbe Signatur ein zweites Mal (bip340
+      // auf pointycastle ist teuer; bei hunderten Chat-Events pro Fetch
+      // fällt die doppelte Prüfung merklich ins Gewicht).
       final event = Event(
         raw['id'] ?? '',
         raw['pubkey'] ?? '',
@@ -124,6 +128,7 @@ class RelaySocket {
             [],
         raw['content'] ?? '',
         raw['sig'] ?? '',
+        verify: false,
       );
       ok = event.isValid();
     } catch (_) {

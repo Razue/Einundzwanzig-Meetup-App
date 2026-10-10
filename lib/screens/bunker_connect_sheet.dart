@@ -27,6 +27,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/app_logger.dart';
+import '../services/safe_url_launcher.dart';
 import '../services/signing_service.dart';
 import '../theme.dart';
 
@@ -193,9 +195,14 @@ class _BunkerConnectSheetState extends State<BunkerConnectSheet> {
   Future<void> _openAuthUrl() async {
     final url = _authUrl;
     if (url == null) return;
-    try {
-      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-    } catch (_) {/* nichts zu tun — der Knopf bleibt stehen */}
+    // Security Audit M2 (Review-Fund): Die auth_url liefert der REMOTE
+    // Signer — Schema-Whitelist wie überall, kein roher Intent aus
+    // Netzwerkdaten. NIP-46-Freigabeseiten sind http(s)-URLs.
+    final opened = await launchHttpUrl(url);
+    if (!opened) {
+      AppLogger.warn('BunkerConnect',
+          'Freigabe-URL nicht geöffnet (Schema nicht http(s)?)');
+    }
   }
 
   // ---------- Aufbau ----------

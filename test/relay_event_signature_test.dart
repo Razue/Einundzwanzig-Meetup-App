@@ -61,6 +61,18 @@ void main() {
     expect(RelaySocket.verifiedEvent(spoofed, tag: 'Test'), isNull);
   });
 
+  test('Gültige Signatur, aber nachträglich geänderte ID wird verworfen', () {
+    final forged = signedCalendarEvent()..['id'] = 'ab' * 32;
+    expect(RelaySocket.verifiedEvent(forged, tag: 'Test'), isNull);
+  });
+
+  test('Kein Hex in Pubkey oder Signatur wird verworfen statt zu werfen', () {
+    final badSig = signedCalendarEvent()..['sig'] = 'zz' * 64;
+    final badKey = signedCalendarEvent()..['pubkey'] = 'xyz';
+    expect(RelaySocket.verifiedEvent(badSig, tag: 'Test'), isNull);
+    expect(RelaySocket.verifiedEvent(badKey, tag: 'Test'), isNull);
+  });
+
   test('Kaputte Nachricht crasht nicht', () {
     expect(RelaySocket.verifiedEvent('kein objekt'), isNull);
     expect(RelaySocket.verifiedEvent({'kind': 'x', 'tags': 42}), isNull);

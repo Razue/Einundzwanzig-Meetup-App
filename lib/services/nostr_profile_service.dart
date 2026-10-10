@@ -239,7 +239,12 @@ class NostrProfileService {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'EVENT' && msg.length >= 3) {
-              final ev = msg[2] as Map<String, dynamic>;
+              // Security Audit H2 (Review-Fund): Auch Namens- und Spitznamen-
+              // Events signaturprüfen — sonst schiebt ein Relay unter
+              // fremdem Pubkey einen Namen unter (Identitäts-Spoofing in
+              // Vertrauensnetz und Chat-Anzeigen).
+              final ev = RelaySocket.verifiedEvent(msg[2], tag: 'NostrProfile');
+              if (ev == null) return;
               final hex = ev['pubkey'] as String? ?? '';
               final at = ev['created_at'] is int ? ev['created_at'] as int : 0;
               final name = parse(ev['content'] as String? ?? '');
@@ -289,8 +294,11 @@ class NostrProfileService {
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
-              final content =
-                  (message[2] as Map<String, dynamic>)['content'] as String? ?? '';
+              // Security Audit H2 (Review-Fund): Signatur prüfen, bevor der
+              // Spitzname aus dem Reputation-Event übernommen wird.
+              final ev = RelaySocket.verifiedEvent(message[2], tag: 'NostrProfile');
+              if (ev == null) return;
+              final content = ev['content'] as String? ?? '';
               final body = jsonDecode(content) as Map<String, dynamic>;
               final identity = body['identity'];
               final nick = identity is Map
@@ -340,9 +348,11 @@ class NostrProfileService {
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
-              final content =
-                  (message[2] as Map<String, dynamic>)['content'] as String? ??
-                      '';
+              // Security Audit H2 (Review-Fund): Signatur prüfen, bevor der
+              // Anzeigename aus dem Profil-Event übernommen wird.
+              final ev = RelaySocket.verifiedEvent(message[2], tag: 'NostrProfile');
+              if (ev == null) return;
+              final content = ev['content'] as String? ?? '';
               final profile = jsonDecode(content) as Map<String, dynamic>;
               // display_name hat Vorrang — das ist der Name, den Leute fuer
               // die Anzeige waehlen; name ist oft der technische Kurzname.

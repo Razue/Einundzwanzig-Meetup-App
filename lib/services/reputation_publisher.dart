@@ -436,12 +436,16 @@ class ReputationPublisher {
                     .toList() ?? [],
                 eventData['content'] ?? '',
                 eventData['sig'] ?? '',
+                // verify: false — isValid() unten ist die einzige Prüfung;
+                // der Konstruktor würde dieselbe Signatur doppelt prüfen.
+                verify: false,
               );
 
               // Signatur prüfen
               if (!event.isValid()) {
-                AppLogger.warn('ReputationPublisher', 'Ungültige Signatur von $relayUrl');
-
+                // Gezählt statt pro Event geloggt: ein Relay mit gefälschten
+                // Events würde sonst den Log-Ringpuffer füllen (RelayParseTally).
+                tally.failed('Ungültige Signatur');
                 return;
               }
 
