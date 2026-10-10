@@ -58,12 +58,10 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="text/plain"/>
-            </intent-filter>
+            <!-- Security Audit N4: NDEF-Filter entfernt — NFC ist in
+                 lib/features.dart (kNfcEnabled) abgeschaltet. Ein aktiver
+                 Filter würde die App für beliebige NFC-Tags als Ziel
+                 anbieten, ohne dass der Pfad genutzt wird. -->
         </activity>
 
         <!-- Unsichtbarer Widget-Klick-Router: wird pro Tap frisch erzeugt,
@@ -92,10 +90,13 @@
                 android:resource="@xml/meetup_widget_info" />
         </receiver>
 
-        <!-- home_widget Hintergrund-Refresh (Aktualisieren-Rädchen im Widget) -->
+        <!-- home_widget Hintergrund-Refresh (Aktualisieren-Rädchen im Widget).
+             Security Audit N4: nicht exportieren — der Receiver wird nur von
+             der eigenen App/dem eigenen Widget angesprochen. Exportiert
+             könnte jede installierte App Hintergrund-Netzaufrufe auslösen. -->
         <receiver
             android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
             </intent-filter>

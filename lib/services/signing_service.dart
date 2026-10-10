@@ -384,21 +384,19 @@ class AmberNostrSigner implements NostrSigner {
       throw SigningException('Amber-Antwort nicht lesbar: $e');
     }
 
-    final signedPubkey = (signed['pubkey'] ?? '') as String;
-    // Schutz: Falls der User in Amber zwischenzeitlich das Konto
-    // gewechselt hat, würde sonst eine fremde Signatur akzeptiert.
-    if (signedPubkey.toLowerCase() != expectedPubkeyHex.toLowerCase()) {
-      throw const WrongAccountException();
-    }
-
-    return SignedEvent(
-      id: (signed['id'] ?? '') as String,
-      pubkey: signedPubkey,
-      createdAt: (signed['created_at'] ?? createdAt) as int,
+    // Security Audit N1: Amber ist FREMDER Code wie die Browsererweiterung
+    // oder der Remote-Signer. Dieselbe Prüfung anwenden — Kontowechsel,
+    // veränderter Event-Typ, veränderter Inhalt — statt nur den Pubkey
+    // zu vergleichen. Die Prüfung ist deckungsgleich mit NIP-07/NIP-46,
+    // damit kein Signer schwächer abgesichert ist als ein anderer.
+    return verifySignerResponse(
+      signed: signed,
+      expectedPubkeyHex: expectedPubkeyHex,
       kind: kind,
       tags: tags,
       content: content,
-      sig: (signed['sig'] ?? '') as String,
+      fallbackCreatedAt: createdAt,
+      actor: 'Amber',
     );
   }
 }

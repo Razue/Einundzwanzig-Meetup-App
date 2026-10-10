@@ -37,14 +37,28 @@ final GlobalKey<ScaffoldMessengerState> rootMessengerKey =
 /// Gezeigt wird ein Balken mit KNOPF statt eines automatisch geoeffneten
 /// Fensters: im Web blockiert der Browser das Oeffnen ohne Nutzer-Gestik. Ein
 /// Tipp auf den Knopf ist eine.
+/// Host einer URL ohne Token/Query — für Logs, in denen die volle
+/// auth_url nicht landen darf (Security Audit N5).
+String _hostOf(String url) {
+  try {
+    final host = Uri.parse(url).host;
+    return host.isEmpty ? 'unbekannt' : host;
+  } catch (_) {
+    return 'unbekannt';
+  }
+}
+
 void _installNip46AuthUrlHandler() {
   SigningService.onNip46AuthUrl = (url) {
     final messenger = rootMessengerKey.currentState;
     final context = rootMessengerKey.currentContext;
     if (messenger == null || context == null) {
+      // Security Audit N5: Die auth_url NICHT vollständig loggen — sie
+      // enthält ein Freigabe-Token und das Log wird geteilt. Nur der Host
+      // ist für die Diagnose relevant.
       AppLogger.warn('Nip46',
           'Freigabe-Aufforderung des Signers kam an, aber die App war noch '
-          'nicht bereit sie zu zeigen: $url');
+          'nicht bereit sie zu zeigen (Host: ${_hostOf(url)}).');
       return;
     }
     final t = AppLocalizations.of(context);
@@ -61,7 +75,14 @@ void _installNip46AuthUrlHandler() {
         onPressed: () {
           launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)
               .catchError((Object e) {
-            AppLogger.warn('Nip46', 'Freigabe-Seite liess sich nicht oeffnen', e);
+            // Security Audit N5: Das Fehlerobjekt NICHT mitloggen — die
+            // PlatformException von url_launcher (z. B. fehlender Browser)
+            // trägt die volle auth_url samt Token in ihrer Nachricht. Nur
+            // Typ und stabiler Fehlercode sind für die Diagnose nötig.
+            final code = e is PlatformException ? ' (${e.code})' : '';
+            AppLogger.warn('Nip46',
+                'Freigabe-Seite liess sich nicht oeffnen: '
+                '${e.runtimeType}$code, Host: ${_hostOf(url)}');
             return false;
           });
         },
