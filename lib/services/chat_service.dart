@@ -349,7 +349,7 @@ class ChatService {
     final ws = await _connectAuthed((msg) {
       if (msg.length >= 3 && msg[0] == 'EVENT') {
         final ev = RelaySocket.verifiedEvent(msg[2], tag: 'Chat');
-        if (ev != null) out.add(ev);
+        if (ev != null && RelaySocket.answersFilter(ev, filter)) out.add(ev);
       } else if (msg[0] == 'EOSE') {
         gotEose = true;
         if (!done.isCompleted) done.complete();
@@ -456,11 +456,17 @@ class ChatService {
     });
     if (events == null) throw ChatRelayUnavailable(offline: _lastOffline);
     final rooms = <String, ChatRoom>{};
+    final bestAt = <String, int>{};
     for (final e in events) {
+      final at = RelaySocket.replaceableCreatedAt(e);
+      if (at == null) continue;
       final room = ChatRoom.fromEvent(e);
-      // Ersetzbare Ereignisse: Bei Doppeltem gewinnt das jüngste. Das Relay
-      // liefert meist schon nur das aktuelle, verlassen darf man sich nicht.
-      if (room != null) rooms[room.h] = room;
+      // Ersetzbare Ereignisse: Bei Doppeltem gewinnt das jüngste created_at.
+      if (room == null) continue;
+      final prev = bestAt[room.h];
+      if (prev != null && at < prev) continue;
+      bestAt[room.h] = at;
+      rooms[room.h] = room;
     }
     AppLogger.debug(_tag, '${rooms.length} Meetup-Räume geladen.');
     return rooms.values.toList();
@@ -502,12 +508,19 @@ class ChatService {
       'limit': 5,
     });
     if (events == null) throw ChatRelayUnavailable(offline: _lastOffline);
+    ChatRoom? best;
+    var bestAt = -1;
     for (final e in events) {
+      final at = RelaySocket.replaceableCreatedAt(e);
+      if (at == null || at < bestAt) continue;
       final room = ChatRoom.fromEvent(e);
-      if (room != null) {
-        AppLogger.debug(_tag, 'Raum fuer Meetup $portalId: ${room.h}');
-        return room;
-      }
+      if (room == null) continue;
+      bestAt = at;
+      best = room;
+    }
+    if (best != null) {
+      AppLogger.debug(_tag, 'Raum fuer Meetup $portalId: ${best.h}');
+      return best;
     }
     AppLogger.diag(_tag, 'Relay antwortete: kein Raum mit i-Tag meetup:$portalId.');
     return null;
@@ -676,12 +689,18 @@ class ChatService {
       '#d': [h],
       'limit': 5,
     });
+    Map<String, dynamic>? newest;
+    var bestAt = -1;
     for (final e in events) {
-      final tags = (e['tags'] as List?)?.cast<List>() ?? const [];
-      for (final t in tags) {
-        if (t.isNotEmpty && t[0] == 'p' && t.length > 1 && t[1] == me) {
-          return true;
-        }
+      final at = RelaySocket.replaceableCreatedAt(e);
+      if (at == null || at < bestAt) continue;
+      bestAt = at;
+      newest = e;
+    }
+    final tags = (newest?['tags'] as List?)?.cast<List>() ?? const [];
+    for (final t in tags) {
+      if (t.isNotEmpty && t[0] == 'p' && t.length > 1 && t[1] == me) {
+        return true;
       }
     }
     return false;
@@ -748,10 +767,16 @@ class ChatService {
     void Function(ChatMessage) onMessage, {
     DateTime? since,
   }) async {
+    final filter = <String, dynamic>{
+      'kinds': [_kMessage],
+      '#h': [h],
+      if (since != null) 'since': since.millisecondsSinceEpoch ~/ 1000,
+    };
     final ws = await _connectAuthed((msg) {
       if (msg.length >= 3 && msg[0] == 'EVENT') {
         final ev = RelaySocket.verifiedEvent(msg[2], tag: 'Chat');
-        final m = ev == null ? null : ChatMessage.fromEvent(ev);
+        if (ev == null || !RelaySocket.answersFilter(ev, filter)) return;
+        final m = ChatMessage.fromEvent(ev);
         if (m != null) onMessage(m);
       }
     });
@@ -759,15 +784,7 @@ class ChatService {
     // die nichts tut, statt einer Ausnahme mitten im Aufbau des Bildschirms.
     if (ws == null) return () {};
 
-    ws.add(jsonEncode([
-      'REQ',
-      'live',
-      {
-        'kinds': [_kMessage],
-        '#h': [h],
-        if (since != null) 'since': since.millisecondsSinceEpoch ~/ 1000,
-      }
-    ]));
+    ws.add(jsonEncode(['REQ', 'live', filter]));
 
     return () {
       try {

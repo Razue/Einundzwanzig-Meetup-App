@@ -95,9 +95,12 @@ class ZapVerificationService {
 
     for (final relayUrl in relays.take(3)) { // Max 3 Relays für Performance
       try {
-        final receipts = await _fetchFromRelay(relayUrl, pubkeyHex, since, isReceived);
-        // Deduplizieren anhand der Event-ID
+        final receipts = await _fetchFromRelay(relayUrl, pubkeyHex, since);
+        // Deduplizieren anhand der Event-ID. Die Relay-Anfrage ist für
+        // beide Richtungen dieselbe; hier bleibt nur die gefragte Seite.
         for (final receipt in receipts) {
+          final wanted = isReceived ? receipt.isReceived : receipt.isSent;
+          if (!wanted) continue;
           if (!allReceipts.any((r) => r.eventId == receipt.eventId)) {
             allReceipts.add(receipt);
           }
@@ -150,7 +153,6 @@ class ZapVerificationService {
     String relayUrl,
     String pubkeyHex,
     int since,
-    bool isReceived,
   ) async {
     RelaySocket? ws;
     final tally = RelayParseTally('ZapVerification', 'Zap-Belege von $relayUrl');
@@ -162,6 +164,15 @@ class ZapVerificationService {
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final subId = 'zaps-$subIdHex';
       List<ZapReceipt> receipts = [];
+      // Kind 9735. Empfangen: p-Tag ist der Empfänger. Gesendet steht der
+      // Absender im description-Tag; '#P' können nicht alle Relays, deshalb
+      // dieselbe p-Anfrage. _parseZapReceipt ordnet danach zu.
+      final filter = <String, dynamic>{
+        'kinds': [9735],
+        'since': since,
+        'limit': 100,
+        '#p': [pubkeyHex],
+      };
 
       ws.listen(
         (data) {
@@ -172,7 +183,10 @@ class ZapVerificationService {
 
             if (type == 'EVENT' && message.length >= 3) {
               final eventData = RelaySocket.verifiedEvent(message[2], tag: 'ZapVerification');
-              if (eventData == null) return;
+              if (eventData == null ||
+                  !RelaySocket.answersFilter(eventData, filter)) {
+                return;
+              }
               final receipt = _parseZapReceipt(eventData, pubkeyHex);
               if (receipt != null) {
                 receipts.add(receipt);
@@ -189,24 +203,6 @@ class ZapVerificationService {
           if (!completer.isCompleted) completer.complete(receipts);
         },
       );
-
-      // Query: Kind 9735 (Zap Receipt)
-      final Map<String, dynamic> filter = {
-        'kinds': [9735],
-        'since': since,
-        'limit': 100,
-      };
-
-      if (isReceived) {
-        // Zaps die an den Nutzer gehen
-        filter['#p'] = [pubkeyHex];
-      } else {
-        // Zaps die vom Nutzer kommen — schwieriger, da der Sender
-        // im "description"-Tag als eingebetteter JSON steht.
-        // Manche Relays unterstützen '#P' für den Sender.
-        // Fallback: Wir holen alle Zaps und filtern lokal.
-        filter['#p'] = [pubkeyHex]; // Erstmal auch empfangene holen
-      }
 
       ws.add(jsonEncode(['REQ', subId, filter]));
 

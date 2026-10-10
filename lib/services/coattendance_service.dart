@@ -891,6 +891,24 @@ class CoAttendanceService {
       final subId = 'coatt-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
       // true = EOSE erhalten, false = Verbindung vorher zu, null = Fehler.
       final completer = Completer<bool?>();
+      final filter = <String, dynamic>{'kinds': [kind]};
+      if (authorsHex != null && authorsHex.isNotEmpty) {
+        filter['authors'] = authorsHex;
+        // Bis zu hundert Personen je Abfrage, jede mit etlichen Teilnahmen —
+        // 500 waren dafuer zu knapp und schnitten still ab (Issue #57,
+        // Punkt 4). 5000 reicht fuer den Normalfall; wird es erreicht,
+        // meldet das Log es weiter unten.
+        filter['limit'] = 5000;
+      } else if (myKeys != null && myKeys.isNotEmpty) {
+        // Gezielt nach den Kennungen fragen — und nach denen OHNE
+        // Signierer-Anhang gleich mit, weil aeltere Teilnahmen in dem Format
+        // veroeffentlicht wurden und sonst durchs Raster fielen.
+        filter['#d'] = _wantedKeys(myKeys).toList();
+        // Grosszuegiges Limit: Bei einem gut besuchten Meetup kommen leicht
+        // dreissig Teilnahmen je Termin zusammen.
+        filter['limit'] = 1000;
+      }
+      if (since != null && since > 0) filter['since'] = since;
 
       ws.listen(
         (data) {
@@ -899,7 +917,7 @@ class CoAttendanceService {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'EVENT' && msg.length >= 3) {
               final ev = RelaySocket.verifiedEvent(msg[2], tag: 'CoAttendance');
-              if (ev == null) return;
+              if (ev == null || !RelaySocket.answersFilter(ev, filter)) return;
               final authorHex = ev['pubkey'] as String;
               final authorNpub = Nip19.encodePubkey(authorHex);
               final content = jsonDecode(ev['content'] as String) as Map<String, dynamic>;
@@ -922,24 +940,6 @@ class CoAttendanceService {
         onError: (_) { if (!completer.isCompleted) completer.complete(null); },
       );
 
-      final filter = <String, dynamic>{'kinds': [kind]};
-      if (authorsHex != null && authorsHex.isNotEmpty) {
-        filter['authors'] = authorsHex;
-        // Bis zu hundert Personen je Abfrage, jede mit etlichen Teilnahmen —
-        // 500 waren dafuer zu knapp und schnitten still ab (Issue #57,
-        // Punkt 4). 5000 reicht fuer den Normalfall; wird es erreicht,
-        // meldet das Log es weiter unten.
-        filter['limit'] = 5000;
-      } else if (myKeys != null && myKeys.isNotEmpty) {
-        // Gezielt nach den Kennungen fragen — und nach denen OHNE
-        // Signierer-Anhang gleich mit, weil aeltere Teilnahmen in dem Format
-        // veroeffentlicht wurden und sonst durchs Raster fielen.
-        filter['#d'] = _wantedKeys(myKeys).toList();
-        // Grosszuegiges Limit: Bei einem gut besuchten Meetup kommen leicht
-        // dreissig Teilnahmen je Termin zusammen.
-        filter['limit'] = 1000;
-      }
-      if (since != null && since > 0) filter['since'] = since;
       ws.add(jsonEncode(['REQ', subId, filter]));
 
       final state = await completer.future.timeout(

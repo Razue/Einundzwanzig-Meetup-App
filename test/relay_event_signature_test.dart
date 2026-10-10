@@ -73,6 +73,44 @@ void main() {
     expect(RelaySocket.verifiedEvent(badKey, tag: 'Test'), isNull);
   });
 
+  test('Gültige Signatur der falschen Art oder des falschen Autors passt nicht zur Anfrage', () {
+    final raw = signedCalendarEvent();
+    final asAsked = <String, dynamic>{
+      'kinds': [31923],
+      'authors': [raw['pubkey']],
+      '#d': ['test-meetup'],
+    };
+    expect(RelaySocket.answersFilter(raw, asAsked), isTrue);
+    expect(
+      RelaySocket.answersFilter(raw, <String, dynamic>{
+        'kinds': [0],
+        'authors': [raw['pubkey']],
+      }),
+      isFalse,
+    );
+    expect(
+      RelaySocket.answersFilter(raw, <String, dynamic>{
+        'kinds': [31923],
+        'authors': ['ab' * 32],
+      }),
+      isFalse,
+    );
+    expect(
+      RelaySocket.answersFilter(raw, <String, dynamic>{
+        'kinds': [31923],
+        '#d': ['anderer-termin'],
+      }),
+      isFalse,
+    );
+  });
+
+  test('created_at in der Zukunft zählt nicht als neuestes ersetzbares Event', () {
+    final raw = signedCalendarEvent();
+    expect(RelaySocket.replaceableCreatedAt(raw), raw['created_at']);
+    raw['created_at'] = DateTime.now().millisecondsSinceEpoch ~/ 1000 + 3600;
+    expect(RelaySocket.replaceableCreatedAt(raw), isNull);
+  });
+
   test('Kaputte Nachricht crasht nicht', () {
     expect(RelaySocket.verifiedEvent('kein objekt'), isNull);
     expect(RelaySocket.verifiedEvent({'kind': 'x', 'tags': 42}), isNull);

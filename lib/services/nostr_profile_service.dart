@@ -37,9 +37,14 @@ class NostrProfileService {
       final relays = await RelayConfig.getActiveRelays();
 
       // 1. Das Nostr-Profil (kind 0) — der uebliche Ort fuer einen Namen.
+      //    Ersetzbar: das neueste Profil über alle Relays, nicht das erste.
+      var bestAt = -1;
       for (final r in relays) {
-        found = await _fetchNameFromRelay(r, pubkeyHex);
-        if (found != null && found.isNotEmpty) break;
+        final hit = await _fetchNameFromRelay(r, pubkeyHex);
+        if (hit != null && hit.key > bestAt) {
+          bestAt = hit.key;
+          found = hit.value;
+        }
       }
 
       // 2. Der Spitzname aus dem Reputations-Ereignis.
@@ -50,9 +55,14 @@ class NostrProfileService {
       // Identitaet in der App angelegt haben: also fast alle. Im
       // Vertrauensnetzwerk standen deshalb nur npubs.
       if (found == null || found.isEmpty) {
+        bestAt = -1;
+        found = null;
         for (final r in relays) {
-          found = await _fetchNicknameFromRelay(r, pubkeyHex);
-          if (found != null && found.isNotEmpty) break;
+          final hit = await _fetchNicknameFromRelay(r, pubkeyHex);
+          if (hit != null && hit.key > bestAt) {
+            bestAt = hit.key;
+            found = hit.value;
+          }
         }
       }
     } catch (_) {
@@ -234,19 +244,25 @@ class NostrProfileService {
       final random = Random.secure();
       final subId =
           'names-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+      final filter = <String, dynamic>{
+        'kinds': kinds,
+        'authors': authors,
+        'limit': authors.length * 2,
+      };
+      if (dTag != null) filter['#d'] = [dTag];
       ws.listen(
         (data) {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg[0] == 'EVENT' && msg.length >= 3) {
-              // Security Audit H2 (Review-Fund): Auch Namens- und Spitznamen-
-              // Events signaturprüfen — sonst schiebt ein Relay unter
-              // fremdem Pubkey einen Namen unter (Identitäts-Spoofing in
-              // Vertrauensnetz und Chat-Anzeigen).
+              // Security Audit H2: Signatur, und danach dieselbe Anfrage
+              // (Art, Autor, optional d). Ein gültig signiertes Fremdprofil
+              // ist kein Name für die angefragte Person.
               final ev = RelaySocket.verifiedEvent(msg[2], tag: 'NostrProfile');
-              if (ev == null) return;
+              if (ev == null || !RelaySocket.answersFilter(ev, filter)) return;
+              final at = RelaySocket.replaceableCreatedAt(ev);
+              if (at == null) return;
               final hex = ev['pubkey'] as String? ?? '';
-              final at = ev['created_at'] is int ? ev['created_at'] as int : 0;
               final name = parse(ev['content'] as String? ?? '');
               if (hex.isEmpty || name == null) return;
               final cur = out[hex];
@@ -259,12 +275,6 @@ class NostrProfileService {
         onError: (_) { if (!done.isCompleted) done.complete(); },
         onDone: () { if (!done.isCompleted) done.complete(); },
       );
-      final filter = <String, dynamic>{
-        'kinds': kinds,
-        'authors': authors,
-        'limit': authors.length * 2,
-      };
-      if (dTag != null) filter['#d'] = [dTag];
       ws.add(jsonEncode(['REQ', subId, filter]));
       await done.future.timeout(_timeout, onTimeout: () {});
     } catch (_) {
@@ -279,25 +289,35 @@ class NostrProfileService {
   ///
   /// "Anon" ist der Platzhalter fuer "kein Name gesetzt" und wird wie ein
   /// fehlender Name behandelt — sonst hiesse im Netzwerk die Haelfte "Anon".
-  static Future<String?> _fetchNicknameFromRelay(
+  /// Neuestes Reputation-Event: Zeitstempel und nutzbarer Spitzname.
+  /// Leerer Wert, wenn das neueste Event keinen Namen trägt.
+  static Future<MapEntry<int, String>?> _fetchNicknameFromRelay(
       String relayUrl, String pubkeyHex) async {
     RelaySocket? ws;
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
-      final completer = Completer<String?>();
+      final completer = Completer<MapEntry<int, String>?>();
       final random = Random.secure();
       final subId =
           'nick-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+      final filter = <String, dynamic>{
+        'kinds': [30078],
+        'authors': [pubkeyHex],
+        '#d': ['einundzwanzig-reputation'],
+        'limit': 1,
+      };
+      MapEntry<int, String>? best;
 
       ws.listen(
         (data) {
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
-              // Security Audit H2 (Review-Fund): Signatur prüfen, bevor der
-              // Spitzname aus dem Reputation-Event übernommen wird.
+              // Security Audit H2: Signatur und Anfrage (Art, Autor, d).
               final ev = RelaySocket.verifiedEvent(message[2], tag: 'NostrProfile');
-              if (ev == null) return;
+              if (ev == null || !RelaySocket.answersFilter(ev, filter)) return;
+              final at = RelaySocket.replaceableCreatedAt(ev);
+              if (at == null || (best != null && at < best!.key)) return;
               final content = ev['content'] as String? ?? '';
               final body = jsonDecode(content) as Map<String, dynamic>;
               final identity = body['identity'];
@@ -308,24 +328,19 @@ class NostrProfileService {
                       nick.isNotEmpty &&
                       nick.toLowerCase() != 'anon')
                   ? nick
-                  : null;
-              if (!completer.isCompleted) completer.complete(usable);
+                  : '';
+              best = MapEntry(at, usable);
             } else if (message[0] == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(null);
+              if (!completer.isCompleted) completer.complete(best);
             }
           } catch (_) {}
         },
-        onError: (_) { if (!completer.isCompleted) completer.complete(null); },
-        onDone: () { if (!completer.isCompleted) completer.complete(null); },
+        onError: (_) { if (!completer.isCompleted) completer.complete(best); },
+        onDone: () { if (!completer.isCompleted) completer.complete(best); },
       );
 
-      ws.add(jsonEncode(['REQ', subId, {
-        'kinds': [30078],
-        'authors': [pubkeyHex],
-        '#d': ['einundzwanzig-reputation'],
-        'limit': 1,
-      }]));
-      return await completer.future.timeout(_timeout, onTimeout: () => null);
+      ws.add(jsonEncode(['REQ', subId, filter]));
+      return await completer.future.timeout(_timeout, onTimeout: () => best);
     } catch (_) {
       return null;
     } finally {
@@ -333,46 +348,52 @@ class NostrProfileService {
     }
   }
 
-  static Future<String?> _fetchNameFromRelay(
+  /// Neuestes Kind-0 auf diesem Relay: Zeitstempel und Anzeigename.
+  static Future<MapEntry<int, String>?> _fetchNameFromRelay(
       String relayUrl, String pubkeyHex) async {
     RelaySocket? ws;
     try {
       ws = await RelaySocket.connect(relayUrl).timeout(_timeout);
-      final completer = Completer<String?>();
+      final completer = Completer<MapEntry<int, String>?>();
       final random = Random.secure();
       final subId =
           'nam-${List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+      final filter = <String, dynamic>{
+        'kinds': [0],
+        'authors': [pubkeyHex],
+        'limit': 1,
+      };
+      MapEntry<int, String>? best;
 
       ws.listen(
         (data) {
           try {
             final message = jsonDecode(data as String) as List<dynamic>;
             if (message[0] == 'EVENT' && message.length >= 3) {
-              // Security Audit H2 (Review-Fund): Signatur prüfen, bevor der
-              // Anzeigename aus dem Profil-Event übernommen wird.
+              // Security Audit H2: Signatur und Anfrage (Art, Autor).
               final ev = RelaySocket.verifiedEvent(message[2], tag: 'NostrProfile');
-              if (ev == null) return;
+              if (ev == null || !RelaySocket.answersFilter(ev, filter)) return;
+              final at = RelaySocket.replaceableCreatedAt(ev);
+              if (at == null || (best != null && at < best!.key)) return;
               final content = ev['content'] as String? ?? '';
               final profile = jsonDecode(content) as Map<String, dynamic>;
               // display_name hat Vorrang — das ist der Name, den Leute fuer
               // die Anzeige waehlen; name ist oft der technische Kurzname.
               final n = (profile['display_name'] as String?)?.trim();
               final alt = (profile['name'] as String?)?.trim();
-              if (!completer.isCompleted) {
-                completer.complete(
-                    (n != null && n.isNotEmpty) ? n : (alt ?? ''));
-              }
+              final name = (n != null && n.isNotEmpty) ? n : (alt ?? '');
+              best = MapEntry(at, name);
             } else if (message[0] == 'EOSE') {
-              if (!completer.isCompleted) completer.complete(null);
+              if (!completer.isCompleted) completer.complete(best);
             }
           } catch (_) {}
         },
-        onError: (_) { if (!completer.isCompleted) completer.complete(null); },
-        onDone: () { if (!completer.isCompleted) completer.complete(null); },
+        onError: (_) { if (!completer.isCompleted) completer.complete(best); },
+        onDone: () { if (!completer.isCompleted) completer.complete(best); },
       );
 
-      ws.add(jsonEncode(['REQ', subId, {'kinds': [0], 'authors': [pubkeyHex], 'limit': 1}]));
-      return await completer.future.timeout(_timeout, onTimeout: () => null);
+      ws.add(jsonEncode(['REQ', subId, filter]));
+      return await completer.future.timeout(_timeout, onTimeout: () => best);
     } catch (_) {
       return null;
     } finally {

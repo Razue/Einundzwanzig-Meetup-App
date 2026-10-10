@@ -387,7 +387,16 @@ class AdminRegistry {
           // Autor und kann Sunset nicht auslösen (Audit-2 Fund 6).
           final legitSigners = <String>{};
           final uniqueMap = <String, AdminEntry>{};
+          // Nur Signer, nach denen diese Abfrage gefragt hat. In der
+          // Bootstrap-Phase ist das allein der Super-Admin. Ein Relay oder
+          // ein Test-Override, das weitere Schlüssel mitschickt, darf damit
+          // weder die Admin-Liste noch den Sunset-Zähler füllen. Die Schwelle
+          // bleibt so unerreichbar, solange nur eine Person gefragt wird —
+          // das ist die sichere Richtung, kein Übergang, den es zu bauen gilt.
+          var sawQueried = false;
           for (final signer in result.entries) {
+            if (!queryChunk.contains(signer.key)) continue;
+            sawQueried = true;
             final clean = _withoutLegacyOrganic(signer.value);
             if (clean.isEmpty) continue;
             legitSigners.add(signer.key);
@@ -395,6 +404,7 @@ class AdminRegistry {
               uniqueMap[e.npub] = e;
             }
           }
+          if (!sawQueried) continue;
           final admins = uniqueMap.values.toList();
           await _recordSunsetAuthors(legitSigners);
 

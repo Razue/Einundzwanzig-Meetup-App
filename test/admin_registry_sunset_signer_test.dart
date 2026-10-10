@@ -57,30 +57,28 @@ void main() {
     expect(list.map((e) => e.npub).toSet(), listed.toSet());
   });
 
-  test('erst sunsetThreshold VERSCHIEDENE Signer aktivieren Sunset', () async {
+  test('Bootstrap fragt nur den Super-Admin — fremde Signer lösen keinen Sunset aus',
+      () async {
     expect(AdminRegistry.sunsetThreshold, 20);
-    final threshold = AdminRegistry.sunsetThreshold;
+    final strangers = List.generate(
+        AdminRegistry.sunsetThreshold, (_) => Keychain.generate().public);
+    List<String>? asked;
+    AdminRegistry.relayFetchOverride = (_, authors) async {
+      asked = List<String>.from(authors);
+      return {
+        for (final s in strangers) s: [legit(freshNpub())],
+        superHex: [legit(freshNpub())],
+      };
+    };
 
-    // Erster Fetch: threshold-1 verschiedene Signer mit je einem Eintrag.
-    final signers = List.generate(threshold - 1, (_) => Keychain.generate().public);
-    AdminRegistry.relayFetchOverride = (_, _) async => {
-          for (final s in signers) s: [legit(freshNpub())],
-        };
-    await AdminRegistry.checkAdmin(freshNpub());
-
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getInt('admin_unique_authors_count'), threshold - 1);
-    expect(await AdminRegistry.isSunsetActive(), isFalse);
-
-    // Zweiter Fetch: ein weiterer, neuer Signer. Die Menge akkumuliert über
-    // Fetches hinweg → Schwelle erreicht → Sunset aktiv.
-    final twentieth = Keychain.generate().public;
-    AdminRegistry.relayFetchOverride = (_, _) async => {
-          twentieth: [legit(freshNpub())],
-        };
     await AdminRegistry.fetchFromRelays();
 
-    expect(prefs.getInt('admin_unique_authors_count'), threshold);
-    expect(await AdminRegistry.isSunsetActive(), isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(asked, [superHex]);
+    // Zwanzig fremde Schlüssel plus der angefragte Super-Admin: gezählt
+    // wird nur, wer angefragt wurde.
+    expect(prefs.getInt('admin_unique_authors_count'), 1);
+    expect(await AdminRegistry.isSunsetActive(), isFalse);
+    expect(prefs.getBool('bootstrap_permanently_sunset'), isNot(isTrue));
   });
 }

@@ -62,14 +62,27 @@ class NewsZapService {
   ///
   /// Gibt null zurueck, wenn keine hinterlegt ist — dann kann man den
   /// Autor schlicht nicht zappen, und der Knopf bleibt ausgegraut.
+  ///
+  /// Kind 0 ist ersetzbar. Es gewinnt das neueste Profil über alle Relays,
+  /// nicht das erste, das eine Adresse enthält: Ein schnelles Relay kann
+  /// sonst eine ältere, weiterhin gültig signierte Fassung liefern.
   static Future<String?> fetchLightningAddress(String pubkeyHex) async {
     if (pubkeyHex.isEmpty) return null;
 
     final targets = await NewsReactionsService.readTargets();
-    String? found;
+    if (targets.isEmpty) return null;
+
+    final filter = <String, dynamic>{
+      'kinds': [0],
+      'authors': [pubkeyHex],
+      'limit': 1,
+    };
     final sockets = <RelaySocket>[];
     final done = Completer<void>();
     var settled = false;
+    var pending = targets.length;
+    var bestAt = -1;
+    String? found;
 
     void finish() {
       if (settled) return;
@@ -80,6 +93,11 @@ class NewsZapService {
         } catch (_) {}
       }
       if (!done.isCompleted) done.complete();
+    }
+
+    void relayFinished() {
+      pending--;
+      if (pending <= 0) finish();
     }
 
     Timer(_relayTimeout, finish);
@@ -93,41 +111,50 @@ class NewsZapService {
             try {
               ws.close();
             } catch (_) {}
+            relayFinished();
             return;
           }
           sockets.add(ws);
-          ws.add(jsonEncode([
-            'REQ',
-            'zapmeta',
-            {
-              'kinds': [0],
-              'authors': [pubkeyHex],
-              'limit': 1,
-            }
-          ]));
+          var closed = false;
+          void one() {
+            if (closed) return;
+            closed = true;
+            relayFinished();
+          }
+
           ws.listen((data) {
             try {
               final msg = jsonDecode(data as String) as List<dynamic>;
+              if (msg.isNotEmpty && msg[0] == 'EOSE') {
+                one();
+                return;
+              }
               if (msg.length < 3 || msg[0] != 'EVENT') return;
               final event = RelaySocket.verifiedEvent(msg[2], tag: 'NewsZap');
-              if (event == null) return;
-              final profile =
-                  jsonDecode((event['content'] ?? '{}').toString())
-                      as Map<String, dynamic>;
+              if (event == null || !RelaySocket.answersFilter(event, filter)) {
+                return;
+              }
+              final at = RelaySocket.replaceableCreatedAt(event);
+              if (at == null || at < bestAt) return;
+              final profile = jsonDecode((event['content'] ?? '{}').toString())
+                  as Map<String, dynamic>;
               final lud16 = (profile['lud16'] ?? '').toString().trim();
+              bestAt = at;
               if (lud16.contains('@')) {
                 found = lud16;
-                finish();
-              } else if ((profile['lud06'] ?? '').toString().isNotEmpty &&
-                  found == null) {
+              } else if ((profile['lud06'] ?? '').toString().isNotEmpty) {
                 // Merken, damit die Oberflaeche "nicht unterstuetzt" statt
                 // "keine Adresse" melden kann.
                 found = 'lud06:';
+              } else {
+                found = null;
               }
             } catch (_) {}
-          }, onError: (_) {}, onDone: () {});
+          }, onError: (_) => one(), onDone: () => one());
+          ws.add(jsonEncode(['REQ', 'zapmeta', filter]));
         } catch (_) {
           // Relay nicht erreichbar — die anderen laufen weiter.
+          relayFinished();
         }
       }();
     }

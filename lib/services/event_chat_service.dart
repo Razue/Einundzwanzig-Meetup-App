@@ -142,26 +142,24 @@ class EventChatService {
       try {
         final ws = await RelaySocket.connect(url)
             .timeout(const Duration(seconds: 4));
+        final filter = <String, dynamic>{
+          'kinds': [_kComment],
+          '#A': [eventAddress],
+          if (since != null) 'since': since.millisecondsSinceEpoch ~/ 1000,
+        };
         ws.listen((data) {
           try {
             final msg = jsonDecode(data as String) as List<dynamic>;
             if (msg.length >= 3 && msg[0] == 'EVENT') {
               final ev = RelaySocket.verifiedEvent(msg[2], tag: 'EventChat');
-              final m = ev == null ? null : ChatMessage.fromEvent(ev);
+              if (ev == null || !RelaySocket.answersFilter(ev, filter)) return;
+              final m = ChatMessage.fromEvent(ev);
               if (m != null) onMessage(m);
             }
           } catch (_) {}
         }, onError: (_) {}, onDone: () {});
 
-        ws.add(jsonEncode([
-          'REQ',
-          'evtchat',
-          {
-            'kinds': [_kComment],
-            '#A': [eventAddress],
-            if (since != null) 'since': since.millisecondsSinceEpoch ~/ 1000,
-          }
-        ]));
+        ws.add(jsonEncode(['REQ', 'evtchat', filter]));
         AppLogger.debug(_tag, 'Abo laeuft ueber $url');
         return () {
           try {
@@ -256,9 +254,9 @@ class EventChatService {
       ws.listen((data) {
         try {
           final msg = jsonDecode(data as String) as List<dynamic>;
-          if (msg.length >= 3 && msg[0] == 'EVENT') {
+            if (msg.length >= 3 && msg[0] == 'EVENT') {
             final ev = RelaySocket.verifiedEvent(msg[2], tag: 'EventChat');
-            if (ev != null) out.add(ev);
+            if (ev != null && RelaySocket.answersFilter(ev, filter)) out.add(ev);
           } else if (msg.isNotEmpty &&
               (msg[0] == 'EOSE' || msg[0] == 'CLOSED')) {
             if (!done.isCompleted) done.complete();

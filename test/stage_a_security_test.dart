@@ -12,7 +12,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:nostr/nostr.dart' show Keychain, Nip19;
+import 'package:nostr/nostr.dart' show Event, Keychain, Nip19;
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
 
 const _mine =
@@ -63,12 +63,44 @@ void main() {
       );
     }
 
-    test('guter Fall: korrekte Amber-Antwort wird übernommen', () {
-      final ev = check(amberReply());
-      expect(ev.pubkey, _mine);
-      expect(ev.sig, _sig);
+    test('guter Fall: korrekt signierte Amber-Antwort wird übernommen', () {
+      final kc = Keychain.generate();
+      final event = Event.from(
+        kind: 1,
+        tags: const [
+          ['t', 'test'],
+        ],
+        content: 'hallo',
+        privkey: kc.private,
+        createdAt: 1786000000,
+      );
+      final ev = verifySignerResponse(
+        signed: {
+          'id': event.id,
+          'pubkey': event.pubkey,
+          'created_at': event.createdAt,
+          'kind': event.kind,
+          'tags': event.tags,
+          'content': event.content,
+          'sig': event.sig,
+        },
+        expectedPubkeyHex: kc.public,
+        kind: 1,
+        tags: const [
+          ['t', 'test'],
+        ],
+        content: 'hallo',
+        fallbackCreatedAt: 1786000000,
+        actor: 'Amber',
+      );
+      expect(ev.pubkey, kc.public);
+      expect(ev.sig, event.sig);
       expect(ev.kind, 1);
       expect(ev.content, 'hallo');
+    });
+
+    test('Platzhaltersignatur wird abgewiesen', () {
+      expect(() => check(amberReply()), throwsA(isA<SigningException>()));
     });
 
     test('Kontowechsel -> WrongAccountException', () {

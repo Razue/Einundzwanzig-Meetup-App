@@ -125,19 +125,27 @@ void main() {
     expect(list.single.npub, realNpub);
   });
 
-  test('nur Signer mit gefilterten Einträgen werden für Sunset gezählt', () async {
+  test('Bootstrap zählt nur den angefragten Super-Admin, nicht mitgeschickte Signer',
+      () async {
     SharedPreferences.setMockInitialValues({});
-    // Drei verschiedene SIGNER: Super-Admin und ein zweiter Admin liefern je
-    // einen echten Eintrag. Ein dritter Signer liefert ausschließlich
-    // organische Alt-Claims (25 Stück) — er darf nicht als Autor zählen,
-    // und seine 25 gelisteten npubs erst recht nicht.
+    // Die Abfrage in der Bootstrap-Phase nennt nur den Super-Admin. Ein
+    // zweiter Signer mit einem echten Eintrag und ein dritter mit 25
+    // organischen Alt-Claims liegen in der Antwort, wurden aber nicht
+    // gefragt — sie dürfen weder zählen noch Admin werden. Organische
+    // Einträge am Super-Admin selbst fallen zusätzlich durch den Filter.
     final secondSigner = Keychain.generate().public;
     final organicSigner = Keychain.generate().public;
     final secondNpub = Nip19.encodePubkey(Keychain.generate().public);
     final organicNpubs = List.generate(
         25, (i) => Nip19.encodePubkey(Keychain.generate().public));
     AdminRegistry.relayFetchOverride = (_, _) async => {
-          superHex: [AdminEntry(npub: realNpub, meetup: 'y', name: 'Ben')],
+          superHex: [
+            AdminEntry(npub: realNpub, meetup: 'y', name: 'Ben'),
+            AdminEntry(
+                npub: organicNpubs.first,
+                meetup: 'x',
+                name: 'Organic (3 Badges)'),
+          ],
           secondSigner: [
             AdminEntry(npub: secondNpub, meetup: 'z', name: 'Eva'),
           ],
@@ -147,17 +155,14 @@ void main() {
               .toList(),
         };
 
-    // Fetch läuft über checkAdmin (Schritt 4).
     await AdminRegistry.checkAdmin(realNpub);
 
     final prefs = await SharedPreferences.getInstance();
     final count = prefs.getInt('admin_unique_authors_count') ?? 0;
-    // Zwei Signer mit legitimen Einträgen zählen; der Organic-Signer nicht.
-    expect(count, 2);
+    expect(count, 1);
     expect(await AdminRegistry.isSunsetActive(), isFalse);
 
-    // Kein Organic-Eintrag ist Admin geworden.
     final list = await AdminRegistry.getAdminList();
-    expect(list.map((e) => e.npub).toSet(), {realNpub, secondNpub});
+    expect(list.map((e) => e.npub).toSet(), {realNpub});
   });
 }

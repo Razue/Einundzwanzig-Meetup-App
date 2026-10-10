@@ -157,8 +157,9 @@ class NewsService {
   /// Holt den VOLLEN Artikeltext (Markdown) zu einem Feed-Artikel aus dem
   /// zugehörigen Nostr-Longform-Event (kind 30023). Die RSS-guid hat das
   /// Format "30023:`<pubkey>`:`<d-identifier>`". Damit fragen wir das
-  /// adressierbare Event gezielt über mehrere Relays ab und nehmen das erste
-  /// Ergebnis. Gibt den Markdown-Content zurück, oder null bei Misserfolg.
+  /// adressierbare Event gezielt über mehrere Relays ab. Es gewinnt das
+  /// neueste created_at, nicht die erste nicht-leere Antwort.
+  /// Gibt den Markdown-Content zurück, oder null bei Misserfolg.
   static Future<String?> fetchArticleContent(String guid) async {
     // guid parsen
     final parts = guid.split(':');
@@ -167,60 +168,85 @@ class NewsService {
     final dId = parts.sublist(2).join(':'); // d kann ':' enthalten (selten)
     if (pubkey.isEmpty || dId.isEmpty) return null;
 
+    final filter = <String, dynamic>{
+      'kinds': [30023],
+      'authors': [pubkey],
+      '#d': [dId],
+      'limit': 1,
+    };
     final completer = Completer<String?>();
     final sockets = <RelaySocket>[];
     var settled = false;
+    var pending = _relays.length;
+    var bestAt = -1;
+    String? bestContent;
     // EIN Zaehler fuer alle Relays dieses Abrufs: hier laufen mehrere
     // Verbindungen parallel, ein Zaehler je Socket waere unuebersichtlich.
     // Gemeldet wird beim Abschluss, also auch bei Timeout.
     final tally = RelayParseTally(_tag, 'Artikel-Volltext');
 
-    void finish(String? result) {
+    void finish() {
       if (settled) return;
       settled = true;
       tally.report();
       for (final ws in sockets) {
         try { ws.close(); } catch (_) {}
       }
-      if (!completer.isCompleted) completer.complete(result);
+      final text = bestContent;
+      if (!completer.isCompleted) {
+        completer.complete(text != null && text.isNotEmpty ? text : null);
+      }
     }
 
-    // Timeout-Sicherung
-    Timer(_timeout, () => finish(null));
+    void relayFinished() {
+      pending--;
+      if (pending <= 0) finish();
+    }
+
+    Timer(_timeout, finish);
 
     for (final url in _relays) {
       () async {
         try {
           final ws = await RelaySocket.connect(url).timeout(const Duration(seconds: 6));
-          if (settled) { try { ws.close(); } catch (_) {} return; }
+          if (settled) {
+            try { ws.close(); } catch (_) {}
+            relayFinished();
+            return;
+          }
           sockets.add(ws);
-          const subId = 'article';
-          ws.add(jsonEncode([
-            'REQ',
-            subId,
-            {
-              'kinds': [30023],
-              'authors': [pubkey],
-              '#d': [dId],
-              'limit': 1,
-            }
-          ]));
+          var closed = false;
+          void one() {
+            if (closed) return;
+            closed = true;
+            relayFinished();
+          }
           ws.listen((data) {
             tally.message();
             try {
               final msg = jsonDecode(data as String) as List<dynamic>;
+              if (msg.isNotEmpty && msg[0] == 'EOSE') {
+                one();
+                return;
+              }
               if (msg.isNotEmpty && msg[0] == 'EVENT' && msg.length >= 3) {
                 final event = RelaySocket.verifiedEvent(msg[2], tag: 'News');
-                if (event == null) return;
-                final content = (event['content'] ?? '').toString();
-                if (content.isNotEmpty) finish(content);
+                if (event == null || !RelaySocket.answersFilter(event, filter)) {
+                  return;
+                }
+                final at = RelaySocket.replaceableCreatedAt(event);
+                if (at == null || at < bestAt) return;
+                bestAt = at;
+                bestContent = (event['content'] ?? '').toString();
               }
             } catch (e) {
               tally.failed(e);
             }
-          }, onError: (_) {}, onDone: () {});
+          }, onError: (_) => one(), onDone: () => one());
+          ws.add(jsonEncode(['REQ', 'article', filter]));
         } catch (_) {
           // dieser Relay nicht erreichbar — die anderen laufen weiter
+          relayFinished();
         }
       }();
     }

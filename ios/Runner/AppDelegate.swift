@@ -18,12 +18,18 @@ import UIKit
 
   /// Kanal `einundzwanzig/screen` — iOS-Gegenstück zu FLAG_SECURE (M3).
   ///
-  /// iOS kennt kein FLAG_SECURE. Der etablierte Weg: ein UITextField mit
-  /// isSecureTextEntry als Overlay über dem Fenster — dessen Inhalt wird
-  /// von Screenshots und Bildschirmaufnahmen ausgeblendet, und er deckt
-  /// dann auch die übrige Ansicht ab. Solange `setSecure(true)` aktiv ist,
-  /// erscheinen geheime Inhalte (nsec/ncryptsec) auf Aufnahmen geschwärzt.
-  private var screenSecureField: UITextField?
+  /// iOS hat kein FLAG_SECURE. Ein dauerhaftes schwarzes Feld oder ein
+  /// umgehängter Secure-Text-Layer verdeckt die Ansicht oder bricht
+  /// Tasten und Drehen. Stattdessen liegt die Abdeckung nur auf, während
+  /// die App nicht aktiv ist: die Aufnahme im App-Umschalter zeigt dann
+  /// Schwarz, der Nutzer sieht das Geheimnis, solange er in der App ist.
+  /// `AppDelegate.window` ist unter dem Szenen-Lebenszyklus leer; das
+  /// Fenster kommt aus der aktiven UIWindowScene.
+  private var screenSecureEnabled = false
+  private var privacyCover: UIView?
+  private var screenSecureObserversInstalled = false
+  /// Tokens behalten, sonst entfernt ARC die Beobachter sofort wieder.
+  private var screenSecureObserverTokens: [NSObjectProtocol] = []
 
   private func registerScreenSecureChannel(_ engineBridge: FlutterImplicitEngineBridge) {
     guard let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "ScreenSecureChannel") else {
@@ -43,30 +49,58 @@ import UIKit
         result(FlutterMethodNotImplemented)
       }
     }
+    installScreenSecureObservers()
+  }
+
+  private func installScreenSecureObservers() {
+    if screenSecureObserversInstalled { return }
+    screenSecureObserversInstalled = true
+    let nc = NotificationCenter.default
+    // queue: nil — der Block läuft synchron im Notification-Thread (Main),
+    // bevor UIKit die Umschalter-Aufnahme macht. Eine Queue käme zu spät.
+    screenSecureObserverTokens = [
+      nc.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: nil) { [weak self] _ in
+        self?.showPrivacyCoverIfNeeded()
+      },
+      nc.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [weak self] _ in
+        self?.hidePrivacyCover()
+      },
+    ]
+  }
+
+  private func foregroundWindow() -> UIWindow? {
+    let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+    let scene = scenes.first { $0.activationState == .foregroundActive }
+      ?? scenes.first { $0.activationState == .foregroundInactive }
+      ?? scenes.first
+    return scene?.windows.first { $0.isKeyWindow } ?? scene?.windows.first
   }
 
   private func setScreenSecure(_ on: Bool) {
     DispatchQueue.main.async { [weak self] in
       guard let self = self else { return }
-      if on {
-        if self.screenSecureField != nil { return }
-        guard let window = self.window else { return }
-        let field = UITextField(frame: window.bounds)
-        field.isSecureTextEntry = true
-        field.isUserInteractionEnabled = false
-        field.backgroundColor = UIColor.black
-        field.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        window.addSubview(field)
-        // Der sichere Text des Feldes deckt das Fenster auf Aufnahmen ab —
-        // aber nur wenn das Feld selbst "Inhalt" rendert. Ein leeres
-        // secure-Feld schwärzt nichts; ein einzelnes Leerzeichen reicht.
-        field.text = " "
-        self.screenSecureField = field
-      } else {
-        self.screenSecureField?.removeFromSuperview()
-        self.screenSecureField = nil
+      self.screenSecureEnabled = on
+      if !on {
+        self.hidePrivacyCover()
+      } else if UIApplication.shared.applicationState != .active {
+        self.showPrivacyCoverIfNeeded()
       }
     }
+  }
+
+  private func showPrivacyCoverIfNeeded() {
+    guard screenSecureEnabled, privacyCover == nil, let window = foregroundWindow() else { return }
+    let cover = UIView(frame: window.bounds)
+    cover.backgroundColor = .black
+    cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    cover.isUserInteractionEnabled = true
+    window.addSubview(cover)
+    privacyCover = cover
+  }
+
+  private func hidePrivacyCover() {
+    privacyCover?.removeFromSuperview()
+    privacyCover = nil
   }
 
   /// Kanal `einundzwanzig/review` fuer den App-Review-Demo-Login.

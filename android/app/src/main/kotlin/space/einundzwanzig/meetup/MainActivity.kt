@@ -8,7 +8,7 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import org.json.JSONArray
@@ -28,7 +28,10 @@ import org.json.JSONObject
 // Der private Schlüssel verlässt Amber dabei niemals.
 // ============================================
 
-class MainActivity : FlutterActivity() {
+// local_auth verlangt eine FragmentActivity. FlutterActivity allein
+// liefert auf Android no_fragment_activity, und die Schlüsselanzeige
+// bricht dann still ab (ScreenSecure.authenticate gibt false zurück).
+class MainActivity : FlutterFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         applyPhoneOrientation(resources.configuration)

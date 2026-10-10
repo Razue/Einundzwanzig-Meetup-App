@@ -5,9 +5,10 @@ import 'package:local_auth/local_auth.dart';
 /// Screenshot-Sperre, Geräteauthentifizierung und kurzes Leben von
 /// Geheimnissen in der Zwischenablage (Security Audit M3).
 ///
-/// Android setzt `FLAG_SECURE`, iOS ein natives Secure-Overlay über
-/// `einundzwanzig/screen`, solange [set] mit true läuft. Web kennt den
-/// Kanal nicht; dort bleibt nur das Leeren der Zwischenablage.
+/// Android setzt `FLAG_SECURE`. iOS legt über `einundzwanzig/screen` erst
+/// beim Verlassen der App eine Abdeckung auf das Fenster, damit die
+/// Umschalter-Aufnahme das Geheimnis nicht zeigt. Web kennt den Kanal
+/// nicht; dort bleibt nur das Leeren der Zwischenablage.
 class ScreenSecure {
   static const _channel = MethodChannel('einundzwanzig/screen');
   static const _hold = Duration(seconds: 45);
