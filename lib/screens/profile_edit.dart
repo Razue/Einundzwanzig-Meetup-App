@@ -854,12 +854,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // (je ~64 MB bei log_n=16).
   Future<void> _exportNcryptsec({bool forceNewPassword = false}) async {
     if (_exportingKey) return;
-    // Security Audit M3: Geräteauthentifizierung vor dem Schlüssel-Export.
-    final authed = await ScreenSecure.authenticate(
-      reason: 'Bitte Identität bestätigen, um den Schlüssel zu exportieren');
-    if (!authed || !mounted) return;
+    // Riegel vor der Geräteabfrage. Sonst starten Mehrfach-Tipps mehrere
+    // Abfragen und danach parallele scrypt-Läufe.
     setState(() => _exportingKey = true);
     try {
+      // Security Audit M3: Geräteauthentifizierung vor dem Schlüssel-Export.
+      final authed = await ScreenSecure.authenticate(
+        reason: 'Bitte Identität bestätigen, um den Schlüssel zu exportieren');
+      if (!authed || !mounted) return;
       final t = AppLocalizations.of(context);
 
       final privHex = await SecureKeyStore.getPrivHex();

@@ -13,6 +13,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nostr/nostr.dart' show Event, Keychain, Nip19;
+import 'package:einundzwanzig_meetup_app/services/backup_service.dart';
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
 
 const _mine =
@@ -127,29 +128,13 @@ void main() {
   });
 
   group('N3 — Backup-Schlüsselkonsistenz', () {
-    // _backupKeyConsistent ist privat; der erreichbare Weg ist die Prüfung
-    // der Ableitungslogik, die es benutzt: nsec → priv, priv → pubkey,
-    // pubkey → npub. Wir stellen die drei Konsistenzbedingungen nach.
     final key = Keychain.generate();
     final priv = key.private;
     final npub = Nip19.encodePubkey(key.public);
     final nsec = Nip19.encodePrivkey(priv);
 
-    bool consistent(String nsec, String npub, String privHex) {
-      try {
-        final privFromNsec = Nip19.decodePrivkey(nsec.trim()).toLowerCase();
-        final p = privHex.trim().toLowerCase();
-        if (privFromNsec != p) return false;
-        if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(p)) return false;
-        final derived = Nip19.encodePubkey(Keychain(p).public);
-        return derived == npub.trim();
-      } catch (_) {
-        return false;
-      }
-    }
-
     test('konsistentes Backup wird akzeptiert', () {
-      expect(consistent(nsec, npub, priv), isTrue);
+      expect(BackupService.backupKeyConsistent(nsec, npub, priv), isTrue);
     });
 
     test('npub passt nicht zum privaten Schlüssel -> abgelehnt', () {
@@ -157,16 +142,16 @@ void main() {
       final wrongNpub = Nip19.encodePubkey(other.public);
       // npub einer fremden Identität: die App würde sonst einen npub
       // anzeigen, zu dem der gespeicherte Schlüssel nicht signiert.
-      expect(consistent(nsec, wrongNpub, priv), isFalse);
+      expect(BackupService.backupKeyConsistent(nsec, wrongNpub, priv), isFalse);
     });
 
     test('nsec und priv_hex widersprechen sich -> abgelehnt', () {
       final other = Keychain.generate();
-      expect(consistent(nsec, npub, other.private), isFalse);
+      expect(BackupService.backupKeyConsistent(nsec, npub, other.private), isFalse);
     });
 
     test('kaputtes priv_hex -> abgelehnt', () {
-      expect(consistent(nsec, npub, 'zz-not-hex'), isFalse);
+      expect(BackupService.backupKeyConsistent(nsec, npub, 'zz-not-hex'), isFalse);
     });
   });
 }

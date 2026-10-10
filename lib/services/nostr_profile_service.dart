@@ -38,14 +38,19 @@ class NostrProfileService {
 
       // 1. Das Nostr-Profil (kind 0) — der uebliche Ort fuer einen Namen.
       //    Ersetzbar: das neueste Profil über alle Relays, nicht das erste.
+      //    Ein neueres Profil ohne Namen löscht den älteren Namen. Der
+      //    Spitzname springt dann nicht ein — der käme sonst zurück.
       var bestAt = -1;
+      var sawProfile = false;
       for (final r in relays) {
         final hit = await _fetchNameFromRelay(r, pubkeyHex);
         if (hit != null && hit.key > bestAt) {
           bestAt = hit.key;
           found = hit.value;
+          sawProfile = true;
         }
       }
+      if (sawProfile && (found == null || found.isEmpty)) found = null;
 
       // 2. Der Spitzname aus dem Reputations-Ereignis.
       //
@@ -54,7 +59,7 @@ class NostrProfileService {
       // diesen zweiten Weg blieben ausgerechnet die Leute namenlos, die ihre
       // Identitaet in der App angelegt haben: also fast alle. Im
       // Vertrauensnetzwerk standen deshalb nur npubs.
-      if (found == null || found.isEmpty) {
+      if (!sawProfile) {
         bestAt = -1;
         found = null;
         for (final r in relays) {
@@ -157,16 +162,23 @@ class NostrProfileService {
     // 1. Nostr-Profile (kind 0), danach 2. Spitznamen aus dem
     //    Reputations-Ereignis fuer alle, die noch keinen Namen haben —
     //    die App selbst veroeffentlicht kein kind 0 (siehe fetchDisplayName).
-    final fresh = <String, String>{};
+    final profiles = <String, String>{};
     for (var k = 0; k < missing.length; k += _namesBatch) {
       final part = missing.sublist(k, min(k + _namesBatch, missing.length));
       final answers = await Future.wait(relays.map((r) => _batchNames(r, part,
           kinds: const [0], dTag: null, parse: _nameFromProfile)));
-      _mergeNewest(answers, fresh);
+      _mergeNewest(answers, profiles);
     }
-    final noName = missing.where((h) => !fresh.containsKey(h)).toList();
-    for (var k = 0; k < noName.length; k += _namesBatch) {
-      final part = noName.sublist(k, min(k + _namesBatch, noName.length));
+    // Kein Profil-Event: Spitzname. Ein Profil ohne Namen bleibt leer,
+    // der Spitzname holt den entfernten Namen nicht zurück.
+    final noProfile = missing.where((h) => !profiles.containsKey(h)).toList();
+    final fresh = <String, String>{};
+    for (final hex in missing) {
+      final name = profiles[hex];
+      if (name != null && name.isNotEmpty) fresh[hex] = name;
+    }
+    for (var k = 0; k < noProfile.length; k += _namesBatch) {
+      final part = noProfile.sublist(k, min(k + _namesBatch, noProfile.length));
       final answers = await Future.wait(relays.map((r) => _batchNames(r, part,
           kinds: const [30078],
           dTag: 'einundzwanzig-reputation',
@@ -176,10 +188,16 @@ class NostrProfileService {
 
     for (final hex in missing) {
       final name = fresh[hex];
-      if (name != null) {
+      if (name != null && name.isNotEmpty) {
         result[hex] = name;
         _nameCache[hex] = name;
         stored[hex] = {'n': name, 't': now};
+      } else if (profiles.containsKey(hex) && profiles[hex]!.isEmpty) {
+        // Neuestes Profil hat den Namen entfernt. Der zwischengespeicherte
+        // alte Name darf nicht stehen bleiben.
+        result.remove(hex);
+        _nameCache[hex] = null;
+        stored.remove(hex);
       } else {
         // Kein Name gefunden. Ein frueher gespeicherter bleibt stehen —
         // ein Relay, das gerade nicht antwortet, loescht keinen Namen.
@@ -263,8 +281,10 @@ class NostrProfileService {
               final at = RelaySocket.replaceableCreatedAt(ev);
               if (at == null) return;
               final hex = ev['pubkey'] as String? ?? '';
-              final name = parse(ev['content'] as String? ?? '');
-              if (hex.isEmpty || name == null) return;
+              if (hex.isEmpty) return;
+              // Leerer Name zählt mit: sonst gewinnt ein älteres Event
+              // und holt einen entfernten Namen zurück.
+              final name = parse(ev['content'] as String? ?? '') ?? '';
               final cur = out[hex];
               if (cur == null || at > cur.key) out[hex] = MapEntry(at, name);
             } else if (msg[0] == 'EOSE') {

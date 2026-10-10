@@ -493,6 +493,15 @@ class AdminRegistry {
       final random = Random.secure();
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final subscriptionId = 'admin-$subIdHex';
+      // Dieselbe Map geht in den REQ. answersFilter prüft Art, Autor und d,
+      // nicht nur die Signatur: ein anderes Event desselben Signers ist
+      // keine Admin-Liste.
+      final filter = <String, dynamic>{
+        'kinds': [_eventKind],
+        'authors': authorsHex,
+        '#d': [_eventDTag],
+        'limit': 50,
+      };
 
       ws.listen(
         (data) {
@@ -526,6 +535,7 @@ class AdminRegistry {
                 tally.failed('Ungültige Signatur');
                 return;
               }
+              if (!RelaySocket.answersFilter(eventData, filter)) return;
 
               try {
                 final content = jsonDecode(event.content) as Map<String, dynamic>;
@@ -559,17 +569,7 @@ class AdminRegistry {
         },
       );
 
-      final request = jsonEncode([
-        'REQ',
-        subscriptionId,
-        {
-          'kinds': [_eventKind],
-          'authors': authorsHex,
-          '#d': [_eventDTag],
-          // Wir holen die letzten 50 Events, falls viele Admins Vouchings gepostet haben
-          'limit': 50, 
-        }
-      ]);
+      final request = jsonEncode(['REQ', subscriptionId, filter]);
 
       ws.add(request);
 

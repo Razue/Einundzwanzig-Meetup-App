@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:flutter/foundation.dart' show compute, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show compute, kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../l10n/app_localizations.dart';
@@ -839,6 +840,10 @@ class BackupService {
                 AppLogger.security('BackupService',
                     'Backup-Schlüssel inkonsistent (nsec/npub/priv_hex '
                     'gehören nicht zusammen) — nicht übernommen.');
+                // Das Profil wurde oben schon mit dem npub aus dem Backup
+                // gespeichert. Der bleibt sonst stehen, während der
+                // vorhandene Schlüssel ein anderer ist.
+                await _alignNostrIdentityWithKeystore(user);
               } else {
                 await SecureKeyStore.saveKeys(
                   nsec: nsec,
@@ -1080,9 +1085,30 @@ class BackupService {
     }
   }
 
+  /// Angezeigte Nostr-Identität an den Schlüssel hängen, der wirklich
+  /// im Keystore liegt. Nach einem abgelehnten Backup-Schlüssel darf
+  /// das Profil nicht den npub aus dem Backup behalten.
+  static Future<void> _alignNostrIdentityWithKeystore(UserProfile user) async {
+    final existing = await SecureKeyStore.getNpub();
+    if (existing != null && existing.isNotEmpty) {
+      user.nostrNpub = existing;
+      user.isNostrVerified = true;
+      user.hasNostrKey = true;
+    } else {
+      user.nostrNpub = '';
+      user.isNostrVerified = false;
+      user.hasNostrKey = false;
+    }
+    await user.save();
+  }
+
   /// Security Audit N3: Gehören nsec, npub und priv_hex eines Backups
   /// zusammen? nsec muss denselben privaten Schlüssel dekodieren wie
   /// priv_hex angibt, und der zugehörige pubkey muss dem npub entsprechen.
+  @visibleForTesting
+  static bool backupKeyConsistent(String nsec, String npub, String privHex) =>
+      _backupKeyConsistent(nsec, npub, privHex);
+
   static bool _backupKeyConsistent(String nsec, String npub, String privHex) {
     try {
       final privFromNsec = Nip19.decodePrivkey(nsec.trim()).toLowerCase();
