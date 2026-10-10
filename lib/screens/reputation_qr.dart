@@ -24,7 +24,7 @@ import '../services/platform_proof_service.dart';
 import 'package:crypto/crypto.dart';
 import 'qr_scanner.dart';
 import 'reputation_card_screen.dart';
-import '../services/share_origin.dart';
+import '../utils/share_origin.dart';
 
 class ReputationQRScreen extends StatefulWidget {
   const ReputationQRScreen({super.key});
@@ -195,8 +195,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   // =============================================
   Future<void> _shareQRImage() async {
     final shareText = AppLocalizations.of(context).reputationVerified;
-    // Anker für das Teilen-Blatt jetzt bestimmen, solange das Widget sicher
-    // gebaut ist — iOS 26 verlangt ihn auch auf dem iPhone (Issue #73).
+    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
     final shareOrigin = shareOriginFor(context);
     try {
       // Fix: Beim ersten Aufruf kann der RenderRepaintBoundary noch nicht

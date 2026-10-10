@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:einundzwanzig_meetup_app/services/share_origin.dart';
+import 'package:einundzwanzig_meetup_app/utils/share_origin.dart';
 
 void main() {
   testWidgets('shareOriginFor liefert das globale Rechteck des Widgets',

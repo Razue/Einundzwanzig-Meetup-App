@@ -11,7 +11,7 @@ import '../models/user.dart';
 import '../models/badge.dart';
 import '../services/trust_score_service.dart';
 import '../services/badge_claim_service.dart';
-import '../services/share_origin.dart';
+import '../utils/share_origin.dart';
 
 /// Teilbares Reputations-Profil als schön gestaltete Karte.
 /// Export als PNG via RepaintBoundary -> share_plus.
@@ -63,8 +63,7 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
     if (_sharing) return;
     setState(() => _sharing = true);
     final shareText = AppLocalizations.of(context).rcShareText;
-    // Anker für das Teilen-Blatt jetzt bestimmen, solange das Widget sicher
-    // gebaut ist — iOS 26 verlangt ihn auch auf dem iPhone (Issue #73).
+    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
     final shareOrigin = shareOriginFor(context);
     try {
       // Auf vollständiges Rendering des Boundary warten

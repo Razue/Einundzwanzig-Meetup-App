@@ -20,7 +20,7 @@ import 'badge_details.dart';
 import 'reputation_qr.dart';
 import '../services/reputation_publisher.dart';
 import '../services/app_logger.dart';
-import '../services/share_origin.dart';
+import '../utils/share_origin.dart';
 
 // ============================================================
 // GENERATIVE ART PAINTER
@@ -311,8 +311,7 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen>
 
   void _shareAllBadges() async {
     if (myBadges.isEmpty) return;
-    // Anker für das Teilen-Blatt vor dem await bestimmen, solange das Widget
-    // sicher gebaut ist — iOS 26 verlangt ihn auch auf dem iPhone (Issue #73).
+    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
     final shareOrigin = shareOriginFor(context);
 
     final user = await UserProfile.load();
@@ -353,6 +352,7 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
 
   void _shareReputationJSON() async {
     if (myBadges.isEmpty) return;
+    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
     final shareOrigin = shareOriginFor(context);
 
     final user = await UserProfile.load();

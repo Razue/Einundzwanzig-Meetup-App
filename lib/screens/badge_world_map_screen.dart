@@ -7,7 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
-import '../services/share_origin.dart';
+import '../utils/share_origin.dart';
 
 /// "Hier war ich überall" — Weltkarte aller Badges mit Standort.
 /// Zoombar, teilbar als Bild.
@@ -247,8 +247,7 @@ class _BadgeWorldMapScreenState extends State<BadgeWorldMapScreen> {
   Future<void> _shareImage() async {
     // Marker-Info schließen, damit sie nicht im geteilten Bild erscheint
     setState(() { _selected = null; _sharing = true; });
-    // Anker für das Teilen-Blatt jetzt bestimmen, solange das Widget sicher
-    // gebaut ist — iOS 26 verlangt ihn auch auf dem iPhone (Issue #73).
+    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
     final shareOrigin = shareOriginFor(context);
     try {
       // kurzer Frame-Delay, damit Tiles gezeichnet sind

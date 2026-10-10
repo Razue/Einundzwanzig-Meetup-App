@@ -22,7 +22,7 @@ import 'humanity_proof_service.dart'; // NEU
 import 'pbkdf2/pbkdf2_dart.dart';
 import 'pbkdf2/pbkdf2_fast.dart';
 import 'app_logger.dart';
-import 'share_origin.dart';
+import '../utils/share_origin.dart';
 
 class BackupService {
   /// Laeuft gerade ein Export oder ein Import?
