@@ -12,6 +12,7 @@ import 'nostr_service.dart';
 import 'mempool.dart';
 import 'app_logger.dart';
 import 'relay_socket.dart';
+import 'meetup_key.dart';
 
 /// Eine bestätigte Meetup-Teilnahme einer Person (von Relays geladen).
 class CoAttendanceRecord {
@@ -1122,10 +1123,10 @@ class CoAttendanceService {
     bool isEvent = false,
   }) async {
     try {
-      // Exakt dasselbe Format wie in meetup_verification.dart
-      final dateStr = date.toIso8601String().substring(0, 10);
-      final meetupEventId =
-          '${meetupName.toLowerCase().replaceAll(' ', '-')}-$dateStr';
+      // Dieselbe Regel wie beim Teilnehmer (MeetupKey): Slug des Namens
+      // plus Datum. Der Teilnehmer nimmt den Slug aus der signierten
+      // Kennung, die der Organisator aus genau diesem Namen gebildet hat.
+      final meetupEventId = MeetupKey.eventId(MeetupKey.slug(meetupName), date);
 
       // Blockhöhe sicherstellen: falls 0 übergeben (Session hatte sie nicht),
       // selbst von Mempool holen — damit das Badge eine echte Blockzeit hat.

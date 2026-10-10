@@ -6344,4 +6344,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get curJPY => 'Japanese yen';
+
+  @override
+  String get chatOffline =>
+      'No internet connection — the chat can\'t be reached right now. Check Wi-Fi or mobile data and try again.';
 }

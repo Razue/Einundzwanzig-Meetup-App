@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nostr/nostr.dart';
 import '../models/user.dart';
 import '../models/meetup.dart';
 import '../services/meetup_service.dart';
@@ -1266,11 +1267,21 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // =============================================
   // READ-ONLY ANSICHT (verifiziertes Profil)
   // =============================================
+  String? get _profilePubkeyHex {
+    try {
+      return Nip19.decodePubkey(_nostrNpub);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Widget _buildReadOnlyView() {
     return Column(
       children: [
         const SizedBox(height: 20),
         NostrAvatar(
+          key: ValueKey(_nostrNpub),
+          pubkeyHex: _profilePubkeyHex,
           fallbackText: _user!.nickname,
           backgroundColor: cGreen,
           radius: 44,

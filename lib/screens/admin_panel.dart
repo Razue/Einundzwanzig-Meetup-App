@@ -18,6 +18,7 @@ import '../services/meetup_location_service.dart';
 import '../features.dart';
 import 'meetup_session_wizard.dart';
 import 'rolling_qr_screen.dart';
+import '../services/meetup_key.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -219,7 +220,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
       meetupCountry = chosen.meetup.country;
     }
 
-    final compactId = meetupId.toLowerCase().replaceAll(' ', '-');
+    // Signierte Meetup-Kennung: Stadt-Slug PLUS Land ("bad-neuenahr-de").
+    //
+    // Frueher nur der Slug — und die Teilnehmer-App zerlegte "bad-neuenahr"
+    // in Stadt "bad" und Land "NEUENAHR". Mit dem Land am Ende zerlegen
+    // auch aeltere Teilnehmer-Apps richtig. Ohne Land (frei eingegebener
+    // Name) bleibt es beim Slug.
+    final compactId =
+        MeetupKey.compose(MeetupKey.slug(meetupId), meetupCountry);
 
     if (!mounted) return;
     showDialog(
@@ -663,6 +671,11 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(c.meetup.city, style: const TextStyle(color: cText, fontSize: 15, fontWeight: FontWeight.w700)),
+                    if (c.meetup.groupName != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(c.meetup.groupName!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: cTextTertiary, fontSize: 11.5)),
+                      ),
                     Text(t.gpsDistanceKm(c.distanceKm.toStringAsFixed(1)), style: const TextStyle(color: cTextTertiary, fontSize: 12)),
                   ])),
                   const Icon(Icons.chevron_right_rounded, color: cTextTertiary, size: 20),

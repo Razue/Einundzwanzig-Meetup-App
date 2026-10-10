@@ -11475,6 +11475,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Japanischer Yen'**
   String get curJPY;
+
+  /// No description provided for @chatOffline.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.'**
+  String get chatOffline;
 }
 
 class _AppLocalizationsDelegate

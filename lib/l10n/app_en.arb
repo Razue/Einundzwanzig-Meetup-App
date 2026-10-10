@@ -2833,5 +2833,6 @@
   "curGBP": "British pound",
   "curCAD": "Canadian dollar",
   "curAUD": "Australian dollar",
-  "curJPY": "Japanese yen"
+  "curJPY": "Japanese yen",
+  "chatOffline": "No internet connection — the chat can't be reached right now. Check Wi-Fi or mobile data and try again."
 }

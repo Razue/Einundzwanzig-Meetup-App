@@ -4,6 +4,7 @@ import '../models/meetup.dart';
 import 'package:nostr/nostr.dart';
 
 import 'app_logger.dart';
+import 'meetup_key.dart';
 
 class MeetupService {
   /// Die schlanke Liste fuer die App.
@@ -107,6 +108,23 @@ class MeetupService {
   ///
   /// Vergleicht Name UND Stadt, weil Badges mal das eine und mal das andere
   /// tragen ("Einundzwanzig Aschaffenburg" gegen "Aschaffenburg").
+  /// Meetup zu einer signierten Badge-Kennung (Slug + Land).
+  ///
+  /// Nur fuer die ANZEIGE: liefert den echten Stadtnamen ("Neu-Ulm"), den
+  /// der Slug ("neu-ulm") nicht mehr eindeutig hergibt. Die Netzwerk-Kennung
+  /// haengt nie davon ab. Ohne Treffer null — dann bleibt der aus dem Slug
+  /// gebildete Name.
+  static Meetup? bySlug(String slug, String country) {
+    if (slug.isEmpty || _cache.isEmpty) return null;
+    final c = country.trim().toUpperCase();
+    for (final m in _cache) {
+      if (MeetupKey.slug(m.city) != slug) continue;
+      if (c.isNotEmpty && m.country.trim().toUpperCase() != c) continue;
+      return m;
+    }
+    return null;
+  }
+
   static Meetup? byName(String name) {
     final n = name.trim().toLowerCase();
     if (n.isEmpty || _cache.isEmpty) return null;

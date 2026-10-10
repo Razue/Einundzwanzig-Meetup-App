@@ -38,9 +38,14 @@ const String kGroupRelay = 'wss://group.einundzwanzig.space';
 /// keinen Raum". Eine Stoerung muss davon unterscheidbar sein, sonst
 /// behauptet die App etwas ueber das Meetup, das sie gar nicht weiss.
 class ChatRelayUnavailable implements Exception {
-  const ChatRelayUnavailable();
+  /// Das Geraet hatte gar kein Netz (Name nicht aufloesbar, Netz nicht
+  /// erreichbar) — dann liegt es nicht am Relay, und die Meldung soll das
+  /// auch so sagen.
+  final bool offline;
+  const ChatRelayUnavailable({this.offline = false});
   @override
-  String toString() => 'Gruppen-Relay ohne Auskunft';
+  String toString() =>
+      offline ? 'Keine Internetverbindung' : 'Gruppen-Relay ohne Auskunft';
 }
 
 // --- Ereignisarten nach NIP-29 ---
@@ -151,6 +156,23 @@ class ChatService {
 
   static const Duration _timeout = Duration(seconds: 8);
 
+  /// Ob der letzte Verbindungsversuch an fehlendem Netz scheiterte.
+  ///
+  /// Im Feld (Oktober 2026) kam die Meldung "Chat-Relay hat nicht
+  /// geantwortet", waehrend das Protokoll fuer JEDEN Dienst "Failed host
+  /// lookup" zeigte — das Handy war schlicht offline. Die Meldung schickte
+  /// die Leute auf die falsche Faehrte (Relay, Signierer).
+  static bool _lastOffline = false;
+
+  /// Erkennt fehlendes Netz an der Fehlermeldung des Betriebssystems.
+  static bool _looksOffline(Object e) {
+    final s = e.toString();
+    return s.contains('Failed host lookup') ||
+        s.contains('Network is unreachable') ||
+        s.contains('No address associated with hostname') ||
+        s.contains('Connection failed');
+  }
+
   /// Zwischengespeicherte Raumliste.
   ///
   /// Das Dashboard fragt fuer jeden Favoriten nach dem Raum. Ohne Cache
@@ -195,12 +217,15 @@ class ChatService {
         ? const Duration(seconds: 8)
         : const Duration(seconds: 25);
 
+    _lastOffline = false;
     final RelaySocket ws;
     try {
       ws = await RelaySocket.connect(kGroupRelay)
           .timeout(const Duration(seconds: 5));
     } catch (e) {
-      AppLogger.warn(_tag, 'Verbindung fehlgeschlagen', e);
+      _lastOffline = _looksOffline(e);
+      AppLogger.warn(_tag,
+          _lastOffline ? 'Kein Netz — Relay nicht erreichbar' : 'Verbindung fehlgeschlagen', e);
       return null;
     }
 
@@ -429,7 +454,7 @@ class ChatService {
       '#t': ['meetup'],
       'limit': 500,
     });
-    if (events == null) throw const ChatRelayUnavailable();
+    if (events == null) throw ChatRelayUnavailable(offline: _lastOffline);
     final rooms = <String, ChatRoom>{};
     for (final e in events) {
       final room = ChatRoom.fromEvent(e);
@@ -476,7 +501,7 @@ class ChatService {
       '#i': ['meetup:$portalId'],
       'limit': 5,
     });
-    if (events == null) throw const ChatRelayUnavailable();
+    if (events == null) throw ChatRelayUnavailable(offline: _lastOffline);
     for (final e in events) {
       final room = ChatRoom.fromEvent(e);
       if (room != null) {

@@ -49,6 +49,7 @@ import '../services/mempool.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/admin_registry.dart';
 import '../services/app_review_demo.dart';
+import '../services/meetup_key.dart';
 
 class MeetupVerificationScreen extends StatefulWidget {
   final Meetup meetup;
@@ -357,8 +358,27 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     // Kompakt-Format normalisieren
     final normalized = BadgeSecurity.normalize(tagData);
 
-    final String meetupName = normalized['meetup_name'] ?? tr.verifyUnknownMeetup;
-    final String meetupCountry = normalized['meetup_country'] ?? '';
+    // SIGNIERTER Slug aus der Meetup-Kennung — Grundlage der
+    // Netzwerk-Kennung. Organisator und Teilnehmer bilden sie damit aus
+    // denselben signierten Rohdaten, nicht jeder fuer sich aus einem
+    // Anzeigenamen (siehe MeetupKey: "bad-neuenahr" wurde frueher zu "bad").
+    final String meetupSlug = (normalized['meetup_slug'] as String?) ?? '';
+    String meetupName = normalized['meetup_name'] ?? tr.verifyUnknownMeetup;
+    String meetupCountry = normalized['meetup_country'] ?? '';
+    // Anzeigename aus dem Portal, wenn es das Meetup kennt: "Neu-Ulm" statt
+    // des aus dem Slug geratenen "Neu Ulm". Beruehrt NUR die Anzeige.
+    if (meetupSlug.isNotEmpty) {
+      final portal = MeetupService.bySlug(meetupSlug, meetupCountry);
+      if (portal != null) {
+        meetupName = portal.city;
+        if (meetupCountry.isEmpty) meetupCountry = portal.country;
+      }
+    }
+    // Slug fuer die Kennung: der signierte, sonst (alte Voll-Format-Tags)
+    // wie bisher aus dem Namen.
+    final String keySlug = meetupSlug.isNotEmpty
+        ? meetupSlug
+        : MeetupKey.slug(meetupName);
     final String meetupId = normalized['meetup_id'] ?? DateTime.now().toString();
 
     // Block Height
@@ -387,8 +407,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     final storedNow = await MeetupBadge.loadBadges();
     myBadges = storedNow; // Speicheransicht gleich mit auffrischen
     final todayStr = DateTime.now().toIso8601String().substring(0, 10);
-    final prospectiveEventId =
-        '${meetupName.toLowerCase().replaceAll(' ', '-')}-$todayStr';
+    final prospectiveEventId = '$keySlug-$todayStr';
     // WICHTIG: Organisator-Marker sind KEINE gesammelten Badges. Sie tragen
     // aber dieselbe meetupEventId wie ein echtes Badge desselben Meetups.
     // Ohne diesen Ausschluss blockiert der eigene, unsignierte Marker das
@@ -522,7 +541,7 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
       // Ohne belastbaren Namen gibt es deshalb GAR KEINE Kennung. Das Badge
       // bleibt gueltig, es wird nur keine Anwesenheit veroeffentlicht —
       // besser keine Verknuepfung als eine falsche.
-      final nameSlug = meetupName.trim().toLowerCase().replaceAll(' ', '-');
+      final nameSlug = keySlug;
       final unknownSlug = tr
           .verifyUnknownMeetup
           .trim()
