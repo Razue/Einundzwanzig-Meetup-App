@@ -92,13 +92,13 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
       // temporaere Datei auf iOS/Android selbst an. `name` greift im Web,
       // `fileNameOverrides` nativ.
       const fileName = 'einundzwanzig_reputation_card.png';
-      await Share.shareXFiles(
-        [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
         fileNameOverrides: const [fileName],
         subject: 'Einundzwanzig Reputation',
         text: shareText,
         sharePositionOrigin: shareOrigin,
-      );
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

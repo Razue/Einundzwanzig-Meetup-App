@@ -513,7 +513,10 @@ class _ArticleDetailState extends State<_ArticleDetail> {
     final t = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await Share.share(text, sharePositionOrigin: shareOriginFor(anchor));
+      await SharePlus.instance.share(ShareParams(
+        text: text,
+        sharePositionOrigin: shareOriginFor(anchor),
+      ));
     } catch (_) {
       // Teilen fehlgeschlagen: zumindest den Link retten.
       await Clipboard.setData(ClipboardData(text: text));

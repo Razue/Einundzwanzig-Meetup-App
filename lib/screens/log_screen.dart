@@ -91,9 +91,11 @@ class _LogScreenState extends State<LogScreen> {
               final text = AppLogger.exportText();
               if (text.isEmpty) return;
               try {
-                await Share.share(text,
-                    subject: '21Meetup Diagnose-Log',
-                    sharePositionOrigin: shareOriginFor(btnCtx));
+                await SharePlus.instance.share(ShareParams(
+                  text: text,
+                  subject: '21Meetup Diagnose-Log',
+                  sharePositionOrigin: shareOriginFor(btnCtx),
+                ));
               } catch (_) {
                 // Teilen fehlgeschlagen: wie der Kopieren-Button daneben.
                 await Clipboard.setData(ClipboardData(text: text));

@@ -26,14 +26,15 @@ class SecureKeyStore {
   factory SecureKeyStore() => _instance;
   SecureKeyStore._internal();
 
-  // flutter_secure_storage Instanz mit sicheren Optionen
-  // AndroidOptions: encryptedSharedPreferences nutzt EncryptedSharedPreferences
-  // (API 23+). Auf älteren Geräten (API < 23) fällt die Library auf
-  // AES-Verschlüsselung mit RSA-wrapped Key im AndroidKeyStore zurück.
-  // minSdkVersion 21 wird unterstützt.
+  // flutter_secure_storage 10 liest die EncryptedSharedPreferences aus
+  // 9.2.4 und schreibt sie beim ersten Zugriff nach AES-GCM um.
+  // resetOnError bleibt aus, damit ein Fehler die Schluessel nicht loescht.
+  // migrateWithBackup legt vor der Umschreibung eine Kopie an.
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(
-      encryptedSharedPreferences: true, // API 23+ → EncryptedSharedPreferences
+      resetOnError: false,
+      migrateOnAlgorithmChange: true,
+      migrateWithBackup: true,
     ),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,

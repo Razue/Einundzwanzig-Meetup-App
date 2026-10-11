@@ -4,11 +4,10 @@ import 'package:flutter/widgets.dart';
 ///
 /// iOS verlangt ein nicht-leeres `sharePositionOrigin`, das vollständig
 /// innerhalb der Ansicht liegt, sobald UIKit das Teilen als Popover
-/// darstellt. Bis iOS 18 galt das nur auf dem iPad, seit iOS 26 auch auf
-/// dem iPhone — ohne gültigen Anker wirft share_plus 10.x
-/// „sharePositionOrigin: argument must be set, {{0, 0}, {0, 0}} must be
-/// non-zero …“ (Issue #73). share_plus 10.x prüft das mit
-/// `CGRectContainsRect` gegen die ganze Fläche, nicht nur gegen „nicht leer“.
+/// darstellt. share_plus 10.x tat das ab iOS 26 auch auf dem iPhone und
+/// warf ohne gültigen Anker (Issue #73). Ab 13.3.1 gilt der Popover nur
+/// noch auf dem iPad, der keyWindow-Fallback ist weg. Der Anker bleibt,
+/// damit das Blatt am auslösenden Element sitzt und nicht in der Mitte.
 ///
 /// Aufrufen unmittelbar vor `Share`, solange der Kontext noch gebaut ist.
 /// Nach einem `await` zuerst prüfen, ob er noch steht. Ein früher

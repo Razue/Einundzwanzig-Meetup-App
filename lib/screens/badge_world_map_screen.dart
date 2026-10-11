@@ -265,12 +265,12 @@ class _BadgeWorldMapScreenState extends State<BadgeWorldMapScreen> {
       if (!mounted) return;
       final t = AppLocalizations.of(context);
       final shareOrigin = shareOriginFor(context);
-      await Share.shareXFiles(
-        [XFile.fromData(byteData.buffer.asUint8List(), mimeType: 'image/png', name: fileName)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile.fromData(byteData.buffer.asUint8List(), mimeType: 'image/png', name: fileName)],
         fileNameOverrides: [fileName],
         text: t.mapShareText(_located.length),
         sharePositionOrigin: shareOrigin,
-      );
+      ));
     } catch (_) {
       // still: kein harter Fehler beim Teilen
     } finally {

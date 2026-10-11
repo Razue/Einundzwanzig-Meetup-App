@@ -17,7 +17,11 @@ class LocalKeyVault {
   LocalKeyVault._();
 
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(
+      resetOnError: false,
+      migrateOnAlgorithmChange: true,
+      migrateWithBackup: true,
+    ),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),

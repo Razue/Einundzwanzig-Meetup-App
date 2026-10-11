@@ -103,7 +103,11 @@ class PortalApiService {
   static const String _tokenNpubKey = 'portal_api_token_npub';
 
   static const _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(
+      resetOnError: false,
+      migrateOnAlgorithmChange: true,
+      migrateWithBackup: true,
+    ),
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device),
   );
 

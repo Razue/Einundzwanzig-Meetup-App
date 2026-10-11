@@ -18,7 +18,7 @@ dependencies:
   mobile_scanner: ^7.1.4
   url_launcher: ^6.2.5
   home_widget: ^0.6.0
-  package_info_plus: ^8.0.0
+  package_info_plus: ^10.2.2
   google_fonts: ^6.2.1
   image_picker: ^1.0.7
   just_audio: ^0.9.36
@@ -53,16 +53,18 @@ dependencies:
   # NEU: Verschlüsselung für das Backup
   encrypt: ^5.0.3
 
-  # Secure Storage (Android Keystore / iOS Keychain)
-  flutter_secure_storage: ^9.2.4
+  # Secure Storage (Android Keystore / iOS Keychain).
+  # 10.3.4, nicht 11: v10 liest die EncryptedSharedPreferences aus 9.2.4
+  # beim ersten Zugriff und schreibt sie um. v11 entfernt diesen Weg.
+  flutter_secure_storage: ^10.3.4
 
   # Geräteauthentifizierung (PIN/Biometrie) vor dem Anzeigen geheimer Schlüssel
   local_auth: ^2.3.0
 
   # Backup & Sharing
   add_2_calendar: ^3.0.1
-  share_plus: ^10.1.4
-  file_picker: ^8.0.0
+  share_plus: ^13.3.1
+  file_picker: ^13.1.0
   path_provider: ^2.1.2
   intl: ^0.20.2
 

@@ -224,13 +224,13 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       // `fileNameOverrides` auf den nativen Plattformen — cross_file
       // ignoriert `name` dort.
       const fileName = 'einundzwanzig_reputation.png';
-      await Share.shareXFiles(
-        [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
         fileNameOverrides: const [fileName],
         subject: 'Einundzwanzig Reputation',
         text: shareText,
         sharePositionOrigin: shareOrigin,
-      );
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
