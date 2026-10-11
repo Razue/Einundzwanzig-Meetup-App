@@ -373,6 +373,11 @@ class MeetupBadge {
     return key;
   }
 
+  /// Wird vom BadgeSyncService gesetzt, damit saveBadges den Sync auslöst.
+  /// Ohne den Haken müsste badge.dart den Dienst kennen — das wäre eine
+  /// Kreis-Abhängigkeit, weil der Dienst selbst MeetupBadge lädt.
+  static void Function()? onBadgesSaved;
+
   static Future<void> saveBadges(List<MeetupBadge> badges) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonStr = jsonEncode(badges.map((b) => b.toJson()).toList());
@@ -398,6 +403,10 @@ class MeetupBadge {
       final List<String> badgesJson = badges.map((b) => jsonEncode(b.toJson())).toList();
       await prefs.setStringList(_prefsLegacyBadges, badgesJson);
     }
+
+    // Leere Liste: der Reset-Pfad. Der Sync liest das als "nie leer
+    // veröffentlichen" und bleibt aus.
+    onBadgesSaved?.call();
   }
 
   static Future<List<MeetupBadge>> loadBadges() async {
