@@ -19,3 +19,10 @@ Future<String> nip07GetPublicKey() async =>
 Future<Map<String, dynamic>> nip07SignEvent(
         Map<String, dynamic> unsigned) async =>
     throw const Nip07Exception('NIP-07 gibt es nur im Browser.');
+
+/// Auf iOS/Android niemals verfuegbar.
+Future<String> nip07Nip44Encrypt(String pubkeyHex, String plaintext) async =>
+    throw const Nip07Exception('NIP-07 gibt es nur im Browser.');
+
+Future<String> nip07Nip44Decrypt(String pubkeyHex, String payload) async =>
+    throw const Nip07Exception('NIP-07 gibt es nur im Browser.');

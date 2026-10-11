@@ -254,6 +254,20 @@ class Nip46Client {
     return decoded;
   }
 
+  /// NIP-44 an [pubkeyHex]. Nicht jeder Bunker bietet das an — ein Fehler
+  /// heißt dort: kein Sync, nur das Backup.
+  Future<String> nip44Encrypt(String pubkeyHex, String plaintext) async {
+    final result = await _rpc('nip44_encrypt', [pubkeyHex, plaintext],
+        timeout: signTimeout);
+    return result.toString();
+  }
+
+  Future<String> nip44Decrypt(String pubkeyHex, String payload) async {
+    final result = await _rpc('nip44_decrypt', [pubkeyHex, payload],
+        timeout: signTimeout);
+    return result.toString();
+  }
+
   /// Lebt die Sitzung noch? Wird nach einem Neustart geprüft, damit ein vom
   /// Nutzer im Signer widerrufener Zugang auffällt, bevor die App signiert.
   Future<bool> ping() async {
