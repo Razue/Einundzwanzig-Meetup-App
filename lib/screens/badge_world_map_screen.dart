@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
+import '../utils/share_origin.dart';
 
 /// "Hier war ich überall" — Weltkarte aller Badges mit Standort.
 /// Zoombar, teilbar als Bild.
@@ -263,10 +264,12 @@ class _BadgeWorldMapScreenState extends State<BadgeWorldMapScreen> {
 
       if (!mounted) return;
       final t = AppLocalizations.of(context);
+      final shareOrigin = shareOriginFor(context);
       await Share.shareXFiles(
         [XFile.fromData(byteData.buffer.asUint8List(), mimeType: 'image/png', name: fileName)],
         fileNameOverrides: [fileName],
         text: t.mapShareText(_located.length),
+        sharePositionOrigin: shareOrigin,
       );
     } catch (_) {
       // still: kein harter Fehler beim Teilen

@@ -11,6 +11,7 @@ import '../widgets/meetup_crest_watermark.dart';
 import 'badge_wallet.dart'; // BadgeArtPainter als Rueckfallmotiv
 import '../l10n/app_localizations.dart';
 import '../models/badge.dart';
+import '../utils/share_origin.dart';
 
 class BadgeDetailsScreen extends StatefulWidget {
   final MeetupBadge badge;
@@ -102,6 +103,8 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
       if (byteData == null) return;
 
       final pngBytes = byteData.buffer.asUint8List();
+      if (!mounted) return;
+      final shareOrigin = shareOriginFor(context);
 
       // Bytes direkt teilen statt selbst eine Datei anzulegen:
       // path_provider hat keine Web-Implementierung, und share_plus legt
@@ -114,6 +117,7 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
         text: '${b.meetupName} · ${b.date.day.toString().padLeft(2, '0')}.'
             '${b.date.month.toString().padLeft(2, '0')}.${b.date.year}\n'
             '${t.badgeShareTagline}',
+        sharePositionOrigin: shareOrigin,
       );
     } catch (e) {
       if (!mounted) return;

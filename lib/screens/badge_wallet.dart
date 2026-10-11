@@ -20,6 +20,7 @@ import 'badge_details.dart';
 import 'reputation_qr.dart';
 import '../services/reputation_publisher.dart';
 import '../services/app_logger.dart';
+import '../utils/share_origin.dart';
 
 // ============================================================
 // GENERATIVE ART PAINTER
@@ -312,6 +313,8 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen>
     if (myBadges.isEmpty) return;
 
     final user = await UserProfile.load();
+    if (!mounted) return;
+    final shareOrigin = shareOriginFor(context);
     final uniqueMeetups = myBadges.map((b) => b.meetupName).toSet().length;
 
     final summary = '''
@@ -333,7 +336,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
 
     try {
       await Share.share(summary,
-          subject: 'Meine Einundzwanzig Meetup Reputation');
+          subject: 'Meine Einundzwanzig Meetup Reputation',
+          sharePositionOrigin: shareOrigin);
     } catch (e) {
       await Clipboard.setData(ClipboardData(text: summary));
       if (mounted) {
@@ -350,6 +354,8 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
     if (myBadges.isEmpty) return;
 
     final user = await UserProfile.load();
+    if (!mounted) return;
+    final shareOrigin = shareOriginFor(context);
     final json = MeetupBadge.exportBadgesForReputation(
           myBadges,
           user.nostrNpub,
@@ -359,7 +365,9 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         );
 
     try {
-      await Share.share(json, subject: 'Einundzwanzig Reputation (v4, signiert)');
+      await Share.share(json,
+          subject: 'Einundzwanzig Reputation (v4, signiert)',
+          sharePositionOrigin: shareOrigin);
     } catch (e) {
       await Clipboard.setData(ClipboardData(text: json));
       if (mounted) {

@@ -24,6 +24,7 @@ import '../services/platform_proof_service.dart';
 import 'package:crypto/crypto.dart';
 import 'qr_scanner.dart';
 import 'reputation_card_screen.dart';
+import '../utils/share_origin.dart';
 
 class ReputationQRScreen extends StatefulWidget {
   const ReputationQRScreen({super.key});
@@ -211,6 +212,8 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       if (byteData == null) return;
 
       final pngBytes = byteData.buffer.asUint8List();
+      if (!mounted) return;
+      final shareOrigin = shareOriginFor(context);
 
       // Die Bytes direkt teilen, statt selbst eine Datei in
       // getTemporaryDirectory() zu schreiben: path_provider hat keine
@@ -226,6 +229,7 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
         fileNameOverrides: const [fileName],
         subject: 'Einundzwanzig Reputation',
         text: shareText,
+        sharePositionOrigin: shareOrigin,
       );
     } catch (e) {
       if (mounted) {
