@@ -555,12 +555,12 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
     final content = '${t.idSetupSecureFileHeader}\n\n$wrap\n';
 
     try {
-      final path = await FilePicker.platform.saveFile(
+      final saved = await FilePicker.saveFile(
         dialogTitle: t.idSetupSecureKeySave,
         fileName: fileName,
         bytes: Uint8List.fromList(utf8.encode(content)),
       );
-      if (path == null) return; // abgebrochen
+      if (saved == null) return; // abgebrochen
       messenger.showSnackBar(SnackBar(
           content: Text(t.idSetupSecureKeySaved), backgroundColor: cGreen));
     } catch (e) {

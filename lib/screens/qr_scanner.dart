@@ -77,13 +77,10 @@ class _SecureQRScannerState extends State<SecureQRScanner> {
   // =============================================
   void _pickFromGallery() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
+      final picked = await FilePicker.pickFile(type: FileType.image);
 
-      if (result == null || result.files.isEmpty) return;
-      final path = result.files.single.path;
+      if (picked == null) return;
+      final path = picked.path;
       if (path == null) return;
 
       final barcodes = await _scannerController.analyzeImage(path);

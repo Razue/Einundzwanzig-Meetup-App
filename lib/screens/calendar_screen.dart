@@ -562,8 +562,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     '${event.location.isNotEmpty ? '\n${event.location}' : ''}'
                     '${event.url.isNotEmpty ? '\n${event.url}' : ''}';
                 try {
-                  await Share.share(text,
-                      sharePositionOrigin: shareOriginFor(ctx));
+                  await SharePlus.instance.share(ShareParams(
+                    text: text,
+                    sharePositionOrigin: shareOriginFor(ctx),
+                  ));
                 } catch (_) {
                   // Teilen fehlgeschlagen: zumindest den Termin retten.
                   await Clipboard.setData(ClipboardData(text: text));

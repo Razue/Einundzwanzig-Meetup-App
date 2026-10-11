@@ -1416,12 +1416,9 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
 
   Future<void> _pickFromGallery() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.image,
-        allowMultiple: false,
-      );
-      if (result == null || result.files.isEmpty) return;
-      final path = result.files.single.path;
+      final picked = await FilePicker.pickFile(type: FileType.image);
+      if (picked == null) return;
+      final path = picked.path;
       if (path == null) return;
 
       final barcodes = await _scannerController.analyzeImage(path);

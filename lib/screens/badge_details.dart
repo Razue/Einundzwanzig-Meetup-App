@@ -110,14 +110,16 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
       // path_provider hat keine Web-Implementierung, und share_plus legt
       // die temporaere Datei auf iOS und Android ohnehin selbst an.
       const fileName = 'einundzwanzig_badge.png';
-      await Share.shareXFiles(
-        [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
-        fileNameOverrides: const [fileName],
-        subject: b.meetupName,
-        text: '${b.meetupName} · ${b.date.day.toString().padLeft(2, '0')}.'
-            '${b.date.month.toString().padLeft(2, '0')}.${b.date.year}\n'
-            '${t.badgeShareTagline}',
-        sharePositionOrigin: shareOrigin,
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile.fromData(pngBytes, mimeType: 'image/png', name: fileName)],
+          fileNameOverrides: const [fileName],
+          subject: b.meetupName,
+          text: '${b.meetupName} · ${b.date.day.toString().padLeft(2, '0')}.'
+              '${b.date.month.toString().padLeft(2, '0')}.${b.date.year}\n'
+              '${t.badgeShareTagline}',
+          sharePositionOrigin: shareOrigin,
+        ),
       );
     } catch (e) {
       if (!mounted) return;

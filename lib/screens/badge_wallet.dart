@@ -335,9 +335,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
     ''';
 
     try {
-      await Share.share(summary,
-          subject: 'Meine Einundzwanzig Meetup Reputation',
-          sharePositionOrigin: shareOrigin);
+      await SharePlus.instance.share(ShareParams(
+        text: summary,
+        subject: 'Meine Einundzwanzig Meetup Reputation',
+        sharePositionOrigin: shareOrigin,
+      ));
     } catch (e) {
       await Clipboard.setData(ClipboardData(text: summary));
       if (mounted) {
@@ -365,9 +367,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
         );
 
     try {
-      await Share.share(json,
-          subject: 'Einundzwanzig Reputation (v4, signiert)',
-          sharePositionOrigin: shareOrigin);
+      await SharePlus.instance.share(ShareParams(
+        text: json,
+        subject: 'Einundzwanzig Reputation (v4, signiert)',
+        sharePositionOrigin: shareOrigin,
+      ));
     } catch (e) {
       await Clipboard.setData(ClipboardData(text: json));
       if (mounted) {

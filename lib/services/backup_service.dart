@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/foundation.dart'
     show compute, kIsWeb, visibleForTesting;
@@ -538,13 +537,13 @@ class BackupService {
       // Dateimanager auftaucht. saveFile oeffnet stattdessen direkt die
       // Ordnerauswahl des Systems.
       try {
-        final savedPath = await FilePicker.platform.saveFile(
+        final saved = await FilePicker.saveFile(
           dialogTitle: shareTitle,
           fileName: fileName,
           bytes: bytes,
         );
-        if (savedPath != null) {
-          AppLogger.info('App', 'Backup gespeichert: $savedPath');
+        if (saved != null) {
+          AppLogger.info('App', 'Backup gespeichert: $saved');
           return true;
         }
         // null heisst abgebrochen — dann NICHT still aufgeben, sondern das
@@ -562,12 +561,14 @@ class BackupService {
       if (!context.mounted) return false;
       final shareOrigin = shareOriginFor(context);
 
-      final shareResult = await Share.shareXFiles(
-        [XFile.fromData(bytes, mimeType: 'application/octet-stream', name: fileName)],
-        fileNameOverrides: [fileName],
-        subject: shareTitle,
-        text: shareText,
-        sharePositionOrigin: shareOrigin,
+      final shareResult = await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile.fromData(bytes, mimeType: 'application/octet-stream', name: fileName)],
+          fileNameOverrides: [fileName],
+          subject: shareTitle,
+          text: shareText,
+          sharePositionOrigin: shareOrigin,
+        ),
       );
 
       // Abbruch des Teilen-Blatts ist kein FEHLER, aber auch kein Erfolg —
@@ -581,8 +582,10 @@ class BackupService {
       // und angeboten, die Schluessel zu loeschen.
       //
       // Deshalb: nur explizites Verwerfen gilt als "nicht erledigt".
-      // `unavailable` bleibt true, weil manche Plattformen den Status gar
-      // nicht melden und ein Fehlalarm dort schlimmer waere.
+      // Seit share_plus 12 kommt Abbruch auf iOS als dismissed zurueck
+      // (leerer raw-Wert). `unavailable` bleibt true, weil manche
+      // Plattformen den Status gar nicht melden und ein Fehlalarm dort
+      // schlimmer waere.
       return shareResult.status != ShareResultStatus.dismissed;
     } catch (e) {
       AppLogger.warn('App', "Backup Fehler: $e");
@@ -632,27 +635,19 @@ class BackupService {
     final t = AppLocalizations.of(context);
 
     try {
-      // withData: true, damit die Bytes auf ALLEN Plattformen mitkommen.
+      // readAsBytes, damit der Inhalt auf allen Plattformen ankommt.
       //
-      // Vorher wurde nur `result.files.single.path` ausgewertet. Im Browser
-      // ist der Pfad immer null — der Dateiwaehler liefert dort ausschliesslich
+      // Vorher wurde nur der Dateipfad ausgewertet. Im Browser ist der
+      // Pfad immer null — der Dateiwaehler liefert dort ausschliesslich
       // Bytes. Die Bedingung war damit im Web nie erfuellt und das
       // Wiederherstellen tat lautlos gar nichts: kein Fehler, keine Meldung.
       //
       // Backup-Dateien sind wenige Kilobyte gross, das Laden in den Speicher
       // ist also auch auf dem Telefon unproblematisch.
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-        withData: true,
-      );
+      final picked = await FilePicker.pickFile(type: FileType.any);
 
-      final picked = result?.files.single;
-      if (picked != null && (picked.bytes != null || picked.path != null)) {
-        // Bytes bevorzugen (einziger Weg im Web); Pfad als Rueckfallebene,
-        // falls eine Plattform trotz withData keine Bytes liefert.
-        final String content = picked.bytes != null
-            ? utf8.decode(picked.bytes!)
-            : await File(picked.path!).readAsString();
+      if (picked != null) {
+        final String content = utf8.decode(await picked.readAsBytes());
 
         String decryptedJson = content;
 
