@@ -40,8 +40,10 @@ import 'zap_receipt_validator.dart';
 
 class ZapVerificationService {
   // Cache
-  static const String _cacheKeyStats = 'zap_stats_cache';
-  static const String _cacheKeyTimestamp = 'zap_cache_ts';
+  // v2: die Versand-Abfrage ist neu. Alte Einträge haben gesendet = 0
+  // und würden das sonst sechs Stunden verdecken.
+  static const String _cacheKeyStats = 'zap_stats_cache_v2';
+  static const String _cacheKeyTimestamp = 'zap_cache_ts_v2';
   static const Duration _cacheDuration = Duration(hours: 6);
 
   // Zeitfenster für Zap-Analyse (6 Monate)
@@ -80,9 +82,9 @@ class ZapVerificationService {
   // =============================================
   // ZAP RECEIPTS VON RELAYS ABRUFEN
   // =============================================
-  // isReceived=true:  Zaps die an pubkey gerichtet sind (#p Tag)
-  // isReceived=false: Zaps die von pubkey gesendet wurden
-  //                   (Sender steht im description/zap_request)
+  // isReceived=true:  Zaps an pubkey (#p, Empfänger)
+  // isReceived=false: Zaps von pubkey (#P nur als Abruf; Absender aus
+  //                   dem signierten Zap-Request in description)
   // =============================================
 
   static Future<List<ZapReceipt>> _fetchZapReceipts(
@@ -95,9 +97,14 @@ class ZapVerificationService {
 
     for (final relayUrl in relays.take(3)) { // Max 3 Relays für Performance
       try {
-        final receipts = await _fetchFromRelay(relayUrl, pubkeyHex, since);
-        // Deduplizieren anhand der Event-ID. Die Relay-Anfrage ist für
-        // beide Richtungen dieselbe; hier bleibt nur die gefragte Seite.
+        final receipts = await _fetchFromRelay(
+          relayUrl,
+          pubkeyHex,
+          since,
+          sent: !isReceived,
+        );
+        // Deduplizieren anhand der Event-ID. Hier bleibt nur die gefragte
+        // Seite: Empfang am p-Tag, Versand am Absender im Zap-Request.
         for (final receipt in receipts) {
           final wanted = isReceived ? receipt.isReceived : receipt.isSent;
           if (!wanted) continue;
@@ -149,11 +156,30 @@ class ZapVerificationService {
     return kept;
   }
 
+  /// Anfrage für Kind 9735.
+  ///
+  /// Empfangen: `#p` ist der Empfänger. Gesendet: `#P` (NIP-57) ist nur der
+  /// Abrufweg — nicht jedes Relay indexiert ihn. Wer gezahlt hat, steht im
+  /// signierten Zap-Request in `description`, das liest [_parseZapReceipt].
+  static Map<String, dynamic> receiptFilter({
+    required String pubkeyHex,
+    required int since,
+    required bool sent,
+  }) {
+    return {
+      'kinds': [9735],
+      'since': since,
+      'limit': 100,
+      sent ? '#P' : '#p': [pubkeyHex],
+    };
+  }
+
   static Future<List<ZapReceipt>> _fetchFromRelay(
     String relayUrl,
     String pubkeyHex,
-    int since,
-  ) async {
+    int since, {
+    required bool sent,
+  }) async {
     RelaySocket? ws;
     final tally = RelayParseTally('ZapVerification', 'Zap-Belege von $relayUrl');
     try {
@@ -164,15 +190,14 @@ class ZapVerificationService {
       final subIdHex = List.generate(8, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
       final subId = 'zaps-$subIdHex';
       List<ZapReceipt> receipts = [];
-      // Kind 9735. Empfangen: p-Tag ist der Empfänger. Gesendet steht der
-      // Absender im description-Tag; '#P' können nicht alle Relays, deshalb
-      // dieselbe p-Anfrage. _parseZapReceipt ordnet danach zu.
-      final filter = <String, dynamic>{
-        'kinds': [9735],
-        'since': since,
-        'limit': 100,
-        '#p': [pubkeyHex],
-      };
+      // Dieselbe Map geht in den REQ und in answersFilter. `#P` und `#p`
+      // dürfen nicht in einem Filter stehen: answersFilter verlangt dann
+      // beide Tags, und Belege ohne das jeweils andere fallen weg.
+      final filter = receiptFilter(
+        pubkeyHex: pubkeyHex,
+        since: since,
+        sent: sent,
+      );
 
       ws.listen(
         (data) {
