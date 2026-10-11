@@ -195,8 +195,6 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
   // =============================================
   Future<void> _shareQRImage() async {
     final shareText = AppLocalizations.of(context).reputationVerified;
-    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
-    final shareOrigin = shareOriginFor(context);
     try {
       // Fix: Beim ersten Aufruf kann der RenderRepaintBoundary noch nicht
       // vollständig gerendert sein. Wir warten auf den nächsten Frame.
@@ -214,6 +212,8 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
       if (byteData == null) return;
 
       final pngBytes = byteData.buffer.asUint8List();
+      if (!mounted) return;
+      final shareOrigin = shareOriginFor(context);
 
       // Die Bytes direkt teilen, statt selbst eine Datei in
       // getTemporaryDirectory() zu schreiben: path_provider hat keine

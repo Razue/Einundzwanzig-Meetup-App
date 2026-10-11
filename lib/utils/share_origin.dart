@@ -10,9 +10,9 @@ import 'package:flutter/widgets.dart';
 /// non-zero …“ (Issue #73). share_plus 10.x prüft das mit
 /// `CGRectContainsRect` gegen die ganze Fläche, nicht nur gegen „nicht leer“.
 ///
-/// Das Rechteck muss bestimmt werden, solange das Widget gebaut ist: also
-/// vor längerer Arbeit und vor jedem `await`, nach dem der Kontext
-/// verschwunden sein könnte.
+/// Aufrufen unmittelbar vor `Share`, solange der Kontext noch gebaut ist.
+/// Nach einem `await` zuerst prüfen, ob er noch steht. Ein früher
+/// festgehaltenes Rechteck liegt nach einer Drehung außerhalb der Ansicht.
 ///
 /// Ein Widget in einem scrollbaren Sheet kann größer als die Ansicht sein
 /// oder nach dem Scrollen teilweise darüber hinausragen. Zurückgegeben wird

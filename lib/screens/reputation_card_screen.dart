@@ -63,8 +63,6 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
     if (_sharing) return;
     setState(() => _sharing = true);
     final shareText = AppLocalizations.of(context).rcShareText;
-    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
-    final shareOrigin = shareOriginFor(context);
     try {
       // Auf vollständiges Rendering des Boundary warten
       final completer = Completer<void>();
@@ -86,6 +84,8 @@ class _ReputationCardScreenState extends State<ReputationCardScreen> {
         return;
       }
       final pngBytes = byteData.buffer.asUint8List();
+      if (!mounted) return;
+      final shareOrigin = shareOriginFor(context);
 
       // Bytes direkt teilen statt selbst eine Datei zu schreiben —
       // path_provider hat keine Web-Implementierung. share_plus legt die

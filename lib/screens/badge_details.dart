@@ -81,8 +81,6 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
   void _shareBadge() async {
     final t = AppLocalizations.of(context);
     final messenger = ScaffoldMessenger.of(context);
-    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
-    final shareOrigin = shareOriginFor(context);
 
     try {
       // Die Karte haengt unsichtbar im Baum. Ein Bild kann erst entstehen,
@@ -105,6 +103,8 @@ class _BadgeDetailsScreenState extends State<BadgeDetailsScreen> {
       if (byteData == null) return;
 
       final pngBytes = byteData.buffer.asUint8List();
+      if (!mounted) return;
+      final shareOrigin = shareOriginFor(context);
 
       // Bytes direkt teilen statt selbst eine Datei anzulegen:
       // path_provider hat keine Web-Implementierung, und share_plus legt

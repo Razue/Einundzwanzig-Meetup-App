@@ -311,10 +311,10 @@ class _BadgeWalletScreenState extends State<BadgeWalletScreen>
 
   void _shareAllBadges() async {
     if (myBadges.isEmpty) return;
-    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
-    final shareOrigin = shareOriginFor(context);
 
     final user = await UserProfile.load();
+    if (!mounted) return;
+    final shareOrigin = shareOriginFor(context);
     final uniqueMeetups = myBadges.map((b) => b.meetupName).toSet().length;
 
     final summary = '''
@@ -352,10 +352,10 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
 
   void _shareReputationJSON() async {
     if (myBadges.isEmpty) return;
-    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
-    final shareOrigin = shareOriginFor(context);
 
     final user = await UserProfile.load();
+    if (!mounted) return;
+    final shareOrigin = shareOriginFor(context);
     final json = MeetupBadge.exportBadgesForReputation(
           myBadges,
           user.nostrNpub,

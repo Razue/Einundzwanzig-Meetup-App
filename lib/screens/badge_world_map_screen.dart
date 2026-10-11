@@ -247,8 +247,6 @@ class _BadgeWorldMapScreenState extends State<BadgeWorldMapScreen> {
   Future<void> _shareImage() async {
     // Marker-Info schließen, damit sie nicht im geteilten Bild erscheint
     setState(() { _selected = null; _sharing = true; });
-    // Anker vor jeglichem await holen — warum: share_origin.dart (Issue #73).
-    final shareOrigin = shareOriginFor(context);
     try {
       // kurzer Frame-Delay, damit Tiles gezeichnet sind
       await Future.delayed(const Duration(milliseconds: 300));
@@ -266,6 +264,7 @@ class _BadgeWorldMapScreenState extends State<BadgeWorldMapScreen> {
 
       if (!mounted) return;
       final t = AppLocalizations.of(context);
+      final shareOrigin = shareOriginFor(context);
       await Share.shareXFiles(
         [XFile.fromData(byteData.buffer.asUint8List(), mimeType: 'image/png', name: fileName)],
         fileNameOverrides: [fileName],
