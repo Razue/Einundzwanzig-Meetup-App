@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/badge.dart';
 import 'app_logger.dart';
+import 'badge_sync_codec.dart';
 import 'badge_sync_format.dart';
 import 'relay_socket.dart';
 import 'signing_service.dart';
@@ -58,12 +59,28 @@ class BadgeSyncService {
   static void trigger() {
     if (_pullInProgress) return;
     unawaited(() async {
+      final prefs = await SharedPreferences.getInstance();
       try {
-        await syncNow();
+        final ok = await syncNow();
+        if (!ok) {
+          await prefs.setBool(_dirtyKey, true);
+        }
       } catch (e) {
+        await prefs.setBool(_dirtyKey, true);
         AppLogger.debug(_tag, 'Sync fehlgeschlagen: $e');
       }
     }());
+  }
+
+  /// Beim Start: war der letzte Sync unvollständig, nochmal versuchen.
+  static Future<void> retryIfDirty() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_dirtyKey) != true) return;
+    try {
+      await syncNow();
+    } catch (e) {
+      AppLogger.debug(_tag, 'Sync-Retry fehlgeschlagen: $e');
+    }
   }
 
   /// Einmal hoch- und wieder herunter. Gibt false, wenn der Signer kein
@@ -138,7 +155,9 @@ class BadgeSyncService {
       if (content.isEmpty) continue;
       try {
         final plain = await SigningService.nip44Decrypt(me, content);
-        final env = BadgeSyncFormat.parseEnvelope(plain);
+        // Inhalt ist gzip(Hülle), nicht die Hülle selbst.
+        final env = BadgeSyncFormat.parseEnvelope(
+            BadgeSyncCodec.inflate(base64Decode(plain)));
         badges.addAll(env.badges);
         if (env.generation > newestGen) newestGen = env.generation;
       } catch (e) {
@@ -252,7 +271,8 @@ class BadgeSyncService {
       newHashes.add(hash);
       if (i < oldHashes.length && oldHashes[i] == hash) continue;
 
-      final sealed = await SigningService.nip44Encrypt(me, plain);
+      final sealed = await SigningService.nip44Encrypt(
+          me, base64Encode(BadgeSyncCodec.deflate(plain)));
       final signed = await SigningService.signEvent(
         kind: BadgeSyncFormat.kind,
         tags: [

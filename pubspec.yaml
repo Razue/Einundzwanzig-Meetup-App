@@ -35,6 +35,10 @@ dependencies:
 
   # Crypto & Nostr
   crypto: ^3.0.6
+  # Reines Dart-Deflate für den Badge-Sync im Browser. dart:io hat gzip,
+  # der Browser nicht, und NIP-44 soll auf allen vier Wegen dieselbe
+  # Hülle lesen.
+  archive: ^4.0.7
   dbcrypt: ^2.0.0
   nostr: ^1.5.0
   # NIP-44 (Grundlage für den Remote-Signer NIP-46): selbst umgesetzt, weil

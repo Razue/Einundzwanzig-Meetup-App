@@ -190,6 +190,7 @@ Future<void> _start() async {
   // Badge-Sync an saveBadges hängen und einmal fern lesen. Läuft im
   // Hintergrund; kann der Signer kein NIP-44, bleibt es aus.
   BadgeSyncService.init();
+  BadgeSyncService.retryIfDirty();
 
   // Immersiver Vollbild-Modus: blendet die Android-Navigationsleiste aus.
   // Ab Android 15/16 erzwingt das System Edge-to-Edge und ignoriert
