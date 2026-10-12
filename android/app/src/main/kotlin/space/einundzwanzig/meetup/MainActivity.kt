@@ -208,8 +208,13 @@ class MainActivity : FlutterFragmentActivity() {
         intent.`package` = amberPackage
         intent.putExtra("type", "get_public_key")
 
-        // Dauer-Berechtigung anfragen → spätere Signaturen ohne Popup
-        val perms = JSONArray().put(JSONObject().put("type", "sign_event"))
+        // Dauer-Berechtigung anfragen → spätere Signaturen ohne Popup.
+        // nip44_encrypt/decrypt gehören dazu, sonst schlägt der Badge-Sync
+        // mit "Keine Berechtigung für diese Methode" fehl.
+        val perms = JSONArray()
+            .put(JSONObject().put("type", "sign_event"))
+            .put(JSONObject().put("type", "nip44_encrypt"))
+            .put(JSONObject().put("type", "nip44_decrypt"))
         intent.putExtra("permissions", perms.toString())
 
         pendingResult = result

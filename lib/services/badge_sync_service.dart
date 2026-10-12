@@ -89,12 +89,23 @@ class BadgeSyncService {
     if (_busy) return false;
     _busy = true;
     try {
-      if (!await SigningService.canNip44()) {
-        AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
-        return false;
-      }
       final me = await SigningService.pubkeyHex();
       if (me == null || me.isEmpty) return false;
+
+      // Der Signer darf NIP-44 nicht können. Dann bleibt der Sync aus,
+      // statt dem Nutzer einen Fehler zu zeigen — das Backup ist der Weg.
+      try {
+        if (!await SigningService.canNip44()) {
+          AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
+          return false;
+        }
+      } on UnsupportedError {
+        AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
+        return false;
+      } on SigningException catch (e) {
+        AppLogger.debug(_tag, 'NIP-44-Probe abgelehnt — Sync bleibt aus: $e');
+        return false;
+      }
 
       final merged = await _pull(me);
       await _push(me, merged);
