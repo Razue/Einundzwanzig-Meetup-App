@@ -121,6 +121,34 @@ class BadgeSyncFormat {
   static String chunkHash(String plaintext) =>
       sha256.convert(utf8.encode(plaintext)).toString();
 
+  /// Hash nur über den Inhalt, nicht über die Generation. Sonst änderte
+  /// er sich bei jedem Start und jeder Chunk ginge wieder raus.
+  static String contentHash(String plaintext) {
+    final env = parseEnvelope(plaintext);
+    return chunkHash(jsonEncode({
+      'v': 1,
+      'badges': env.badges.map((b) => b.toJson()).toList(),
+    }));
+  }
+
+  /// Länge der NIP-44-Payload aus einer gzip-Bytefolge. Nicht die
+  /// Klartext-Länge: das NIP-44-Padding und base64 machen sie größer.
+  static int payloadCharsForGzip(int gzipBytes) {
+    // NIP-44: base64(1 + 32 + gepolstert + 32).
+    final padded = _padLen(gzipBytes);
+    return ((1 + 32 + padded + 32 + 2) ~/ 3) * 4;
+  }
+
+  static int _padLen(int len) {
+    if (len <= 32) return 32;
+    var power = 1;
+    while (power < len) {
+      power <<= 1;
+    }
+    final chunk = power <= 256 ? 32 : power ~/ 8;
+    return chunk * ((len - 1) ~/ chunk + 1);
+  }
+
   /// Liest eine Hülle. Wirft [FormatException] bei kaputtem JSON oder
   /// fehlenden Feldern. Die Badges kommen als Liste; einzelne defekte
   /// Einträge fallen weg statt den ganzen Chunk zu verwerfen.

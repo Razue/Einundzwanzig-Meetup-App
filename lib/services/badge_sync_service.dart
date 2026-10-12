@@ -5,7 +5,8 @@
 //   pull: Relays lesen, Chunks entschlüsseln, mit der lokalen Liste
 //         vereinigen, lokal speichern.
 //   push: erst pull, dann aus dem Ergebnis Chunks bauen und nur die
-//         veröffentlichen, deren Klartext sich geändert hat.
+//         veröffentlichen, deren Inhalt sich geändert hat, und nur auf
+//         Relays zählen, die das Event bestätigen.
 //
 // Drei Regeln aus dem Plan, die hier stehen und nicht im Aufrufer:
 //   - nie eine leere Liste veröffentlichen (Reset-Pfad)
@@ -45,7 +46,11 @@ class BadgeSyncService {
   static const _timeout = Duration(seconds: 8);
 
   static bool _busy = false;
-  static bool _pullInProgress = false;
+
+  // Merkt, dass während eines laufenden Syncs ein weiteres saveBadges kam.
+  // Der laufende Lauf arbeitet mit einem alten Stand; danach läuft einer
+  // nach, statt dirty zu löschen und den neuen Zustand zu verlieren.
+  static bool _rerun = false;
 
   /// Einmal beim Start aufrufen: verknüpft saveBadges mit dem Sync und
   /// holt einmal fern, damit ein zweites Gerät ohne Scan schon sieht,
@@ -57,7 +62,6 @@ class BadgeSyncService {
 
   /// Nach `saveBadges` aufrufen. Im Hintergrund, wirft nicht.
   static void trigger() {
-    if (_pullInProgress) return;
     unawaited(() async {
       final prefs = await SharedPreferences.getInstance();
       try {
@@ -86,54 +90,63 @@ class BadgeSyncService {
   /// Einmal hoch- und wieder herunter. Gibt false, wenn der Signer kein
   /// NIP-44 kann oder gerade ein Lauf aktiv ist.
   static Future<bool> syncNow() async {
-    if (_busy) return false;
+    if (_busy) {
+      // Ein saveBadges während eines Laufs: der aktuelle Lauf arbeitet mit
+      // einem alten Stand. Danach einer nachholen, nicht dirty setzen.
+      _rerun = true;
+      return true;
+    }
     _busy = true;
     try {
-      final me = await SigningService.pubkeyHex();
-      if (me == null || me.isEmpty) return false;
-
-      // Der Signer darf NIP-44 nicht können. Dann bleibt der Sync aus,
-      // statt dem Nutzer einen Fehler zu zeigen — das Backup ist der Weg.
-      try {
-        if (!await SigningService.canNip44()) {
-          AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
-          return false;
-        }
-      } on UnsupportedError {
-        AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
-        return false;
-      } on SigningException catch (e) {
-        AppLogger.debug(_tag, 'NIP-44-Probe abgelehnt — Sync bleibt aus: $e');
-        return false;
-      }
-
-      final merged = await _pull(me);
-      await _push(me, merged);
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_dirtyKey, false);
+      do {
+        _rerun = false;
+        if (!await _syncOnce()) return false;
+      } while (_rerun);
       return true;
     } finally {
       _busy = false;
     }
   }
 
-  /// Relays lesen, entschlüsseln, mit der lokalen Liste vereinigen und
-  /// das Ergebnis lokal speichern. Gibt die vereinigte Liste zurück.
-  static Future<List<MeetupBadge>> _pull(String me) async {
-    final remote = await _fetchRemote(me);
-    final local = await MeetupBadge.loadBadges();
-    final merged = BadgeSyncFormat.merge(local, remote);
-    if (merged.length != local.length || remote.isNotEmpty) {
-      // Das saveBadges unten würde den Sync erneut auslösen. Die Sperre
-      // hält nur diesen eigenen Schreibvorgang heraus.
-      _pullInProgress = true;
-      try {
-        await MeetupBadge.saveBadges(merged);
-      } finally {
-        _pullInProgress = false;
+  static Future<bool> _syncOnce() async {
+    final me = await SigningService.pubkeyHex();
+    if (me == null || me.isEmpty) return false;
+
+    // Der Signer darf NIP-44 nicht können. Dann bleibt der Sync aus,
+    // statt dem Nutzer einen Fehler zu zeigen — das Backup ist der Weg.
+    try {
+      if (!await SigningService.canNip44()) {
+        AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
+        return false;
       }
+    } on UnsupportedError {
+      AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
+      return false;
+    } on SigningException catch (e) {
+      AppLogger.debug(_tag, 'NIP-44-Probe abgelehnt — Sync bleibt aus: $e');
+      return false;
     }
-    return merged;
+
+    final merged = await _pull(me);
+    final pushed = await _push(me, merged);
+    final prefs = await SharedPreferences.getInstance();
+    // Dirty bleibt, wenn ein Chunk auf keinem Relay bestätigt wurde.
+    await prefs.setBool(_dirtyKey, !pushed);
+    return pushed;
+  }
+
+  /// Relays lesen, entschlüsseln und die ferne Liste mit der lokalen
+  /// vereinigen. Ein leeres lokales Gerät ist dabei der Empfänger: es
+  /// bekommt alles aus der Ferne. Ein Gerät mit lokalen Badges ist
+  /// Autorität: was lokal fehlt, wird nicht wieder aus der Ferne geholt,
+  /// sonst kämen nach der Duplikat-Bereinigung die fern liegenden
+  /// Exemplare über den Merge sofort zurück.
+  static Future<List<MeetupBadge>> _pull(String me) async {
+    final local = await MeetupBadge.loadBadges();
+    if (local.isEmpty) {
+      return _fetchRemote(me);
+    }
+    return local;
   }
 
   /// Lädt alle Chunks von den Relays, entschlüsselt, was geht, und
@@ -166,7 +179,7 @@ class BadgeSyncService {
       if (content.isEmpty) continue;
       try {
         final plain = await SigningService.nip44Decrypt(me, content);
-        // Inhalt ist gzip(Hülle), nicht die Hülle selbst.
+        // Inhalt ist base64(gzip(Hülle)), nicht die Hülle selbst.
         final env = BadgeSyncFormat.parseEnvelope(
             BadgeSyncCodec.inflate(base64Decode(plain)));
         badges.addAll(env.badges);
@@ -257,28 +270,42 @@ class BadgeSyncService {
   }
 
   /// Baut aus [merged] Chunks, verschlüsselt und veröffentlicht nur die,
-  /// deren Klartext-Hash sich geändert hat. Nie eine leere Liste.
-  static Future<void> _push(String me, List<MeetupBadge> merged) async {
-    if (merged.isEmpty) return;
+  /// deren Inhalt sich geändert hat. Zählt ein Relay erst, wenn es das
+  /// Event bestätigt. Gibt false, wenn ein geänderter Chunk auf keinem
+  /// Relay ankam — dann bleibt der Sync dirty.
+  static Future<bool> _push(String me, List<MeetupBadge> merged) async {
+    if (merged.isEmpty) return true;
+
+    // Mehr Chunks als gelesen werden: lieber nichts schreiben, als
+    // unleserliche Events auf den Relays zu hinterlassen.
+    final wouldBe = BadgeSyncFormat.chunkBadges(merged, (p) => p.length);
+    if (wouldBe.length > BadgeSyncFormat.maxChunks) {
+      AppLogger.warn(_tag,
+          '${wouldBe.length} Chunks nötig, gelesen werden nur ${BadgeSyncFormat.maxChunks} — Sync bleibt aus');
+      return false;
+    }
 
     final prefs = await SharedPreferences.getInstance();
     final generation =
         (DateTime.now().millisecondsSinceEpoch ~/ 1000)
             .clamp(prefs.getInt(_lastGenKey) ?? 0, 1 << 62);
-    // measure wie NIP-44: die Payload-Länge des Klartexts. Sie hängt vom
-    // Verschlüsseln ab, darum eine Probe über den Signer.
+    // Chunk-Grenze an der NIP-44-Payload, nicht am Klartext: gzip und
+    // base64 machen das Event größer als die Hülle.
     final plaintexts = BadgeSyncFormat.plaintexts(
       merged,
       generation,
-      (p) => p.length,
+      (p) => BadgeSyncFormat.payloadCharsForGzip(
+          BadgeSyncCodec.deflate(p).length),
     );
     final oldHashes = prefs.getStringList(_hashesKey) ?? const [];
 
     final newHashes = <String>[];
-    var published = 0;
+    var ok = true;
     for (var i = 0; i < plaintexts.length; i++) {
       final plain = plaintexts[i];
-      final hash = BadgeSyncFormat.chunkHash(plain);
+      // Der Hash hängt nur am Inhalt, nicht an der Generation. Sonst
+      // änderte er sich bei jedem Start und jeder Chunk ginge wieder raus.
+      final hash = BadgeSyncFormat.contentHash(plain);
       newHashes.add(hash);
       if (i < oldHashes.length && oldHashes[i] == hash) continue;
 
@@ -301,23 +328,29 @@ class BadgeSyncService {
         'content': signed.content,
         'sig': signed.sig,
       };
+      var accepted = false;
       for (final url in syncRelays) {
         try {
-          await _publish(url, event);
-          published++;
+          if (await _publish(url, event)) {
+            accepted = true;
+            break;
+          }
         } catch (e) {
           AppLogger.debug(_tag, 'Veröffentlichen auf $url fehlgeschlagen: $e');
         }
       }
+      if (!accepted) {
+        AppLogger.warn(_tag, 'Chunk $i auf keinem Relay bestätigt');
+        ok = false;
+      }
     }
     await prefs.setStringList(_hashesKey, newHashes);
     await prefs.setInt(_lastGenKey, generation);
-    if (published > 0) {
-      AppLogger.debug(_tag, '$published Chunk-Events veröffentlicht');
-    }
+    return ok;
   }
 
-  static Future<void> _publish(
+  /// Veröffentlicht [event] und wartet auf das OK des Relays.
+  static Future<bool> _publish(
     String relayUrl,
     Map<String, dynamic> event,
   ) async {
@@ -325,8 +358,22 @@ class BadgeSyncService {
     try {
       ws = await RelaySocket.connect(relayUrl)
           .timeout(const Duration(seconds: 5));
+      final done = Completer<bool>();
+      final id = (event['id'] ?? '').toString();
+      ws.listen((data) {
+        try {
+          final msg = jsonDecode(data as String) as List<dynamic>;
+          if (msg.length >= 3 && msg[0] == 'OK' && msg[1] == id) {
+            if (!done.isCompleted) done.complete(msg[2] == true);
+          }
+        } catch (_) {}
+      }, onError: (_) {
+        if (!done.isCompleted) done.complete(false);
+      }, onDone: () {
+        if (!done.isCompleted) done.complete(false);
+      });
       ws.add(jsonEncode(['EVENT', event]));
-      await Future<void>.delayed(const Duration(milliseconds: 300));
+      return await done.future.timeout(_timeout, onTimeout: () => false);
     } finally {
       ws?.close();
     }

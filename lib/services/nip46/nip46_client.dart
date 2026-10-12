@@ -121,6 +121,8 @@ class Nip46Client {
 
   static String get requestedPerms => [
         'get_public_key',
+        'nip44_encrypt',
+        'nip44_decrypt',
         for (final k in signedKinds) 'sign_event:$k',
       ].join(',');
 
