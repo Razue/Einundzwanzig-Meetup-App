@@ -91,3 +91,40 @@ bool _looksRejected(Object e) {
       s.contains('declined') ||
       s.contains('cancel');
 }
+
+Future<String> _nip44(String method, String pubkeyHex, String value) async {
+  final nostr = _nostr();
+  if (nostr == null) {
+    throw const Nip07Exception('Keine NIP-07-Erweiterung gefunden.');
+  }
+  if (!nostr.has('nip44')) {
+    throw const Nip07Exception(
+        'Die Erweiterung bietet NIP-44 nicht an. Der Badge-Sync braucht sie.');
+  }
+  final nip44 = nostr.getProperty<JSObject?>('nip44'.toJS);
+  if (nip44 == null || !nip44.has(method)) {
+    throw const Nip07Exception(
+        'Die Erweiterung bietet NIP-44 nicht an. Der Badge-Sync braucht sie.');
+  }
+  try {
+    final promise = nip44.callMethod<JSPromise>(
+        method.toJS, pubkeyHex.toJS, value.toJS);
+    final result = await promise.toDart;
+    final out = (result as JSString?)?.toDart;
+    if (out == null) {
+      throw Nip07Exception('$method lieferte keinen Text.');
+    }
+    return out;
+  } on Nip07Exception {
+    rethrow;
+  } catch (e) {
+    if (_looksRejected(e)) throw const Nip07RejectedException();
+    throw Nip07Exception('$method fehlgeschlagen: $e');
+  }
+}
+
+Future<String> nip07Nip44Encrypt(String pubkeyHex, String plaintext) =>
+    _nip44('encrypt', pubkeyHex, plaintext);
+
+Future<String> nip07Nip44Decrypt(String pubkeyHex, String payload) =>
+    _nip44('decrypt', pubkeyHex, payload);

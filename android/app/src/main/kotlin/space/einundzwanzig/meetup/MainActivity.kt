@@ -71,6 +71,7 @@ class MainActivity : FlutterFragmentActivity() {
     // Request-Codes für die Vordergrund-Intents
     private val reqGetPublicKey = 9551
     private val reqSignEvent = 9552
+    private val reqNip44 = 9553
 
     // Pending Flutter-Result, das auf onActivityResult wartet
     private var pendingResult: MethodChannel.Result? = null
@@ -124,6 +125,28 @@ class MainActivity : FlutterFragmentActivity() {
                             result.error("bad_args", "event/npub fehlen", null)
                         } else {
                             signEvent(eventJson, npub, result)
+                        }
+                    }
+
+                    "nip44Encrypt" -> {
+                        val pubkey = call.argument<String>("pubkey")
+                        val plaintext = call.argument<String>("plaintext")
+                        val npub = call.argument<String>("npub")
+                        if (pubkey == null || plaintext == null || npub == null) {
+                            result.error("bad_args", "pubkey/plaintext/npub fehlen", null)
+                        } else {
+                            nip44("nip44_encrypt", pubkey, plaintext, npub, result)
+                        }
+                    }
+
+                    "nip44Decrypt" -> {
+                        val pubkey = call.argument<String>("pubkey")
+                        val payload = call.argument<String>("plaintext")
+                        val npub = call.argument<String>("npub")
+                        if (pubkey == null || payload == null || npub == null) {
+                            result.error("bad_args", "pubkey/plaintext/npub fehlen", null)
+                        } else {
+                            nip44("nip44_decrypt", pubkey, payload, npub, result)
                         }
                     }
 
@@ -185,8 +208,13 @@ class MainActivity : FlutterFragmentActivity() {
         intent.`package` = amberPackage
         intent.putExtra("type", "get_public_key")
 
-        // Dauer-Berechtigung anfragen → spätere Signaturen ohne Popup
-        val perms = JSONArray().put(JSONObject().put("type", "sign_event"))
+        // Dauer-Berechtigung anfragen → spätere Signaturen ohne Popup.
+        // nip44_encrypt/decrypt gehören dazu, sonst schlägt der Badge-Sync
+        // mit "Keine Berechtigung für diese Methode" fehl.
+        val perms = JSONArray()
+            .put(JSONObject().put("type", "sign_event"))
+            .put(JSONObject().put("type", "nip44_encrypt"))
+            .put(JSONObject().put("type", "nip44_decrypt"))
         intent.putExtra("permissions", perms.toString())
 
         pendingResult = result
@@ -261,6 +289,66 @@ class MainActivity : FlutterFragmentActivity() {
     }
 
     // =============================================
+    // NIP-44 — verschlüsselt für den Badge-Sync, selbes Muster wie sign_event
+    // =============================================
+    private fun nip44(type: String, pubkey: String, value: String, npub: String, result: MethodChannel.Result) {
+        if (!isAmberInstalled()) {
+            result.error("signer_missing", "Amber nicht installiert", null)
+            return
+        }
+
+        // 1) HINTERGRUND-PFAD: ContentResolver, wenn die Berechtigung gemerkt ist.
+        val resolverType = if (type == "nip44_encrypt") "NIP44_ENCRYPT" else "NIP44_DECRYPT"
+        try {
+            val uri = Uri.parse("content://$amberPackage.$resolverType")
+            val cursor = contentResolver.query(
+                uri,
+                arrayOf(value, pubkey, npub),
+                null, null, null
+            )
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val rejectedIdx = it.getColumnIndex("rejected")
+                    if (rejectedIdx >= 0 && !it.isNull(rejectedIdx)) {
+                        result.error("rejected", "User hat dauerhaft abgelehnt", null)
+                        return
+                    }
+                    val resultIdx = it.getColumnIndex("result")
+                    if (resultIdx >= 0) {
+                        val out = it.getString(resultIdx)
+                        if (out != null) {
+                            result.success(out)
+                            return
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // kein Resolver-Weg → Intent
+        }
+
+        // 2) VORDERGRUND-PFAD: Intent
+        if (pendingResult != null) {
+            result.error("busy", "Eine Signer-Anfrage läuft bereits", null)
+            return
+        }
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("nostrsigner:$value"))
+        intent.`package` = amberPackage
+        intent.putExtra("type", type)
+        intent.putExtra("pubkey", pubkey)
+        intent.putExtra("current_user", npub)
+
+        pendingResult = result
+        pendingType = type
+        try {
+            startActivityForResult(intent, reqNip44)
+        } catch (e: Exception) {
+            clearPending()
+            result.error("launch_failed", e.message, null)
+        }
+    }
+
+    // =============================================
     // INTENT-ERGEBNISSE
     // =============================================
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -295,6 +383,15 @@ class MainActivity : FlutterFragmentActivity() {
                     res.error("cancelled", "Kein signiertes Event erhalten", null)
                 } else {
                     res.success(mapOf("event" to signedEvent, "result" to sig))
+                }
+            }
+
+            "nip44_encrypt", "nip44_decrypt" -> {
+                val out = data.getStringExtra("result") ?: data.getStringExtra("signature")
+                if (out.isNullOrBlank()) {
+                    res.error("cancelled", "Kein NIP-44-Ergebnis erhalten", null)
+                } else {
+                    res.success(out)
                 }
             }
 

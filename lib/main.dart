@@ -18,6 +18,7 @@ import 'services/locale_controller.dart';
 import 'services/currency_service.dart';
 import 'services/widget_service.dart';
 import 'services/app_logger.dart';
+import 'services/badge_sync_service.dart';
 import 'services/diagnostics_service.dart';
 import 'services/signing_service.dart';
 
@@ -185,6 +186,11 @@ Future<void> _start() async {
   // Gewählte Anzeigewährung (Issue #66) — vor dem ersten Bild, sonst
   // blitzte auf der Startseite kurz € auf.
   await CurrencyService.load();
+
+  // Badge-Sync an saveBadges hängen und einmal fern lesen. Läuft im
+  // Hintergrund; kann der Signer kein NIP-44, bleibt es aus.
+  BadgeSyncService.init();
+  BadgeSyncService.retryIfDirty();
 
   // Immersiver Vollbild-Modus: blendet die Android-Navigationsleiste aus.
   // Ab Android 15/16 erzwingt das System Edge-to-Edge und ignoriert

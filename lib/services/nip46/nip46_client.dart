@@ -121,6 +121,8 @@ class Nip46Client {
 
   static String get requestedPerms => [
         'get_public_key',
+        'nip44_encrypt',
+        'nip44_decrypt',
         for (final k in signedKinds) 'sign_event:$k',
       ].join(',');
 
@@ -252,6 +254,20 @@ class Nip46Client {
           'Der Signer hat kein lesbares Event zurückgegeben.');
     }
     return decoded;
+  }
+
+  /// NIP-44 an [pubkeyHex]. Nicht jeder Bunker bietet das an — ein Fehler
+  /// heißt dort: kein Sync, nur das Backup.
+  Future<String> nip44Encrypt(String pubkeyHex, String plaintext) async {
+    final result = await _rpc('nip44_encrypt', [pubkeyHex, plaintext],
+        timeout: signTimeout);
+    return result.toString();
+  }
+
+  Future<String> nip44Decrypt(String pubkeyHex, String payload) async {
+    final result = await _rpc('nip44_decrypt', [pubkeyHex, payload],
+        timeout: signTimeout);
+    return result.toString();
   }
 
   /// Lebt die Sitzung noch? Wird nach einem Neustart geprüft, damit ein vom
