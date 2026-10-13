@@ -308,10 +308,14 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
           IconButton(
             icon: const Icon(Icons.ios_share_rounded, color: cTextSecondary),
             tooltip: AppLocalizations.of(context).rcShareImage,
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ReputationCardScreen()),
-            ),
+            // Unlesbare Sammlung: Keine Karte teilen, die "keine Daten"
+            // behaupten wuerde — der Hinweis steht stattdessen auf der Seite.
+            onPressed: MeetupBadge.badgesUnreadable
+                ? null
+                : () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ReputationCardScreen()),
+                  ),
           ),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner, color: cTextSecondary),

@@ -1157,7 +1157,17 @@ class CoAttendanceService {
       if (!already) {
         existing.add(badge);
         final wrote = await MeetupBadge.saveBadges(existing);
-        if (!wrote) await MeetupBadge.keepAside(badge);
+        if (!wrote) {
+          final aside = await MeetupBadge.keepAside(badge);
+          if (!aside) {
+            // Weder gespeichert noch vorgemerkt: kein Ereignis zu einem
+            // Badge, das nirgends liegt, und kein Erfolg melden. Der
+            // Aufrufer bekommt null und kann es später erneut versuchen.
+            AppLogger.error(_tag,
+                'Organisator-Badge weder gespeichert noch vorgemerkt — Teilnahme nicht veröffentlicht');
+            return null;
+          }
+        }
       }
 
       // 3. Co-Attendance veröffentlichen (Organisator nimmt automatisch teil).

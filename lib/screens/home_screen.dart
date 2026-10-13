@@ -984,7 +984,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     } catch (_) {/* still: beim nächsten Start erneut */}
   }
 
-  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} AppLogger.info('Admin', 'Organisator-Status bestaetigt (${v.source}).'); } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
+  Future<void> _reVerifyAdminStatus() async {
+    // Badges unlesbar: Die leere Liste ist kein Zustand, den eine
+    // Statuspruefung tragen darf — reVerifyAdmin wuerde den
+    // Buergschafts-Admin-Status dauerhaft entziehen und speichern
+    // (user.dart). Erst wieder pruefen, wenn die Sammlung lesbar ist.
+    if (MeetupBadge.badgesUnreadable) return;
+    try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} AppLogger.info('Admin', 'Organisator-Status bestaetigt (${v.source}).'); } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
   void _resetApp() async {
     final t = AppLocalizations.of(context);
     // 1. Erste Bestätigung (wie bisher)

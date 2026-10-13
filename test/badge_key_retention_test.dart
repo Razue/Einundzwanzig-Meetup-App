@@ -347,4 +347,74 @@ void main() {
     expect(loaded.map((b) => b.id), ['neu']);
     expect(MeetupBadge.badgesUnreadable, isFalse);
   });
+
+  test('Beförderung einer lesbaren Sicherung erhält den unlesbaren Primären',
+      () async {
+    final lostKey = _hexKey();
+    final goodKey = _hexKey();
+    secure['old_badge_key'] = goodKey;
+    final unopenable = _blob(lostKey, [_badge('verloren')]);
+    SharedPreferences.setMockInitialValues({
+      _blobKey: unopenable,
+      _preservedKey: _blob(goodKey, [_badge('sicher')]),
+    });
+
+    final loaded = await MeetupBadge.loadBadges();
+
+    expect(loaded.map((b) => b.id), ['sicher']);
+    final prefs = await SharedPreferences.getInstance();
+    // Der unlesbare Primäre überlebt in der Sicherungskette, damit sein
+    // Schlüssel ihn später wieder öffnen kann.
+    expect(
+      [prefs.getString(_preservedKey), prefs.getString(_olderKey)],
+      contains(unopenable),
+    );
+
+    secure[_keyAlias] = lostKey; // der Schlüssel kommt zurück
+    final reloaded = await MeetupBadge.loadBadges();
+    expect(reloaded.map((b) => b.id), containsAll(['sicher', 'verloren']));
+  });
+
+  test('fehlgeschlagenes Lesen schiebt keine Fassung aus der Sicherung',
+      () async {
+    final primaryBlob = _blob(_hexKey(), [_badge('eins')]);
+    final preservedBlob = _blob(_hexKey(), [_badge('null')]);
+    final olderBlob = _blob(_hexKey(), [_badge('alt')]);
+    SharedPreferences.setMockInitialValues({
+      _blobKey: primaryBlob,
+      _preservedKey: preservedBlob,
+      _olderKey: olderBlob,
+    });
+
+    await MeetupBadge.loadBadges();
+
+    expect(MeetupBadge.badgesUnreadable, isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(_blobKey), primaryBlob);
+    expect(prefs.getString(_preservedKey), preservedBlob);
+    expect(prefs.getString(_olderKey), olderBlob);
+  });
+
+  test('bei gleicher Id gewinnt die Fassung mit Claim', () async {
+    final keyA = _hexKey();
+    final keyB = _hexKey();
+    final withClaim = MeetupBadge(
+      id: 'x',
+      meetupName: 'Aschaffenburg',
+      date: DateTime.utc(2026, 10, 11, 19),
+      iconPath: 'assets/badge_icon.png',
+      claimSig: 'c' * 128,
+    );
+    secure[_keyAlias] = keyA;
+    secure['old_badge_key'] = keyB;
+    SharedPreferences.setMockInitialValues({
+      _blobKey: _blob(keyA, [_badge('x')]),
+      _preservedKey: _blob(keyB, [withClaim]),
+    });
+
+    final loaded = await MeetupBadge.loadBadges();
+
+    expect(loaded.length, 1);
+    expect(loaded.first.claimSig, 'c' * 128);
+  });
 }

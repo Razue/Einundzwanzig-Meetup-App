@@ -165,7 +165,10 @@ class BadgeSyncService {
     if (local.isEmpty) {
       final remote = await _fetchRemote(me);
       if (remote.isNotEmpty) {
-        await MeetupBadge.saveBadges(remote);
+        // Kam die ferne Kopie lokal nicht an, ist das kein Erfolg: Der Sync
+        // bleibt dirty und versucht es wieder, statt die Sammlung als
+        // wiederhergestellt zu verbuchen, obwohl lokal nichts liegt.
+        if (!await MeetupBadge.saveBadges(remote)) return null;
       }
       return remote;
     }

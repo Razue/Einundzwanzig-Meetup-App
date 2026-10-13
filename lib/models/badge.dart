@@ -510,8 +510,7 @@ class MeetupBadge {
     enc.Key? openedPrimaryKey;
     String? firstBlob;
     enc.Key? firstKey;
-    final out = <MeetupBadge>[];
-    final ids = <String>{};
+    final byId = <String, MeetupBadge>{};
     for (final blob in blobs) {
       for (final key in keys) {
         final badges = _decryptBlob(blob, key);
@@ -525,14 +524,16 @@ class MeetupBadge {
           openedPrimaryKey = key;
         }
         for (final badge in badges) {
-          if (ids.add(badge.id)) out.add(badge);
+          final existing = byId[badge.id];
+          byId[badge.id] =
+              existing == null ? badge : _preferVariant(existing, badge);
         }
         break; // diese Fassung ist offen, die nächste kommt dran
       }
     }
     if (firstBlob == null) return null;
     return (
-      badges: out,
+      badges: byId.values.toList(),
       primary: openedPrimary,
       blob: openedPrimary ?? firstBlob,
       key: openedPrimaryKey ?? firstKey!,
@@ -632,13 +633,34 @@ class MeetupBadge {
     return true;
   }
 
-  static List<MeetupBadge> _unionById(List<MeetupBadge> base, List<MeetupBadge> extra) {
-    final out = List<MeetupBadge>.from(base);
-    final ids = base.map((b) => b.id).toSet();
-    for (final badge in extra) {
-      if (ids.add(badge.id)) out.add(badge);
+  /// Gleiche Id: das Badge mit Claim gewinnt vor dem ohne, danach das mit
+  /// presenceVerified, danach das zuerst gesehene. Dasselbe Vorteils-Recht
+  /// wie im Sync-Merge (badge_sync_format._prefer), damit eine alte Fassung
+  /// ohne Claim eine gesicherte Fassung mit Claim nicht verdrängen kann.
+  static MeetupBadge _preferVariant(MeetupBadge a, MeetupBadge b) {
+    final aClaim = a.claimSig.isNotEmpty;
+    final bClaim = b.claimSig.isNotEmpty;
+    if (aClaim != bClaim) return aClaim ? a : b;
+    if (a.presenceVerified != b.presenceVerified) {
+      return a.presenceVerified ? a : b;
     }
-    return out;
+    return a;
+  }
+
+  static List<MeetupBadge> _unionById(List<MeetupBadge> base, List<MeetupBadge> extra) {
+    final byId = <String, MeetupBadge>{};
+    void add(MeetupBadge badge) {
+      final existing = byId[badge.id];
+      byId[badge.id] =
+          existing == null ? badge : _preferVariant(existing, badge);
+    }
+    for (final badge in base) {
+      add(badge);
+    }
+    for (final badge in extra) {
+      add(badge);
+    }
+    return byId.values.toList();
   }
 
   /// Scan, während die alte Sammlung nicht lesbar ist. Das Badge bleibt
@@ -771,13 +793,34 @@ class MeetupBadge {
         // erste geöffnete Blob der neue Primäre; die übrigen Fassungen
         // bleiben als Sicherung liegen und kommen über die Vereinigung dazu.
         if (opened.primary == null) {
+          // Erst befördern, dann den nicht lesbaren Primären in die
+          // Sicherung schieben: Sein Schlüssel kann wiederkommen. Nach der
+          // Beförderung überlebt die beförderte Fassung als Primäre — das
+          // Nachrücken verdrängt nur noch ältere, nicht aber die gerade
+          // beförderte Fassung.
           await prefs.setString(_prefsBadgeEncrypted, opened.blob);
+          if (blob != null && blob.contains(':')) {
+            if (preserved == opened.blob) {
+              // Die beförderte Fassung war die Sicherung: Der Slot nimmt den
+              // nicht lesbaren Primären direkt, ohne etwas zu verdrängen.
+              await prefs.setString(_prefsBadgePreserved, blob);
+            } else {
+              await _stashBlob(prefs, blob);
+            }
+          }
         }
         await _rememberKey(opened.key);
         return _finishReadable(opened.badges);
       }
-      final toKeep = (blob != null && blob.contains(':')) ? blob : preserved!;
-      await _stashBlob(prefs, toKeep);
+      // Nichts ging auf. Nur füllen, nichts verdrängen: Der Primäre bleibt
+      // Primäre, ein belegter Sicherungs-Slot braucht ihn nicht zusätzlich,
+      // und ein fehlgeschlagenes Lesen darf keine Fassung aus der Sicherung
+      // schieben.
+      if ((preserved == null || preserved.isEmpty) &&
+          blob != null &&
+          blob.contains(':')) {
+        await prefs.setString(_prefsBadgePreserved, blob);
+      }
       badgesUnreadable = true;
       AppLogger.warn('Badge',
           'Badge-Datei nicht entschlüsselbar, sie bleibt unverändert liegen');
