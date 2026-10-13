@@ -11511,6 +11511,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Dieses Badge ist vorgemerkt und kommt dazu, sobald die Sammlung wieder lesbar ist.'**
   String get badgesHeldAside;
+
+  /// No description provided for @badgeSaveFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Badge konnte nicht gespeichert werden. Es wurde nichts gelöscht — versuch es später noch einmal.'**
+  String get badgeSaveFailed;
 }
 
 class _AppLocalizationsDelegate

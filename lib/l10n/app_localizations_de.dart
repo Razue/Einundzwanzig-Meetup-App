@@ -6410,4 +6410,8 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get badgesHeldAside =>
       'Dieses Badge ist vorgemerkt und kommt dazu, sobald die Sammlung wieder lesbar ist.';
+
+  @override
+  String get badgeSaveFailed =>
+      'Badge konnte nicht gespeichert werden. Es wurde nichts gelöscht — versuch es später noch einmal.';
 }

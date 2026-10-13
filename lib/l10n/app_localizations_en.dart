@@ -6365,4 +6365,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get badgesHeldAside =>
       'This badge is set aside and will be added once your collection can be read again.';
+
+  @override
+  String get badgeSaveFailed =>
+      'The badge could not be saved. Nothing was deleted — try again later.';
 }

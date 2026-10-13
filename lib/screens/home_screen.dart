@@ -793,8 +793,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     _refreshPortalConnected();
   }
   Future<void> _calculateTrustScore() async {
-    if (_badgesUnreadable || MeetupBadge.badgesUnreadable) {
-      if (mounted) setState(() { _badgesUnreadable = true; _trustScore = null; });
+    // Abgeleitet, nicht verriegelt: eine Heilung im Hintergrund (Sync,
+    // Backup-Restore) setzt das Flag zurück, und die Kachel folgt beim
+    // nächsten Rechnen, statt bis zum Neustart bei '—' zu bleiben.
+    _badgesUnreadable = MeetupBadge.badgesUnreadable;
+    if (_badgesUnreadable) {
+      if (mounted) setState(() => _trustScore = null);
       return;
     }
     if (myBadges.isEmpty) { if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; }

@@ -17,7 +17,9 @@ import 'package:einundzwanzig_meetup_app/models/badge.dart';
 
 const _blobKey = 'badges_encrypted';
 const _preservedKey = 'badges_encrypted_preserved';
+const _olderKey = 'badges_encrypted_preserved_older';
 const _keyAlias = 'badge_encryption_key';
+const _suspectKeyAlias = 'badge_encryption_key_suspect';
 const _pendingBlobKey = 'badges_pending_encrypted';
 const _pendingKeyAlias = 'badge_pending_key';
 const _legacyPendingKey = 'badges_pending';
@@ -269,5 +271,80 @@ void main() {
     expect(wrote, isTrue);
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString(_pendingBlobKey), pendingBlob);
+  });
+
+  test('keepAside meldet true, wenn die Vormerkung klappt', () async {
+    expect(await MeetupBadge.keepAside(_badge('neu')), isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(_pendingBlobKey), contains(':'));
+  });
+
+  test('keepAside meldet false, wenn die Vormerkung nicht lesbar ist', () async {
+    final pendingBlob = _blob(_hexKey(), [_badge('vorgemerkt')]);
+    SharedPreferences.setMockInitialValues({_pendingBlobKey: pendingBlob});
+
+    expect(await MeetupBadge.keepAside(_badge('neu')), isFalse);
+  });
+
+  test('öffnen vereinigt Primärdatei und Sicherung nach Id', () async {
+    final keyA = _hexKey();
+    final keyB = _hexKey();
+    final primaryBlob = _blob(keyA, [_badge('a'), _badge('b')]);
+    secure[_keyAlias] = keyA;
+    secure['old_badge_key'] = keyB;
+    SharedPreferences.setMockInitialValues({
+      _blobKey: primaryBlob,
+      _preservedKey: _blob(keyB, [_badge('b'), _badge('c')]),
+    });
+
+    final loaded = await MeetupBadge.loadBadges();
+
+    expect(loaded.map((b) => b.id), containsAll(['a', 'b', 'c']));
+    expect(MeetupBadge.badgesUnreadable, isFalse);
+    // Der Primäre ist die Datei geblieben, nicht durch die Sicherung ersetzt.
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(_blobKey), primaryBlob);
+  });
+
+  test('ein zweites Ersetzen schiebt die Sicherung eine Stufe älter',
+      () async {
+    final blob = _blob(_hexKey(), [_badge('alt')]);
+    SharedPreferences.setMockInitialValues({_blobKey: blob});
+    await MeetupBadge.loadBadges();
+
+    final ok1 =
+        await MeetupBadge.saveBadges([_badge('fern1')], replaceUnreadable: true);
+    final ok2 =
+        await MeetupBadge.saveBadges([_badge('fern2')], replaceUnreadable: true);
+    expect(ok1, isTrue);
+    expect(ok2, isTrue);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(_olderKey), blob);
+    expect(prefs.getString(_preservedKey), isNot(blob));
+
+    // Beide neuen Fassungen kommen über die Vereinigung dazu.
+    final loaded = await MeetupBadge.loadBadges();
+    expect(loaded.map((b) => b.id), containsAll(['fern1', 'fern2']));
+    expect(MeetupBadge.badgesUnreadable, isFalse);
+  });
+
+  test('Ersetzen mit unbrauchbarem Schlüsselwert legt ihn beiseite', () async {
+    secure[_keyAlias] = 'kein-schluessel';
+    final blob = _blob(_hexKey(), [_badge('alt')]);
+    SharedPreferences.setMockInitialValues({_blobKey: blob});
+    await MeetupBadge.loadBadges();
+
+    final wrote =
+        await MeetupBadge.saveBadges([_badge('neu')], replaceUnreadable: true);
+
+    expect(wrote, isTrue);
+    expect(secure[_suspectKeyAlias], 'kein-schluessel');
+    expect(RegExp(r'^[0-9a-f]{64}$').hasMatch(secure[_keyAlias] ?? ''), isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(_preservedKey), blob);
+    final loaded = await MeetupBadge.loadBadges();
+    expect(loaded.map((b) => b.id), ['neu']);
+    expect(MeetupBadge.badgesUnreadable, isFalse);
   });
 }

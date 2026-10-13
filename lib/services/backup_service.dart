@@ -335,8 +335,18 @@ class BackupService {
 
       final user = await UserProfile.load();
       final badges = await MeetupBadge.loadBadges();
-      // Eine nicht lesbare Sammlung darf nicht als leere Liste ins Backup.
-      // Ein späteres Einspielen würde die noch vorhandene Datei ersetzen.
+      // Eine nicht lesbare Sammlung darf nicht als leere Liste ins Backup:
+      // Das Einspielen würde auf einem gesunden Gerät dessen Badges
+      // löschen, und auf dem kaputten Gerät die noch vorhandene Datei als
+      // "wiederhergestellt" melden.
+      //
+      // Der Block ist auch der Schutz für den Reset-Flow: _resetApp wertet
+      // ein erfolgreiches Backup als Freigabe zum Löschen. Ein Backup ohne
+      // Badges würde das Zurücksetzen grün lichten, obwohl die Sammlung
+      // nicht mitgekommen ist. Deshalb blockiert der Export hier GANZ,
+      // statt ein Backup ohne Badges durchzulassen — der nsec ist in
+      // diesem Zustand leider nicht sicherbar; die Sammlung zu retten ist
+      // wichtiger, als die Identität über einen halben Weg zu sichern.
       if (MeetupBadge.badgesUnreadable) {
         closeLoading();
         if (context.mounted) {

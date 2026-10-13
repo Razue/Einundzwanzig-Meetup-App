@@ -6400,4 +6400,8 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get badgesHeldAside =>
       'Esta insignia queda apartada y se añadirá cuando la colección vuelva a poder leerse.';
+
+  @override
+  String get badgeSaveFailed =>
+      'No se pudo guardar la insignia. No se ha borrado nada — inténtalo de nuevo más tarde.';
 }

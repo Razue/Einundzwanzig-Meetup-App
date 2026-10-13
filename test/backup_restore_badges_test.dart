@@ -16,6 +16,7 @@ import 'package:einundzwanzig_meetup_app/services/backup_service.dart';
 
 const _blobKey = 'badges_encrypted';
 const _keyAlias = 'badge_encryption_key';
+const _suspectKeyAlias = 'badge_encryption_key_suspect';
 
 class _BrokenStorage extends TestFlutterSecureStoragePlatform {
   _BrokenStorage(super.data);
@@ -58,15 +59,19 @@ void main() {
     MeetupBadge.onBadgesSaved = null;
   });
 
-  test('kaputter Badge-Schlüssel: Restore meldet Fehlschlag', () async {
+  test('kaputter Badge-Schlüssel ohne Datei: Restore schiebt ihn beiseite und schreibt', () async {
     secure[_keyAlias] = 'kein-schluessel';
 
     final ok = await BackupService.restoreBadges([_badge('a')]);
 
-    expect(ok, isFalse);
+    expect(ok, isTrue);
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.containsKey(_blobKey), isFalse);
-    expect(secure[_keyAlias], 'kein-schluessel');
+    expect(prefs.containsKey(_blobKey), isTrue);
+    // Der unbrauchbare Wert bleibt für eine spätere Untersuchung liegen.
+    expect(secure[_suspectKeyAlias], 'kein-schluessel');
+    expect(RegExp(r'^[0-9a-f]{64}$').hasMatch(secure[_keyAlias] ?? ''), isTrue);
+    final loaded = await MeetupBadge.loadBadges();
+    expect(loaded.map((b) => b.id), ['a']);
   });
 
   test('nicht lesbarer sicherer Speicher: Restore meldet Fehlschlag',
