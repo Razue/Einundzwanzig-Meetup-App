@@ -2836,5 +2836,9 @@
   "curCAD": "Canadian dollar",
   "curAUD": "Australian dollar",
   "curJPY": "Japanese yen",
-  "chatOffline": "No internet connection — the chat can't be reached right now. Check Wi-Fi or mobile data and try again."
+  "chatOffline": "No internet connection — the chat can't be reached right now. Check Wi-Fi or mobile data and try again.",
+  "badgesUnreadableShort": "Unreadable — nothing deleted",
+  "badgesUnreadableBody": "Your badges could not be read. Nothing was deleted. Do not reset the app or restore an empty backup.",
+  "badgesHeldAside": "This badge is set aside and will be added once your collection can be read again.",
+  "badgeSaveFailed": "The badge could not be saved. Nothing was deleted — try again later."
 }

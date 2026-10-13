@@ -6389,4 +6389,19 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get chatOffline =>
       'Sin conexión a internet: el chat no está disponible ahora. Revisa el Wi-Fi o los datos móviles e inténtalo de nuevo.';
+
+  @override
+  String get badgesUnreadableShort => 'Ilegibles — nada borrado';
+
+  @override
+  String get badgesUnreadableBody =>
+      'No se han podido leer tus insignias. No se ha borrado nada. No restablezcas la app ni restaures una copia vacía.';
+
+  @override
+  String get badgesHeldAside =>
+      'Esta insignia queda apartada y se añadirá cuando la colección vuelva a poder leerse.';
+
+  @override
+  String get badgeSaveFailed =>
+      'No se pudo guardar la insignia. No se ha borrado nada — inténtalo de nuevo más tarde.';
 }

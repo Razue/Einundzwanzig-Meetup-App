@@ -121,6 +121,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   Timer? _midnightTimer; // Wechsel Heute/Morgen exakt um 0 Uhr
   String _sessionTimeLeft = '';
   bool _deviceCompromised = false;
+  bool _badgesUnreadable = false;
+  bool _shownBadgeWarning = false;
   bool _dismissedIntegrityWarning = false;
   late final AnimationController _pulseController;
   CalendarEvent? _nextHomeMeetup;
@@ -748,7 +750,26 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
   void _startSessionTimer() { _sessionTimer?.cancel(); _sessionTimer = Timer.periodic(const Duration(seconds: 1), (_) { if (_activeSession == null || _activeSession!.isExpired) { _sessionTimer?.cancel(); if (mounted) setState(() => _activeSession = null); return; } if (mounted) setState(() { final r = _activeSession!.remainingTime; _sessionTimeLeft = '${r.inHours}h ${(r.inMinutes % 60).toString().padLeft(2, '0')}m'; }); }); }
   void _syncOrganicAdminsInBackground() async { try { await PromotionClaimService.syncOrganicAdmins(); } catch (_) {} }
   void _checkDeviceIntegrity() async { try { final r = await DeviceIntegrityService.check(); if (r.isCompromised && mounted) setState(() => _deviceCompromised = true); } catch (_) {} }
-  Future<void> _loadBadges() async { final badges = await MeetupBadge.loadBadges(); await BadgeClaimService.ensureBadgesClaimed(badges); if (mounted) setState(() { myBadges.clear(); myBadges.addAll(badges); }); if (badges.isNotEmpty) ReputationPublisher.publishInBackground(badges); }
+  Future<void> _loadBadges() async {
+    final badges = await MeetupBadge.loadBadges();
+    final unreadable = MeetupBadge.badgesUnreadable;
+    if (!unreadable) await BadgeClaimService.ensureBadgesClaimed(badges);
+    if (!mounted) return;
+    setState(() {
+      _badgesUnreadable = unreadable;
+      myBadges.clear();
+      myBadges.addAll(badges);
+    });
+    if (unreadable && !_shownBadgeWarning) {
+      _shownBadgeWarning = true;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppLocalizations.of(context).badgesUnreadableBody),
+        duration: const Duration(seconds: 8),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
+    if (!unreadable && badges.isNotEmpty) ReputationPublisher.publishInBackground(badges);
+  }
   Future<void> _loadUser({bool skipOrgCheck = false}) async { final u = await UserProfile.load(); Meetup? hm;
     // Meetup-Liste EINMAL laden und cachen — die Favoriten-Karten loesen
     // darueber Land/Wappen/Info-Screen fuer JEDE ihrer Staedte auf.
@@ -771,7 +792,19 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     if (!skipOrgCheck) _checkPortalOrganizer();
     _refreshPortalConnected();
   }
-  Future<void> _calculateTrustScore() async { if (myBadges.isEmpty) { if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; } final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date)); if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null)); }
+  Future<void> _calculateTrustScore() async {
+    // Abgeleitet, nicht verriegelt: eine Heilung im Hintergrund (Sync,
+    // Backup-Restore) setzt das Flag zurück, und die Kachel folgt beim
+    // nächsten Rechnen, statt bis zum Neustart bei '—' zu bleiben.
+    _badgesUnreadable = MeetupBadge.badgesUnreadable;
+    if (_badgesUnreadable) {
+      if (mounted) setState(() => _trustScore = null);
+      return;
+    }
+    if (myBadges.isEmpty) { if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: [], firstBadgeDate: null)); return; }
+    final s = List<MeetupBadge>.from(myBadges)..sort((a, b) => a.date.compareTo(b.date));
+    if (mounted) setState(() => _trustScore = TrustScoreService.calculateScore(badges: myBadges, firstBadgeDate: s.first.date, coAttestorMap: null));
+  }
   /// PORTAL-ORGANISATOR = APP-ADMIN (robust, mit sicherem Entzug):
   /// - Portal-Login (Nostr) + my-meetups nicht leer  -> Admin VERGEBEN
   ///   und automatisch einen signierten Organizer-Claim an Nostr
@@ -951,7 +984,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     } catch (_) {/* still: beim nächsten Start erneut */}
   }
 
-  Future<void> _reVerifyAdminStatus() async { try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} AppLogger.info('Admin', 'Organisator-Status bestaetigt (${v.source}).'); } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
+  Future<void> _reVerifyAdminStatus() async {
+    // Badges unlesbar: Die leere Liste ist kein Zustand, den eine
+    // Statuspruefung tragen darf — reVerifyAdmin wuerde den
+    // Buergschafts-Admin-Status dauerhaft entziehen und speichern
+    // (user.dart). Erst wieder pruefen, wenn die Sammlung lesbar ist.
+    if (MeetupBadge.badgesUnreadable) return;
+    try { final v = await _user.reVerifyAdmin(myBadges); if (mounted) setState(() {}); if (v.isAdmin && (v.source == 'trust_score' || v.source == 'vouch_consensus')) { try { await PromotionClaimService.publishAdminClaim(badges: myBadges, meetupName: _user.homeMeetupId.isNotEmpty ? _user.homeMeetupId : 'Unbekannt'); } catch (_) {} AppLogger.info('Admin', 'Organisator-Status bestaetigt (${v.source}).'); } } catch (_) { if (mounted) setState(() { _user.adminViaVouch = false; _user.isAdminVerified = _user.isAdmin; }); } }
   void _resetApp() async {
     final t = AppLocalizations.of(context);
     // 1. Erste Bestätigung (wie bisher)
@@ -1040,7 +1079,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     final p = await SharedPreferences.getInstance();
     await p.clear();
     myBadges.clear();
-    await MeetupBadge.saveBadges([]);
+    await MeetupBadge.saveBadges([], discardLocked: true);
     try { await SecureKeyStore.deleteKeys(); } catch (_) {}
     // Idempotent: disconnectNip46 hat den Key schon geloescht; falls der
     // Aufruf scheiterte, raeumen wir hier nach.
@@ -1673,7 +1712,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
-            child: Text((score?.totalScore ?? 0.0).toStringAsFixed(1),
+            child: Text(_badgesUnreadable ? '—' : (score?.totalScore ?? 0.0).toStringAsFixed(1),
                 style: TextStyle(color: Colors.black, fontSize: 19, fontWeight: FontWeight.w900, fontFamily: fontMono)),
           ),
           const SizedBox(width: 12),
@@ -1681,10 +1720,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             Text(t.tileTrustScore, style: const TextStyle(color: cText, fontSize: 13.5, fontWeight: FontWeight.w700)),
             const SizedBox(height: 3),
             Row(children: [
-              Icon(_levelIcon, color: _levelColor, size: 12),
+              Icon(_badgesUnreadable ? Icons.lock_outline : _levelIcon, color: _badgesUnreadable ? cTextSecondary : _levelColor, size: 12),
               const SizedBox(width: 5),
-              Text(score?.level == null ? t.levelNew : localizedLevel(context, score!.level),
-                  style: TextStyle(color: _levelColor, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6)),
+              Flexible(child: Text(_badgesUnreadable ? t.badgesUnreadableShort : (score?.level == null ? t.levelNew : localizedLevel(context, score!.level)),
+                  style: TextStyle(color: _badgesUnreadable ? cTextSecondary : _levelColor, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6))),
               if (score != null && score.meetsPromotionThreshold) ...[
                 const SizedBox(width: 8),
                 Icon(Icons.verified_rounded, color: Colors.green.shade400, size: 12),

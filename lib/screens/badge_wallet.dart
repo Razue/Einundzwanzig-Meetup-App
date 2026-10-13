@@ -611,7 +611,17 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
     final kept = myBadges.where((b) => !dups.any((d) => identical(d, b))).toList();
     final removed = myBadges.length - kept.length;
 
-    await MeetupBadge.saveBadges(kept);
+    if (!await MeetupBadge.saveBadges(kept)) {
+      // Nichts geschrieben: Anzeige und Reputation bleiben beim alten Stand.
+      AppLogger.warn('Wallet', 'Doppelte Badges nicht entfernt, Speichern fehlgeschlagen.');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.badgesUnreadableShort),
+        backgroundColor: cRed,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
     myBadges = kept;
     AppLogger.diag('Wallet', '$removed doppelte Badge(s) entfernt. Neu: ${kept.length}.');
     // Reputation neu veroeffentlichen: Zaehler und Proof-Hash aendern sich.

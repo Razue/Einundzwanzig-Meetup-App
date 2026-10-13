@@ -982,6 +982,23 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     // verbindliche Pruefung gegen den TATSAECHLICHEN Speicherstand
     // (nicht nur gegen die evtl. veraltete Liste im Speicher).
     final stored = await MeetupBadge.loadBadges();
+    if (MeetupBadge.badgesUnreadable) {
+      // Klappt die Vormerkung nicht, bleibt der Scan für einen erneuten
+      // Versuch offen statt als "vorgemerkt" gemeldet zu werden.
+      final aside = await MeetupBadge.keepAside(badge);
+      _pendingBadge = aside ? null : badge;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(aside
+              ? AppLocalizations.of(context).badgesHeldAside
+              : AppLocalizations.of(context).badgeSaveFailed),
+          backgroundColor: aside ? null : cRed,
+          duration: const Duration(seconds: 8),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+      return;
+    }
     final key = MeetupBadge.identityKey(badge);
     // Organisator-Marker vom Vergleich ausnehmen (siehe oben): Ein eigener
     // Marker darf das echte Badge desselben Meetups nicht verdraengen.
@@ -1006,7 +1023,25 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     }
 
     stored.add(badge);
-    await MeetupBadge.saveBadges(stored);
+    final wrote = await MeetupBadge.saveBadges(stored);
+    if (!wrote) {
+      // Nichts geschrieben: kein Erfolg melden und nichts veröffentlichen,
+      // was nicht liegt. Das Badge best-effort vormerken; klappt auch das
+      // nicht, bleibt der Scan für einen erneuten Versuch offen.
+      final aside = await MeetupBadge.keepAside(badge);
+      _pendingBadge = aside ? null : badge;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(aside
+              ? AppLocalizations.of(context).badgesHeldAside
+              : AppLocalizations.of(context).badgeSaveFailed),
+          backgroundColor: aside ? null : cRed,
+          duration: const Duration(seconds: 8),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+      return;
+    }
     myBadges = stored; // globale Liste synchron halten
     _pendingBadge = null; // Badge ist verbucht — kein zweites Hinzufuegen
     AppLogger.diag('Scan', 'Badge gespeichert ($key). Wallet: ${stored.length} Badge(s).');

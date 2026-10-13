@@ -308,10 +308,14 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
           IconButton(
             icon: const Icon(Icons.ios_share_rounded, color: cTextSecondary),
             tooltip: AppLocalizations.of(context).rcShareImage,
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ReputationCardScreen()),
-            ),
+            // Unlesbare Sammlung: Keine Karte teilen, die "keine Daten"
+            // behaupten wuerde — der Hinweis steht stattdessen auf der Seite.
+            onPressed: MeetupBadge.badgesUnreadable
+                ? null
+                : () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ReputationCardScreen()),
+                  ),
           ),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner, color: cTextSecondary),
@@ -380,12 +384,17 @@ class _ReputationQRScreenState extends State<ReputationQRScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            AppLocalizations.of(context).reputationNoBadges,
+            MeetupBadge.badgesUnreadable
+                ? AppLocalizations.of(context).badgesUnreadableBody
+                : AppLocalizations.of(context).reputationNoBadges,
+            textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800, letterSpacing: 1),
           ),
           const SizedBox(height: 12),
           Text(
-            AppLocalizations.of(context).reputationBuildHint1 +
+            MeetupBadge.badgesUnreadable
+                ? ''
+                : AppLocalizations.of(context).reputationBuildHint1 +
             AppLocalizations.of(context).reputationBuildHint2,
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade500, fontSize: 14, height: 1.5),
