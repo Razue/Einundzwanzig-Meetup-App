@@ -801,7 +801,10 @@ class BackupService {
           // wieder her, inkl. lat/lng (Weltkugel/Standort) und Claim-Binding.
           restoredBadges.add(MeetupBadge.fromJson(map));
         }
-        await MeetupBadge.saveBadges(restoredBadges, replaceUnreadable: true);
+        // Der Rest des Backups wird trotzdem eingespielt, damit der
+        // Nostr-Schlüssel nicht an einem Badge-Fehler hängt. Erfolg wird
+        // am Ende aber nur gemeldet, wenn die Badges wirklich liegen.
+        final badgesSaved = await restoreBadges(restoredBadges);
 
         // --- NOSTR KEYS WIEDERHERSTELLEN ---
         if (version >= 2 && data['nostr'] != null) {
@@ -1038,6 +1041,11 @@ class BackupService {
           }
         }
 
+        if (!badgesSaved) {
+          throw Exception('${restoredBadges.length} Badges aus dem Backup '
+              'konnten nicht gespeichert werden, der Rest wurde übernommen.');
+        }
+
         // --- ERFOLGSMELDUNG ---
         if (context.mounted) {
           // Zähle was wiederhergestellt wurde
@@ -1079,6 +1087,20 @@ class BackupService {
     } finally {
       _busy = false;
     }
+  }
+
+  /// Schreibt die Badges aus einem Backup. false, wenn Badges im Backup
+  /// waren, aber nichts geschrieben wurde (z. B. Badge-Schlüssel im sicheren
+  /// Speicher kaputt). Ein leeres Backup lässt eine nicht lesbare Sammlung
+  /// bewusst liegen, das ist kein Fehler.
+  @visibleForTesting
+  static Future<bool> restoreBadges(List<MeetupBadge> badges) async {
+    final wrote = await MeetupBadge.saveBadges(badges, replaceUnreadable: true);
+    if (!wrote && badges.isNotEmpty) {
+      AppLogger.warn('BackupService', 'Badges aus dem Backup nicht gespeichert.');
+      return false;
+    }
+    return true;
   }
 
   /// Angezeigte Nostr-Identität an den Schlüssel hängen, der wirklich

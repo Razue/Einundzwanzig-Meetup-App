@@ -18,6 +18,9 @@ import 'package:einundzwanzig_meetup_app/models/badge.dart';
 const _blobKey = 'badges_encrypted';
 const _preservedKey = 'badges_encrypted_preserved';
 const _keyAlias = 'badge_encryption_key';
+const _pendingBlobKey = 'badges_pending_encrypted';
+const _pendingKeyAlias = 'badge_pending_key';
+const _legacyPendingKey = 'badges_pending';
 
 class _BrokenRead extends TestFlutterSecureStoragePlatform {
   _BrokenRead(super.data);
@@ -35,6 +38,16 @@ MeetupBadge _badge(String id) => MeetupBadge(
       meetupName: 'Aschaffenburg',
       date: DateTime.utc(2026, 10, 11, 19),
       iconPath: 'assets/badge_icon.png',
+    );
+
+MeetupBadge _privateBadge(String id) => MeetupBadge(
+      id: id,
+      meetupName: 'Geheimtreffen Hinterzimmer',
+      date: DateTime.utc(2026, 10, 11, 19),
+      iconPath: 'assets/badge_icon.png',
+      lat: 49.97654,
+      lng: 9.14321,
+      claimSig: 'c' * 128,
     );
 
 String _hexKey() => enc.Key.fromSecureRandom(32)
@@ -184,5 +197,77 @@ void main() {
     expect(wrote, isFalse);
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString(_blobKey), blob);
+  });
+
+  test('vorgemerkter Scan liegt nicht im Klartext', () async {
+    final blob = _blob(_hexKey(), [_badge('alt')]);
+    SharedPreferences.setMockInitialValues({_blobKey: blob});
+    await MeetupBadge.loadBadges();
+
+    await MeetupBadge.keepAside(_privateBadge('neu'));
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey(_legacyPendingKey), isFalse);
+    expect(prefs.getString(_pendingBlobKey), contains(':'));
+    for (final key in prefs.getKeys()) {
+      final value = '${prefs.get(key)}';
+      expect(value, isNot(contains('Geheimtreffen')), reason: key);
+      expect(value, isNot(contains('49.97')), reason: key);
+      expect(value, isNot(contains('c' * 128)), reason: key);
+    }
+    // Eigener Schlüssel, der kaputte Badge-Schlüssel bleibt unangetastet.
+    expect(secure[_pendingKeyAlias], hasLength(64));
+    expect(secure.containsKey(_keyAlias), isFalse);
+  });
+
+  test('nach dem Zusammenführen sind Vormerkung und ihr Schlüssel weg',
+      () async {
+    final good = _hexKey();
+    final blob = _blob(good, [_badge('alt')]);
+    SharedPreferences.setMockInitialValues({_blobKey: blob});
+    await MeetupBadge.loadBadges();
+    await MeetupBadge.keepAside(_privateBadge('neu'));
+
+    secure[_keyAlias] = good;
+    final loaded = await MeetupBadge.loadBadges();
+
+    final neu = loaded.firstWhere((b) => b.id == 'neu');
+    expect(neu.meetupName, 'Geheimtreffen Hinterzimmer');
+    expect(neu.lat, 49.97654);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey(_pendingBlobKey), isFalse);
+    expect(secure.containsKey(_pendingKeyAlias), isFalse);
+  });
+
+  test('Klartext-Vormerkung aus Testbuilds wird verschlüsselt übernommen',
+      () async {
+    final good = _hexKey();
+    SharedPreferences.setMockInitialValues({
+      _blobKey: _blob(good, [_badge('alt')]),
+      _legacyPendingKey: [jsonEncode(_privateBadge('klartext').toJson())],
+    });
+    await MeetupBadge.loadBadges();
+
+    await MeetupBadge.keepAside(_badge('neu'));
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey(_legacyPendingKey), isFalse);
+    expect(prefs.getString(_pendingBlobKey), isNot(contains('Geheimtreffen')));
+
+    secure[_keyAlias] = good;
+    final loaded = await MeetupBadge.loadBadges();
+    expect(loaded.map((b) => b.id), containsAll(['alt', 'klartext', 'neu']));
+  });
+
+  test('eine nicht lesbare Vormerkung wird beim Speichern nicht verworfen',
+      () async {
+    final pendingBlob = _blob(_hexKey(), [_badge('vorgemerkt')]);
+    SharedPreferences.setMockInitialValues({_pendingBlobKey: pendingBlob});
+
+    final wrote = await MeetupBadge.saveBadges([_badge('a')]);
+
+    expect(wrote, isTrue);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(_pendingBlobKey), pendingBlob);
   });
 }

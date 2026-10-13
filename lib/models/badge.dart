@@ -358,8 +358,14 @@ class MeetupBadge {
   /// Erste Fassung der verschlüsselten Datei. Wird nicht überschrieben,
   /// damit ein fehlgeschlagenes Update die Sammlung nicht auslöscht.
   static const String _prefsBadgePreserved = 'badges_encrypted_preserved';
-  /// Scans, die ankamen, während die alte Datei nicht lesbar war.
-  static const String _prefsBadgePending = 'badges_pending';
+  /// Scans, die ankamen, während die alte Datei nicht lesbar war. Sie liegen
+  /// verschlüsselt mit einem eigenen Schlüssel, weil der Badge-Schlüssel in
+  /// dem Moment gerade fehlt oder nicht lesbar ist.
+  static const String _prefsBadgePending = 'badges_pending_encrypted';
+  static const String _pendingKeyAlias = 'badge_pending_key';
+  /// Klartext-Vormerkung aus Testbuilds von PR 84. Wird gelesen und beim
+  /// nächsten Schreiben verschlüsselt übernommen.
+  static const String _prefsLegacyPending = 'badges_pending';
 
   /// Eine Badge-Datei liegt da, lässt sich aber nicht öffnen. Die leere
   /// Liste aus [loadBadges] ist dann kein leerer Bestand.
@@ -495,12 +501,46 @@ class MeetupBadge {
     await prefs.setString(_prefsBadgePreserved, blob);
   }
 
-  static Future<List<MeetupBadge>> _readPending() async {
+  /// Eigener Schlüssel für vorgemerkte Scans, unabhängig vom Badge-Schlüssel.
+  /// Er wird zusammen mit der Vormerkung wieder gelöscht.
+  static Future<enc.Key?> _getPendingKey({required bool create}) async {
+    try {
+      final parsed = _keyFromHex(await _secureStorage.read(key: _pendingKeyAlias));
+      if (parsed != null || !create) return parsed;
+      final key = enc.Key.fromSecureRandom(32);
+      await _secureStorage.write(key: _pendingKeyAlias, value: _hexFromKey(key));
+      return key;
+    } catch (e) {
+      AppLogger.warn('Badge', 'Schlüssel für vorgemerkte Badges nicht verfügbar: $e');
+      return null;
+    }
+  }
+
+  static String _encryptBlob(List<MeetupBadge> badges, enc.Key key) {
+    final iv = enc.IV.fromSecureRandom(12);
+    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
+    final encrypted = encrypter.encrypt(
+        jsonEncode(badges.map((b) => b.toJson()).toList()),
+        iv: iv);
+    return '${iv.base64}:${encrypted.base64}';
+  }
+
+  /// null: eine Vormerkung liegt da, lässt sich aber gerade nicht öffnen.
+  /// Sie darf dann weder überschrieben noch abgeräumt werden.
+  static Future<List<MeetupBadge>?> _readPending() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getStringList(_prefsBadgePending);
-    if (raw == null || raw.isEmpty) return [];
     final out = <MeetupBadge>[];
-    for (final item in raw) {
+    final blob = prefs.getString(_prefsBadgePending);
+    if (blob != null && blob.isNotEmpty) {
+      final key = await _getPendingKey(create: false);
+      final badges = key == null ? null : _decryptBlob(blob, key);
+      if (badges == null) {
+        AppLogger.warn('Badge', 'Vorgemerkte Badges gerade nicht lesbar');
+        return null;
+      }
+      out.addAll(badges);
+    }
+    for (final item in prefs.getStringList(_prefsLegacyPending) ?? const <String>[]) {
       try {
         out.add(MeetupBadge.fromJson(jsonDecode(item) as Map<String, dynamic>));
       } catch (_) {}
@@ -508,14 +548,28 @@ class MeetupBadge {
     return out;
   }
 
-  static Future<void> _writePending(List<MeetupBadge> badges) async {
+  /// false: nichts geschrieben, Klartext gibt es als Ausweg nicht.
+  static Future<bool> _writePending(List<MeetupBadge> badges) async {
     final prefs = await SharedPreferences.getInstance();
     if (badges.isEmpty) {
+      await prefs.remove(_prefsLegacyPending);
+      if (!prefs.containsKey(_prefsBadgePending)) return true;
       await prefs.remove(_prefsBadgePending);
-      return;
+      try {
+        await _secureStorage.delete(key: _pendingKeyAlias);
+      } catch (_) {}
+      return true;
     }
-    await prefs.setStringList(
-        _prefsBadgePending, badges.map((b) => jsonEncode(b.toJson())).toList());
+    final key = await _getPendingKey(create: true);
+    if (key == null) return false;
+    try {
+      await prefs.setString(_prefsBadgePending, _encryptBlob(badges, key));
+    } catch (e) {
+      AppLogger.warn('Badge', 'Vormerkung nicht verschlüsselbar: $e');
+      return false;
+    }
+    await prefs.remove(_prefsLegacyPending);
+    return true;
   }
 
   static List<MeetupBadge> _unionById(List<MeetupBadge> base, List<MeetupBadge> extra) {
@@ -531,24 +585,28 @@ class MeetupBadge {
   /// daneben liegen und kommt beim nächsten erfolgreichen Lesen dazu.
   static Future<void> keepAside(MeetupBadge badge) async {
     final pending = await _readPending();
+    if (pending == null) {
+      AppLogger.error('Badge', 'Badge nicht vorgemerkt, Vormerkung nicht lesbar');
+      return;
+    }
     if (pending.any((b) => b.id == badge.id)) return;
     pending.add(badge);
-    await _writePending(pending);
+    if (!await _writePending(pending)) {
+      AppLogger.error('Badge', 'Badge nicht vorgemerkt, kein Schlüssel verfügbar');
+      return;
+    }
     AppLogger.warn('Badge', 'Badge vorgemerkt, Sammlung ist gerade nicht lesbar');
   }
 
   static Future<List<MeetupBadge>> _finishReadable(List<MeetupBadge> badges) async {
     badgesUnreadable = false;
     final pending = await _readPending();
-    if (pending.isEmpty) return badges;
+    if (pending == null || pending.isEmpty) return badges;
     final merged = _unionById(badges, pending);
-    await _writePending([]);
+    // saveBadges nimmt die Vormerkung mit und räumt sie samt Schlüssel erst
+    // nach dem Schreiben ab. Schlägt es fehl, bleibt sie unverändert liegen.
     final wrote = await saveBadges(merged);
-    if (!wrote) {
-      await _writePending(pending);
-      return badges;
-    }
-    return merged;
+    return wrote ? merged : badges;
   }
 
   /// Wird vom BadgeSyncService gesetzt, damit saveBadges den Sync auslöst.
@@ -596,7 +654,7 @@ class MeetupBadge {
     }
 
     final pending = await _readPending();
-    final toStore = _unionById(badges, pending);
+    final toStore = _unionById(badges, pending ?? const []);
     final jsonStr = jsonEncode(toStore.map((b) => b.toJson()).toList());
 
     try {
@@ -620,7 +678,8 @@ class MeetupBadge {
       await prefs.setStringList(_prefsLegacyBadges, badgesJson);
     }
 
-    await _writePending([]);
+    // Eine Vormerkung, die gerade nicht aufging, bleibt für später liegen.
+    if (pending != null) await _writePending([]);
     badgesUnreadable = false;
     onBadgesSaved?.call();
     return true;

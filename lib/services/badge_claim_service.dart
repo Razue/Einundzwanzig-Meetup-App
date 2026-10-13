@@ -20,6 +20,7 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import '../models/badge.dart';
+import 'app_logger.dart';
 import 'badge_security.dart';
 import 'signing_service.dart';
 
@@ -265,8 +266,10 @@ class BadgeClaimService {
       }
     }
 
-    if (claimedCount > 0) {
-      await MeetupBadge.saveBadges(badges);
+    // Nicht gespeichert heißt nicht geclaimt: beim nächsten Start neu.
+    if (claimedCount > 0 && !await MeetupBadge.saveBadges(badges)) {
+      AppLogger.warn('BadgeClaim', '$claimedCount Claims nicht gespeichert.');
+      return 0;
     }
 
     return claimedCount;
