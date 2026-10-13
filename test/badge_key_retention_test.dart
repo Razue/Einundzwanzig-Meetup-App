@@ -290,20 +290,31 @@ void main() {
     final keyA = _hexKey();
     final keyB = _hexKey();
     final primaryBlob = _blob(keyA, [_badge('a'), _badge('b')]);
+    final preservedBlob = _blob(keyB, [_badge('b'), _badge('c')]);
     secure[_keyAlias] = keyA;
     secure['old_badge_key'] = keyB;
     SharedPreferences.setMockInitialValues({
       _blobKey: primaryBlob,
-      _preservedKey: _blob(keyB, [_badge('b'), _badge('c')]),
+      _preservedKey: preservedBlob,
     });
 
     final loaded = await MeetupBadge.loadBadges();
 
     expect(loaded.map((b) => b.id), containsAll(['a', 'b', 'c']));
     expect(MeetupBadge.badgesUnreadable, isFalse);
-    // Der Primäre ist die Datei geblieben, nicht durch die Sicherung ersetzt.
     final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString(_blobKey), primaryBlob);
+    // Die Sicherung bleibt die alte Datei. Die Primärdatei trägt die
+    // Vereinigung und wird beim nächsten Öffnen nicht noch einmal ersetzt.
+    expect(prefs.getString(_preservedKey), preservedBlob);
+    final written = prefs.getString(_blobKey);
+    expect(written, isNot(primaryBlob));
+    final again = await MeetupBadge.loadBadges();
+    expect(again.map((b) => b.id), containsAll(['a', 'b', 'c']));
+    expect(prefs.getString(_blobKey), written);
+
+    await prefs.remove(_preservedKey);
+    final onlyPrimary = await MeetupBadge.loadBadges();
+    expect(onlyPrimary.map((b) => b.id), containsAll(['a', 'b', 'c']));
   });
 
   test('ein zweites Ersetzen schiebt die Sicherung eine Stufe älter',
@@ -373,6 +384,12 @@ void main() {
     secure[_keyAlias] = lostKey; // der Schlüssel kommt zurück
     final reloaded = await MeetupBadge.loadBadges();
     expect(reloaded.map((b) => b.id), containsAll(['sicher', 'verloren']));
+
+    // Die Vereinigung liegt in der Primärdatei, auch ohne die Sicherung.
+    await prefs.remove(_preservedKey);
+    await prefs.remove(_olderKey);
+    final onlyPrimary = await MeetupBadge.loadBadges();
+    expect(onlyPrimary.map((b) => b.id), containsAll(['sicher', 'verloren']));
   });
 
   test('fehlgeschlagenes Lesen schiebt keine Fassung aus der Sicherung',
@@ -416,5 +433,10 @@ void main() {
 
     expect(loaded.length, 1);
     expect(loaded.first.claimSig, 'c' * 128);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_preservedKey);
+    final onlyPrimary = await MeetupBadge.loadBadges();
+    expect(onlyPrimary.single.claimSig, 'c' * 128);
   });
 }

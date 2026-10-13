@@ -491,15 +491,18 @@ class MeetupBadge {
     }
   }
 
-  /// Öffnet alle Fassungen und vereinigt die Badges nach Id. Öffnet der
-  /// Primäre ([primaryBlob]) selbst, bleibt er die Datei und sein Schlüssel
-  /// der gemerkte — die weiteren Fassungen (Sicherung, ältere Sicherung)
-  /// kommen über die Vereinigung dazu, statt unsichtbar neben der neuen
-  /// Datei zu liegen. Öffnet er nicht, wird der erste geöffnete Blob der
-  /// neue Primäre (siehe loadBadges).
+  /// Öffnet alle Fassungen und vereinigt die Badges nach Id.
+  /// [anchor] ist der Inhalt der Fassung, die als Primärdatei liegt oder
+  /// zur Primärdatei befördert wird. [openedCount] zählt, wie viele
+  /// Fassungen aufgingen. Weicht die Vereinigung von diesem Anker ab,
+  /// schreibt [loadBadges] sie in die Primärdatei. Die übrigen Fassungen
+  /// bleiben als Sicherung liegen. Öffnet der Primäre ([primaryBlob])
+  /// nicht, wird der erste geöffnete Blob der neue Primäre.
   static Future<
       ({
         List<MeetupBadge> badges,
+        List<MeetupBadge> anchor,
+        int openedCount,
         String? primary,
         String blob,
         enc.Key key
@@ -510,18 +513,23 @@ class MeetupBadge {
     enc.Key? openedPrimaryKey;
     String? firstBlob;
     enc.Key? firstKey;
+    List<MeetupBadge> anchor = const [];
+    var openedCount = 0;
     final byId = <String, MeetupBadge>{};
     for (final blob in blobs) {
       for (final key in keys) {
         final badges = _decryptBlob(blob, key);
         if (badges == null) continue;
+        openedCount++;
         if (firstBlob == null) {
           firstBlob = blob;
           firstKey = key;
+          anchor = badges;
         }
         if (blob == primaryBlob) {
           openedPrimary = blob;
           openedPrimaryKey = key;
+          anchor = badges;
         }
         for (final badge in badges) {
           final existing = byId[badge.id];
@@ -534,6 +542,8 @@ class MeetupBadge {
     if (firstBlob == null) return null;
     return (
       badges: byId.values.toList(),
+      anchor: anchor,
+      openedCount: openedCount,
       primary: openedPrimary,
       blob: openedPrimary ?? firstBlob,
       key: openedPrimaryKey ?? firstKey!,
@@ -661,6 +671,18 @@ class MeetupBadge {
       add(badge);
     }
     return byId.values.toList();
+  }
+
+  /// Gleicher Bestand, unabhängig von der Reihenfolge in der Datei.
+  static bool _sameBadges(List<MeetupBadge> a, List<MeetupBadge> b) {
+    String canon(MeetupBadge badge) => jsonEncode(badge.toJson());
+    final left = a.map(canon).toList()..sort();
+    final right = b.map(canon).toList()..sort();
+    if (left.length != right.length) return false;
+    for (var i = 0; i < left.length; i++) {
+      if (left[i] != right[i]) return false;
+    }
+    return true;
   }
 
   /// Scan, während die alte Sammlung nicht lesbar ist. Das Badge bleibt
@@ -810,6 +832,20 @@ class MeetupBadge {
           }
         }
         await _rememberKey(opened.key);
+        // Eine Löschfunktion gibt es noch nicht. Jede Fassung, die sich
+        // öffnen lässt, gehört deshalb zur Sammlung: Die Vereinigung wird
+        // in die Primärdatei geschrieben. Die Sicherungen bleiben liegen,
+        // damit ein später wiedergefundener Schlüssel noch dazukommen kann.
+        if (opened.openedCount > 1 &&
+            !_sameBadges(opened.anchor, opened.badges)) {
+          badgesUnreadable = false;
+          final pending = await _readPending();
+          final wrote = await saveBadges(opened.badges);
+          if (wrote) {
+            if (pending == null || pending.isEmpty) return opened.badges;
+            return _unionById(opened.badges, pending);
+          }
+        }
         return _finishReadable(opened.badges);
       }
       // Nichts ging auf. Nur füllen, nichts verdrängen: Der Primäre bleibt
