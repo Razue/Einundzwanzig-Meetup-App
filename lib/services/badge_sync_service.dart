@@ -2,8 +2,10 @@
 // NIP-44 an den eigenen Pubkey. Plan: docs/PLAN_BADGE_SYNC.md.
 //
 // Ablauf:
-//   pull: Relays lesen, Chunks entschlüsseln, mit der lokalen Liste
-//         vereinigen, lokal speichern.
+//   pull: Ist die lokale Datei lesbar und nicht leer, gilt sie.
+//         Ist sie leer, kommen die Relays und werden lokal gespeichert.
+//         Ist sie nicht lesbar, bleiben die Bytes liegen; eine ferne
+//         Kopie wird nur daneben geschrieben.
 //   push: erst pull, dann aus dem Ergebnis Chunks bauen und nur die
 //         veröffentlichen, deren Inhalt sich geändert hat, und nur auf
 //         Relays zählen, die das Event bestätigen.
@@ -11,7 +13,8 @@
 // Drei Regeln aus dem Plan, die hier stehen und nicht im Aufrufer:
 //   - nie eine leere Liste veröffentlichen (Reset-Pfad)
 //   - ein Gerät ohne lokale Badges liest erst, bevor es je schreibt
-//   - immer lesen, vereinigen, schreiben
+//   - eine nicht lesbare Datei ist keine leere Liste: nichts überschreiben,
+//     nichts leeres veröffentlichen, ferne Badges nur zusätzlich sichern
 
 import 'dart:async';
 import 'dart:convert';
@@ -128,6 +131,9 @@ class BadgeSyncService {
     }
 
     final merged = await _pull(me);
+    // null: die lokale Datei ist nicht lesbar und die Relays haben keine
+    // Kopie. Nicht als leeren Erfolg verbuchen.
+    if (merged == null) return false;
     final pushed = await _push(me, merged);
     final prefs = await SharedPreferences.getInstance();
     // Dirty bleibt, wenn ein Chunk auf keinem Relay bestätigt wurde.
@@ -141,10 +147,27 @@ class BadgeSyncService {
   /// Autorität: was lokal fehlt, wird nicht wieder aus der Ferne geholt,
   /// sonst kämen nach der Duplikat-Bereinigung die fern liegenden
   /// Exemplare über den Merge sofort zurück.
-  static Future<List<MeetupBadge>> _pull(String me) async {
+  static Future<List<MeetupBadge>?> _pull(String me) async {
     final local = await MeetupBadge.loadBadges();
+    if (MeetupBadge.badgesUnreadable) {
+      final remote = await _fetchRemote(me);
+      if (remote.isEmpty) {
+        AppLogger.warn(_tag,
+            'Lokale Badges nicht lesbar, auf den Relays liegt keine Kopie');
+        return null;
+      }
+      // Die alte Datei bleibt als Sicherung. Die ferne Liste wird die
+      // lesbare Fassung, vorgemerkte Scans kommen in saveBadges dazu.
+      final wrote = await MeetupBadge.saveBadges(remote, replaceUnreadable: true);
+      if (!wrote) return null;
+      return MeetupBadge.loadBadges();
+    }
     if (local.isEmpty) {
-      return _fetchRemote(me);
+      final remote = await _fetchRemote(me);
+      if (remote.isNotEmpty) {
+        await MeetupBadge.saveBadges(remote);
+      }
+      return remote;
     }
     return local;
   }

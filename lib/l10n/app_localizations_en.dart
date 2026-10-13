@@ -6354,4 +6354,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatOffline =>
       'No internet connection — the chat can\'t be reached right now. Check Wi-Fi or mobile data and try again.';
+
+  @override
+  String get badgesUnreadableShort => 'Unreadable — nothing deleted';
+
+  @override
+  String get badgesUnreadableBody =>
+      'Your badges could not be read. Nothing was deleted. Do not reset the app or restore an empty backup.';
+
+  @override
+  String get badgesHeldAside =>
+      'This badge is set aside and will be added once your collection can be read again.';
 }

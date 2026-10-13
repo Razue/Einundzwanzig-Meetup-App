@@ -2858,5 +2858,8 @@
   "curCAD": "Kanadischer Dollar",
   "curAUD": "Australischer Dollar",
   "curJPY": "Japanischer Yen",
-  "chatOffline": "Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal."
+  "chatOffline": "Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.",
+  "badgesUnreadableShort": "Nicht lesbar — nichts gelöscht",
+  "badgesUnreadableBody": "Deine Badges konnten nicht gelesen werden. Es wurde nichts gelöscht. Setze die App nicht zurück und spiele kein leeres Backup ein.",
+  "badgesHeldAside": "Dieses Badge ist vorgemerkt und kommt dazu, sobald die Sammlung wieder lesbar ist."
 }

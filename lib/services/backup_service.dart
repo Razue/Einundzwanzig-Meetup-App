@@ -335,6 +335,19 @@ class BackupService {
 
       final user = await UserProfile.load();
       final badges = await MeetupBadge.loadBadges();
+      // Eine nicht lesbare Sammlung darf nicht als leere Liste ins Backup.
+      // Ein späteres Einspielen würde die noch vorhandene Datei ersetzen.
+      if (MeetupBadge.badgesUnreadable) {
+        closeLoading();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context).badgesUnreadableBody),
+            duration: const Duration(seconds: 8),
+            behavior: SnackBarBehavior.floating,
+          ));
+        }
+        return false;
+      }
 
       // Nostr Keys aus SecureKeyStore laden
       final nsec = await SecureKeyStore.getNsec();
@@ -788,7 +801,7 @@ class BackupService {
           // wieder her, inkl. lat/lng (Weltkugel/Standort) und Claim-Binding.
           restoredBadges.add(MeetupBadge.fromJson(map));
         }
-        await MeetupBadge.saveBadges(restoredBadges);
+        await MeetupBadge.saveBadges(restoredBadges, replaceUnreadable: true);
 
         // --- NOSTR KEYS WIEDERHERSTELLEN ---
         if (version >= 2 && data['nostr'] != null) {

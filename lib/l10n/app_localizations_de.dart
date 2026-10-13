@@ -6399,4 +6399,15 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chatOffline =>
       'Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.';
+
+  @override
+  String get badgesUnreadableShort => 'Nicht lesbar — nichts gelöscht';
+
+  @override
+  String get badgesUnreadableBody =>
+      'Deine Badges konnten nicht gelesen werden. Es wurde nichts gelöscht. Setze die App nicht zurück und spiele kein leeres Backup ein.';
+
+  @override
+  String get badgesHeldAside =>
+      'Dieses Badge ist vorgemerkt und kommt dazu, sobald die Sammlung wieder lesbar ist.';
 }

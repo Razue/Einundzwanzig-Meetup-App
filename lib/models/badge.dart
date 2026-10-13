@@ -355,22 +355,200 @@ class MeetupBadge {
   static const String _badgeKeyAlias = 'badge_encryption_key';
   static const String _prefsBadgeEncrypted = 'badges_encrypted';
   static const String _prefsLegacyBadges = 'badges'; // Altes Klartext-Feld
+  /// Erste Fassung der verschlüsselten Datei. Wird nicht überschrieben,
+  /// damit ein fehlgeschlagenes Update die Sammlung nicht auslöscht.
+  static const String _prefsBadgePreserved = 'badges_encrypted_preserved';
+  /// Scans, die ankamen, während die alte Datei nicht lesbar war.
+  static const String _prefsBadgePending = 'badges_pending';
 
-  /// AES-256-Schlüssel aus SecureStorage laden oder erzeugen
-  static Future<enc.Key> _getBadgeKey() async {
-    final existing = await _secureStorage.read(key: _badgeKeyAlias);
-    if (existing != null && existing.length == 64) {
-      // Hex-encoded 32-byte key
-      return enc.Key(Uint8List.fromList(
-        List.generate(32, (i) => int.parse(existing.substring(i * 2, i * 2 + 2), radix: 16)),
-      ));
+  /// Eine Badge-Datei liegt da, lässt sich aber nicht öffnen. Die leere
+  /// Liste aus [loadBadges] ist dann kein leerer Bestand.
+  static bool badgesUnreadable = false;
+
+  static final RegExp _hex64 = RegExp(r'^[0-9a-fA-F]{64}$');
+
+  static enc.Key? _keyFromHex(String? raw) {
+    if (raw == null) return null;
+    final trimmed = raw.trim();
+    if (!_hex64.hasMatch(trimmed)) return null;
+    return enc.Key(Uint8List.fromList(List.generate(
+        32, (i) => int.parse(trimmed.substring(i * 2, i * 2 + 2), radix: 16))));
+  }
+
+  static String _hexFromKey(enc.Key key) =>
+      key.bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+
+  /// Liest den Schlüssel. Ein neuer entsteht nur mit [create], und nur wenn
+  /// unter dem Namen noch nichts liegt. Ein Lese-Fehler oder ein Wert mit
+  /// der falschen Länge überschreibt den alten Eintrag nicht.
+  static Future<enc.Key?> _getBadgeKey({required bool create}) async {
+    String? existing;
+    try {
+      existing = await _secureStorage.read(key: _badgeKeyAlias);
+    } catch (e) {
+      AppLogger.warn('Badge', 'Badge-Schlüssel nicht lesbar: $e');
+      return null;
     }
-    // Neuen Schlüssel generieren (256 Bit)
+    final parsed = _keyFromHex(existing);
+    if (parsed != null) return parsed;
+    if (existing != null && existing.trim().isNotEmpty) {
+      AppLogger.warn('Badge',
+          'Badge-Schlüssel hat unerwartetes Format (${existing.trim().length} Zeichen), er bleibt liegen');
+      return null;
+    }
+    if (!create) return null;
     final key = enc.Key.fromSecureRandom(32);
-    final keyHex = key.bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-    await _secureStorage.write(key: _badgeKeyAlias, value: keyHex);
+    try {
+      await _secureStorage.write(key: _badgeKeyAlias, value: _hexFromKey(key));
+    } catch (e) {
+      AppLogger.warn('Badge', 'Neuer Badge-Schlüssel nicht schreibbar: $e');
+      return null;
+    }
     AppLogger.debug('Badge', 'Neuer Badge-Encryption-Key generiert');
     return key;
+  }
+
+  static Future<void> _rememberKey(enc.Key key) async {
+    final hex = _hexFromKey(key);
+    try {
+      final current = await _secureStorage.read(key: _badgeKeyAlias);
+      if (current?.trim().toLowerCase() == hex) return;
+      await _secureStorage.write(key: _badgeKeyAlias, value: hex);
+    } catch (e) {
+      AppLogger.warn('Badge', 'Funktionierender Schlüssel nicht zurückgeschrieben: $e');
+    }
+  }
+
+  /// Weitere 32-Byte-Werte im sicheren Speicher, inklusive der
+  /// Migrationskopie mit dem Suffix `_BACKUP`.
+  static Future<List<enc.Key>> _candidateKeys(enc.Key? primary) async {
+    final out = <enc.Key>[];
+    final seen = <String>{};
+    void add(String? raw) {
+      final key = _keyFromHex(raw);
+      if (key == null) return;
+      if (!seen.add(_hexFromKey(key))) return;
+      out.add(key);
+    }
+
+    if (primary != null) add(_hexFromKey(primary));
+    try {
+      add(await _secureStorage.read(key: '${_badgeKeyAlias}_BACKUP'));
+    } catch (_) {}
+    try {
+      final all = await _secureStorage.readAll();
+      for (final value in all.values) {
+        add(value);
+      }
+    } catch (e) {
+      AppLogger.debug('Badge', 'Schlüsselsuche unvollständig: $e');
+    }
+    return out;
+  }
+
+  static List<MeetupBadge>? _decryptBlob(String blob, enc.Key key) {
+    try {
+      final parts = blob.split(':');
+      if (parts.length != 2) return null;
+      final iv = enc.IV.fromBase64(parts[0]);
+      final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
+      final decrypted = encrypter.decrypt64(parts[1], iv: iv);
+      final decoded = jsonDecode(decrypted) as List<dynamic>;
+      return decoded
+          .map((json) => MeetupBadge.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<({List<MeetupBadge> badges, String blob, enc.Key key})?> _openFirst(
+    List<String> blobs,
+  ) async {
+    final primary = await _getBadgeKey(create: false);
+    if (primary != null) {
+      for (final blob in blobs) {
+        final badges = _decryptBlob(blob, primary);
+        if (badges != null) {
+          return (badges: badges, blob: blob, key: primary);
+        }
+      }
+    }
+    // Der eingetragene Schlüssel öffnet die Datei nicht. Andere Werte im
+    // Speicher können der alte Schlüssel sein, den ein Update beiseite
+    // geschoben hat.
+    final keys = await _candidateKeys(primary);
+    for (final key in keys) {
+      for (final blob in blobs) {
+        final badges = _decryptBlob(blob, key);
+        if (badges != null) {
+          return (badges: badges, blob: blob, key: key);
+        }
+      }
+    }
+    return null;
+  }
+
+  static Future<void> _stashBlob(SharedPreferences prefs, String blob) async {
+    final preserved = prefs.getString(_prefsBadgePreserved);
+    if (preserved != null && preserved.isNotEmpty) return;
+    await prefs.setString(_prefsBadgePreserved, blob);
+  }
+
+  static Future<List<MeetupBadge>> _readPending() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList(_prefsBadgePending);
+    if (raw == null || raw.isEmpty) return [];
+    final out = <MeetupBadge>[];
+    for (final item in raw) {
+      try {
+        out.add(MeetupBadge.fromJson(jsonDecode(item) as Map<String, dynamic>));
+      } catch (_) {}
+    }
+    return out;
+  }
+
+  static Future<void> _writePending(List<MeetupBadge> badges) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (badges.isEmpty) {
+      await prefs.remove(_prefsBadgePending);
+      return;
+    }
+    await prefs.setStringList(
+        _prefsBadgePending, badges.map((b) => jsonEncode(b.toJson())).toList());
+  }
+
+  static List<MeetupBadge> _unionById(List<MeetupBadge> base, List<MeetupBadge> extra) {
+    final out = List<MeetupBadge>.from(base);
+    final ids = base.map((b) => b.id).toSet();
+    for (final badge in extra) {
+      if (ids.add(badge.id)) out.add(badge);
+    }
+    return out;
+  }
+
+  /// Scan, während die alte Sammlung nicht lesbar ist. Das Badge bleibt
+  /// daneben liegen und kommt beim nächsten erfolgreichen Lesen dazu.
+  static Future<void> keepAside(MeetupBadge badge) async {
+    final pending = await _readPending();
+    if (pending.any((b) => b.id == badge.id)) return;
+    pending.add(badge);
+    await _writePending(pending);
+    AppLogger.warn('Badge', 'Badge vorgemerkt, Sammlung ist gerade nicht lesbar');
+  }
+
+  static Future<List<MeetupBadge>> _finishReadable(List<MeetupBadge> badges) async {
+    badgesUnreadable = false;
+    final pending = await _readPending();
+    if (pending.isEmpty) return badges;
+    final merged = _unionById(badges, pending);
+    await _writePending([]);
+    final wrote = await saveBadges(merged);
+    if (!wrote) {
+      await _writePending(pending);
+      return badges;
+    }
+    return merged;
   }
 
   /// Wird vom BadgeSyncService gesetzt, damit saveBadges den Sync auslöst.
@@ -378,12 +556,50 @@ class MeetupBadge {
   /// Kreis-Abhängigkeit, weil der Dienst selbst MeetupBadge lädt.
   static void Function()? onBadgesSaved;
 
-  static Future<void> saveBadges(List<MeetupBadge> badges) async {
+  /// [replaceUnreadable]: eine nicht leere Liste darf die nicht lesbare
+  /// Datei ersetzen. Die bisherige Datei bleibt als Sicherung liegen.
+  /// [discardLocked]: explizites Zurücksetzen, räumt auch die Sicherung ab.
+  static Future<bool> saveBadges(
+    List<MeetupBadge> badges, {
+    bool replaceUnreadable = false,
+    bool discardLocked = false,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonStr = jsonEncode(badges.map((b) => b.toJson()).toList());
+
+    if (badges.isEmpty) {
+      // Leere Liste ist der Reset. Solange die Datei nicht lesbar ist,
+      // löscht nur der ausdrückliche Reset sie.
+      if (badgesUnreadable && !discardLocked) return false;
+      await prefs.remove(_prefsBadgeEncrypted);
+      await prefs.remove(_prefsBadgePreserved);
+      await prefs.remove(_prefsLegacyBadges);
+      await _writePending([]);
+      badgesUnreadable = false;
+      onBadgesSaved?.call();
+      return true;
+    }
+
+    if (badgesUnreadable && !replaceUnreadable) return false;
+
+    final currentBlob = prefs.getString(_prefsBadgeEncrypted);
+    final hasBlob = currentBlob != null && currentBlob.contains(':');
+    if (replaceUnreadable && hasBlob) {
+      await _stashBlob(prefs, currentBlob);
+    }
+
+    // Fehlt der Schlüssel, entsteht ein neuer nur ohne vorhandene Datei
+    // oder beim bewussten Ersetzen. Sonst bliebe die Datei für immer zu.
+    final key = await _getBadgeKey(create: !hasBlob || replaceUnreadable);
+    if (key == null) {
+      AppLogger.warn('Badge', 'Speichern ausgesetzt, Schlüssel nicht verfügbar');
+      return false;
+    }
+
+    final pending = await _readPending();
+    final toStore = _unionById(badges, pending);
+    final jsonStr = jsonEncode(toStore.map((b) => b.toJson()).toList());
 
     try {
-      final key = await _getBadgeKey();
       final iv = enc.IV.fromSecureRandom(12); // 96 Bit (NIST-empfohlen)
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
       final encrypted = encrypter.encrypt(jsonStr, iv: iv);
@@ -392,60 +608,69 @@ class MeetupBadge {
       final stored = '${iv.base64}:${encrypted.base64}';
       await prefs.setString(_prefsBadgeEncrypted, stored);
 
-      // Legacy-Klartext entfernen falls vorhanden
       if (prefs.containsKey(_prefsLegacyBadges)) {
         await prefs.remove(_prefsLegacyBadges);
         AppLogger.debug('Badge', 'Legacy-Klartextbadges aus SharedPrefs entfernt');
       }
     } catch (e) {
-      // Fallback: Klartext (sollte nicht passieren, aber App darf nicht crashen)
       AppLogger.error('Badge', 'Verschlüsselung fehlgeschlagen, Klartext-Fallback: $e');
-      final List<String> badgesJson = badges.map((b) => jsonEncode(b.toJson())).toList();
+      // Neben einer vorhandenen Datei keinen zweiten Bestand anlegen.
+      if (hasBlob) return false;
+      final badgesJson = toStore.map((b) => jsonEncode(b.toJson())).toList();
       await prefs.setStringList(_prefsLegacyBadges, badgesJson);
     }
 
-    // Leere Liste: der Reset-Pfad. Der Sync liest das als "nie leer
-    // veröffentlichen" und bleibt aus.
+    await _writePending([]);
+    badgesUnreadable = false;
     onBadgesSaved?.call();
+    return true;
   }
 
   static Future<List<MeetupBadge>> loadBadges() async {
     final prefs = await SharedPreferences.getInstance();
-
-    // 1. Verschlüsselte Badges versuchen
-    final encryptedData = prefs.getString(_prefsBadgeEncrypted);
-    if (encryptedData != null && encryptedData.contains(':')) {
-      try {
-        final parts = encryptedData.split(':');
-        if (parts.length == 2) {
-          final iv = enc.IV.fromBase64(parts[0]);
-          final key = await _getBadgeKey();
-          final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.gcm));
-          final decrypted = encrypter.decrypt64(parts[1], iv: iv);
-          final List<dynamic> decoded = jsonDecode(decrypted) as List<dynamic>;
-          return decoded.map((json) =>
-            MeetupBadge.fromJson(json as Map<String, dynamic>)
-          ).toList();
-        }
-      } catch (e) {
-        AppLogger.error('Badge', 'Entschlüsselung fehlgeschlagen: $e');
-        // Weiter mit Legacy-Versuch
-      }
+    final blob = prefs.getString(_prefsBadgeEncrypted);
+    final preserved = prefs.getString(_prefsBadgePreserved);
+    final blobs = <String>[];
+    if (blob != null && blob.contains(':')) blobs.add(blob);
+    if (preserved != null && preserved.contains(':') && preserved != blob) {
+      blobs.add(preserved);
     }
 
-    // 2. Legacy-Klartext migrieren
+    if (blobs.isNotEmpty) {
+      final opened = await _openFirst(blobs);
+      if (opened != null) {
+        if (blob != opened.blob) {
+          await prefs.setString(_prefsBadgeEncrypted, opened.blob);
+        }
+        await _rememberKey(opened.key);
+        return _finishReadable(opened.badges);
+      }
+      final toKeep = (blob != null && blob.contains(':')) ? blob : preserved!;
+      await _stashBlob(prefs, toKeep);
+      badgesUnreadable = true;
+      AppLogger.warn('Badge',
+          'Badge-Datei nicht entschlüsselbar, sie bleibt unverändert liegen');
+      return [];
+    }
+
+    // Klartext nur, wenn noch gar keine verschlüsselte Datei existiert.
     final List<String>? legacyJson = prefs.getStringList(_prefsLegacyBadges);
     if (legacyJson != null && legacyJson.isNotEmpty) {
       AppLogger.debug('Badge', 'Migriere ${legacyJson.length} Badges von Klartext zu verschlüsselt');
-      final badges = legacyJson.map((String json) =>
-        MeetupBadge.fromJson(jsonDecode(json) as Map<String, dynamic>)
-      ).toList();
-
-      // Sofort verschlüsselt speichern (Migration)
-      await saveBadges(badges);
-      return badges;
+      final badges = <MeetupBadge>[];
+      for (final item in legacyJson) {
+        try {
+          badges.add(MeetupBadge.fromJson(jsonDecode(item) as Map<String, dynamic>));
+        } catch (_) {}
+      }
+      if (badges.isNotEmpty) {
+        badgesUnreadable = false;
+        final wrote = await saveBadges(badges);
+        if (wrote) return badges;
+      }
     }
 
+    badgesUnreadable = false;
     return [];
   }
 

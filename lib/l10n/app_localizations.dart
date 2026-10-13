@@ -11493,6 +11493,24 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Keine Internetverbindung — der Chat ist gerade nicht erreichbar. Prüfe WLAN oder mobile Daten und versuch es dann noch einmal.'**
   String get chatOffline;
+
+  /// No description provided for @badgesUnreadableShort.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht lesbar — nichts gelöscht'**
+  String get badgesUnreadableShort;
+
+  /// No description provided for @badgesUnreadableBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Badges konnten nicht gelesen werden. Es wurde nichts gelöscht. Setze die App nicht zurück und spiele kein leeres Backup ein.'**
+  String get badgesUnreadableBody;
+
+  /// No description provided for @badgesHeldAside.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Badge ist vorgemerkt und kommt dazu, sobald die Sammlung wieder lesbar ist.'**
+  String get badgesHeldAside;
 }
 
 class _AppLocalizationsDelegate

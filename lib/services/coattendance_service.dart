@@ -1156,7 +1156,8 @@ class CoAttendanceService {
           b.isOrganizer && b.meetupEventId == meetupEventId);
       if (!already) {
         existing.add(badge);
-        await MeetupBadge.saveBadges(existing);
+        final wrote = await MeetupBadge.saveBadges(existing);
+        if (!wrote) await MeetupBadge.keepAside(badge);
       }
 
       // 3. Co-Attendance veröffentlichen (Organisator nimmt automatisch teil).

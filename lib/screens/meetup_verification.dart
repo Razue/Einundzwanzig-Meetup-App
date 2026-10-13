@@ -982,6 +982,18 @@ class _MeetupVerificationScreenState extends State<MeetupVerificationScreen> wit
     // verbindliche Pruefung gegen den TATSAECHLICHEN Speicherstand
     // (nicht nur gegen die evtl. veraltete Liste im Speicher).
     final stored = await MeetupBadge.loadBadges();
+    if (MeetupBadge.badgesUnreadable) {
+      await MeetupBadge.keepAside(badge);
+      _pendingBadge = null;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context).badgesHeldAside),
+          duration: const Duration(seconds: 8),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+      return;
+    }
     final key = MeetupBadge.identityKey(badge);
     // Organisator-Marker vom Vergleich ausnehmen (siehe oben): Ein eigener
     // Marker darf das echte Badge desselben Meetups nicht verdraengen.
