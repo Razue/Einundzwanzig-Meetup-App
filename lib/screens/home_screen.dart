@@ -33,6 +33,7 @@ import '../services/meetup_calendar_service.dart';
 import '../services/trust_score_service.dart';
 import '../services/admin_registry.dart';
 import '../services/badge_claim_service.dart';
+import '../services/badge_sync_service.dart';
 import '../services/reputation_publisher.dart';
 import '../services/rolling_qr_service.dart';
 import '../services/nostr_profile_service.dart';
@@ -228,6 +229,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // und sah nichts, obwohl die Session lief.
       _checkActiveSession();
       _loadChatUnread();
+      // Freigabe in Amber passiert oft, während die App hinten liegt.
+      // Nur nachholen, wenn der letzte Lauf nicht fertig wurde.
+      BadgeSyncService.retryIfDirty();
     }
   }
 

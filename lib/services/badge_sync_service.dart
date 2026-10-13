@@ -60,6 +60,9 @@ class BadgeSyncService {
   /// was das andere hat. "Ein Gerät ohne lokale Badges liest erst."
   static void init() {
     MeetupBadge.onBadgesSaved = trigger;
+    // Der Startlauf liegt oft vor der Anmeldung. Sobald Amber, Bunker oder
+    // ein lokaler Schlüssel benutzbar ist, noch einmal lesen.
+    SigningService.onSignerReady = trigger;
     trigger();
   }
 
