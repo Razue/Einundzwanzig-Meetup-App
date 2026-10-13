@@ -1422,6 +1422,7 @@ class SigningService {
           'SigningService',
           'Remote-Signer gekoppelt: ${_short(npub)} — '
               'der Schlüssel bleibt im Signer.');
+      _noteSignerReady();
       return Nip46ConnectSuccess(pubkeyHex: userPubkeyHex, npub: npub);
     } on Nip46TimeoutException {
       await pairing.cancel();

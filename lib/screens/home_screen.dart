@@ -229,8 +229,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
       // und sah nichts, obwohl die Session lief.
       _checkActiveSession();
       _loadChatUnread();
-      // Freigabe in Amber passiert oft, während die App hinten liegt.
-      // Nur nachholen, wenn der letzte Lauf nicht fertig wurde.
+      // Nur ein abgebrochener Relay-Lauf. Kein Signer und abgelehntes
+      // NIP-44 setzen kein dirty, sonst käme bei jedem Aufwachen
+      // erneut die Freigabe.
       BadgeSyncService.retryIfDirty();
     }
   }
