@@ -50,9 +50,10 @@ class BadgeSyncService {
 
   static bool _busy = false;
 
-  // Merkt, dass während eines laufenden Syncs ein weiteres saveBadges kam.
-  // Der laufende Lauf arbeitet mit einem alten Stand; danach läuft einer
-  // nach, statt dirty zu löschen und den neuen Zustand zu verlieren.
+  // Merkt, dass während eines laufenden Syncs ein weiterer Lauf nötig wurde
+  // (saveBadges oder ein Signer, der gerade benutzbar wurde). Der laufende
+  // Lauf arbeitet mit einem alten Stand; danach läuft einer nach, auch wenn
+  // der laufende scheitert.
   static bool _rerun = false;
 
   /// Einmal beim Start aufrufen: verknüpft saveBadges mit dem Sync und
@@ -60,6 +61,9 @@ class BadgeSyncService {
   /// was das andere hat. "Ein Gerät ohne lokale Badges liest erst."
   static void init() {
     MeetupBadge.onBadgesSaved = trigger;
+    // Der Startlauf liegt oft vor der Anmeldung. Sobald Amber, Bunker oder
+    // ein lokaler Schlüssel benutzbar ist, noch einmal lesen.
+    SigningService.onSignerReady = trigger;
     trigger();
   }
 
@@ -69,6 +73,9 @@ class BadgeSyncService {
       final prefs = await SharedPreferences.getInstance();
       try {
         final ok = await syncNow();
+        // false heißt: Relays, Pull oder Push sind gescheitert. Kein Signer
+        // und abgelehntes NIP-44 setzen hier nichts — sonst fragt jedes
+        // Aufwachen erneut nach der Freigabe.
         if (!ok) {
           await prefs.setBool(_dirtyKey, true);
         }
@@ -90,55 +97,72 @@ class BadgeSyncService {
     }
   }
 
-  /// Einmal hoch- und wieder herunter. Gibt false, wenn der Signer kein
-  /// NIP-44 kann oder gerade ein Lauf aktiv ist.
+  /// Einmal hoch- und wieder herunter.
+  ///
+  /// false: Relays, Pull oder Push sind gescheitert. Der Aufrufer merkt dirty,
+  /// das Aufwachen holt genau diesen Fall nach.
+  /// true: fertig, oder es gibt gerade keinen Signer bzw. kein NIP-44. Beides
+  /// setzt kein dirty. Lief schon ein Sync, wird dieser Aufruf nachgezogen,
+  /// sobald der laufende durch ist — auch nach einem Fehlschlag.
   static Future<bool> syncNow() async {
     if (_busy) {
-      // Ein saveBadges während eines Laufs: der aktuelle Lauf arbeitet mit
-      // einem alten Stand. Danach einer nachholen, nicht dirty setzen.
       _rerun = true;
       return true;
     }
     _busy = true;
     try {
-      do {
+      while (true) {
         _rerun = false;
-        if (!await _syncOnce()) return false;
-      } while (_rerun);
-      return true;
+        final attempt = await _syncOnce();
+        // Ein Signer, der während dieses Laufs benutzbar wurde, oder ein
+        // saveBadges: der Nachzügler zählt, das Ergebnis davor nicht.
+        if (_rerun) continue;
+        if (attempt == _SyncAttempt.nip44Blocked) {
+          // Die Probe hat den Signer schon gefragt. Dirty löschen, sonst
+          // kommt beim nächsten Aufwachen dieselbe Freigabe erneut.
+          final prefs = await SharedPreferences.getInstance();
+          if (_rerun) continue;
+          await prefs.setBool(_dirtyKey, false);
+          if (_rerun) continue;
+          return true;
+        }
+        if (attempt == _SyncAttempt.noSigner) return true;
+        return attempt == _SyncAttempt.ok;
+      }
     } finally {
       _busy = false;
     }
   }
 
-  static Future<bool> _syncOnce() async {
+  static Future<_SyncAttempt> _syncOnce() async {
     final me = await SigningService.pubkeyHex();
-    if (me == null || me.isEmpty) return false;
+    if (me == null || me.isEmpty) return _SyncAttempt.noSigner;
 
     // Der Signer darf NIP-44 nicht können. Dann bleibt der Sync aus,
     // statt dem Nutzer einen Fehler zu zeigen — das Backup ist der Weg.
+    // canNip44 fängt selbst; die Zweige bleiben, falls die Probe doch wirft.
     try {
       if (!await SigningService.canNip44()) {
         AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
-        return false;
+        return _SyncAttempt.nip44Blocked;
       }
     } on UnsupportedError {
       AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
-      return false;
+      return _SyncAttempt.nip44Blocked;
     } on SigningException catch (e) {
       AppLogger.debug(_tag, 'NIP-44-Probe abgelehnt — Sync bleibt aus: $e');
-      return false;
+      return _SyncAttempt.nip44Blocked;
     }
 
     final merged = await _pull(me);
     // null: die lokale Datei ist nicht lesbar und die Relays haben keine
     // Kopie. Nicht als leeren Erfolg verbuchen.
-    if (merged == null) return false;
+    if (merged == null) return _SyncAttempt.failed;
     final pushed = await _push(me, merged);
     final prefs = await SharedPreferences.getInstance();
     // Dirty bleibt, wenn ein Chunk auf keinem Relay bestätigt wurde.
     await prefs.setBool(_dirtyKey, !pushed);
-    return pushed;
+    return pushed ? _SyncAttempt.ok : _SyncAttempt.failed;
   }
 
   /// Relays lesen, entschlüsseln und die ferne Liste mit der lokalen
@@ -404,4 +428,12 @@ class BadgeSyncService {
       ws?.close();
     }
   }
+}
+
+/// Ein Lauf. Nur [failed] ist ein abgebrochener Relay-Sync und setzt dirty.
+enum _SyncAttempt {
+  ok,
+  noSigner,
+  nip44Blocked,
+  failed,
 }

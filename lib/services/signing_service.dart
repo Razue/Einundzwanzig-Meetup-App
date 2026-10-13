@@ -1143,6 +1143,7 @@ class SigningService {
       await _setMode(SigningMode.amber);
       AppLogger.security('SigningService',
           'Amber verbunden: ${_short(result.npub)} — nsec bleibt in Amber.');
+      _noteSignerReady();
     }
     return result;
   }
@@ -1150,6 +1151,7 @@ class SigningService {
   /// Aktiviert den lokalen Modus (nach Key-Generierung/Import).
   static Future<void> useLocalMode() async {
     await _setMode(SigningMode.local);
+    _noteSignerReady();
   }
 
   /// Stellt den Amber-Modus aus einem Backup wieder her.
@@ -1160,6 +1162,7 @@ class SigningService {
     await prefs.setString(_amberPubkeyHexKey, hex);
     await prefs.setString(_amberNpubKey, npub.trim());
     await _setMode(SigningMode.amber);
+    _noteSignerReady();
   }
 
   /// Trennt Amber und löscht den gemerkten pubkey.
@@ -1206,6 +1209,7 @@ class SigningService {
       AppLogger.security('SigningService',
           'Browsererweiterung verbunden: ${_short(result.npub)} — '
           'der Schlüssel bleibt in der Erweiterung.');
+      _noteSignerReady();
     }
     return result;
   }
@@ -1218,6 +1222,7 @@ class SigningService {
     await prefs.setString(_nip07PubkeyHexKey, hex);
     await prefs.setString(_nip07NpubKey, npub.trim());
     await _setMode(SigningMode.nip07);
+    _noteSignerReady();
   }
 
   /// Trennt die Erweiterung und löscht den gemerkten pubkey.
@@ -1245,6 +1250,14 @@ class SigningService {
   /// geöffnetes Fenster blockiert der Browser, weil keine Nutzer-Gestik
   /// vorliegt.
   static void Function(String url)? onNip46AuthUrl;
+
+  /// Badge-Sync hängt sich hier ein, sobald eine Identität signieren kann.
+  /// Der Dienst darf nicht importiert werden: er benutzt selbst den Signer.
+  static void Function()? onSignerReady;
+
+  static void _noteSignerReady() {
+    onSignerReady?.call();
+  }
 
   /// Liefert die Sitzung, stellt sie bei Bedarf aus dem Gespeicherten her.
   static Future<Nip46Client> _nip46Session() async {
@@ -1341,6 +1354,7 @@ class SigningService {
           'SigningService',
           'Remote-Signer verbunden: ${_short(npub)} — '
               'der Schlüssel bleibt im Signer.');
+      _noteSignerReady();
       return Nip46ConnectSuccess(pubkeyHex: userPubkeyHex, npub: npub);
     } on Nip46TimeoutException {
       await client?.close();
@@ -1408,6 +1422,7 @@ class SigningService {
           'SigningService',
           'Remote-Signer gekoppelt: ${_short(npub)} — '
               'der Schlüssel bleibt im Signer.');
+      _noteSignerReady();
       return Nip46ConnectSuccess(pubkeyHex: userPubkeyHex, npub: npub);
     } on Nip46TimeoutException {
       await pairing.cancel();
@@ -1540,6 +1555,7 @@ class SigningService {
     await prefs.setString(_nip46NpubKey, Nip19.encodePubkey(hex));
     await prefs.setString(_nip46BunkerUriKey, bunkerUri.trim());
     await _setMode(SigningMode.nip46);
+    _noteSignerReady();
   }
 
   /// Trennt den Remote-Signer und räumt die Sitzung ab.
