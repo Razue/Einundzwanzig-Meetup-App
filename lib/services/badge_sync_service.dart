@@ -2,9 +2,10 @@
 // NIP-44 an den eigenen Pubkey. Plan: docs/PLAN_BADGE_SYNC.md.
 //
 // Ablauf:
-//   pull: Ist die lokale Datei lesbar und nicht leer, gilt sie.
-//         Ist sie leer, kommen die Relays und werden lokal gespeichert.
-//         Ist sie nicht lesbar, bleiben die Bytes liegen; eine ferne
+//   pull: Relays lesen und mit der lokalen Datei je Veranstaltung
+//         vereinigen (MeetupBadge.unionByIdentity). Kein Relay erreichbar:
+//         der Lauf scheitert und wird nachgeholt, statt blind zu schreiben.
+//         Ist die Datei nicht lesbar, bleiben die Bytes liegen; eine ferne
 //         Kopie wird nur daneben geschrieben.
 //   push: erst pull, dann aus dem Ergebnis Chunks bauen und nur die
 //         veröffentlichen, deren Inhalt sich geändert hat, und nur auf
@@ -12,7 +13,7 @@
 //
 // Drei Regeln aus dem Plan, die hier stehen und nicht im Aufrufer:
 //   - nie eine leere Liste veröffentlichen (Reset-Pfad)
-//   - ein Gerät ohne lokale Badges liest erst, bevor es je schreibt
+//   - jedes Gerät liest, bevor es schreibt: vereinigen statt überschreiben
 //   - eine nicht lesbare Datei ist keine leere Liste: nichts überschreiben,
 //     nichts leeres veröffentlichen, ferne Badges nur zusätzlich sichern
 
@@ -20,6 +21,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/badge.dart';
@@ -46,9 +48,42 @@ class BadgeSyncService {
   static const _dirtyKey = 'badge_sync_dirty';
   static const _hashesKey = 'badge_sync_chunk_hashes';
   static const _lastGenKey = 'badge_sync_last_gen';
+  /// Übersteht einen Abbruch mitten im Identitätswechsel. Solange das
+  /// gesetzt ist, wird nichts veröffentlicht.
+  static const _holdKey = 'badge_restore_hold';
+  /// Die aktive Identität beim Beginn des Einspielens. Ob der Schlüssel
+  /// gewechselt hat, sagt der Keystore selbst: ein Vergleich damit, kein
+  /// eigenes Flag, das zwischen zwei Schreibvorgängen falsch sein kann.
+  static const _fromKey = 'badge_restore_from';
+  /// Leeres Backup einer anderen Identität: die alte Sammlung muss noch
+  /// ins Archiv, bevor irgendetwas veröffentlicht wird. Liegt vor dem
+  /// Schlüssel, damit ein Abbruch dazwischen den Riegel nicht öffnet.
+  static const _clearKey = 'badge_restore_clear';
   static const _timeout = Duration(seconds: 8);
 
   static bool _busy = false;
+
+  // Solange ein Backup eingespielt wird, läuft kein Sync. saveBadges feuert
+  // dort, bevor der Schlüssel aus dem Backup im Keystore liegt: Der Lauf
+  // würde die Badges der neuen Identität unter dem alten Pubkey
+  // veröffentlichen. Ein ausgesetzter Auslöser wird beim Fortsetzen
+  // einmal nachgeholt.
+  static bool _suspended = false;
+  static bool _pendingWhileSuspended = false;
+
+  /// Zählt die Läufe von [syncNow], nur für Tests.
+  @visibleForTesting
+  static int runs = 0;
+
+  /// Speicher des Prozesses leeren. Ein echter Neustart tut dasselbe,
+  /// die Prefs bleiben.
+  @visibleForTesting
+  static void debugResetProcess() {
+    _suspended = false;
+    _pendingWhileSuspended = false;
+    _busy = false;
+    _rerun = false;
+  }
 
   // Merkt, dass während eines laufenden Syncs ein weiterer Lauf nötig wurde
   // (saveBadges oder ein Signer, der gerade benutzbar wurde). Der laufende
@@ -67,8 +102,154 @@ class BadgeSyncService {
     trigger();
   }
 
+  /// Sync aussetzen, solange ein Backup eingespielt wird. Der Riegel liegt
+  /// auch in den Prefs: ein Abbruch dazwischen veröffentlicht nichts.
+  /// [fromNpub] ist die aktive Identität vor dem Einspielen.
+  /// Was von einem früheren Einspielen noch liegt, wird erst nach
+  /// Keystore-Wahrheit abgeräumt. Bleibt der Riegel trotzdem, werden Puffer
+  /// und Leeren-Vormerk verworfen: solange ein Riegel stand, war die aktive
+  /// Datei unberührt, und die Backup-Datei gibt es noch.
+  static Future<void> beginRestoreHold({String fromNpub = ''}) async {
+    await settleRestore();
+    final prefs = await SharedPreferences.getInstance();
+    await MeetupBadge.discardIncoming();
+    await prefs.remove(_clearKey);
+    await prefs.setString(_fromKey, fromNpub.trim().toLowerCase());
+    await prefs.setBool(_holdKey, true);
+    _suspended = true;
+  }
+
+  /// Einspielen zu Ende, gleich ob gelungen oder abgebrochen. Der Keystore
+  /// entscheidet, was mit dem Puffer passiert ([settleRestore]). Ein
+  /// Auslöser, der währenddessen kam, läuft jetzt einmal nach.
+  static Future<void> endRestore() async {
+    _suspended = false;
+    await settleRestore();
+    if (_pendingWhileSuspended) {
+      _pendingWhileSuspended = false;
+      trigger();
+    }
+  }
+
+  /// Ein Wechsel liegt nur vor, wenn jetzt eine andere Identität lesbar ist.
+  /// Ein leerer npub ist ein Lese-Aussetzer, kein vollzogener Wechsel.
+  static bool identitySwitched(String from, String now) {
+    final current = now.trim().toLowerCase();
+    if (current.isEmpty) return false;
+    return current != from.trim().toLowerCase();
+  }
+
+  /// Vormerken, dass nach dem Schlüssel die alte Sammlung ins Archiv muss.
+  /// false heißt: der Riegel hätte danach nichts mehr, woran er sich hält.
+  static Future<void> markRestoreClear() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!await prefs.setBool(_clearKey, true)) {
+      throw Exception(
+          'Die leere Sammlung konnte nicht vorgemerkt werden.');
+    }
+  }
+
+  /// Die alte Sammlung liegt im Archiv, der Vormerk ist erledigt.
+  static Future<void> clearRestoreMark() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_clearKey);
+  }
+
+  /// Räumt einen Riegel ab, auch nach einem Absturz mitten im Wechsel.
+  /// Hat die Identität seit dem Beginn gewechselt, wird ein Puffer zur
+  /// aktiven Datei und die Chunk-Hashes der alten Identität werden
+  /// vergessen. Sonst wird der Puffer verworfen, die alte Datei bleibt
+  /// vollständig. Läuft das Einspielen noch in diesem Prozess, passiert
+  /// nichts: der Puffer gehört ihm.
+  static Future<void> settleRestore() async {
+    if (_suspended) return;
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_holdKey) != true) return;
+    final from = (prefs.getString(_fromKey) ?? '').trim().toLowerCase();
+    final now = ((await SigningService.npub()) ?? '').trim().toLowerCase();
+    final switched = identitySwitched(from, now);
+    final incoming = prefs.getString(MeetupBadge.incomingPrefsKey);
+    final staged = incoming != null && incoming.contains(':');
+    var clear = prefs.getBool(_clearKey) == true;
+    // Vorher stand eine Identität, jetzt ist kein npub lesbar. Nichts
+    // entscheiden: weder übernehmen noch den Riegel öffnen. War vorher
+    // keine Identität da, gibt es nichts, das unter einem neuen Schlüssel
+    // veröffentlicht werden könnte.
+    if (from.isNotEmpty && now.isEmpty && (staged || clear)) {
+      AppLogger.warn(_tag, 'npub gerade nicht lesbar, Riegel bleibt');
+      return;
+    }
+    if (staged) {
+      if (switched) {
+        // Nahm das Archiv die alte Sammlung nicht an, liegt sie noch als
+        // aktive Datei. Riegel und Puffer bleiben, sonst ginge sie beim
+        // nächsten Lauf unter dem neuen Pubkey raus. Der nächste Sync
+        // versucht es erneut.
+        if (!await MeetupBadge.promoteIncoming(formerNpub: from)) {
+          AppLogger.warn(_tag,
+              'Puffer nicht übernommen, Riegel bleibt bis zum nächsten Versuch');
+          return;
+        }
+      } else {
+        await MeetupBadge.discardIncoming();
+      }
+      // Der Puffer ist die neue Sammlung. Ein Leeren-Vormerk daneben
+      // würde sie anschließend wegwerfen.
+      if (clear) {
+        await prefs.remove(_clearKey);
+        clear = false;
+      }
+    }
+    if (clear) {
+      if (!switched) {
+        await prefs.remove(_clearKey);
+      } else if (!await _clearActiveWithoutSync()) {
+        AppLogger.warn(_tag,
+            'Leere Sammlung nicht übernommen, Riegel bleibt');
+        return;
+      } else {
+        await prefs.remove(_clearKey);
+      }
+    }
+    if (switched) await forgetLocalState();
+    await prefs.remove(_holdKey);
+    await prefs.remove(_fromKey);
+  }
+
+  /// Wie das leere Ersetzen im Backup, ohne den Sync anzustoßen: der läuft
+  /// erst, wenn der Riegel wirklich weg ist.
+  static Future<bool> _clearActiveWithoutSync() async {
+    final saved = MeetupBadge.onBadgesSaved;
+    MeetupBadge.onBadgesSaved = null;
+    try {
+      return await MeetupBadge.saveBadges([], discardLocked: true);
+    } finally {
+      MeetupBadge.onBadgesSaved = saved;
+    }
+  }
+
+  static Future<bool> _isHeld() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_holdKey) == true;
+  }
+
+  /// Nach einem Identitätswechsel ohne Reset: Chunk-Hashes und Generation
+  /// gehören zur alten Identität. Ohne das Vergessen würde ein Chunk mit
+  /// gleichem Inhalt nicht veröffentlicht, obwohl er unter dem neuen
+  /// Pubkey auf keinem Relay liegt.
+  static Future<void> forgetLocalState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_hashesKey);
+    await prefs.remove(_lastGenKey);
+    await prefs.remove(_dirtyKey);
+  }
+
   /// Nach `saveBadges` aufrufen. Im Hintergrund, wirft nicht.
   static void trigger() {
+    if (_suspended) {
+      _pendingWhileSuspended = true;
+      return;
+    }
     unawaited(() async {
       final prefs = await SharedPreferences.getInstance();
       try {
@@ -110,6 +291,7 @@ class BadgeSyncService {
       return true;
     }
     _busy = true;
+    runs++;
     try {
       while (true) {
         _rerun = false;
@@ -127,6 +309,7 @@ class BadgeSyncService {
           return true;
         }
         if (attempt == _SyncAttempt.noSigner) return true;
+        if (attempt == _SyncAttempt.held) return true;
         return attempt == _SyncAttempt.ok;
       }
     } finally {
@@ -135,6 +318,9 @@ class BadgeSyncService {
   }
 
   static Future<_SyncAttempt> _syncOnce() async {
+    await settleRestore();
+    if (await _isHeld()) return _SyncAttempt.held;
+
     final me = await SigningService.pubkeyHex();
     if (me == null || me.isEmpty) return _SyncAttempt.noSigner;
 
@@ -158,6 +344,7 @@ class BadgeSyncService {
     // null: die lokale Datei ist nicht lesbar und die Relays haben keine
     // Kopie. Nicht als leeren Erfolg verbuchen.
     if (merged == null) return _SyncAttempt.failed;
+    if (await _isHeld()) return _SyncAttempt.held;
     final pushed = await _push(me, merged);
     final prefs = await SharedPreferences.getInstance();
     // Dirty bleibt, wenn ein Chunk auf keinem Relay bestätigt wurde.
@@ -165,16 +352,15 @@ class BadgeSyncService {
     return pushed ? _SyncAttempt.ok : _SyncAttempt.failed;
   }
 
-  /// Relays lesen, entschlüsseln und die ferne Liste mit der lokalen
-  /// vereinigen. Ein leeres lokales Gerät ist dabei der Empfänger: es
-  /// bekommt alles aus der Ferne. Ein Gerät mit lokalen Badges ist
-  /// Autorität: was lokal fehlt, wird nicht wieder aus der Ferne geholt,
-  /// sonst kämen nach der Duplikat-Bereinigung die fern liegenden
-  /// Exemplare über den Merge sofort zurück.
+  /// Relays lesen, entschlüsseln und mit der lokalen Datei je Veranstaltung
+  /// vereinigen. Nichts, was irgendwo liegt, geht verloren; Doppelscans
+  /// fallen durch die Vereinigungsregel weg, auf jedem Gerät gleich.
+  /// null: kein Relay erreichbar oder lokal nicht speicherbar. Dann gilt
+  /// der Lauf als gescheitert und wird nachgeholt, statt blind zu schreiben.
   static Future<List<MeetupBadge>?> _pull(String me) async {
     final local = await MeetupBadge.loadBadges();
     if (MeetupBadge.badgesUnreadable) {
-      final remote = await _fetchRemote(me);
+      final remote = await _fetchRemote(me) ?? const <MeetupBadge>[];
       if (remote.isEmpty) {
         AppLogger.warn(_tag,
             'Lokale Badges nicht lesbar, auf den Relays liegt keine Kopie');
@@ -182,32 +368,43 @@ class BadgeSyncService {
       }
       // Die alte Datei bleibt als Sicherung. Die ferne Liste wird die
       // lesbare Fassung, vorgemerkte Scans kommen in saveBadges dazu.
+      // Ein Restore, der währenddessen begann, hat Vorrang: nicht über
+      // seine Datei schreiben.
+      if (await _isHeld()) return null;
       final wrote = await MeetupBadge.saveBadges(remote, replaceUnreadable: true);
       if (!wrote) return null;
       return MeetupBadge.loadBadges();
     }
-    if (local.isEmpty) {
-      final remote = await _fetchRemote(me);
-      if (remote.isNotEmpty) {
-        // Kam die ferne Kopie lokal nicht an, ist das kein Erfolg: Der Sync
-        // bleibt dirty und versucht es wieder, statt die Sammlung als
-        // wiederhergestellt zu verbuchen, obwohl lokal nichts liegt.
-        if (!await MeetupBadge.saveBadges(remote)) return null;
-      }
-      return remote;
+    final remote = await _fetchRemote(me);
+    if (remote == null) {
+      AppLogger.debug(_tag, 'Kein Relay erreichbar, Sync wird nachgeholt');
+      return null;
     }
-    return local;
+    final merged = BadgeSyncFormat.merge(local, remote);
+    if (MeetupBadge.sameBadges(merged, local)) return local;
+    // Ein Restore, der während des Lesens begann, hat Vorrang: nicht über
+    // seine Datei schreiben. Kam die Vereinigung lokal nicht an, ist das
+    // kein Erfolg: Der Sync bleibt dirty und versucht es wieder.
+    if (await _isHeld()) return null;
+    if (!await MeetupBadge.saveBadges(merged)) return null;
+    return merged;
   }
 
   /// Lädt alle Chunks von den Relays, entschlüsselt, was geht, und
   /// vereinigt die Badges. Fehlende oder kaputte Chunks fallen weg.
-  static Future<List<MeetupBadge>> _fetchRemote(String me) async {
+  /// null, wenn kein einziges Relay geantwortet hat.
+  static Future<List<MeetupBadge>?> _fetchRemote(String me) async {
+    var answered = 0;
     final events = await Future.wait(
-      syncRelays.map((url) => _fetchFromRelay(url, me).catchError((Object e) {
+      syncRelays.map((url) => _fetchFromRelay(url, me).then((r) {
+            answered++;
+            return r;
+          }).catchError((Object e) {
             AppLogger.debug(_tag, 'Lesen von $url fehlgeschlagen: $e');
             return <int, Map<String, dynamic>>{};
           })),
     );
+    if (answered == 0) return null;
 
     // Pro d gewinnt das neueste Event über alle Relays.
     final byIndex = <int, Map<String, dynamic>>{};
@@ -435,5 +632,6 @@ enum _SyncAttempt {
   ok,
   noSigner,
   nip44Blocked,
+  held,
   failed,
 }

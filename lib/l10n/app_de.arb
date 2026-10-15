@@ -128,6 +128,40 @@
   "settingsSectionAccount": "ACCOUNT",
   "settingsBackup": "Backup erstellen",
   "settingsBackupSub": "Sichere deinen Account",
+  "settingsBackupLoad": "Backup laden",
+  "settingsBackupLoadSub": "Ergänzt deine Sammlung aus einer Sicherung",
+  "backupReplaceTitle": "Backup ersetzt diese Identität",
+  "backupReplaceBody": "Auf diesem Gerät ist {existing} eingerichtet. Das Backup gehört zu {backup}. Schlüssel, Profil und Badges werden ersetzt, sobald die neue Sammlung geschrieben ist. Die bisherige Sammlung bleibt auf diesem Gerät unter Frühere Sammlungen. Ihr Schlüssel nicht: erstelle vorher ein Backup, sonst ist er weg.",
+  "backupAddUnknownTitle": "Backup ohne Identität",
+  "backupAddUnknownBody": "Dieses Backup nennt keine Nostr-Identität. Badges und leere Profilfelder werden zu {existing} hinzugefügt. Was schon da ist, bleibt.",
+  "@backupAddUnknownBody": {
+    "placeholders": {
+      "existing": {
+        "type": "String"
+      }
+    }
+  },
+  "backupAddUnknownConfirm": "Hinzufügen",
+  "backupMergeAdded": "{count} Badges hinzugefügt",
+  "@backupMergeAdded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupMergeSame": "Sammlung zusammengeführt, keine neuen Badges",
+  "@backupReplaceBody": {
+    "placeholders": {
+      "existing": {
+        "type": "String"
+      },
+      "backup": {
+        "type": "String"
+      }
+    }
+  },
+  "backupReplaceConfirm": "Ersetzen",
   "settingsLanguageTitle": "Sprache",
   "settingsLanguageChoose": "Sprache wählen",
   "settingsRelays": "Nostr-Relays",
@@ -1948,6 +1982,33 @@
     }
   },
   "walletCleanupDone": "{count} Duplikate entfernt.",
+  "walletFormerTitle": "Frühere Sammlungen",
+  "walletFormerNone": "Keine früheren Sammlungen.",
+  "walletFormerHint": "Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie.",
+  "walletFormerMergeTitle": "Zur aktuellen Identität hinzufügen?",
+  "walletFormerMergeBody": "Diese Badges werden Teil deiner aktuellen Identität und mit ihr synchronisiert. Die frühere Sammlung bleibt im Archiv.",
+  "walletFormerEntry": "{count} Badges",
+  "@walletFormerEntry": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walletFormerUnreadable": "Nicht lesbar, kein passender Schlüssel",
+  "walletFormerReasonReplaced": "Beim Identitätswechsel ersetzt",
+  "walletFormerReasonRotated": "Ältere Sicherung",
+  "walletFormerReasonCleared": "Geleert",
+  "walletFormerMerge": "Zusammenführen",
+  "walletFormerMerged": "{count} Badges zusammengeführt.",
+  "@walletFormerMerged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "walletFormerMergeFailed": "Zusammenführen nicht möglich.",
   "@walletCleanupDone": {
     "placeholders": {
       "count": {

@@ -132,4 +132,33 @@ void main() {
           index: 0, total: 1, generation: 4))),
     );
   });
+
+  test('Vereinigung je Veranstaltung: zwei Ids, ein Abend, ein Badge', () {
+    MeetupBadge scan(String id,
+            {required int hour, bool claimed = true, bool organizer = false}) =>
+        MeetupBadge(
+          id: id,
+          meetupName: 'Koblenz',
+          meetupEventId: 'koblenz-2026-10-11',
+          date: DateTime(2026, 10, 11, hour),
+          iconPath: '',
+          claimSig: claimed ? 'sig' : '',
+          claimPubkey: claimed ? 'pk' : '',
+          isOrganizer: organizer,
+        );
+    // Beide geclaimt: der erste Scan bleibt, von beiden Seiten gesehen.
+    final first = scan('koblenz-2026-10-11', hour: 19);
+    final second = scan('koblenz-2026-10-11-2', hour: 20);
+    expect(BadgeSyncFormat.merge([first], [second]).map((b) => b.id),
+        ['koblenz-2026-10-11']);
+    expect(BadgeSyncFormat.merge([second], [first]).map((b) => b.id),
+        ['koblenz-2026-10-11']);
+    // Nur der zweite trägt den Claim: der bleibt.
+    final unclaimed = scan('koblenz-2026-10-11', hour: 19, claimed: false);
+    expect(BadgeSyncFormat.merge([unclaimed], [second]).map((b) => b.id),
+        ['koblenz-2026-10-11-2']);
+    // Der Organisator-Marker desselben Abends ist kein Doppelscan.
+    final marker = scan('org-koblenz-2026-10-11', hour: 18, organizer: true);
+    expect(BadgeSyncFormat.merge([first, marker], [second]).length, 2);
+  });
 }

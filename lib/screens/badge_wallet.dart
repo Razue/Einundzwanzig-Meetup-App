@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 
@@ -20,6 +21,7 @@ import 'badge_details.dart';
 import 'reputation_qr.dart';
 import '../services/reputation_publisher.dart';
 import '../services/app_logger.dart';
+import '../services/nostr_service.dart';
 import '../utils/share_origin.dart';
 
 // ============================================================
@@ -482,6 +484,11 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
               tooltip: _compactView ? 'Normal' : 'Kompakt',
               onPressed: () => setState(() => _compactView = !_compactView),
             ),
+          IconButton(
+            icon: const Icon(Icons.history_rounded),
+            tooltip: AppLocalizations.of(context).walletFormerTitle,
+            onPressed: _showFormerSheet,
+          ),
           // Bereinigen-Knopf NUR anzeigen, wenn es wirklich Duplikate gibt.
           if (_duplicateBadges().isNotEmpty)
             IconButton(
@@ -510,6 +517,149 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   }
 
   // ============================================================
+  // FRUEHERE SAMMLUNGEN (ARCHIV)
+  // ============================================================
+  // Nichts wird wirklich geloescht: Was beim Identitaetswechsel ersetzt,
+  // als Sicherung verdraengt oder geleert wurde, liegt verschluesselt im
+  // Archiv (MeetupBadge.formerCollections). Von hier kommt es per
+  // Vereinigung zurueck, nach derselben Regel wie Datei und Sync. Das
+  // Archiv selbst bleibt dabei erhalten.
+
+  String _formerReason(AppLocalizations t, String reason) {
+    switch (reason) {
+      case 'replaced':
+        return t.walletFormerReasonReplaced;
+      case 'rotated':
+        return t.walletFormerReasonRotated;
+      case 'cleared':
+        return t.walletFormerReasonCleared;
+      default:
+        return reason;
+    }
+  }
+
+  Future<void> _showFormerSheet() async {
+    final t = AppLocalizations.of(context);
+    final former = await MeetupBadge.formerCollections();
+    if (!mounted) return;
+    if (former.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.walletFormerNone),
+        backgroundColor: cSurface,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+    final fmt = DateFormat('dd.MM.yyyy HH:mm');
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: cCard,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          children: [
+            Row(children: [
+              const Icon(Icons.history_rounded, color: cOrange, size: 20),
+              const SizedBox(width: 10),
+              Expanded(child: Text(t.walletFormerTitle,
+                  style: const TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700))),
+            ]),
+            const SizedBox(height: 8),
+            Text(t.walletFormerHint,
+                style: const TextStyle(color: cTextTertiary, fontSize: 11.5, height: 1.35)),
+            const SizedBox(height: 8),
+            ...former.map((f) {
+              final badges = f.badges;
+              final readable = badges != null;
+              final sub = [
+                fmt.format(f.at),
+                _formerReason(t, f.reason),
+                if (f.npub.isNotEmpty) NostrService.shortenNpub(f.npub),
+              ].join(' · ');
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                    readable ? t.walletFormerEntry(badges.length) : t.walletFormerUnreadable,
+                    style: TextStyle(
+                        color: readable ? cText : cTextTertiary,
+                        fontSize: 13.5, fontWeight: FontWeight.w600)),
+                subtitle: Text(sub, style: const TextStyle(color: cTextSecondary, fontSize: 11.5)),
+                trailing: TextButton(
+                  onPressed: readable ? () { Navigator.pop(ctx); _confirmMergeFormer(f); } : null,
+                  child: Text(t.walletFormerMerge,
+                      style: TextStyle(
+                          color: readable ? cOrange : cTextTertiary,
+                          fontWeight: FontWeight.w700)),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmMergeFormer(FormerCollection f) async {
+    final t = AppLocalizations.of(context);
+    final agreed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cCard,
+        title: Text(t.walletFormerMergeTitle,
+            style: const TextStyle(color: cText, fontWeight: FontWeight.w700)),
+        content: Text(t.walletFormerMergeBody,
+            style: const TextStyle(color: cTextSecondary, height: 1.35)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.dialogCancelMixed, style: const TextStyle(color: cTextTertiary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.walletFormerMerge,
+                style: const TextStyle(color: cOrange, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (agreed == true) await _mergeFormer(f);
+  }
+
+  Future<void> _mergeFormer(FormerCollection f) async {
+    final t = AppLocalizations.of(context);
+    final before = myBadges.map(MeetupBadge.unionKey).toSet();
+    final ok = await MeetupBadge.mergeFormer(f.index);
+    if (!mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t.walletFormerMergeFailed),
+        backgroundColor: cRed,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
+    final loaded = await MeetupBadge.loadBadges();
+    final added =
+        loaded.where((b) => !before.contains(MeetupBadge.unionKey(b))).length;
+    myBadges = loaded;
+    AppLogger.diag('Wallet',
+        'Frühere Sammlung zusammengeführt: $added neu, gesamt ${loaded.length}.');
+    // Reputation neu veroeffentlichen: Zaehler und Proof-Hash aendern sich.
+    ReputationPublisher.publishInBackground(loaded);
+
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(t.walletFormerMerged(added)),
+      backgroundColor: cGreen,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  // ============================================================
   // DUPLIKATE BEREINIGEN
   // ============================================================
   // Beim Feldtest konnten identische Badges mehrfach in die Wallet gelangen.
@@ -522,22 +672,17 @@ Exportiert am ${DateTime.now().day}.${DateTime.now().month}.${DateTime.now().yea
   // EINMAL — ein Duplikat hat dort nie eine eigene Verknuepfung erzeugt.
   // Entfernen aendert daher nur die lokale Sammlung sowie Zaehler und
   // Proof-Hash im (ersetzbaren) Reputations-Event. Das Original bleibt
-  // IMMER erhalten: behalten wird das aelteste Badge je Schluessel.
+  // IMMER erhalten. Welche Fassung bleibt, entscheidet dieselbe Regel wie
+  // beim Speichern und im Sync (MeetupBadge.unionByIdentity): Claim,
+  // bestaetigte Anwesenheit, dann der aelteste Scan. Der Sync raeumt
+  // Doppelscans deshalb von selbst; dieser Dialog bleibt fuer Geraete
+  // ohne Sync und zeigt, was wegfaellt.
 
-  /// Die Badges, die beim Bereinigen entfernt wuerden (alle ausser dem
-  /// jeweils aeltesten Original).
+  /// Die Badges, die beim Bereinigen entfernt wuerden (alle ausser der
+  /// Fassung, die die Vereinigungsregel behaelt).
   List<MeetupBadge> _duplicateBadges() {
-    // Organisator-Marker ausklammern: Sie teilen sich die meetupEventId mit
-    // dem echten Badge desselben Meetups, sind aber etwas anderes — sie
-    // duerfen weder als Duplikat gelten noch eines verdraengen.
-    final sorted = myBadges.where((b) => !b.isOrganizer).toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-    final seen = <String>{};
-    final dups = <MeetupBadge>[];
-    for (final b in sorted) {
-      if (!seen.add(MeetupBadge.identityKey(b))) dups.add(b);
-    }
-    return dups;
+    final kept = MeetupBadge.unionByIdentity(myBadges, const []);
+    return myBadges.where((b) => !kept.contains(b)).toList();
   }
 
   void _showCleanupDialog() {
