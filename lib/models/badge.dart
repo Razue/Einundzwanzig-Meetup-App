@@ -1211,12 +1211,14 @@ class MeetupBadge {
       // nur [resetAll].
       final retained = await _retainCurrent(prefs, 'cleared');
       if (!retained.ok) return false;
+      // Zuerst die Zweitkopie. Sind die Prefs schon leer und sie bleibt
+      // liegen, holt das nächste Laden die alte Sammlung still zurück.
+      if (!await _deleteSecureCopy()) return false;
       await prefs.remove(_prefsBadgeEncrypted);
       await prefs.remove(_prefsBadgePreserved);
       await prefs.remove(_prefsBadgeOlder);
       await prefs.remove(_prefsLegacyBadges);
       await _releasePending(keepKey: retained.keepPendingKey);
-      await _deleteSecureCopy();
       badgesUnreadable = false;
       onBadgesSaved?.call();
       return true;

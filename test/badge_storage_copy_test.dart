@@ -159,6 +159,28 @@ void main() {
         isNull);
   });
 
+  test('Leeren mit klemmendem Schlüsselbund löscht nichts', () async {
+    await MeetupBadge.saveBadges([_badge('a')]);
+    final prefs = await SharedPreferences.getInstance();
+    final blob = prefs.getString(_blobKey);
+    final secure = await const FlutterSecureStorage().readAll();
+    FlutterSecureStoragePlatform.instance = _CopyUndeletable(Map.of(secure));
+
+    expect(await MeetupBadge.saveBadges([]), isFalse);
+    expect(prefs.getString(_blobKey), blob);
+    expect(await const FlutterSecureStorage().read(key: _blobKey), blob);
+  });
+
+  test('Leeren mit klemmendem Schlüsselbund lässt die Sammlung lesbar',
+      () async {
+    await MeetupBadge.saveBadges([_badge('a')]);
+    final secure = await const FlutterSecureStorage().readAll();
+    FlutterSecureStoragePlatform.instance = _CopyUndeletable(Map.of(secure));
+
+    expect(await MeetupBadge.saveBadges([]), isFalse);
+    expect((await MeetupBadge.loadBadges()).map((b) => b.id), ['a']);
+  });
+
   test('ältere Installation ohne Zweitkopie liest wie bisher', () async {
     await MeetupBadge.saveBadges([_badge('a')]);
     // Die Zweitkopie fehlt, als wäre sie nie geschrieben worden.
