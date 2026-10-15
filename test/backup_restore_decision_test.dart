@@ -35,6 +35,22 @@ void main() {
     });
   });
 
+  test('Identitäten eines Backups: aktive und lokale, ohne Doppel', () {
+    expect(
+      BackupService.backupIdentities({
+        'nostr': {'npub': _a, 'active_npub': _b},
+      }),
+      [_b, _a],
+    );
+    expect(
+      BackupService.backupIdentities({
+        'nostr': {'npub': _a.toUpperCase(), 'active_npub': _a},
+      }),
+      [_a],
+    );
+    expect(BackupService.backupIdentities({'user': {}}), isEmpty);
+  });
+
   group('restoreDecision', () {
     test('ohne Identität auf dem Gerät: wie bisher', () {
       expect(

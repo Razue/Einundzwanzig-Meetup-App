@@ -2994,10 +2994,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                         () async {
                           Navigator.pop(ctx);
                           if (!mounted) return;
-                          final ok = await BackupService.restoreBackup(context);
-                          if (!ok || !mounted) return;
-                          // Wie beim Start: Identität, Badges, Admin-Status,
-                          // Profilbild und Events gehören jetzt zum Backup.
+                          await BackupService.restoreBackup(context);
+                          if (!mounted) return;
+                          // Auch ein abgebrochener Lauf kann Schlüssel oder
+                          // Profil schon geschrieben haben. Der Bildschirm
+                          // liest danach neu, sonst zeigt er den Stand davor.
                           _loadAll();
                         }),
                     ]),

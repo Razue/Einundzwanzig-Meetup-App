@@ -1984,7 +1984,7 @@
   "walletCleanupDone": "{count} Duplikate entfernt.",
   "walletFormerTitle": "Frühere Sammlungen",
   "walletFormerNone": "Keine früheren Sammlungen.",
-  "walletFormerHint": "Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie.",
+  "walletFormerHint": "Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie. Es bleiben höchstens die letzten zehn Fassungen.",
   "walletFormerMergeTitle": "Zur aktuellen Identität hinzufügen?",
   "walletFormerMergeBody": "Diese Badges werden Teil deiner aktuellen Identität und mit ihr synchronisiert. Die frühere Sammlung bleibt im Archiv.",
   "walletFormerEntry": "{count} Badges",

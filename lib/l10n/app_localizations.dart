@@ -7975,7 +7975,7 @@ abstract class AppLocalizations {
   /// No description provided for @walletFormerHint.
   ///
   /// In de, this message translates to:
-  /// **'Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie.'**
+  /// **'Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie. Es bleiben höchstens die letzten zehn Fassungen.'**
   String get walletFormerHint;
 
   /// No description provided for @walletFormerMergeTitle.

@@ -4312,7 +4312,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get walletFormerHint =>
-      'What was set aside on a switch, as an older backup or when cleared stays here. Merge makes the badges part of the identity that is active now, and syncs them.';
+      'What was set aside on a switch, as an older backup or when cleared stays here. Merge makes the badges part of the identity that is active now, and syncs them. At most the last ten are kept.';
 
   @override
   String get walletFormerMergeTitle => 'Add to the current identity?';

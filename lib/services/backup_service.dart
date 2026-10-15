@@ -785,7 +785,10 @@ class BackupService {
         // Gleiche Identität oder ein Backup ohne npub: ergänzen.
         // Andere Identität: erst bestätigen. Die alte Datei bleibt, bis
         // der neue Schlüssel liegt und der Puffer zur Sammlung wird.
-        final existingNpub = (await SigningService.npub() ?? '').trim();
+        // Steht noch ein Riegel von einem unvollendeten Wechsel, gehört die
+        // Sammlung der Identität davor: sie zählt, nicht der Keystore.
+        final existingNpub = await BadgeSyncService.pendingFrom() ??
+            (await SigningService.npub() ?? '').trim();
         final backupNpub = backupIdentityNpub(data);
         final decision = restoreDecision(
             existingNpub: existingNpub, backupNpub: backupNpub);
@@ -802,7 +805,12 @@ class BackupService {
             return false;
           }
         }
-        await BadgeSyncService.beginRestoreHold(fromNpub: existingNpub);
+        final replacing = decision == RestoreDecision.replacesIdentity;
+        await BadgeSyncService.beginRestoreHold(
+          fromNpub: existingNpub,
+          expectNpubs: replacing ? backupIdentities(data) : const [],
+          replace: replacing,
+        );
         held = true;
         final additive = decision == RestoreDecision.sameIdentity ||
             decision == RestoreDecision.addToIdentity;
@@ -996,18 +1004,28 @@ class BackupService {
         // inkonsistent, im Web nicht erlaubt), bleibt auch die Sammlung.
         if (decision == RestoreDecision.replacesIdentity) {
           final nowNpub = ((await SigningService.npub()) ?? '').trim();
+          final wanted = backupIdentities(data);
+          final now = nowNpub.toLowerCase();
           final switched =
-              BadgeSyncService.identitySwitched(existingNpub, nowNpub);
+              BadgeSyncService.identitySwitched(existingNpub, nowNpub) &&
+                  (wanted.isEmpty || wanted.contains(now));
           if (!switched) {
-            // Ein leerer npub ist kein Beleg, dass der Schlüssel blieb.
-            // Puffer und Vormerk bleiben für den nächsten Lauf.
-            if (nowNpub.isNotEmpty) await MeetupBadge.discardIncoming();
+            // Ein leerer npub oder eine andere als die versprochene
+            // Identität ist kein Beleg für den Wechsel. Puffer und Vormerk
+            // bleiben. Nur wenn der alte Schlüssel noch da ist, war der
+            // Wechsel gar nicht angefangen: dann darf der Puffer weg.
+            final unchanged = nowNpub.isNotEmpty &&
+                now == existingNpub.trim().toLowerCase();
+            if (unchanged) await MeetupBadge.discardIncoming();
             throw Exception(nowNpub.isEmpty
                 ? 'Der Schlüssel aus dem Backup ist gerade nicht lesbar, '
                     'die Sammlung bleibt unverändert.'
                 : 'Der Schlüssel aus dem Backup wurde nicht '
                     'übernommen, die Sammlung bleibt unverändert.');
           }
+          // Nachweise der bisherigen Identität weg, bevor die des Backups
+          // darüber liegen. Der Vormerk sagt settle, dass das schon geschah.
+          await BadgeSyncService.clearIdentityProofs();
           if (restoredBadges.isEmpty) {
             badgesSaved = await MeetupBadge.saveBadges(
                 [], discardLocked: true);
@@ -1240,6 +1258,20 @@ class BackupService {
     final active = (nostr['active_npub'] ?? '').toString().trim();
     if (active.isNotEmpty) return active;
     return (nostr['npub'] ?? '').toString().trim();
+  }
+
+  /// Alle Identitäten, die ein Backup mitbringt: die aktive und die des
+  /// lokalen Schlüssels. Im Mischzustand fällt die Wiederherstellung auf
+  /// den lokalen Schlüssel zurück, wenn der externe Signer nicht kommt;
+  /// beide gehören dem Besitzer des Backups.
+  static List<String> backupIdentities(Map<String, dynamic> data) {
+    final nostr = data['nostr'];
+    if (nostr is! Map) return const [];
+    return <String>{
+      for (final raw in [nostr['active_npub'], nostr['npub']])
+        if ((raw ?? '').toString().trim().isNotEmpty)
+          (raw ?? '').toString().trim().toLowerCase(),
+    }.toList();
   }
 
   /// Was ein Backup mit dem Gerät macht. Ohne Identität auf dem Gerät wie

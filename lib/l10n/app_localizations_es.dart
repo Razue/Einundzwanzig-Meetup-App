@@ -4334,7 +4334,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get walletFormerHint =>
-      'Lo que se apartó al cambiar, como copia antigua o al vaciar se queda aquí. Fusionar hace las insignias parte de la identidad activa y las sincroniza.';
+      'Lo que se apartó al cambiar, como copia antigua o al vaciar se queda aquí. Fusionar hace las insignias parte de la identidad activa y las sincroniza. Se conservan como máximo las diez últimas.';
 
   @override
   String get walletFormerMergeTitle => '¿Añadir a la identidad actual?';

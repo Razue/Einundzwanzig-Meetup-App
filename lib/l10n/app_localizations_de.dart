@@ -4341,7 +4341,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get walletFormerHint =>
-      'Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie.';
+      'Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie. Es bleiben höchstens die letzten zehn Fassungen.';
 
   @override
   String get walletFormerMergeTitle => 'Zur aktuellen Identität hinzufügen?';

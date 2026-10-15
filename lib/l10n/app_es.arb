@@ -1938,7 +1938,7 @@
   "walletCleanupDone": "{count} duplicados eliminados.",
   "walletFormerTitle": "Colecciones anteriores",
   "walletFormerNone": "No hay colecciones anteriores.",
-  "walletFormerHint": "Lo que se apartó al cambiar, como copia antigua o al vaciar se queda aquí. Fusionar hace las insignias parte de la identidad activa y las sincroniza.",
+  "walletFormerHint": "Lo que se apartó al cambiar, como copia antigua o al vaciar se queda aquí. Fusionar hace las insignias parte de la identidad activa y las sincroniza. Se conservan como máximo las diez últimas.",
   "walletFormerMergeTitle": "¿Añadir a la identidad actual?",
   "walletFormerMergeBody": "Estas insignias pasan a tu identidad actual y se sincronizan con ella. La colección anterior sigue en el archivo.",
   "walletFormerEntry": "{count} insignias",

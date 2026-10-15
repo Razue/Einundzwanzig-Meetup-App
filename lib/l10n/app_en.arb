@@ -1938,7 +1938,7 @@
   "walletCleanupDone": "Removed {count} duplicates.",
   "walletFormerTitle": "Former collections",
   "walletFormerNone": "No former collections.",
-  "walletFormerHint": "What was set aside on a switch, as an older backup or when cleared stays here. Merge makes the badges part of the identity that is active now, and syncs them.",
+  "walletFormerHint": "What was set aside on a switch, as an older backup or when cleared stays here. Merge makes the badges part of the identity that is active now, and syncs them. At most the last ten are kept.",
   "walletFormerMergeTitle": "Add to the current identity?",
   "walletFormerMergeBody": "These badges become part of your current identity and sync with it. The former collection stays in the archive.",
   "walletFormerEntry": "{count} badges",

@@ -2,6 +2,8 @@
 // Schlüssel. SharedPreferences bleibt der erste Ort und wird nie deswegen
 // geräumt. Jede Fassung, die sich öffnen lässt, zählt.
 
+import 'dart:convert';
+
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_secure_storage/test/test_flutter_secure_storage_platform.dart';
@@ -30,6 +32,16 @@ class _CopyUnwritable extends TestFlutterSecureStoragePlatform {
   Future<void> write({required String key, required String value, required Map<String, String> options}) {
     if (key == _blobKey) throw PlatformException(code: 'keystore');
     return super.write(key: key, value: value, options: options);
+  }
+}
+
+/// Die Zweitkopie lässt sich nicht löschen, der Rest schon.
+class _CopyUndeletable extends TestFlutterSecureStoragePlatform {
+  _CopyUndeletable(super.data);
+  @override
+  Future<void> delete({required String key, required Map<String, String> options}) {
+    if (key == _blobKey) throw PlatformException(code: 'keystore');
+    return super.delete(key: key, options: options);
   }
 }
 
@@ -109,6 +121,42 @@ void main() {
     expect(prefs.getString(_blobKey), isNull);
     expect(await const FlutterSecureStorage().read(key: _blobKey), isNull);
     expect(await MeetupBadge.loadBadges(), isEmpty);
+  });
+
+  test('Zweitkopie nicht schreibbar: Übernahme gelingt trotzdem', () async {
+    await MeetupBadge.saveBadges([_badge('a')]);
+    expect(await MeetupBadge.stageIncoming([_badge('b')]), isTrue);
+    final secure = await const FlutterSecureStorage().readAll();
+    FlutterSecureStoragePlatform.instance = _CopyUnwritable(Map.of(secure));
+
+    expect(await MeetupBadge.promoteIncoming(formerNpub: 'npub1alt'), isTrue);
+    expect((await MeetupBadge.loadBadges()).map((b) => b.id), ['b']);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(MeetupBadge.incomingPrefsKey), isNull);
+    expect((await MeetupBadge.formerCollections()).single.npub, 'npub1alt');
+  });
+
+  test('Reset mit klemmendem Schlüsselbund holt die Sammlung nicht zurück',
+      () async {
+    await MeetupBadge.saveBadges([_badge('a')]);
+    final secure = await const FlutterSecureStorage().readAll();
+    final stuck = _CopyUndeletable(Map.of(secure));
+    FlutterSecureStoragePlatform.instance = stuck;
+
+    await MeetupBadge.resetAll();
+    expect(await const FlutterSecureStorage().read(key: _blobKey), isNotNull,
+        reason: 'Löschen klemmt');
+    expect(await MeetupBadge.loadBadges(), isEmpty,
+        reason: 'die überlebende Zweitkopie bleibt gesperrt');
+
+    // Der Schlüsselbund geht wieder: der nächste Start räumt nach.
+    FlutterSecureStoragePlatform.instance =
+        TestFlutterSecureStoragePlatform(stuck.data);
+    expect(await MeetupBadge.loadBadges(), isEmpty);
+    expect(await const FlutterSecureStorage().read(key: _blobKey), isNull);
+    expect(
+        await const FlutterSecureStorage().read(key: 'badge_reset_pending'),
+        isNull);
   });
 
   test('ältere Installation ohne Zweitkopie liest wie bisher', () async {
@@ -230,5 +278,25 @@ void main() {
     final former = await MeetupBadge.formerCollections();
     expect(former.map((f) => f.reason), ['cleared', 'replaced']);
     expect(former.first.badges?.map((b) => b.id), ['b']);
+  });
+
+  test('Klartext aus alten Installationen kommt ins Archiv', () async {
+    await MeetupBadge.saveBadges([_badge('bleibt')]);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('badges', [jsonEncode(_badge('klar').toJson())]);
+
+    expect(await MeetupBadge.saveBadges([]), isTrue);
+
+    final former = await MeetupBadge.formerCollections();
+    expect(former.single.badges?.map((b) => b.id), containsAll(['bleibt', 'klar']));
+    expect(prefs.getStringList('badges'), isNull);
+  });
+
+  test('Klartext ohne Schlüssel wird nicht gelöscht', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('badges', [jsonEncode(_badge('klar').toJson())]);
+
+    expect(await MeetupBadge.saveBadges([]), isFalse);
+    expect(prefs.getStringList('badges'), isNotNull);
   });
 }
