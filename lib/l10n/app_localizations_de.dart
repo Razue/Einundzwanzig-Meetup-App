@@ -311,6 +311,43 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsBackupSub => 'Sichere deinen Account';
 
   @override
+  String get settingsBackupLoad => 'Backup laden';
+
+  @override
+  String get settingsBackupLoadSub =>
+      'Ergänzt deine Sammlung aus einer Sicherung';
+
+  @override
+  String get backupReplaceTitle => 'Backup ersetzt diese Identität';
+
+  @override
+  String backupReplaceBody(String existing, String backup) {
+    return 'Auf diesem Gerät ist $existing eingerichtet. Das Backup gehört zu $backup. Schlüssel, Profil und Badges werden ersetzt, sobald die neue Sammlung geschrieben ist. Die bisherige Sammlung bleibt auf diesem Gerät unter Frühere Sammlungen. Ihr Schlüssel nicht: erstelle vorher ein Backup, sonst ist er weg.';
+  }
+
+  @override
+  String get backupAddUnknownTitle => 'Backup ohne Identität';
+
+  @override
+  String backupAddUnknownBody(String existing) {
+    return 'Dieses Backup nennt keine Nostr-Identität. Badges und leere Profilfelder werden zu $existing hinzugefügt. Was schon da ist, bleibt.';
+  }
+
+  @override
+  String get backupAddUnknownConfirm => 'Hinzufügen';
+
+  @override
+  String backupMergeAdded(int count) {
+    return '$count Badges hinzugefügt';
+  }
+
+  @override
+  String get backupMergeSame => 'Sammlung zusammengeführt, keine neuen Badges';
+
+  @override
+  String get backupReplaceConfirm => 'Ersetzen';
+
+  @override
   String get settingsLanguageTitle => 'Sprache';
 
   @override
@@ -4295,6 +4332,51 @@ class AppLocalizationsDe extends AppLocalizations {
   String walletCleanupDone(int count) {
     return '$count Duplikate entfernt.';
   }
+
+  @override
+  String get walletFormerTitle => 'Frühere Sammlungen';
+
+  @override
+  String get walletFormerNone => 'Keine früheren Sammlungen.';
+
+  @override
+  String get walletFormerHint =>
+      'Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie. Es bleiben höchstens die letzten zehn Fassungen.';
+
+  @override
+  String get walletFormerMergeTitle => 'Zur aktuellen Identität hinzufügen?';
+
+  @override
+  String get walletFormerMergeBody =>
+      'Diese Badges werden Teil deiner aktuellen Identität und mit ihr synchronisiert. Die frühere Sammlung bleibt im Archiv.';
+
+  @override
+  String walletFormerEntry(int count) {
+    return '$count Badges';
+  }
+
+  @override
+  String get walletFormerUnreadable => 'Nicht lesbar, kein passender Schlüssel';
+
+  @override
+  String get walletFormerReasonReplaced => 'Beim Identitätswechsel ersetzt';
+
+  @override
+  String get walletFormerReasonRotated => 'Ältere Sicherung';
+
+  @override
+  String get walletFormerReasonCleared => 'Geleert';
+
+  @override
+  String get walletFormerMerge => 'Zusammenführen';
+
+  @override
+  String walletFormerMerged(int count) {
+    return '$count Badges zusammengeführt.';
+  }
+
+  @override
+  String get walletFormerMergeFailed => 'Zusammenführen nicht möglich.';
 
   @override
   String get orgGpsSoftTitle => 'Ohne Standort fortfahren?';

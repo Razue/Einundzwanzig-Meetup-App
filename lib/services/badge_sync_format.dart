@@ -183,39 +183,12 @@ class BadgeSyncFormat {
     );
   }
 
-  /// Vereinigt lokale und ferne Badges nach Id.
-  ///
-  /// Gleiche Id: ein Badge mit Claim gewinnt vor einem ohne, danach das
-  /// mit presenceVerified, danach das lokale. Das ist der Fall
-  /// "Duplikat-Bereinigung auf einem Gerät, Original auf dem anderen".
+  /// Vereinigt lokale und ferne Badges je Veranstaltung, sortiert.
+  /// Die Regel steht in [MeetupBadge.unionByIdentity] und ist dieselbe wie
+  /// in der Datei und im Wallet. Bei Gleichstand gewinnt das lokale.
   static List<MeetupBadge> merge(
     List<MeetupBadge> local,
     List<MeetupBadge> remote,
-  ) {
-    final byId = <String, MeetupBadge>{};
-    for (final b in remote) {
-      byId[b.id] = b;
-    }
-    for (final b in local) {
-      final existing = byId[b.id];
-      if (existing == null) {
-        byId[b.id] = b;
-        continue;
-      }
-      byId[b.id] = _prefer(b, existing);
-    }
-    return sortBadges(byId.values);
-  }
-
-  static bool _hasClaim(MeetupBadge b) => b.claimSig.isNotEmpty;
-
-  static MeetupBadge _prefer(MeetupBadge local, MeetupBadge remote) {
-    final localClaim = _hasClaim(local);
-    final remoteClaim = _hasClaim(remote);
-    if (localClaim != remoteClaim) return localClaim ? local : remote;
-    if (local.presenceVerified != remote.presenceVerified) {
-      return local.presenceVerified ? local : remote;
-    }
-    return local;
-  }
+  ) =>
+      sortBadges(MeetupBadge.unionByIdentity(local, remote));
 }

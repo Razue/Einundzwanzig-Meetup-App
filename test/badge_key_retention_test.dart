@@ -35,9 +35,12 @@ class _BrokenRead extends TestFlutterSecureStoragePlatform {
       throw PlatformException(code: 'keystore');
 }
 
+// Je Id eine eigene Veranstaltung: die Vereinigung arbeitet je
+// Veranstaltung (MeetupBadge.unionByIdentity), nicht je Id.
 MeetupBadge _badge(String id) => MeetupBadge(
       id: id,
       meetupName: 'Aschaffenburg',
+      meetupEventId: id,
       date: DateTime.utc(2026, 10, 11, 19),
       iconPath: 'assets/badge_icon.png',
     );

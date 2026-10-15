@@ -16,6 +16,8 @@ import '../features.dart';
 import '../models/user.dart';
 import '../models/badge.dart';
 import 'admin_registry.dart';
+import 'badge_sync_format.dart';
+import 'badge_sync_service.dart';
 import 'nostr_service.dart';
 import 'secure_key_store.dart';
 import 'signing_service.dart';
@@ -656,6 +658,7 @@ class BackupService {
     // dauern zusammen mehrere Sekunden. Das AppLocalizations-Objekt selbst
     // bleibt gueltig, auch wenn der Context es nicht mehr ist.
     final t = AppLocalizations.of(context);
+    var held = false;
 
     try {
       // readAsBytes, damit der Inhalt auf allen Plattformen ankommt.
@@ -778,9 +781,48 @@ class BackupService {
 
         final int version = data['version'] ?? 1;
 
+        // --- VORHANDENE IDENTITÄT ---
+        // Gleiche Identität oder ein Backup ohne npub: ergänzen.
+        // Andere Identität: erst bestätigen. Die alte Datei bleibt, bis
+        // der neue Schlüssel liegt und der Puffer zur Sammlung wird.
+        // Steht noch ein Riegel von einem unvollendeten Wechsel, gehört die
+        // Sammlung der Identität davor: sie zählt, nicht der Keystore.
+        final existingNpub = await BadgeSyncService.pendingFrom() ??
+            (await SigningService.npub() ?? '').trim();
+        final backupNpub = backupIdentityNpub(data);
+        final decision = restoreDecision(
+            existingNpub: existingNpub, backupNpub: backupNpub);
+        if (decision == RestoreDecision.replacesIdentity) {
+          if (!context.mounted) return false;
+          if (!await _confirmReplaceIdentity(
+              context, t, existingNpub, backupNpub)) {
+            return false;
+          }
+        }
+        if (decision == RestoreDecision.addToIdentity) {
+          if (!context.mounted) return false;
+          if (!await _confirmAddToIdentity(context, t, existingNpub)) {
+            return false;
+          }
+        }
+        final replacing = decision == RestoreDecision.replacesIdentity;
+        await BadgeSyncService.beginRestoreHold(
+          fromNpub: existingNpub,
+          expectNpubs: replacing ? backupIdentities(data) : const [],
+          replace: replacing,
+        );
+        held = true;
+        final additive = decision == RestoreDecision.sameIdentity ||
+            decision == RestoreDecision.addToIdentity;
+
         // --- USER WIEDERHERSTELLEN ---
+        // Ergänzen füllt nur leere Felder und vereinigt Favoriten.
+        // Gesetzte Felder und der Schlüssel bleiben.
         var userData = data['user'];
-        var user = UserProfile(
+        var user = additive
+            ? mergeProfile(await UserProfile.load(),
+                Map<String, dynamic>.from(userData as Map))
+            : UserProfile(
           nickname: userData['nickname'] ?? "Anon",
           fullName: userData['fullName'] ?? "",
           homeMeetupId: userData['homeMeetupId'] ?? "",
@@ -795,7 +837,9 @@ class BackupService {
           telegramHandle: userData['telegramHandle'] ?? "",
           twitterHandle: userData['twitterHandle'] ?? "",
         );
-        await user.save();
+        // Beim Ersetzen speichert der Nostr-Block das Profil, sobald der
+        // Schlüssel liegt; Profil und Schlüssel wechseln so zusammen.
+        if (decision != RestoreDecision.replacesIdentity) await user.save();
 
         // --- BADGES WIEDERHERSTELLEN ---
         List<dynamic> badgeList = data['badges'];
@@ -811,13 +855,35 @@ class BackupService {
           // wieder her, inkl. lat/lng (Weltkugel/Standort) und Claim-Binding.
           restoredBadges.add(MeetupBadge.fromJson(map));
         }
-        // Der Rest des Backups wird trotzdem eingespielt, damit der
-        // Nostr-Schlüssel nicht an einem Badge-Fehler hängt. Erfolg wird
-        // am Ende aber nur gemeldet, wenn die Badges wirklich liegen.
-        final badgesSaved = await restoreBadges(restoredBadges);
+        // Ergänzen: vereinigen. Ersetzen: in den Puffer, die aktive Datei
+        // bleibt bis nach dem Schlüssel. Frisches Gerät: die Liste aus
+        // dem Backup wird die Sammlung.
+        var addedBadges = restoredBadges.length;
+        var badgesSaved = false;
+        if (additive) {
+          final before = await MeetupBadge.loadBadges();
+          restoredBadges = BadgeSyncFormat.merge(before, restoredBadges);
+          addedBadges = addedBadgeCount(before, restoredBadges);
+          badgesSaved = await restoreBadges(restoredBadges);
+        } else if (decision == RestoreDecision.replacesIdentity) {
+          if (restoredBadges.isEmpty) {
+            await BadgeSyncService.markRestoreClear();
+            badgesSaved = true;
+          } else if (!await MeetupBadge.stageIncoming(restoredBadges)) {
+            throw Exception('${restoredBadges.length} Badges aus dem Backup '
+                'konnten nicht vorbereitet werden.');
+          } else {
+            badgesSaved = true;
+          }
+        } else {
+          badgesSaved = await restoreBadges(restoredBadges);
+        }
 
         // --- NOSTR KEYS WIEDERHERSTELLEN ---
-        if (version >= 2 && data['nostr'] != null) {
+        // Nicht bei derselben Identität: der Schlüssel ist schon da, und ein
+        // Backup aus dem lokalen Modus soll einen Amber-Nutzer nicht still
+        // auf den lokalen Schlüssel umstellen.
+        if (!additive && version >= 2 && data['nostr'] != null) {
           final nostrData = data['nostr'] as Map<String, dynamic>;
           final hasKey = nostrData['has_key'] ?? false;
           final mode = '${nostrData['signing_mode'] ?? 'local'}';
@@ -933,6 +999,44 @@ class BackupService {
           }
         }
 
+        // Erst wenn der Keystore wirklich die neue Identität trägt, wird
+        // die alte Sammlung abgelöst. Blieb der Schlüssel (Backup-Schlüssel
+        // inkonsistent, im Web nicht erlaubt), bleibt auch die Sammlung.
+        if (decision == RestoreDecision.replacesIdentity) {
+          final nowNpub = ((await SigningService.npub()) ?? '').trim();
+          final wanted = backupIdentities(data);
+          final now = nowNpub.toLowerCase();
+          final switched =
+              BadgeSyncService.identitySwitched(existingNpub, nowNpub) &&
+                  (wanted.isEmpty || wanted.contains(now));
+          if (!switched) {
+            // Ein leerer npub oder eine andere als die versprochene
+            // Identität ist kein Beleg für den Wechsel. Puffer und Vormerk
+            // bleiben. Nur wenn der alte Schlüssel noch da ist, war der
+            // Wechsel gar nicht angefangen: dann darf der Puffer weg.
+            final unchanged = nowNpub.isNotEmpty &&
+                now == existingNpub.trim().toLowerCase();
+            if (unchanged) await MeetupBadge.discardIncoming();
+            throw Exception(nowNpub.isEmpty
+                ? 'Der Schlüssel aus dem Backup ist gerade nicht lesbar, '
+                    'die Sammlung bleibt unverändert.'
+                : 'Der Schlüssel aus dem Backup wurde nicht '
+                    'übernommen, die Sammlung bleibt unverändert.');
+          }
+          // Nachweise der bisherigen Identität weg, bevor die des Backups
+          // darüber liegen. Der Vormerk sagt settle, dass das schon geschah.
+          await BadgeSyncService.clearIdentityProofs();
+          if (restoredBadges.isEmpty) {
+            badgesSaved = await MeetupBadge.saveBadges(
+                [], discardLocked: true);
+            if (badgesSaved) await BadgeSyncService.clearRestoreMark();
+          } else if (!await MeetupBadge.promoteIncoming(
+              formerNpub: existingNpub)) {
+            badgesSaved = false;
+          }
+          if (badgesSaved) await user.save();
+        }
+
         // --- ADMIN REGISTRY WIEDERHERSTELLEN (MIT VALIDIERUNG) ---
         // Security Audit 2, Fund #1: Backup könnte manipulierte npubs enthalten.
         // Wir validieren das npub-Format und erzwingen danach eine Relay-Prüfung.
@@ -1007,9 +1111,19 @@ class BackupService {
               }
             }
 
-            if (validatedProofs.isNotEmpty) {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setString('platform_proofs', jsonEncode(validatedProofs));
+            final prefs = await SharedPreferences.getInstance();
+            if (additive) {
+              final raw = prefs.getString('platform_proofs');
+              final existing = raw == null || raw.isEmpty
+                  ? const <dynamic>[]
+                  : jsonDecode(raw) as List<dynamic>;
+              final merged = unionPlatformProofs(existing, validatedProofs);
+              if (merged.isNotEmpty) {
+                await prefs.setString('platform_proofs', jsonEncode(merged));
+              }
+            } else if (validatedProofs.isNotEmpty) {
+              await prefs.setString(
+                  'platform_proofs', jsonEncode(validatedProofs));
             }
           }
         }
@@ -1021,12 +1135,18 @@ class BackupService {
         // Stattdessen Receipt-Daten speichern und als "pending" markieren.
         // HumanityProofService prüft beim nächsten Start auf Relays
         // ob der Zap-Receipt tatsächlich existiert.
-        if (data['humanity_proof'] != null) {
+        final humanityPrefs = await SharedPreferences.getInstance();
+        // Beim Ergänzen bleibt ein Nachweis, den das Gerät schon hat. Beim
+        // Ersetzen gehört er zur alten Identität: dann wie bisher den aus
+        // dem Backup vormerken.
+        final humanityAlready = additive &&
+            humanityPrefs.getBool('humanity_verified') == true;
+        if (!humanityAlready && data['humanity_proof'] != null) {
           final hp = data['humanity_proof'] as Map<String, dynamic>;
           final hpVerified = hp['verified'] as bool? ?? false;
 
           if (hpVerified) {
-            final prefs = await SharedPreferences.getInstance();
+            final prefs = humanityPrefs;
             // NICHT: await prefs.setBool('humanity_verified', true);
             // Stattdessen: als "pending reverification" markieren
             await prefs.setBool('humanity_verified', false);
@@ -1065,18 +1185,30 @@ class BackupService {
           final hasHumanity = data['humanity_proof'] != null &&
               (data['humanity_proof']['verified'] as bool? ?? false);
 
-          // Detaillierte Erfolgsmeldung
-          final List<String> restored = ['Profil', '${restoredBadges.length} Badges'];
-          if (hasNostr) restored.add('Nostr-Key');
-          if (hasPlatformProofs) {
-            final count = (data['platform_proofs'] as List<dynamic>).length;
-            restored.add('$count Plattform-Proofs');
+          final String message;
+          if (additive) {
+            message = addedBadges > 0
+                ? t.backupMergeAdded(addedBadges)
+                : t.backupMergeSame;
+          } else {
+            final List<String> restored = [
+              'Profil',
+              '${restoredBadges.length} Badges',
+            ];
+            if (hasNostr) restored.add('Nostr-Key');
+            if (hasPlatformProofs) {
+              final count = (data['platform_proofs'] as List<dynamic>).length;
+              restored.add('$count Plattform-Proofs');
+            }
+            if (hasHumanity && !humanityAlready) {
+              restored.add('Humanity-Proof');
+            }
+            message = t.backupLoaded(restored.join(', '));
           }
-          if (hasHumanity) restored.add('Humanity-Proof');
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).backupLoaded(restored.join(', '))),
+              content: Text(message),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 4),
             ),
@@ -1096,6 +1228,9 @@ class BackupService {
       return false;
     } finally {
       _busy = false;
+      // Gelungen oder nicht: der Keystore entscheidet, was mit dem Puffer
+      // geschieht, und ein ausgesetzter Auslöser läuft nach.
+      if (held) await BadgeSyncService.endRestore();
     }
   }
 
@@ -1111,6 +1246,199 @@ class BackupService {
       return false;
     }
     return true;
+  }
+
+  /// Die Identität, zu der ein Backup gehört: bei Mischzustand die aktive
+  /// (Amber, Erweiterung, Bunker), sonst der npub des lokalen Schlüssels.
+  /// Leer bei Backups ohne Nostr-Block.
+  @visibleForTesting
+  static String backupIdentityNpub(Map<String, dynamic> data) {
+    final nostr = data['nostr'];
+    if (nostr is! Map) return '';
+    final active = (nostr['active_npub'] ?? '').toString().trim();
+    if (active.isNotEmpty) return active;
+    return (nostr['npub'] ?? '').toString().trim();
+  }
+
+  /// Alle Identitäten, die ein Backup mitbringt: die aktive und die des
+  /// lokalen Schlüssels. Im Mischzustand fällt die Wiederherstellung auf
+  /// den lokalen Schlüssel zurück, wenn der externe Signer nicht kommt;
+  /// beide gehören dem Besitzer des Backups.
+  static List<String> backupIdentities(Map<String, dynamic> data) {
+    final nostr = data['nostr'];
+    if (nostr is! Map) return const [];
+    return <String>{
+      for (final raw in [nostr['active_npub'], nostr['npub']])
+        if ((raw ?? '').toString().trim().isNotEmpty)
+          (raw ?? '').toString().trim().toLowerCase(),
+    }.toList();
+  }
+
+  /// Was ein Backup mit dem Gerät macht. Ohne Identität auf dem Gerät wie
+  /// bisher. Dieselbe Identität vereinigt. Ein Backup ohne npub wird der
+  /// vorhandenen Identität hinzugefügt, nach Rückfrage. Nur eine andere
+  /// erkennbare Identität ersetzt, und erst nach dem Schreiben.
+  @visibleForTesting
+  static RestoreDecision restoreDecision({
+    required String existingNpub,
+    required String backupNpub,
+  }) {
+    final existing = existingNpub.trim().toLowerCase();
+    final backup = backupNpub.trim().toLowerCase();
+    if (existing.isEmpty) return RestoreDecision.fresh;
+    if (backup.isNotEmpty && backup == existing) {
+      return RestoreDecision.sameIdentity;
+    }
+    if (backup.isEmpty) return RestoreDecision.addToIdentity;
+    return RestoreDecision.replacesIdentity;
+  }
+
+  /// Leere Felder aus dem Backup, gesetzte bleiben. Favoriten werden vereinigt.
+  @visibleForTesting
+  static UserProfile mergeProfile(
+      UserProfile device, Map<String, dynamic> userData) {
+    String fill(String current, dynamic incoming) {
+      if (current.trim().isNotEmpty) return current;
+      final next = (incoming ?? '').toString();
+      return next.trim().isEmpty ? current : next;
+    }
+
+    final nickIncoming = (userData['nickname'] ?? '').toString();
+    final nickname = device.hasCustomNickname
+        ? device.nickname
+        : (nickIncoming.trim().isEmpty ? device.nickname : nickIncoming);
+    final backupFavs = (userData['favoriteMeetupIds'] as List?)
+            ?.map((e) => e.toString())
+            .where((s) => s.isNotEmpty)
+            .toList() ??
+        ((userData['homeMeetupId'] ?? '').toString().isNotEmpty
+            ? [(userData['homeMeetupId']).toString()]
+            : <String>[]);
+    final favs = <String>{
+      ...device.favoriteMeetupIds.where((s) => s.isNotEmpty),
+      ...backupFavs,
+    }.toList();
+    final home = device.homeMeetupId.trim().isNotEmpty
+        ? device.homeMeetupId
+        : (userData['homeMeetupId'] ?? '').toString();
+    if (home.isNotEmpty && !favs.contains(home)) favs.insert(0, home);
+    final merged = UserProfile(
+      nickname: nickname,
+      fullName: fill(device.fullName, userData['fullName']),
+      homeMeetupId: home,
+      favoriteMeetupIds: favs,
+      isAdminVerified: device.isAdminVerified,
+      isNostrVerified: device.isNostrVerified,
+      nostrNpub: device.nostrNpub,
+      telegramHandle: fill(device.telegramHandle, userData['telegramHandle']),
+      twitterHandle: fill(device.twitterHandle, userData['twitterHandle']),
+      hasNostrKey: device.hasNostrKey,
+    );
+    merged.adminViaPortal = device.adminViaPortal;
+    merged.adminViaVouch = device.adminViaVouch;
+    merged.adminViaSeed = device.adminViaSeed;
+    merged.isReviewDemo = device.isReviewDemo;
+    return merged;
+  }
+
+  /// Wie viele Veranstaltungen [merged] hat, die [before] nicht hatte.
+  @visibleForTesting
+  static int addedBadgeCount(
+      List<MeetupBadge> before, List<MeetupBadge> merged) {
+    final keys = before.map(MeetupBadge.unionKey).toSet();
+    var n = 0;
+    for (final badge in merged) {
+      if (!keys.contains(MeetupBadge.unionKey(badge))) n++;
+    }
+    return n;
+  }
+
+  /// Ein Proof je Plattform, wie es PlatformProofService hält. Hat das
+  /// Gerät schon einen für die Plattform, bleibt der.
+  @visibleForTesting
+  static List<Map<String, dynamic>> unionPlatformProofs(
+      List<dynamic> device, List<dynamic> incoming) {
+    String keyOf(Map<dynamic, dynamic> proof) =>
+        (proof['platform'] ?? '').toString().toLowerCase();
+    final byKey = <String, Map<String, dynamic>>{};
+    for (final raw in device) {
+      if (raw is! Map) continue;
+      byKey[keyOf(raw)] = Map<String, dynamic>.from(raw);
+    }
+    for (final raw in incoming) {
+      if (raw is! Map) continue;
+      final map = Map<String, dynamic>.from(raw);
+      byKey.putIfAbsent(keyOf(map), () => map);
+    }
+    return byKey.values.toList();
+  }
+
+  static Future<bool> _confirmReplaceIdentity(
+    BuildContext context,
+    AppLocalizations t,
+    String existingNpub,
+    String backupNpub,
+  ) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: Text(t.backupReplaceTitle,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          t.backupReplaceBody(
+            NostrService.shortenNpub(existingNpub),
+            backupNpub.isEmpty ? '?' : NostrService.shortenNpub(backupNpub),
+          ),
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.dialogCancelMixed, style: const TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.backupReplaceConfirm,
+                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return result == true;
+  }
+
+  static Future<bool> _confirmAddToIdentity(
+    BuildContext context,
+    AppLocalizations t,
+    String existingNpub,
+  ) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: Text(t.backupAddUnknownTitle,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          t.backupAddUnknownBody(NostrService.shortenNpub(existingNpub)),
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(t.dialogCancelMixed, style: const TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(t.backupAddUnknownConfirm,
+                style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return result == true;
   }
 
   /// Angezeigte Nostr-Identität an den Schlüssel hängen, der wirklich
@@ -1152,3 +1480,19 @@ class BackupService {
 }
 
 
+/// Was ein Backup auf diesem Gerät vorfindet.
+enum RestoreDecision {
+  /// Keine Identität auf dem Gerät: Backup wie bisher einspielen.
+  fresh,
+
+  /// Dieselbe Identität: Badges und leere Profilfelder ergänzen.
+  sameIdentity,
+
+  /// Backup ohne erkennbare Identität: nach Rückfrage zur vorhandenen
+  /// Identität hinzufügen.
+  addToIdentity,
+
+  /// Eine andere Identität: Schlüssel, Profil und Badges werden ersetzt,
+  /// nachdem die neue Sammlung geschrieben ist.
+  replacesIdentity,
+}

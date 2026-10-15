@@ -652,6 +652,66 @@ abstract class AppLocalizations {
   /// **'Sichere deinen Account'**
   String get settingsBackupSub;
 
+  /// No description provided for @settingsBackupLoad.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup laden'**
+  String get settingsBackupLoad;
+
+  /// No description provided for @settingsBackupLoadSub.
+  ///
+  /// In de, this message translates to:
+  /// **'Ergänzt deine Sammlung aus einer Sicherung'**
+  String get settingsBackupLoadSub;
+
+  /// No description provided for @backupReplaceTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup ersetzt diese Identität'**
+  String get backupReplaceTitle;
+
+  /// No description provided for @backupReplaceBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Auf diesem Gerät ist {existing} eingerichtet. Das Backup gehört zu {backup}. Schlüssel, Profil und Badges werden ersetzt, sobald die neue Sammlung geschrieben ist. Die bisherige Sammlung bleibt auf diesem Gerät unter Frühere Sammlungen. Ihr Schlüssel nicht: erstelle vorher ein Backup, sonst ist er weg.'**
+  String backupReplaceBody(String existing, String backup);
+
+  /// No description provided for @backupAddUnknownTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Backup ohne Identität'**
+  String get backupAddUnknownTitle;
+
+  /// No description provided for @backupAddUnknownBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Dieses Backup nennt keine Nostr-Identität. Badges und leere Profilfelder werden zu {existing} hinzugefügt. Was schon da ist, bleibt.'**
+  String backupAddUnknownBody(String existing);
+
+  /// No description provided for @backupAddUnknownConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzufügen'**
+  String get backupAddUnknownConfirm;
+
+  /// No description provided for @backupMergeAdded.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badges hinzugefügt'**
+  String backupMergeAdded(int count);
+
+  /// No description provided for @backupMergeSame.
+  ///
+  /// In de, this message translates to:
+  /// **'Sammlung zusammengeführt, keine neuen Badges'**
+  String get backupMergeSame;
+
+  /// No description provided for @backupReplaceConfirm.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersetzen'**
+  String get backupReplaceConfirm;
+
   /// No description provided for @settingsLanguageTitle.
   ///
   /// In de, this message translates to:
@@ -7899,6 +7959,84 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'{count} Duplikate entfernt.'**
   String walletCleanupDone(int count);
+
+  /// No description provided for @walletFormerTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Frühere Sammlungen'**
+  String get walletFormerTitle;
+
+  /// No description provided for @walletFormerNone.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine früheren Sammlungen.'**
+  String get walletFormerNone;
+
+  /// No description provided for @walletFormerHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Was beim Wechsel, als ältere Sicherung oder beim Leeren beiseitegelegt wurde, liegt hier. Zusammenführen macht die Badges zur Sammlung der Identität, die jetzt aktiv ist, und synchronisiert sie. Es bleiben höchstens die letzten zehn Fassungen.'**
+  String get walletFormerHint;
+
+  /// No description provided for @walletFormerMergeTitle.
+  ///
+  /// In de, this message translates to:
+  /// **'Zur aktuellen Identität hinzufügen?'**
+  String get walletFormerMergeTitle;
+
+  /// No description provided for @walletFormerMergeBody.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Badges werden Teil deiner aktuellen Identität und mit ihr synchronisiert. Die frühere Sammlung bleibt im Archiv.'**
+  String get walletFormerMergeBody;
+
+  /// No description provided for @walletFormerEntry.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badges'**
+  String walletFormerEntry(int count);
+
+  /// No description provided for @walletFormerUnreadable.
+  ///
+  /// In de, this message translates to:
+  /// **'Nicht lesbar, kein passender Schlüssel'**
+  String get walletFormerUnreadable;
+
+  /// No description provided for @walletFormerReasonReplaced.
+  ///
+  /// In de, this message translates to:
+  /// **'Beim Identitätswechsel ersetzt'**
+  String get walletFormerReasonReplaced;
+
+  /// No description provided for @walletFormerReasonRotated.
+  ///
+  /// In de, this message translates to:
+  /// **'Ältere Sicherung'**
+  String get walletFormerReasonRotated;
+
+  /// No description provided for @walletFormerReasonCleared.
+  ///
+  /// In de, this message translates to:
+  /// **'Geleert'**
+  String get walletFormerReasonCleared;
+
+  /// No description provided for @walletFormerMerge.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusammenführen'**
+  String get walletFormerMerge;
+
+  /// No description provided for @walletFormerMerged.
+  ///
+  /// In de, this message translates to:
+  /// **'{count} Badges zusammengeführt.'**
+  String walletFormerMerged(int count);
+
+  /// No description provided for @walletFormerMergeFailed.
+  ///
+  /// In de, this message translates to:
+  /// **'Zusammenführen nicht möglich.'**
+  String get walletFormerMergeFailed;
 
   /// No description provided for @orgGpsSoftTitle.
   ///

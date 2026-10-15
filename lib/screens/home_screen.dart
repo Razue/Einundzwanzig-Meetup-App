@@ -1081,10 +1081,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     // Sitzungsschluessel). Nur deleteNip46ClientKey() liess offene Relays und
     // den geheimen Schluessel in _nip46 bis zum Prozessende liegen.
     try { await SigningService.disconnectNip46(); } catch (_) {}
+    myBadges.clear();
+    // Zuerst die Badge-Daten an beiden Orten. p.clear() davor würde die
+    // Prefs löschen und eine noch liegende Zweitkopie beim nächsten Start
+    // wieder hervorholen, wenn der Prozess dazwischen endet.
+    await MeetupBadge.resetAll();
     final p = await SharedPreferences.getInstance();
     await p.clear();
-    myBadges.clear();
-    await MeetupBadge.saveBadges([], discardLocked: true);
     try { await SecureKeyStore.deleteKeys(); } catch (_) {}
     // Idempotent: disconnectNip46 hat den Key schon geloescht; falls der
     // Aufruf scheiterte, raeumen wir hier nach.
@@ -2984,6 +2987,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                           AppLocalizations.of(context).settingsBackupSub,
                           () async { Navigator.pop(ctx); await BackupService.createBackup(context); }),
                       ),
+                      _sDivider(),
+                      _sRow(Icons.restore_rounded, cCyan,
+                        AppLocalizations.of(context).settingsBackupLoad,
+                        AppLocalizations.of(context).settingsBackupLoadSub,
+                        () async {
+                          Navigator.pop(ctx);
+                          if (!mounted) return;
+                          await BackupService.restoreBackup(context);
+                          if (!mounted) return;
+                          // Auch ein abgebrochener Lauf kann Schlüssel oder
+                          // Profil schon geschrieben haben. Der Bildschirm
+                          // liest danach neu, sonst zeigt er den Stand davor.
+                          _loadAll();
+                        }),
                     ]),
                     const SizedBox(height: 18),
                     // NETZWERK

@@ -311,6 +311,42 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsBackupSub => 'Protege tu cuenta';
 
   @override
+  String get settingsBackupLoad => 'Cargar copia de seguridad';
+
+  @override
+  String get settingsBackupLoadSub => 'Completa tu colección desde una copia';
+
+  @override
+  String get backupReplaceTitle => 'La copia reemplaza esta identidad';
+
+  @override
+  String backupReplaceBody(String existing, String backup) {
+    return 'Este dispositivo está configurado con $existing. La copia pertenece a $backup. La clave, el perfil y las insignias se reemplazan cuando la colección nueva ya está guardada. La colección anterior permanece en este dispositivo, en Colecciones anteriores. Su clave no: crea antes una copia, si no se pierde.';
+  }
+
+  @override
+  String get backupAddUnknownTitle => 'Copia sin identidad';
+
+  @override
+  String backupAddUnknownBody(String existing) {
+    return 'Esta copia no nombra una identidad Nostr. Las insignias y los campos de perfil vacíos se añaden a $existing. Lo que ya está, se queda.';
+  }
+
+  @override
+  String get backupAddUnknownConfirm => 'Añadir';
+
+  @override
+  String backupMergeAdded(int count) {
+    return '$count insignias añadidas';
+  }
+
+  @override
+  String get backupMergeSame => 'Colecciones unidas, sin insignias nuevas';
+
+  @override
+  String get backupReplaceConfirm => 'Reemplazar';
+
+  @override
   String get settingsLanguageTitle => 'Idioma';
 
   @override
@@ -4289,6 +4325,52 @@ class AppLocalizationsEs extends AppLocalizations {
   String walletCleanupDone(int count) {
     return '$count duplicados eliminados.';
   }
+
+  @override
+  String get walletFormerTitle => 'Colecciones anteriores';
+
+  @override
+  String get walletFormerNone => 'No hay colecciones anteriores.';
+
+  @override
+  String get walletFormerHint =>
+      'Lo que se apartó al cambiar, como copia antigua o al vaciar se queda aquí. Fusionar hace las insignias parte de la identidad activa y las sincroniza. Se conservan como máximo las diez últimas.';
+
+  @override
+  String get walletFormerMergeTitle => '¿Añadir a la identidad actual?';
+
+  @override
+  String get walletFormerMergeBody =>
+      'Estas insignias pasan a tu identidad actual y se sincronizan con ella. La colección anterior sigue en el archivo.';
+
+  @override
+  String walletFormerEntry(int count) {
+    return '$count insignias';
+  }
+
+  @override
+  String get walletFormerUnreadable => 'No legible, sin clave que coincida';
+
+  @override
+  String get walletFormerReasonReplaced =>
+      'Reemplazada al cambiar de identidad';
+
+  @override
+  String get walletFormerReasonRotated => 'Copia más antigua';
+
+  @override
+  String get walletFormerReasonCleared => 'Vaciada';
+
+  @override
+  String get walletFormerMerge => 'Fusionar';
+
+  @override
+  String walletFormerMerged(int count) {
+    return '$count insignias fusionadas.';
+  }
+
+  @override
+  String get walletFormerMergeFailed => 'No se pudo fusionar.';
 
   @override
   String get orgGpsSoftTitle => '¿Continuar sin ubicación?';
