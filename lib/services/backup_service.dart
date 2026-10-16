@@ -659,6 +659,7 @@ class BackupService {
     // bleibt gueltig, auch wenn der Context es nicht mehr ist.
     final t = AppLocalizations.of(context);
     var held = false;
+    AppLogger.info('BackupRestore', 'Wiederherstellung gestartet; warte auf Dateiauswahl.');
 
     try {
       // readAsBytes, damit der Inhalt auf allen Plattformen ankommt.
@@ -792,6 +793,7 @@ class BackupService {
         final backupNpub = backupIdentityNpub(data);
         final decision = restoreDecision(
             existingNpub: existingNpub, backupNpub: backupNpub);
+        AppLogger.info('BackupRestore', 'Backup entschlüsselt; Modus: ${decision.name}.');
         if (decision == RestoreDecision.replacesIdentity) {
           if (!context.mounted) return false;
           if (!await _confirmReplaceIdentity(
@@ -858,12 +860,19 @@ class BackupService {
         // Ergänzen: vereinigen. Ersetzen: in den Puffer, die aktive Datei
         // bleibt bis nach dem Schlüssel. Frisches Gerät: die Liste aus
         // dem Backup wird die Sammlung.
+        AppLogger.info('BackupRestore',
+            'Datei enthält ${restoredBadges.length} Badge-Einträge, '
+            '${MeetupBadge.unionByIdentity(restoredBadges, const []).length} '
+            'verschiedene Veranstaltungen/Organisator-Marker.');
         var addedBadges = restoredBadges.length;
         var badgesSaved = false;
         if (additive) {
           final before = await MeetupBadge.loadBadges();
           restoredBadges = BadgeSyncFormat.merge(before, restoredBadges);
           addedBadges = addedBadgeCount(before, restoredBadges);
+          AppLogger.info('BackupRestore',
+              'Lokaler Bestand vorher: ${before.length}; nach Vereinigung: '
+              '${restoredBadges.length}; neu hinzugekommen: $addedBadges.');
           badgesSaved = await restoreBadges(restoredBadges);
         } else if (decision == RestoreDecision.replacesIdentity) {
           if (restoredBadges.isEmpty) {
@@ -1176,6 +1185,10 @@ class BackupService {
               'konnten nicht gespeichert werden, der Rest wurde übernommen.');
         }
 
+        AppLogger.info('BackupRestore',
+            'Restore abgeschlossen; Schreiben bestätigt. '
+            '${restoredBadges.length} Einträge verarbeitet.');
+
         // --- ERFOLGSMELDUNG ---
         if (context.mounted) {
           // Zähle was wiederhergestellt wurde
@@ -1245,6 +1258,10 @@ class BackupService {
       AppLogger.warn('BackupService', 'Badges aus dem Backup nicht gespeichert.');
       return false;
     }
+    AppLogger.info('BackupRestore',
+        'Badge-Datei schreiben: ${badges.length} Eingänge, '
+        '${MeetupBadge.unionByIdentity(badges, const []).length} eindeutige Einträge; '
+        'geschrieben: $wrote.');
     return true;
   }
 
