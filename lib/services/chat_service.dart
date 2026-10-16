@@ -269,8 +269,8 @@ class ChatService {
         final challenge = msg[1] as String;
         if (activeChallenge == challenge) return;
         if (activeChallenge != null) {
-          // A changed challenge invalidates the pending signature. Reconnect
-          // rather than starting overlapping approval requests on this socket.
+          // Eine geänderte Challenge macht die ausstehende Signatur ungültig.
+          // Handshake abbrechen, ohne eine parallele Freigabe anzufordern.
           ready.complete(false);
           return;
         }
@@ -289,8 +289,9 @@ class ChatService {
             authEventId = signed.id;
             ws.add(jsonEncode(['AUTH', signed.toJson()]));
           } catch (e) {
+            if (ready.isCompleted) return;
             AppLogger.warn(_tag, 'Anmeldung konnte nicht signiert werden', e);
-            if (!ready.isCompleted) ready.complete(false);
+            ready.complete(false);
           }
         }();
         return;

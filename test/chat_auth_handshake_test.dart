@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:einundzwanzig_meetup_app/services/chat_service.dart';
+import 'package:einundzwanzig_meetup_app/services/app_logger.dart';
 import 'package:einundzwanzig_meetup_app/services/relay_socket.dart';
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
 
@@ -89,7 +90,7 @@ void main() {
     expect(ws.closed, isTrue);
   });
 
-  testWidgets('Signer-Timeout verwirft eine verspätete Signatur', (tester) async {
+  testWidgets('Abgelaufene Anmeldefrist verwirft eine verspätete Signatur', (tester) async {
     final ws = TestRelay();
     final approval = Completer<SignedEvent>();
     final connection = ChatService.authenticateSocket(ws, (_) {}, timeout: deadline,
@@ -103,6 +104,40 @@ void main() {
     expect(ws.closed, isTrue);
     expect(ws.sent, isEmpty);
   });
+
+  for (final abort in ['Anmeldefrist', 'geänderte Challenge', 'Verbindungsabbruch']) {
+    testWidgets('späte Signer-Ablehnung bleibt nach Abbruch ohne weitere Warnung ($abort)', (tester) async {
+      final ws = TestRelay();
+      final approval = Completer<SignedEvent>();
+      var calls = 0;
+      final connection = ChatService.authenticateSocket(ws, (_) {}, timeout: deadline,
+        sign: ({required kind, required tags, required content}) {
+          calls++;
+          return approval.future;
+        });
+      ws.push(['AUTH', 'challenge']);
+      await tester.pump();
+      if (abort == 'Anmeldefrist') {
+        await tester.pump(deadline);
+      } else if (abort == 'geänderte Challenge') {
+        ws.push(['AUTH', 'changed']);
+        await tester.pump();
+      } else {
+        await ws.close();
+        await tester.pump();
+      }
+      expect(await connection, isNull);
+      expect(ws.closed, isTrue);
+      final warnings = AppLogger.entries.where((entry) =>
+        entry.tag == 'Chat' && entry.level == 'WARN').length;
+      approval.completeError(const SigningException('user rejected'));
+      await tester.pump();
+      expect(AppLogger.entries.where((entry) =>
+        entry.tag == 'Chat' && entry.level == 'WARN').length, warnings);
+      expect(calls, 1);
+      expect(ws.sent, isEmpty);
+    });
+  }
 
   for (final accepted in [false, null]) {
     testWidgets('fehlendes oder abgelehntes AUTH-OK bleibt fehlgeschlagen ($accepted)', (tester) async {
