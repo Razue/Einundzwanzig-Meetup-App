@@ -31,10 +31,11 @@ class TestRelay extends Fake implements RelaySocket {
   }
 }
 
-SignedEvent signed() => SignedEvent(id: 'auth-id', pubkey: 'test-key',
-    createdAt: 1792144000, kind: 22242,
-    tags: [['relay', kGroupRelay], ['challenge', 'challenge']],
-    content: '', sig: 'test-sig');
+SignedEvent signed({String id = 'auth-id', String challenge = 'challenge'}) =>
+    SignedEvent(id: id, pubkey: 'test-key',
+        createdAt: 1792144000, kind: 22242,
+        tags: [['relay', kGroupRelay], ['challenge', challenge]],
+        content: '', sig: 'test-sig');
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -188,6 +189,82 @@ void main() {
     await tester.pump();
     expect(calls, 1);
     expect(ws.sent, isEmpty);
+  });
+
+  testWidgets('erneute Challenge nach der Anmeldung bleibt auf dem offenen Socket', (tester) async {
+    final ws = TestRelay();
+    var calls = 0;
+    final connection = ChatService.authenticateSocket(ws, (_) {}, timeout: deadline,
+      sign: ({required kind, required tags, required content}) async {
+        calls++;
+        final challenge = tags.firstWhere((tag) => tag.first == 'challenge')[1];
+        return signed(id: 'auth-$calls', challenge: challenge);
+      });
+    ws.push(['AUTH', 'challenge']);
+    await tester.pump();
+    ws.push(['OK', 'auth-1', true, '']);
+    await tester.pump();
+    expect(await connection, same(ws));
+    expect(ws.closed, isFalse);
+    expect(ws.sent, hasLength(1));
+
+    ws.push(['AUTH', 'next']);
+    await tester.pump();
+    expect(calls, 2);
+    expect(ws.sent, hasLength(2));
+    expect(ws.sent.last.first, 'AUTH');
+    expect((ws.sent.last[1] as Map)['id'], 'auth-2');
+    expect(ws.closed, isFalse);
+
+    ws.push(['AUTH', 'next']);
+    await tester.pump();
+    expect(calls, 2);
+    expect(ws.sent, hasLength(2));
+
+    ws.push(['OK', 'auth-2', false, 'denied']);
+    await tester.pump();
+    expect(ws.closed, isFalse);
+    await ws.close();
+  });
+
+  testWidgets('Wechsel während der Erneuerung signiert nur die neue Challenge', (tester) async {
+    final ws = TestRelay();
+    final pending = Completer<SignedEvent>();
+    var calls = 0;
+    final connection = ChatService.authenticateSocket(ws, (_) {}, timeout: deadline,
+      sign: ({required kind, required tags, required content}) {
+        calls++;
+        final challenge = tags.firstWhere((tag) => tag.first == 'challenge')[1];
+        if (challenge == 'renew-1') return pending.future;
+        return Future.value(signed(
+          id: challenge == 'challenge' ? 'auth-id' : 'renew-2',
+          challenge: challenge,
+        ));
+      });
+    ws.push(['AUTH', 'challenge']);
+    await tester.pump();
+    ws.push(['OK', 'auth-id', true, '']);
+    await tester.pump();
+    expect(await connection, same(ws));
+    expect(calls, 1);
+
+    ws.push(['AUTH', 'renew-1']);
+    await tester.pump();
+    expect(calls, 2);
+    expect(ws.sent, hasLength(1));
+
+    ws.push(['AUTH', 'renew-2']);
+    await tester.pump();
+    expect(calls, 3);
+    expect(ws.sent, hasLength(2));
+    expect((ws.sent.last[1] as Map)['id'], 'renew-2');
+
+    pending.complete(signed(id: 'renew-1', challenge: 'renew-1'));
+    await tester.pump();
+    expect(calls, 3);
+    expect(ws.sent, hasLength(2));
+    expect(ws.closed, isFalse);
+    await ws.close();
   });
 
   testWidgets('Verbindungsabbruch während Freigabe verwirft spätes Ergebnis', (tester) async {

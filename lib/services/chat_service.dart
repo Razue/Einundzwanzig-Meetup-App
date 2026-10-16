@@ -253,6 +253,10 @@ class ChatService {
     final ready = Completer<bool>();
     String? authEventId;
     String? activeChallenge;
+    var authenticated = false;
+    String? renewalChallenge;
+    String? renewalEventId;
+    var renewalEpoch = 0;
 
     ws.listen((data) {
       List<dynamic> msg;
@@ -265,16 +269,45 @@ class ChatService {
 
       // --- Anmeldung ---
       if (msg[0] == 'AUTH' && msg.length >= 2 && msg[1] is String) {
-        if (ready.isCompleted) return;
         final challenge = msg[1] as String;
-        if (activeChallenge == challenge) return;
-        if (activeChallenge != null) {
-          // Eine geänderte Challenge macht die ausstehende Signatur ungültig.
-          // Handshake abbrechen, ohne eine parallele Freigabe anzufordern.
-          ready.complete(false);
+        if (!ready.isCompleted) {
+          if (activeChallenge == challenge) return;
+          if (activeChallenge != null) {
+            // Eine geänderte Challenge macht die ausstehende Signatur ungültig.
+            // Handshake abbrechen, ohne eine parallele Freigabe anzufordern.
+            ready.complete(false);
+            return;
+          }
+          activeChallenge = challenge;
+          () async {
+            try {
+              final signed = await (sign ?? SigningService.signEvent)(
+                kind: _kAuth,
+                content: '',
+                tags: [
+                  ['relay', kGroupRelay],
+                  ['challenge', challenge],
+                ],
+              );
+              if (ready.isCompleted) return;
+              authEventId = signed.id;
+              ws.add(jsonEncode(['AUTH', signed.toJson()]));
+            } catch (e) {
+              if (ready.isCompleted) return;
+              AppLogger.warn(_tag, 'Anmeldung konnte nicht signiert werden', e);
+              ready.complete(false);
+            }
+          }();
           return;
         }
-        activeChallenge = challenge;
+        // Nach dem ersten OK bleibt das Abo offen. Eine spätere Challenge
+        // wird auf demselben Socket beantwortet. Dieselbe Challenge startet
+        // keine zweite Freigabe. Wechselt sie, solange signiert wird, gilt
+        // nur die neue; das Ergebnis der alten geht nicht mehr raus.
+        if (!authenticated) return;
+        if (renewalChallenge == challenge) return;
+        renewalChallenge = challenge;
+        final generation = ++renewalEpoch;
         () async {
           try {
             final signed = await (sign ?? SigningService.signEvent)(
@@ -285,15 +318,23 @@ class ChatService {
                 ['challenge', challenge],
               ],
             );
-            if (ready.isCompleted) return;
-            authEventId = signed.id;
+            if (generation != renewalEpoch) return;
+            renewalEventId = signed.id;
             ws.add(jsonEncode(['AUTH', signed.toJson()]));
           } catch (e) {
-            if (ready.isCompleted) return;
+            if (generation != renewalEpoch) return;
             AppLogger.warn(_tag, 'Anmeldung konnte nicht signiert werden', e);
-            ready.complete(false);
+            if (renewalChallenge == challenge) renewalChallenge = null;
           }
         }();
+        return;
+      }
+
+      // Ein späteres OK zur Erneuerung ändert die schon gelungene Anmeldung nicht.
+      if (msg[0] == 'OK' &&
+          msg.length >= 3 &&
+          renewalEventId != null &&
+          msg[1] == renewalEventId) {
         return;
       }
 
@@ -305,7 +346,10 @@ class ChatService {
         final ok = msg[2] == true;
         AppLogger.debug(_tag,
             'Anmeldung ${ok ? "angenommen" : "abgelehnt: ${msg.length >= 4 ? msg[3] : ""}"}');
-        if (!ready.isCompleted) ready.complete(ok);
+        if (!ready.isCompleted) {
+          authenticated = ok;
+          ready.complete(ok);
+        }
         return;
       }
 
