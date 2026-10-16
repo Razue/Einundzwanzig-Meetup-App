@@ -21,6 +21,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
+import 'nip46/nip46_client.dart';
 
 import 'app_logger.dart';
 import 'relay_socket.dart';
@@ -215,7 +218,9 @@ class ChatService {
     final mode = await SigningService.getMode();
     final effectiveTimeout = mode == SigningMode.local
         ? const Duration(seconds: 8)
-        : const Duration(seconds: 25);
+        : mode == SigningMode.nip46
+            ? Nip46Client.signTimeout + const Duration(seconds: 20)
+            : const Duration(seconds: 25);
 
     _lastOffline = false;
     final RelaySocket ws;
@@ -229,8 +234,29 @@ class ChatService {
       return null;
     }
 
+    return authenticateSocket(ws, onEvent, timeout: effectiveTimeout);
+  }
+
+  /// Initial NIP-42 handshake. The group relay requires AUTH before reads.
+  /// A received challenge is not a completed authentication: only its OK is.
+  @visibleForTesting
+  static Future<RelaySocket?> authenticateSocket(
+    RelaySocket ws,
+    void Function(List<dynamic>) onEvent, {
+    required Duration timeout,
+    Future<SignedEvent> Function({
+      required int kind,
+      required List<List<String>> tags,
+      required String content,
+    })? sign,
+  }) async {
     final ready = Completer<bool>();
     String? authEventId;
+    String? activeChallenge;
+    var authenticated = false;
+    String? renewalChallenge;
+    String? renewalEventId;
+    var renewalEpoch = 0;
 
     ws.listen((data) {
       List<dynamic> msg;
@@ -244,9 +270,47 @@ class ChatService {
       // --- Anmeldung ---
       if (msg[0] == 'AUTH' && msg.length >= 2 && msg[1] is String) {
         final challenge = msg[1] as String;
+        if (!ready.isCompleted) {
+          if (activeChallenge == challenge) return;
+          if (activeChallenge != null) {
+            // Eine geänderte Challenge macht die ausstehende Signatur ungültig.
+            // Handshake abbrechen, ohne eine parallele Freigabe anzufordern.
+            ready.complete(false);
+            return;
+          }
+          activeChallenge = challenge;
+          () async {
+            try {
+              final signed = await (sign ?? SigningService.signEvent)(
+                kind: _kAuth,
+                content: '',
+                tags: [
+                  ['relay', kGroupRelay],
+                  ['challenge', challenge],
+                ],
+              );
+              if (ready.isCompleted) return;
+              authEventId = signed.id;
+              ws.add(jsonEncode(['AUTH', signed.toJson()]));
+            } catch (e) {
+              if (ready.isCompleted) return;
+              AppLogger.warn(_tag, 'Anmeldung konnte nicht signiert werden', e);
+              ready.complete(false);
+            }
+          }();
+          return;
+        }
+        // Nach dem ersten OK bleibt das Abo offen. Eine spätere Challenge
+        // wird auf demselben Socket beantwortet. Dieselbe Challenge startet
+        // keine zweite Freigabe. Wechselt sie, solange signiert wird, gilt
+        // nur die neue; das Ergebnis der alten geht nicht mehr raus.
+        if (!authenticated) return;
+        if (renewalChallenge == challenge) return;
+        renewalChallenge = challenge;
+        final generation = ++renewalEpoch;
         () async {
           try {
-            final signed = await SigningService.signEvent(
+            final signed = await (sign ?? SigningService.signEvent)(
               kind: _kAuth,
               content: '',
               tags: [
@@ -254,13 +318,23 @@ class ChatService {
                 ['challenge', challenge],
               ],
             );
-            authEventId = signed.id;
+            if (generation != renewalEpoch) return;
+            renewalEventId = signed.id;
             ws.add(jsonEncode(['AUTH', signed.toJson()]));
           } catch (e) {
+            if (generation != renewalEpoch) return;
             AppLogger.warn(_tag, 'Anmeldung konnte nicht signiert werden', e);
-            if (!ready.isCompleted) ready.complete(false);
+            if (renewalChallenge == challenge) renewalChallenge = null;
           }
         }();
+        return;
+      }
+
+      // Ein späteres OK zur Erneuerung ändert die schon gelungene Anmeldung nicht.
+      if (msg[0] == 'OK' &&
+          msg.length >= 3 &&
+          renewalEventId != null &&
+          msg[1] == renewalEventId) {
         return;
       }
 
@@ -272,7 +346,10 @@ class ChatService {
         final ok = msg[2] == true;
         AppLogger.debug(_tag,
             'Anmeldung ${ok ? "angenommen" : "abgelehnt: ${msg.length >= 4 ? msg[3] : ""}"}');
-        if (!ready.isCompleted) ready.complete(ok);
+        if (!ready.isCompleted) {
+          authenticated = ok;
+          ready.complete(ok);
+        }
         return;
       }
 
@@ -283,25 +360,12 @@ class ChatService {
       if (!ready.isCompleted) ready.complete(false);
     });
 
-    // Wartezeit auf die Aufforderung des Relays.
-    //
-    // Frueher 900 ms. Kam die Aufforderung spaeter — bei schwachem
-    // Mobilnetz durchaus —, galt die Verbindung schon als "nutzbar ohne
-    // Anmeldung", die Abfrage ging unangemeldet raus, und das Relay lehnte
-    // sie ab. Dieses Gruppen-Relay verlangt die Anmeldung IMMER, auch zum
-    // Lesen; es lohnt also, laenger auf die Aufforderung zu warten. Kommt
-    // sie, laeuft der Ablauf wie gehabt weiter.
-    Timer(const Duration(milliseconds: 3000), () {
-      if (!ready.isCompleted && authEventId == null) {
-        AppLogger.diag(_tag, 'Keine Anmeldeaufforderung vom Relay — fahre ohne fort.');
-        ready.complete(true);
-      }
-    });
-
-    final ok =
-        await ready.future.timeout(effectiveTimeout, onTimeout: () {
+    // Never release an unauthenticated connection after an arbitrary grace
+    // period. No AUTH, pending signer, and missing OK all fail on the deadline.
+    final ok = await ready.future.timeout(timeout, onTimeout: () {
       AppLogger.warn(_tag,
-          'Anmeldung nicht rechtzeitig fertig (${effectiveTimeout.inSeconds} s, Signierer: ${mode.name}).');
+          'Anmeldung nicht rechtzeitig fertig (${timeout.inSeconds} s).');
+      if (!ready.isCompleted) ready.complete(false);
       return false;
     });
     if (!ok) {
