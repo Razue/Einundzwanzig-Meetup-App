@@ -9,6 +9,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:einundzwanzig_meetup_app/services/app_logger.dart';
 import 'package:einundzwanzig_meetup_app/services/nip44.dart';
 import 'package:einundzwanzig_meetup_app/services/nip46/bunker_uri.dart';
 import 'package:einundzwanzig_meetup_app/services/nip46/client_metadata.dart';
@@ -347,7 +348,7 @@ void main() {
       await client.close();
     });
 
-    test('späte Freigabe bleibt bei derselben offenen Anfrage', () async {
+    test('verzögerte Antwort innerhalb der offenen Frist nutzt denselben Socket', () async {
       signer.respond = (r) {
         Timer(shortLimit ~/ 2, () => signer.links.single.push(
           signer._wrap({'id': r['id'], 'result': 'sealed'}, Keychain(clientKey).public)));
@@ -380,13 +381,13 @@ void main() {
 
     test('doppelte Ablehnung eines Relays zählt nur einmal', () async {
       signer.rejectingRelays = {relayA};
-      signer.rejectReason = 'blocked: denied';
+      signer.rejectReason = 'invalid: denied';
       signer.acknowledge = false;
       signer.respond = (r) {
         final rejected = signer.links.firstWhere((l) => l.url == relayA);
         final frame = rejected.sentFrames.firstWhere((f) => f.startsWith('["EVENT"'));
         final eventId = (jsonDecode(frame) as List)[1]['id'];
-        rejected.pushRaw(jsonEncode(['OK', eventId, false, 'blocked: denied']));
+        rejected.pushRaw(jsonEncode(['OK', eventId, false, 'invalid: denied']));
         Timer(shortLimit ~/ 3, () => signer.links.firstWhere((l) => l.url == relayB).push(
           signer._wrap({'id': r['id'], 'result': 'sealed'}, Keychain(clientKey).public)));
         return null;
@@ -424,18 +425,57 @@ void main() {
       await client.close();
     });
 
-    test('gesperrtes Relay wird bei weiteren Anfragen ausgespart', () async {
-      signer.rejectingRelays = {relayA};
-      signer.rejectReason = 'banned: too many rate-limit violations';
-      signer.respond = (request) => {'id': request['id'], 'result': 'sealed'};
-      final client = build(relays: [relayA, relayB]);
-      await client.nip44Encrypt(signer.pubkey, 'probe');
-      final banned = signer.links.firstWhere((link) => link.url == relayA);
-      final sent = banned.sentFrames.length;
-      await client.nip44Encrypt(signer.pubkey, 'probe');
-      expect(banned.sentFrames.length, sent);
-      await client.close();
-    });
+    for (final reason in [
+      'blocked: pubkey not allowed',
+      'rate-limited: slow down',
+      'banned: too many rate-limit violations',
+    ]) {
+      test('gesperrtes Relay wird während der Pause ausgespart ($reason)', () async {
+        signer.rejectingRelays = {relayA};
+        signer.rejectReason = reason;
+        signer.respond = (request) => {'id': request['id'], 'result': 'sealed'};
+        final client = build(relays: [relayA, relayB]);
+        addTearDown(client.close);
+        await client.nip44Encrypt(signer.pubkey, 'probe');
+        final blocked = signer.links.firstWhere((link) => link.url == relayA);
+        expect(blocked.closed, isTrue);
+        final sent = blocked.sentFrames.length;
+        await client.nip44Encrypt(signer.pubkey, 'probe');
+        expect(blocked.sentFrames.length, sent);
+
+        // Auch ein Neuaufbau der übrigen Verbindung darf die laufende
+        // Zwei-Minuten-Pause für das gesperrte Relay nicht umgehen.
+        signer.links.firstWhere((link) => link.url == relayB)
+            .pushRaw(jsonEncode(['CLOSED', 'sub', 'error: disconnected']));
+        await Future<void>.delayed(Duration.zero);
+        await client.nip44Encrypt(signer.pubkey, 'probe');
+        expect(signer.links.where((link) => link.url == relayA), hasLength(1));
+        expect(signer.links.where((link) => link.url == relayB), hasLength(2));
+      });
+    }
+
+    for (final method in ['nip44_encrypt', 'nip44_decrypt']) {
+      test('$method protokolliert Rahmen und Dauer, keine Nutzlastgröße', () async {
+        final before = AppLogger.entries.length;
+        signer.respond = (request) => {'id': request['id'], 'result': 'result'};
+        final client = build();
+        addTearDown(client.close);
+        if (method == 'nip44_encrypt') {
+          await client.nip44Encrypt(signer.pubkey, 'private-badge-fixture');
+        } else {
+          await client.nip44Decrypt(signer.pubkey, 'private-badge-fixture');
+        }
+        final log = AppLogger.entries.skip(before)
+            .where((entry) => entry.tag == 'Nip46Transport')
+            .map((entry) => entry.message).join('\n');
+        expect(log, contains('$method:'));
+        expect(log, contains('Rahmen-Bytes'));
+        expect(log, contains('Relay-Verbindungen'));
+        expect(log, contains('Antwort nach'));
+        expect(log, isNot(contains('Nutzlast')));
+        expect(log, isNot(contains('private-badge-fixture')));
+      });
+    }
 
     test('offene Signierfreigabe wird nicht doppelt angefordert', () async {
       signer.respond = (request) => {'id': request['id'], 'result': 'auth_url', 'error': 'https://signer.test/approve'};

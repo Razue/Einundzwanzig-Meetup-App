@@ -366,8 +366,7 @@ class Nip46Client {
     if (method == 'nip44_decrypt' || method == 'nip44_encrypt') {
       AppLogger.info(
         'Nip46Transport',
-        '$method: ${params.length > 1 ? utf8.encode(params[1]).length : 0} Nutzlast-Bytes, '
-            '${utf8.encode(request.frame).length} Rahmen-Bytes, ${_links.length} Relay-Verbindungen.',
+        '$method: ${utf8.encode(request.frame).length} Rahmen-Bytes, ${_links.length} Relay-Verbindungen.',
       );
     }
 
@@ -635,7 +634,8 @@ class Nip46Client {
       'Nip46Transport',
       '$url hat die Anfrage abgelehnt: $rejectReason',
     );
-    if (rejectReason.startsWith('banned:') ||
+    if (rejectReason.startsWith('blocked:') ||
+        rejectReason.startsWith('banned:') ||
         rejectReason.startsWith('rate-limited:')) {
       _relayCooldown[url] = DateTime.now().add(const Duration(minutes: 2));
       _dropLink(url);
