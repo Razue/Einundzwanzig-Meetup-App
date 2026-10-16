@@ -415,11 +415,12 @@ void main() {
     expect(prefs.getString(_olderKey), olderBlob);
   });
 
-  test('bei gleicher Id gewinnt die Fassung mit Claim', () async {
+  test('bei gleicher Veranstaltung gewinnt die Fassung mit Claim', () async {
     final keyA = _hexKey();
     final keyB = _hexKey();
     final withClaim = MeetupBadge(
       id: 'x',
+      meetupEventId: 'x',
       meetupName: 'Aschaffenburg',
       date: DateTime.utc(2026, 10, 11, 19),
       iconPath: 'assets/badge_icon.png',

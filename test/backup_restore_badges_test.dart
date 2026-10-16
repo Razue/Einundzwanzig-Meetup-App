@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:einundzwanzig_meetup_app/models/badge.dart';
 import 'package:einundzwanzig_meetup_app/services/backup_service.dart';
+import 'package:einundzwanzig_meetup_app/services/app_logger.dart';
 
 const _blobKey = 'badges_encrypted';
 const _keyAlias = 'badge_encryption_key';
@@ -110,4 +111,29 @@ void main() {
     final loaded = await MeetupBadge.loadBadges();
     expect(loaded.map((b) => b.id), ['a', 'b']);
   });
+  test('Restore zählt Varianten derselben Veranstaltung getrennt vom Bestand', () async {
+    await AppLogger.clear();
+    final original = _badge('event-a');
+    final variant = MeetupBadge.fromJson({...original.toJson(), 'id': 'rotating-qr-id'});
+    expect(await BackupService.restoreBadges([original, variant, _badge('event-b')]), isTrue);
+    final loaded = await MeetupBadge.loadBadges();
+    expect(loaded.length, 2);
+    expect(loaded.map(MeetupBadge.unionKey).toSet(),
+        {MeetupBadge.unionKey(original), MeetupBadge.unionKey(_badge('event-b'))});
+    expect(AppLogger.exportText(), contains('3 Eingänge, 2 eindeutige Einträge'));
+  });
+
+  test('Restore erhält verschiedene Veranstaltungen trotz gleicher Badge-ID', () async {
+    final first = _badge('shared-id');
+    final second = MeetupBadge.fromJson({
+      ...first.toJson(),
+      'meetupEventId': 'different-event',
+      'date': DateTime.utc(2026, 10, 12, 19).toIso8601String(),
+    });
+    expect(await BackupService.restoreBadges([first, second]), isTrue);
+    final loaded = await MeetupBadge.loadBadges();
+    expect(loaded.map(MeetupBadge.unionKey).toSet(),
+        {MeetupBadge.unionKey(first), MeetupBadge.unionKey(second)});
+  });
+
 }
