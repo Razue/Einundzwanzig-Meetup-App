@@ -548,31 +548,6 @@ class MeetupBadge {
     }
     if (firstBlob == null) return null;
     final united = unionByIdentity(allRead, const []);
-    final uniqueIds = allRead.map((badge) => badge.id).toSet().length;
-    final primaryIds = <String, MeetupBadge>{};
-    var identicalRepeats = 0;
-    final differingFields = <String>{};
-    for (final badge in anchor) {
-      final previous = primaryIds[badge.id];
-      if (previous != null) {
-        final a = previous.toJson();
-        final b = badge.toJson();
-        final differences = a.keys.where((key) => jsonEncode(a[key]) != jsonEncode(b[key])).toList();
-        if (differences.isEmpty) identicalRepeats++;
-        differingFields.addAll(differences);
-      }
-      primaryIds[badge.id] = badge;
-    }
-    final summary = '$openedCount lesbare Fassungen; '
-        '${anchor.length} Einträge in der Primärfassung; '
-        '$uniqueIds verschiedene IDs; ${united.length} Veranstaltungen/Organisator-Marker. '
-        'Primärfassung: ${anchor.length - primaryIds.length} wiederholte IDs, '
-        'davon $identicalRepeats vollständig identisch; '
-        'abweichende Felder: ${differingFields.isEmpty ? "keine" : (differingFields.toList()..sort()).join(", ")}.';
-    if (_lastReadSummary != summary) {
-      _lastReadSummary = summary;
-      AppLogger.info('BadgeStorage', summary);
-    }
     return (
       // Direkt je Veranstaltung vereinigen. Eine wiederholte ID allein
       // ist kein Beleg für einen Doppelscan.
@@ -1299,8 +1274,6 @@ class MeetupBadge {
     onBadgesSaved?.call();
     return true;
   }
-
-  static String? _lastReadSummary;
 
   static Future<List<MeetupBadge>> loadBadges() async {
     final prefs = await SharedPreferences.getInstance();

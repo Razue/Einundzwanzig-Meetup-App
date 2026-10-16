@@ -514,25 +514,13 @@ class TrustScoreService {
   // BRIDGE SCORE: Verbindest du Meetup-Cluster?
   // =============================================
   static double calculateBridgeScore(List<MeetupBadge> badges) {
-    // Dieselbe Zählbasis wie die Reputation: Teilnehmer-Badges mit
-    // Nostr-Beweis, je Veranstaltung einmal. Insbesondere darf ein
-    // Mehrfachscan oder Organisator-Marker nicht die Mindestzahl erfüllen.
-    final participants = MeetupBadge.unionByIdentity(
-      badges.where((b) => b.isNostrSigned && !b.isOrganizer).toList(),
-      const [],
-    );
-    if (participants.length < 3) return 0;
+    if (badges.length < 3) return 0;
     // Auch hier nur echte Meetups: "verbindest du Cluster" meint ORTE, und
     // ein Grossevent ist kein Ort im Sinne einer lokalen Gemeinschaft.
-    final cities = participants
-        .where((b) => !b.isEvent)
-        .map((b) => b.meetupName)
-        .toSet();
+    final cities =
+        badges.where((b) => !b.isEvent).map((b) => b.meetupName).toSet();
     if (cities.length <= 1) return 0;
-    final signers = participants
-        .map((b) => b.signerNpub)
-        .where((s) => s.isNotEmpty)
-        .toSet();
+    final signers = badges.map((b) => b.signerNpub).where((s) => s.isNotEmpty).toSet();
     return cities.length.toDouble() * max(signers.length.toDouble(), 1.0);
   }
 

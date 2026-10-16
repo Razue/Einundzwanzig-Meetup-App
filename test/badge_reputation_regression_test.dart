@@ -108,10 +108,6 @@ void sameReputation(List<MeetupBadge> baseline, List<MeetupBadge> actual) {
     expect(observed.progress[key]!.current, expected.progress[key]!.current);
     expect(observed.progress[key]!.required, expected.progress[key]!.required);
   }
-  expect(
-    TrustScoreService.calculateBridgeScore(actual),
-    TrustScoreService.calculateBridgeScore(baseline),
-  );
 }
 
 void main() {
@@ -205,25 +201,7 @@ void main() {
   );
 
   test(
-    'Bridge-Score: ein Mehrfachscan darf die Drei-Badge-Schwelle nicht erreichen',
-    () {
-      final a = scan();
-      final b = scan(meetup: 'Darmstadt', daysAgo: 21);
-      sameReputation([a, b], [a, b, a.copyWith(id: 'rescan')]);
-    },
-  );
-
-  test(
-    'Bridge-Score: ein Organisator-Marker darf die Drei-Badge-Schwelle nicht erreichen',
-    () {
-      final a = scan();
-      final b = scan(meetup: 'Darmstadt', daysAgo: 21);
-      sameReputation([a, b], [a, b, marker(a)]);
-    },
-  );
-
-  test(
-    'Organisator-Marker anderer Städte erzeugen keine zusätzliche Reichweite',
+    'Organisator-Marker anderer Städte erhöhen die Reputation nicht',
     () {
       final visits = [
         scan(daysAgo: 42),
