@@ -70,13 +70,15 @@ class _Publish {
   final String requestId;
 
   /// An wie viele Relays wurde gesendet.
-  final int sent;
+  final Set<String> destinations;
+  final Set<String> acceptedRelays = {};
+  final Map<String, String> rejectedRelays = {};
+  int get sent => destinations.length;
+  int get rejected => rejectedRelays.length;
+  bool get accepted => acceptedRelays.isNotEmpty;
+  String get lastReason => rejectedRelays.values.lastOrNull ?? '';
 
-  int rejected = 0;
-  bool accepted = false;
-  String lastReason = '';
-
-  _Publish(this.requestId, this.sent);
+  _Publish(this.requestId, this.destinations);
 }
 
 class Nip46Client {
@@ -142,8 +144,10 @@ class Nip46Client {
 
   final Nip46RelayOpener _open;
   final Map<String, Nip46RelayLink> _links = {};
+  final Map<String, DateTime> _relayCooldown = {};
   final List<StreamSubscription> _subs = [];
   final Map<String, Completer<dynamic>> _pending = {};
+  final Set<String> _waitingForApproval = {};
   final String _subId = 'nip46-${_randomHex(8)}';
 
   String? _remoteSignerPubkey;
@@ -186,7 +190,8 @@ class Nip46Client {
         _open = debugOpenRelay ?? _openRelaySocket {
     if (this.relays.isEmpty) {
       throw const Nip46Exception(
-          'Für den Remote-Signer ist kein Relay angegeben.');
+        'Für den Remote-Signer ist kein Relay angegeben.',
+      );
     }
   }
 
@@ -196,8 +201,7 @@ class Nip46Client {
     void Function(String url)? onAuthUrl,
     Duration? debugTimeout,
     @visibleForTesting Nip46RelayOpener? debugOpenRelay,
-  }) =>
-      Nip46Client(
+  }) => Nip46Client(
         clientSecretKeyHex: clientSecretKeyHex,
         relays: pointer.relays,
         remoteSignerPubkey: pointer.remoteSignerPubkey,
@@ -225,33 +229,32 @@ class Nip46Client {
     if (remote == null) {
       throw const Nip46Exception('Noch kein Signer gekoppelt.');
     }
-    await _rpc(
-      'connect',
-      [
+    await _rpc('connect', [
         remote,
         secret ?? '',
         requestedPerms,
         jsonEncode(Nip46ClientMetadata.values),
-      ],
-      timeout: connectTimeout,
-    );
+    ], timeout: connectTimeout);
   }
 
   /// hex-pubkey des NUTZERS (nicht des Signers).
   Future<String> getPublicKey() async {
-    final result = await _rpc('get_public_key', const [],
-        timeout: connectTimeout);
+    final result = await _rpc(
+      'get_public_key',
+      const [],
+      timeout: connectTimeout,
+    );
     return BunkerPointer.normalizePubkey(result.toString());
   }
 
   /// Lässt ein unsigniertes Event signieren und gibt das signierte zurück.
   Future<Map<String, dynamic>> signEvent(Map<String, dynamic> unsigned) async {
-    final result =
-        await _rpc('sign_event', [jsonEncode(unsigned)], timeout: signTimeout);
+    final result = await _retryableRpc('sign_event', [jsonEncode(unsigned)]);
     final decoded = _decodeSigned(result);
     if (decoded == null) {
       throw const Nip46Exception(
-          'Der Signer hat kein lesbares Event zurückgegeben.');
+        'Der Signer hat kein lesbares Event zurückgegeben.',
+      );
     }
     return decoded;
   }
@@ -259,15 +262,34 @@ class Nip46Client {
   /// NIP-44 an [pubkeyHex]. Nicht jeder Bunker bietet das an — ein Fehler
   /// heißt dort: kein Sync, nur das Backup.
   Future<String> nip44Encrypt(String pubkeyHex, String plaintext) async {
-    final result = await _rpc('nip44_encrypt', [pubkeyHex, plaintext],
-        timeout: signTimeout);
+    final result = await _retryableRpc('nip44_encrypt', [pubkeyHex, plaintext]);
     return result.toString();
   }
 
   Future<String> nip44Decrypt(String pubkeyHex, String payload) async {
-    final result = await _rpc('nip44_decrypt', [pubkeyHex, payload],
-        timeout: signTimeout);
+    final result = await _retryableRpc('nip44_decrypt', [pubkeyHex, payload]);
     return result.toString();
+  }
+
+  // Nur Kryptographie und das Signieren desselben unveränderten Events
+  // wiederholen: sign_event veröffentlicht nichts. Ein neuer signierter
+  // Rahmen umgeht die Event-Deduplizierung des Push-Proxys. Ablehnungen des
+  // Nutzers und angekündigte offene Freigaben werden nie wiederholt.
+  Future<dynamic> _retryableRpc(String method, List<String> params) async {
+    try {
+      return await _rpc(method, params, timeout: method == 'sign_event'
+          ? signTimeout : const Duration(seconds: 20));
+    } on Nip46TimeoutException catch (e) {
+      if (_closed || e.waitingForApproval) rethrow;
+      AppLogger.warn(
+        'Nip46Transport',
+        '$method: Übertragungsversuch ohne Antwort; einmaliger neuer Versuch.',
+      );
+      for (final url in _links.keys.toList()) {
+        _dropLink(url);
+      }
+      return _rpc(method, params, timeout: const Duration(seconds: 40));
+    }
   }
 
   /// Lebt die Sitzung noch? Wird nach einem Neustart geprüft, damit ein vom
@@ -323,7 +345,8 @@ class Nip46Client {
     for (final pending in _pending.values) {
       if (!pending.isCompleted) {
         pending.completeError(
-            const Nip46Exception('Verbindung zum Signer wurde geschlossen.'));
+          const Nip46Exception('Verbindung zum Signer wurde geschlossen.'),
+        );
       }
     }
     _pending.clear();
@@ -331,7 +354,8 @@ class Nip46Client {
     final pairing = _pairing;
     if (pairing != null && !pairing.isCompleted) {
       pairing.completeError(
-          const Nip46Exception('Kopplung wurde abgebrochen.'));
+        const Nip46Exception('Kopplung wurde abgebrochen.'),
+      );
     }
   }
 
@@ -359,45 +383,76 @@ class Nip46Client {
 
     final completer = Completer<dynamic>();
     _pending[id] = completer;
+    final watch = Stopwatch()..start();
+    if (method == 'nip44_decrypt' || method == 'nip44_encrypt') {
+      AppLogger.info(
+        'Nip46Transport',
+        '$method: ${params.length > 1 ? utf8.encode(params[1]).length : 0} Nutzlast-Bytes, '
+            '${utf8.encode(request.frame).length} Rahmen-Bytes, ${_links.length} Relay-Verbindungen.',
+      );
+    }
 
-    var sent = 0;
-    for (final link in _links.values.toList()) {
+    final destinations = <String>{};
+    for (final entry in _links.entries.toList()) {
       try {
-        link.add(request.frame);
-        sent++;
+        entry.value.add(request.frame);
+        destinations.add(entry.key);
       } catch (e) {
         AppLogger.warn('Nip46', 'Senden an ein Relay fehlgeschlagen', e);
       }
     }
+    final sent = destinations.length;
     if (sent == 0) {
       _pending.remove(id);
-      throw const Nip46Exception(
-          'Kein Relay des Signers ist erreichbar.');
+      throw const Nip46Exception('Kein Relay des Signers ist erreichbar.');
     }
     // Erst NACH dem Senden vermerken: nur so steht die Zahl der Relays fest,
     // von denen eine Bestätigung kommen kann.
-    _publishes[request.eventId] = _Publish(id, sent);
+    _publishes[request.eventId] = _Publish(id, destinations);
 
     final limit = debugTimeout ?? timeout;
     try {
-      return await completer.future.timeout(limit);
+      final response = await completer.future.timeout(limit);
+      if (method == 'nip44_decrypt' || method == 'nip44_encrypt') {
+        AppLogger.info(
+          'Nip46Transport',
+          '$method: Antwort nach ${watch.elapsedMilliseconds} ms.',
+        );
+      }
+      return response;
     } on TimeoutException {
+      final published = _publishes[request.eventId];
+      AppLogger.warn(
+        'Nip46Transport',
+        '$method: Timeout; Relay-Annahme bestätigt: ${published?.accepted ?? false}; '
+            'abgewiesen: ${published?.rejected ?? 0}/$sent; '
+            'angenommene Relays: ${published?.acceptedRelays.join(", ") ?? "keine"}.',
+      );
       _pending.remove(id);
       AppLogger.warn(
           'Nip46',
           '$method: keine Antwort in ${limit.inSeconds}s '
-              '(unlesbar: $_undecryptable, fremder Absender: $_foreignSender)');
+            '(unlesbar: $_undecryptable, fremder Absender: $_foreignSender)',
+      );
       throw Nip46TimeoutException(
-          method, limit, _undecryptable, _foreignSender);
+        method,
+        limit,
+        _undecryptable,
+        _foreignSender,
+        _waitingForApproval.contains(id),
+      );
     } finally {
       _publishes.remove(request.eventId);
+      _waitingForApproval.remove(id);
     }
   }
 
   Uint8List _conversationKey(String pubkey) {
     if (_cachedKeyFor == pubkey) return _cachedKey!;
     final key = Nip44.conversationKey(
-        privkeyHex: clientSecretKeyHex, pubkeyHex: pubkey);
+      privkeyHex: clientSecretKeyHex,
+      pubkeyHex: pubkey,
+    );
     if (pubkey == _remoteSignerPubkey) {
       _cachedKey = key;
       _cachedKeyFor = pubkey;
@@ -412,7 +467,7 @@ class Nip46Client {
     final event = Event.from(
       kind: eventKind,
       tags: [
-        ['p', remote]
+        ['p', remote],
       ],
       content: Nip44.encrypt(payload, key),
       privkey: clientSecretKeyHex,
@@ -438,7 +493,8 @@ class Nip46Client {
       await Future.wait(relays.map(_openLink));
       if (_links.isEmpty) {
         throw const Nip46Exception(
-            'Kein Relay des Signers ist erreichbar. Ist das Gerät online?');
+          'Kein Relay des Signers ist erreichbar. Ist das Gerät online?',
+        );
       }
       completer.complete();
     } catch (e) {
@@ -452,6 +508,8 @@ class Nip46Client {
   /// Öffnet EIN Relay. Fehler bleiben hier: ein totes Relay darf die anderen
   /// nicht mitnehmen.
   Future<void> _openLink(String url) async {
+    final until = _relayCooldown[url];
+    if (until != null && DateTime.now().isBefore(until)) return;
     try {
       final link = await _open(url).timeout(_relayConnectTimeout);
       if (_closed) {
@@ -459,29 +517,37 @@ class Nip46Client {
         return;
       }
       _links[url] = link;
-      _subs.add(link.stream.listen(
+      _subs.add(
+        link.stream.listen(
         (data) => _onMessage(url, data),
-        onError: (Object e) => _dropLink(url),
-        onDone: () => _dropLink(url, closeSocket: false),
+        onError: (Object e) => _dropLink(url, expected: link),
+        onDone: () => _dropLink(url, expected: link, closeSocket: false),
         cancelOnError: false,
-      ));
+        ),
+      );
       // `since` hält alte Antworten aus dem Relay-Speicher fern; die Toleranz
       // deckt eine schiefe Geräteuhr ab.
-      link.add(jsonEncode([
+      link.add(
+        jsonEncode([
         'REQ',
         _subId,
         {
           'kinds': [eventKind],
           '#p': [clientPubkeyHex],
           'since': DateTime.now().millisecondsSinceEpoch ~/ 1000 - 60,
-        }
-      ]));
+          },
+        ]),
+      );
     } catch (e) {
       AppLogger.warn('Nip46', 'Relay des Signers nicht erreichbar: $url', e);
     }
   }
 
-  void _dropLink(String url, {bool closeSocket = true}) {
+  void _dropLink(String url,
+      {Nip46RelayLink? expected, bool closeSocket = true}) {
+    // Das verspätete onDone eines alten Sockets darf eine inzwischen
+    // neu aufgebaute Verbindung derselben URL nicht aus dem Pool löschen.
+    if (expected != null && !identical(_links[url], expected)) return;
     final link = _links.remove(url);
     if (link == null) return;
     // Socket-Close nicht synchron aus dem Stream-Listener (CLOSED): sonst
@@ -505,7 +571,7 @@ class Nip46Client {
       // Wurde vorher ignoriert — eine Ablehnung lief damit stumm in die volle
       // Frist, obwohl das Relay einen Grund genannt hatte.
       if (decoded[0] == 'OK') {
-        _handleRelayAck(decoded);
+        _handleRelayAck(url, decoded);
         return;
       }
 
@@ -517,7 +583,8 @@ class Nip46Client {
         AppLogger.warn(
             'Nip46',
             'Ein Relay hat das Abo beendet: '
-                '${decoded.length > 2 ? decoded[2] : "ohne Angabe"}');
+              '${decoded.length > 2 ? decoded[2] : "ohne Angabe"}',
+        );
         _dropLink(url);
         return;
       }
@@ -548,8 +615,9 @@ class Nip46Client {
       // findet keine offene Anfrage mehr.
 
       final key = _conversationKey(sender);
-      final payload =
-          jsonDecode(Nip44.decrypt((event['content'] ?? '').toString(), key));
+      final payload = jsonDecode(
+        Nip44.decrypt((event['content'] ?? '').toString(), key),
+      );
       if (payload is! Map) return;
       _dispatch(sender, payload.cast<String, dynamic>());
     } catch (_) {
@@ -566,27 +634,39 @@ class Nip46Client {
   /// Abgebrochen wird erst, wenn ALLE Relays abgelehnt haben. Eines kann
   /// ablehnen, während ein anderes annimmt — dann ist die Anfrage unterwegs
   /// und ein Abbruch wäre falsch.
-  void _handleRelayAck(List<dynamic> message) {
+  void _handleRelayAck(String url, List<dynamic> message) {
     if (message.length < 3) return;
     final publish = _publishes[message[1].toString()];
-    if (publish == null) return;
+    if (publish == null || !publish.destinations.contains(url)) return;
 
     if (message[2] == true) {
-      publish.accepted = true;
+      publish.acceptedRelays.add(url);
+      AppLogger.debug('Nip46Transport', 'Anfrage von $url angenommen.');
       return;
     }
-
-    publish.rejected++;
-    publish.lastReason =
-        message.length > 3 ? message[3].toString() : '';
+    if (publish.acceptedRelays.contains(url)) return;
+    final rejectReason = message.length > 3 ? message[3].toString() : '';
+    publish.rejectedRelays[url] = rejectReason;
+    AppLogger.warn(
+      'Nip46Transport',
+      '$url hat die Anfrage abgelehnt: $rejectReason',
+    );
+    if (rejectReason.startsWith('banned:') ||
+        rejectReason.startsWith('rate-limited:')) {
+      _relayCooldown[url] = DateTime.now().add(const Duration(minutes: 2));
+      _dropLink(url);
+    }
     if (publish.accepted || publish.rejected < publish.sent) return;
 
     final completer = _pending.remove(publish.requestId);
     if (completer == null || completer.isCompleted) return;
-    final reason =
-        publish.lastReason.isEmpty ? 'ohne Angabe' : publish.lastReason;
+    final reason = publish.lastReason.isEmpty
+        ? 'ohne Angabe'
+        : publish.lastReason;
     AppLogger.warn(
-        'Nip46', 'Alle ${publish.sent} Relays haben abgelehnt: $reason');
+      'Nip46',
+      'Alle ${publish.sent} Relays haben abgelehnt: $reason',
+    );
     completer.completeError(Nip46RelayRejectedException(reason));
   }
 
@@ -602,7 +682,9 @@ class Nip46Client {
       _remoteSignerPubkey = sender;
       if (!pairing.isCompleted) pairing.complete(sender);
       AppLogger.security(
-          'Nip46', 'Signer gekoppelt: ${sender.substring(0, 12)}…');
+        'Nip46',
+        'Signer gekoppelt: ${sender.substring(0, 12)}…',
+      );
       return;
     }
 
@@ -612,6 +694,7 @@ class Nip46Client {
     // Anfrage bleibt offen, die eigentliche Antwort kommt später mit derselben
     // id — deshalb hier NICHT aus _pending entfernen.
     if (result?.toString() == 'auth_url') {
+      _waitingForApproval.add(id);
       if (error.isNotEmpty) onAuthUrl?.call(error);
       return;
     }

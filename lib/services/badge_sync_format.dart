@@ -14,11 +14,18 @@ class BadgeSyncFormat {
   /// kind 30078 mit d-Tag badges-i, ersetzbar je Chunk.
   static const int kind = 30078;
 
-  /// Höchstens so viele Chunks lesen wir. Weit mehr als je nötig.
-  static const int maxChunks = 16;
+  /// Kleine Push-taugliche Chunks brauchen mehr Plätze als die bisherigen
+  /// 30-KB-Chunks. Die Grenze gilt für Lesen und Schreiben gleichermaßen.
+  static const int maxChunks = 512;
 
   /// NIP-44-Payload-Zeichen je Event. Aus der Relay-Sonde.
   static const int chunkPayloadChars = 30000;
+
+  /// Kleine NIP-46-Anfragen passen auch in den Push eines iOS-Signers.
+  /// Clave bettet Ereignisse nur bis 3415 Bytes ein. 1800 Zeichen für
+  /// den inneren Ciphertext lassen Platz für sign_event/nip44_decrypt,
+  /// die zweite NIP-44-Hülle und das signierte kind-24133-Ereignis.
+  static const int remoteSignerChunkPayloadChars = 1800;
 
   /// d-Tag des Chunks [i].
   static String dTag(int i) => 'badges-$i';
@@ -59,8 +66,10 @@ class BadgeSyncFormat {
   /// Der Aufrufer liefert sie, weil sie vom Verschlüsseln abhängt.
   static List<List<MeetupBadge>> chunkBadges(
     List<MeetupBadge> badges,
-    int Function(String plaintext) measure,
-  ) {
+    int Function(String plaintext) measure, {
+    int maxPayloadChars = chunkPayloadChars,
+    int generation = 0,
+  }) {
     if (badges.isEmpty) return const [];
     final sorted = sortBadges(badges);
     final chunks = <List<MeetupBadge>>[];
@@ -73,21 +82,18 @@ class BadgeSyncFormat {
           badges: current,
           index: index,
           total: total,
-          generation: 0,
+          generation: generation,
         ));
 
     for (final badge in sorted) {
       current.add(badge);
       final total = chunks.length + 2; // ein möglicher weiterer Chunk
-      if (payloadLen(chunks.length, total) > chunkPayloadChars) {
+      if (payloadLen(chunks.length, total) > maxPayloadChars) {
         // Das letzte Badge passt nicht mehr. Chunk abschließen und neu anfangen.
         final last = current.removeLast();
         if (current.isEmpty) {
-          // Ein einzelnes Badge ist größer als die Grenze. Das darf nicht
-          // passieren; zur Sicherheit trotzdem ablegen statt Endlosschleife.
-          chunks.add([last]);
-          current = <MeetupBadge>[];
-          continue;
+          throw const FormatException(
+              'Ein einzelnes Badge überschreitet die Sync-Transportgrenze.');
         }
         chunks.add(current);
         current = [last];
@@ -101,10 +107,12 @@ class BadgeSyncFormat {
   static List<String> plaintexts(
     List<MeetupBadge> badges,
     int generation,
-    int Function(String plaintext) measure,
-  ) {
-    final chunks = chunkBadges(badges, measure);
-    return [
+    int Function(String plaintext) measure, {
+    int maxPayloadChars = chunkPayloadChars,
+  }) {
+    final chunks = chunkBadges(badges, measure,
+        maxPayloadChars: maxPayloadChars, generation: generation);
+    final result = [
       for (var i = 0; i < chunks.length; i++)
         envelopeJson(
           badges: chunks[i],
@@ -113,6 +121,12 @@ class BadgeSyncFormat {
           generation: generation,
         ),
     ];
+    // Mit den endgültigen n/i/gen messen; auch ein einzelnes großes
+    // Badge darf nicht stillschweigend eine zu große RPC-Anfrage erzeugen.
+    if (result.any((plain) => measure(plain) > maxPayloadChars)) {
+      throw const FormatException('Sync-Chunk überschreitet die Transportgrenze.');
+    }
+    return result;
   }
 
   /// SHA-256 über den Klartext eines Chunks. Der Vergleich muss am
@@ -134,8 +148,10 @@ class BadgeSyncFormat {
   /// Länge der NIP-44-Payload aus einer gzip-Bytefolge. Nicht die
   /// Klartext-Länge: das NIP-44-Padding und base64 machen sie größer.
   static int payloadCharsForGzip(int gzipBytes) {
-    // NIP-44: base64(1 + 32 + gepolstert + 32).
-    final padded = _padLen(gzipBytes);
+    // Der Signer verschlüsselt base64(gzip), nicht die rohen gzip-Bytes.
+    // Dazu kommen die zwei Bytes Längenpräfix im NIP-44-Padding.
+    final plaintextBytes = ((gzipBytes + 2) ~/ 3) * 4;
+    final padded = 2 + _padLen(plaintextBytes);
     return ((1 + 32 + padded + 32 + 2) ~/ 3) * 4;
   }
 

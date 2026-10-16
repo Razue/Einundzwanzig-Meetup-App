@@ -831,7 +831,11 @@ class Nip46NostrSigner implements NostrSigner {
       return method == 'nip44_encrypt'
           ? await client.nip44Encrypt(pubkeyHex, value)
           : await client.nip44Decrypt(pubkeyHex, value);
-    } on Nip46TimeoutException {
+    } on Nip46TimeoutException catch (e) {
+      AppLogger.warn('Nip44Probe',
+          '$method: keine Signer-Antwort nach ${e.limit.inSeconds} s; '
+          '${e.undecryptable} unlesbare Antworten, '
+          '${e.foreignSender} Antworten fremder Absender.');
       throw const SigningException(
           'Der Signer hat nicht geantwortet. Ist die Signer-App geöffnet '
           'und die Freigabe bestätigt?');
@@ -1073,15 +1077,40 @@ class SigningService {
 
   /// Kann der aktive Signer NIP-44? Eine Probe, die keinen Klartext verrät:
   /// eigener pubkey, eine kurze Markierung, hin und zurück.
-  static Future<bool> canNip44() async {
+  static Future<bool> canNip44({
+    @visibleForTesting NostrSigner? debugSigner,
+  }) async {
+    var step = 'Signer laden';
+    final elapsed = Stopwatch()..start();
     try {
-      final me = await pubkeyHex();
-      if (me == null || me.isEmpty) return false;
+      final signer = debugSigner ?? await _resolveSigner();
+      step = 'Identität lesen';
+      final me = await signer.pubkeyHex();
+      if (me == null || me.isEmpty) {
+        AppLogger.warn('Nip44Probe', 'Keine aktive Identität; Probe nicht möglich.');
+        return false;
+      }
+      AppLogger.info('Nip44Probe', 'Probe gestartet (${signer.runtimeType}).');
       const probe = 'e21-nip44-probe';
-      final sealed = await nip44Encrypt(me, probe);
-      final opened = await nip44Decrypt(me, sealed);
-      return opened == probe;
-    } catch (_) {
+      step = 'nip44_encrypt';
+      final sealed = await signer.nip44Encrypt(me, probe);
+      step = 'nip44_decrypt';
+      final opened = await signer.nip44Decrypt(me, sealed);
+      if (opened != probe) {
+        AppLogger.warn('Nip44Probe',
+            'Entschlüsselte Probe stimmt nicht überein (${elapsed.elapsedMilliseconds} ms).');
+        return false;
+      }
+      AppLogger.info('Nip44Probe',
+          'Ver- und Entschlüsselung erfolgreich (${elapsed.elapsedMilliseconds} ms).');
+      return true;
+    } catch (e) {
+      // Keine Payloads, Schlüssel oder Pubkeys protokollieren. Die
+      // SigningException enthält die übersetzte Transport-/Freigabeursache.
+      final reason = e is SigningException ? e.message : e.runtimeType.toString();
+      AppLogger.warn('Nip44Probe',
+          'Probe bei $step fehlgeschlagen (${elapsed.elapsedMilliseconds} ms): $reason. '
+          'Das belegt keine fehlende NIP-44-Unterstützung.');
       return false;
     }
   }

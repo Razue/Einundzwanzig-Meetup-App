@@ -6,8 +6,26 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nostr/nostr.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:einundzwanzig_meetup_app/services/nip44.dart';
+import 'package:einundzwanzig_meetup_app/services/app_logger.dart';
 import 'package:einundzwanzig_meetup_app/services/secure_key_store.dart';
 import 'package:einundzwanzig_meetup_app/services/signing_service.dart';
+
+class _ProbeSigner extends LocalNostrSigner {
+  _ProbeSigner(this.failure);
+  final String failure;
+  @override
+  Future<String?> pubkeyHex() async => 'public';
+  @override
+  Future<String> nip44Encrypt(String pubkeyHex, String plaintext) async {
+    if (failure == 'encrypt') throw const SigningException('Relay nicht erreichbar');
+    return 'PRIVATE-PAYLOAD';
+  }
+  @override
+  Future<String> nip44Decrypt(String pubkeyHex, String payload) async {
+    if (failure == 'decrypt') throw const SigningException('Freigabe abgelehnt');
+    return 'falscher Klartext';
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +94,24 @@ void main() {
       'nip44_encrypt:${other.public}:chunk',
       'nip44_decrypt:${other.public}:out:chunk',
     ]);
+  });
+
+  test('NIP-44-Probe meldet Schritt und Ursache ohne Payload', () async {
+    for (final step in ['encrypt', 'decrypt']) {
+      await AppLogger.clear();
+      expect(await SigningService.canNip44(debugSigner: _ProbeSigner(step)), isFalse);
+      final log = AppLogger.exportText();
+      expect(log, contains('nip44_$step'));
+      expect(log, contains(step == 'encrypt' ? 'Relay nicht erreichbar' : 'Freigabe abgelehnt'));
+      expect(log, isNot(contains('PRIVATE-PAYLOAD')));
+      expect(log, isNot(contains('falscher Klartext')));
+    }
+  });
+
+  test('NIP-44-Probe meldet abweichendes Entschlüsselungsergebnis', () async {
+    await AppLogger.clear();
+    expect(await SigningService.canNip44(debugSigner: _ProbeSigner('mismatch')), isFalse);
+    expect(AppLogger.exportText(), contains('stimmt nicht überein'));
   });
 
   test('canNip44 ist true im lokalen Modus mit Schlüssel', () async {

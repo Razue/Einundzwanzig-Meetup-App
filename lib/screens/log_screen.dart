@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 import '../services/app_logger.dart';
+import '../services/signing_service.dart';
 import '../utils/share_origin.dart';
 
 class LogScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class LogScreen extends StatefulWidget {
 }
 
 class _LogScreenState extends State<LogScreen> {
+  bool _probingNip44 = false;
   bool _onlyProblems = false; // Filter: nur WARN/ERROR
 
   Color _levelColor(String level) {
@@ -46,6 +48,19 @@ class _LogScreenState extends State<LogScreen> {
         elevation: 0,
         title: const Text('Diagnose-Log', style: TextStyle(color: cText, fontWeight: FontWeight.w700, fontSize: 16)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.key_rounded, color: cTextSecondary, size: 20),
+            tooltip: 'NIP-44-Verbindung prüfen (Freigabe im Signer eventuell nötig)',
+            onPressed: _probingNip44 ? null : () async {
+              setState(() => _probingNip44 = true);
+              final ok = await SigningService.canNip44();
+              if (!context.mounted) return;
+              setState(() => _probingNip44 = false);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(ok ? 'NIP-44-Probe erfolgreich.' : 'NIP-44-Probe fehlgeschlagen — Ursache im Diagnose-Log.'),
+              ));
+            },
+          ),
           IconButton(
             icon: Icon(_onlyProblems ? Icons.filter_alt_rounded : Icons.filter_alt_outlined,
                 color: _onlyProblems ? cOrange : cTextSecondary, size: 20),
