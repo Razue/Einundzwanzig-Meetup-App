@@ -27,6 +27,7 @@ class _FakeLink implements Nip46RelayLink {
   final _controller = StreamController<dynamic>.broadcast();
   final List<String> sentFrames = [];
   bool closed = false;
+  Completer<void>? beforeClose;
 
   _FakeLink(this.url, this.onFrame, {this.throwOnEvent = false});
 
@@ -45,6 +46,7 @@ class _FakeLink implements Nip46RelayLink {
   @override
   Future<void> close() async {
     closed = true;
+    await beforeClose?.future;
     await _controller.close();
   }
 
@@ -84,7 +86,6 @@ class _FakeSigner {
 
   /// Antworten von ALLEN Relays statt nur vom ersten schicken.
   bool answerFromAllRelays = false;
-  void Function(_FakeLink)? onSubscribe;
   bool acknowledge = true;
 
   _FakeSigner({Map<String, dynamic>? Function(Map<String, dynamic>)? respond})
@@ -108,7 +109,6 @@ class _FakeSigner {
 
   void _handleFrame(_FakeLink link, String frame) {
     final decoded = jsonDecode(frame) as List;
-    if (decoded.first == 'REQ') onSubscribe?.call(link);
     if (decoded.first != 'EVENT') return;
     final event = decoded[1] as Map<String, dynamic>;
 
@@ -347,18 +347,16 @@ void main() {
       await client.close();
     });
 
-    test('späte Clave-Freigabe beantwortet dieselbe Anfrage nach Neuverbindung', () async {
-      signer.respond = (_) => null;
-      signer.onSubscribe = (link) {
-        if (signer.links.length == 2) {
-          final request = signer.requests.single;
-          link.push(signer._wrap({'id': request['id'], 'result': 'sealed'}, Keychain(clientKey).public));
-        }
+    test('späte Freigabe bleibt bei derselben offenen Anfrage', () async {
+      signer.respond = (r) {
+        Timer(shortLimit ~/ 2, () => signer.links.single.push(
+          signer._wrap({'id': r['id'], 'result': 'sealed'}, Keychain(clientKey).public)));
+        return null;
       };
       final client = build();
       expect(await client.nip44Encrypt(signer.pubkey, 'probe'), 'sealed');
-      expect(signer.requests.length, 1, reason: 'Keine zweite Freigabe ohne auth_url');
-      expect(signer.links.length, 2);
+      expect(signer.requests.length, 1);
+      expect(signer.links.length, 1);
       await client.close();
     });
 
@@ -380,36 +378,38 @@ void main() {
       }
     }
 
-    test('parallele offene Anfragen behalten beim Wiederverbinden ihre IDs', () async {
-      signer.respond = (_) => null;
-      signer.onSubscribe = (link) {
-        if (signer.links.length == 2) {
-          for (final r in signer.requests) {
-            link.push(signer._wrap({'id': r['id'], 'result': r['params'][1]}, Keychain(clientKey).public));
-          }
-        }
+    test('doppelte Ablehnung eines Relays zählt nur einmal', () async {
+      signer.rejectingRelays = {relayA};
+      signer.rejectReason = 'blocked: denied';
+      signer.acknowledge = false;
+      signer.respond = (r) {
+        final rejected = signer.links.firstWhere((l) => l.url == relayA);
+        final frame = rejected.sentFrames.firstWhere((f) => f.startsWith('["EVENT"'));
+        final eventId = (jsonDecode(frame) as List)[1]['id'];
+        rejected.pushRaw(jsonEncode(['OK', eventId, false, 'blocked: denied']));
+        Timer(shortLimit ~/ 3, () => signer.links.firstWhere((l) => l.url == relayB).push(
+          signer._wrap({'id': r['id'], 'result': 'sealed'}, Keychain(clientKey).public)));
+        return null;
       };
-      final client = build();
-      expect(await Future.wait([
-        client.nip44Encrypt(signer.pubkey, 'first'),
-        client.nip44Encrypt(signer.pubkey, 'second'),
-      ]), ['first', 'second']);
-      expect(signer.requests.length, 2);
-      expect(signer.links.length, 2);
+      final client = build(relays: [relayA, relayB]);
+      expect(await client.nip44Encrypt(signer.pubkey, 'probe'), 'sealed');
       await client.close();
     });
 
-    test('späte Clave-Ablehnung bleibt endgültig und erzeugt keine neue Anfrage', () async {
-      signer.respond = (_) => null;
-      signer.onSubscribe = (link) {
-        if (signer.links.length == 2) {
-          link.push(signer._wrap({'id': signer.requests.single['id'], 'error': 'user rejected'}, Keychain(clientKey).public));
-        }
-      };
+    test('verspätetes Socket-Ende entfernt die Ersatzverbindung nicht', () async {
+      signer.respond = (r) => {'id': r['id'], 'result': 'sealed'};
       final client = build();
-      await expectLater(client.nip44Encrypt(signer.pubkey, 'probe'), throwsA(
-        isA<Nip46RemoteException>().having((e) => e.message, 'message', 'user rejected')));
-      expect(signer.requests.length, 1);
+      await client.nip44Encrypt(signer.pubkey, 'first');
+      final old = signer.links.single;
+      old.beforeClose = Completer<void>();
+      old.pushRaw(jsonEncode(['CLOSED', 'sub', 'auth-required: closed']));
+      await Future<void>.delayed(Duration.zero);
+      await client.nip44Encrypt(signer.pubkey, 'second');
+      expect(signer.links.length, 2);
+      old.beforeClose!.complete();
+      await Future<void>.delayed(Duration.zero);
+      await client.nip44Encrypt(signer.pubkey, 'third');
+      expect(signer.links.length, 2);
       await client.close();
     });
 
@@ -434,21 +434,6 @@ void main() {
       final sent = banned.sentFrames.length;
       await client.nip44Encrypt(signer.pubkey, 'probe');
       expect(banned.sentFrames.length, sent);
-      await client.close();
-    });
-
-    test('späte Signaturantwort wird ohne erneutes Signieren angenommen', () async {
-      signer.respond = (_) => null;
-      signer.onSubscribe = (link) {
-        if (signer.links.length == 2) {
-          final r = signer.requests.single;
-          link.push(signer._wrap({'id': r['id'], 'result': r['params'][0]}, Keychain(clientKey).public));
-        }
-      };
-      final client = build();
-      final unsigned = {'kind': 30078, 'created_at': 1792130000, 'content': 'sealed', 'tags': [['d', 'badges-0']]};
-      expect(await client.signEvent(unsigned), unsigned);
-      expect(signer.requests.length, 1);
       await client.close();
     });
 
@@ -848,39 +833,4 @@ void main() {
       expect(uri.queryParametersAll['relay'], ['wss://a.test', 'wss://b.test']);
     });
   });
-  test(
-    'kleine Sync-Ciphertexte bleiben auch als NIP-46-Rahmen pushfähig',
-    () async {
-      signer.respond = (r) => {
-        'id': r['id'],
-        'result': r['method'] == 'sign_event'
-            ? jsonEncode({'id': 'test', 'sig': 'test'})
-            : 'ok',
-      };
-      final client = build();
-      addTearDown(client.close);
-      final ciphertext = 'x' * 1796;
-      await client.nip44Decrypt(signer.pubkey, ciphertext);
-      await client.signEvent({
-        'kind': 30078,
-        'pubkey': signer.pubkey,
-        'created_at': 1792130000,
-        'tags': [
-          ['d', 'badges-511'],
-        ],
-        'content': ciphertext,
-      });
-      final events = signer.links
-          .expand((link) => link.sentFrames)
-          .map((frame) => jsonDecode(frame) as List)
-          .where((frame) => frame.first == 'EVENT');
-      expect(events.length, 2);
-      for (final frame in events) {
-        expect(
-          utf8.encode(jsonEncode(frame[1])).length,
-          lessThanOrEqualTo(3415),
-        );
-      }
-    },
-  );
 }

@@ -144,7 +144,6 @@ class Nip46Client {
 
   final Nip46RelayOpener _open;
   final Map<String, Nip46RelayLink> _links = {};
-  int _connectionEpoch = 0;
   final Map<String, DateTime> _relayCooldown = {};
   final List<StreamSubscription> _subs = [];
   final Map<String, Completer<dynamic>> _pending = {};
@@ -250,7 +249,7 @@ class Nip46Client {
 
   /// Lässt ein unsigniertes Event signieren und gibt das signierte zurück.
   Future<Map<String, dynamic>> signEvent(Map<String, dynamic> unsigned) async {
-    final result = await _recoverableRpc('sign_event', [jsonEncode(unsigned)]);
+    final result = await _rpc('sign_event', [jsonEncode(unsigned)], timeout: signTimeout);
     final decoded = _decodeSigned(result);
     if (decoded == null) {
       throw const Nip46Exception(
@@ -263,20 +262,14 @@ class Nip46Client {
   /// NIP-44 an [pubkeyHex]. Nicht jeder Bunker bietet das an — ein Fehler
   /// heißt dort: kein Sync, nur das Backup.
   Future<String> nip44Encrypt(String pubkeyHex, String plaintext) async {
-    final result = await _recoverableRpc('nip44_encrypt', [pubkeyHex, plaintext]);
+    final result = await _rpc('nip44_encrypt', [pubkeyHex, plaintext], timeout: signTimeout);
     return result.toString();
   }
 
   Future<String> nip44Decrypt(String pubkeyHex, String payload) async {
-    final result = await _recoverableRpc('nip44_decrypt', [pubkeyHex, payload]);
+    final result = await _rpc('nip44_decrypt', [pubkeyHex, payload], timeout: signTimeout);
     return result.toString();
   }
-
-  // Ein stumm wartender Signer ist von einer verlorenen Anfrage nicht
-  // unterscheidbar. Deshalb nie automatisch neu veröffentlichen: nur das
-  // Antwort-Abo erneuern und dieselbe RPC-ID weiter offen halten.
-  Future<dynamic> _recoverableRpc(String method, List<String> params) =>
-      _rpc(method, params, timeout: signTimeout, recoverSubscription: true);
 
   /// Lebt die Sitzung noch? Wird nach einem Neustart geprüft, damit ein vom
   /// Nutzer im Signer widerrufener Zugang auffällt, bevor die App signiert.
@@ -351,7 +344,6 @@ class Nip46Client {
     String method,
     List<String> params, {
     required Duration timeout,
-    bool recoverSubscription = false,
   }) async {
     if (_closed) {
       throw const Nip46Exception('Die Signer-Sitzung ist geschlossen.');
@@ -362,7 +354,6 @@ class Nip46Client {
     }
     await _ensureConnected();
 
-    final connectionEpoch = _connectionEpoch;
     final id = _randomHex(8);
     final request = _buildFrame(
       remote,
@@ -400,25 +391,7 @@ class Nip46Client {
 
     final limit = debugTimeout ?? timeout;
     try {
-      dynamic response;
-      try {
-        response = await completer.future.timeout(limit);
-      } on TimeoutException {
-        if (!recoverSubscription || _closed) rethrow;
-        AppLogger.warn('Nip46Transport',
-            '$method: noch keine Antwort; erneuere nur das Antwort-Abo. '
-            'Die ursprüngliche Anfrage bleibt offen, keine zweite Freigabe.');
-        // Eine parallele Anfrage kann die Verbindung schon erneuert haben.
-        // Ihre neue Subscription darf nicht gleich wieder geschlossen werden.
-        if (_connectionEpoch == connectionEpoch) {
-          for (final url in _links.keys.toList()) {
-            _dropLink(url);
-          }
-        }
-        await _ensureConnected();
-        response = await completer.future.timeout(
-            debugTimeout ?? const Duration(seconds: 40));
-      }
+      final response = await completer.future.timeout(limit);
       if (method == 'nip44_decrypt' || method == 'nip44_encrypt') {
         AppLogger.info(
           'Nip46Transport',
@@ -433,7 +406,8 @@ class Nip46Client {
         'Nip46Transport',
         '$method: Timeout; Relay-Annahme bestätigt: ${published?.accepted ?? false}; '
             'abgewiesen: ${published?.rejected ?? 0}/$sent; '
-            'angenommene Relays: ${published?.acceptedRelays.join(", ") ?? "keine"}.',
+            'angenommene Relays: ${published?.acceptedRelays.join(", ") ?? "keine"}; '
+            'Freigabe angekündigt: ${_waitingForApproval.contains(id)}.',
       );
       _pending.remove(id);
       AppLogger.warn(
@@ -524,7 +498,6 @@ class Nip46Client {
         await link.close();
         return;
       }
-      _connectionEpoch++;
       _links[url] = link;
       _subs.add(
         link.stream.listen(
