@@ -40,9 +40,10 @@ class Nip46TimeoutException extends Nip46Exception {
   /// `undecryptable == 0` scheinbar ein Beweis, dass gar nichts ankam — und
   /// genau das war er nicht, denn Fremdantworten wurden spurlos verworfen.
   final int foreignSender;
+  final bool waitingForApproval;
 
   const Nip46TimeoutException(this.method, this.limit, this.undecryptable,
-      [this.foreignSender = 0])
+      [this.foreignSender = 0, this.waitingForApproval = false])
       : super('Der Signer hat nicht geantwortet.');
 
   @override

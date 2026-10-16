@@ -441,11 +441,11 @@ class BadgeSyncService {
     // canNip44 fängt selbst; die Zweige bleiben, falls die Probe doch wirft.
     try {
       if (!await SigningService.canNip44()) {
-        AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
+        AppLogger.warn(_tag, 'NIP-44-Probe nicht erfolgreich — Ursache siehe Nip44Probe.');
         return _SyncAttempt.nip44Blocked;
       }
     } on UnsupportedError {
-      AppLogger.debug(_tag, 'Signer kann kein NIP-44 — Sync bleibt aus');
+      AppLogger.warn(_tag, 'NIP-44-Probe nicht erfolgreich — Ursache siehe Nip44Probe.');
       return _SyncAttempt.nip44Blocked;
     } on SigningException catch (e) {
       AppLogger.debug(_tag, 'NIP-44-Probe abgelehnt — Sync bleibt aus: $e');
