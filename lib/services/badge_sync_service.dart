@@ -581,8 +581,10 @@ class BadgeSyncService {
     final badges = <MeetupBadge>[];
     var newestGen = 0;
     var unreadableChunks = 0;
-    final totals = <int, int>{};
+    final totals = <int, Set<int>>{};
     final indices = <int, Set<int>>{};
+    final completeGenerations = <int, bool>{};
+    final allIndices = <int>{};
     for (final event in events) {
       final content = (event['content'] ?? '').toString();
       if (content.isEmpty) {
@@ -609,11 +611,14 @@ class BadgeSyncService {
             env.generation < 0) {
           throw const FormatException('Ungültige Chunk-Nummerierung.');
         }
-        final total = totals.putIfAbsent(env.generation, () => env.total);
-        if (total != env.total) {
-          throw const FormatException('Widersprüchliche Chunk-Anzahl.');
-        }
+        totals.putIfAbsent(env.generation, () => <int>{}).add(env.total);
+        // Ein Legacy-Client kann innerhalb derselben Sekunde eine markierte
+        // Generation teilweise ersetzen. Sobald ein Chunk unmarkiert ist,
+        // gelten für diese Generation deshalb die Legacy-Regeln.
+        completeGenerations[env.generation] =
+            (completeGenerations[env.generation] ?? true) && env.completeGeneration;
         indices.putIfAbsent(env.generation, () => <int>{}).add(env.index);
+        allIndices.add(env.index);
         badges.addAll(env.badges);
         if (env.generation > newestGen) newestGen = env.generation;
       } catch (e) {
@@ -627,12 +632,23 @@ class BadgeSyncService {
     // Ein Timeout ist kein leerer ferner Bestand. Sonst würde der Upload
     // unbekannte ferne Badges mit der lokalen Teilsammlung überschreiben.
     if (unreadableChunks > 0) return null;
-    if (events.isNotEmpty && indices[newestGen]?.length != totals[newestGen]) {
-      AppLogger.warn(
-        _tag,
-        'Neueste Sync-Generation unvollständig; kein Upload.',
-      );
-      return null;
+    if (events.isNotEmpty) {
+      if (totals.entries.any((entry) =>
+          completeGenerations[entry.key] == true && entry.value.length != 1)) {
+        AppLogger.warn(_tag, 'Widersprüchliche markierte Generation; kein Upload.');
+        return null;
+      }
+      final expected = totals[newestGen]!.reduce(max);
+      // Alte Clients aktualisieren nur geänderte Chunks. Ihre Generationen
+      // dürfen gemischt sein, aber jeder benötigte Index muss vorliegen.
+      // Neue Writer kennzeichnen vollständige Generationen ausdrücklich.
+      final present = completeGenerations[newestGen] == true
+          ? indices[newestGen]!
+          : allIndices;
+      if (!List.generate(expected, (i) => i).every(present.contains)) {
+        AppLogger.warn(_tag, 'Benötigte Sync-Chunks fehlen; kein Upload.');
+        return null;
+      }
     }
     AppLogger.info(
       _tag,
@@ -768,6 +784,7 @@ class BadgeSyncService {
           BadgeSyncCodec.deflate(p).length,
         ),
         maxPayloadChars: limit,
+        completeGeneration: true,
     );
     } on FormatException catch (e) {
       AppLogger.warn(_tag, 'Sync bleibt aus; nichts veröffentlicht.', e);

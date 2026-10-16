@@ -144,6 +144,7 @@ class Nip46Client {
 
   final Nip46RelayOpener _open;
   final Map<String, Nip46RelayLink> _links = {};
+  int _connectionEpoch = 0;
   final Map<String, DateTime> _relayCooldown = {};
   final List<StreamSubscription> _subs = [];
   final Map<String, Completer<dynamic>> _pending = {};
@@ -249,7 +250,7 @@ class Nip46Client {
 
   /// Lässt ein unsigniertes Event signieren und gibt das signierte zurück.
   Future<Map<String, dynamic>> signEvent(Map<String, dynamic> unsigned) async {
-    final result = await _retryableRpc('sign_event', [jsonEncode(unsigned)]);
+    final result = await _recoverableRpc('sign_event', [jsonEncode(unsigned)]);
     final decoded = _decodeSigned(result);
     if (decoded == null) {
       throw const Nip46Exception(
@@ -262,35 +263,20 @@ class Nip46Client {
   /// NIP-44 an [pubkeyHex]. Nicht jeder Bunker bietet das an — ein Fehler
   /// heißt dort: kein Sync, nur das Backup.
   Future<String> nip44Encrypt(String pubkeyHex, String plaintext) async {
-    final result = await _retryableRpc('nip44_encrypt', [pubkeyHex, plaintext]);
+    final result = await _recoverableRpc('nip44_encrypt', [pubkeyHex, plaintext]);
     return result.toString();
   }
 
   Future<String> nip44Decrypt(String pubkeyHex, String payload) async {
-    final result = await _retryableRpc('nip44_decrypt', [pubkeyHex, payload]);
+    final result = await _recoverableRpc('nip44_decrypt', [pubkeyHex, payload]);
     return result.toString();
   }
 
-  // Nur Kryptographie und das Signieren desselben unveränderten Events
-  // wiederholen: sign_event veröffentlicht nichts. Ein neuer signierter
-  // Rahmen umgeht die Event-Deduplizierung des Push-Proxys. Ablehnungen des
-  // Nutzers und angekündigte offene Freigaben werden nie wiederholt.
-  Future<dynamic> _retryableRpc(String method, List<String> params) async {
-    try {
-      return await _rpc(method, params, timeout: method == 'sign_event'
-          ? signTimeout : const Duration(seconds: 20));
-    } on Nip46TimeoutException catch (e) {
-      if (_closed || e.waitingForApproval) rethrow;
-      AppLogger.warn(
-        'Nip46Transport',
-        '$method: Übertragungsversuch ohne Antwort; einmaliger neuer Versuch.',
-      );
-      for (final url in _links.keys.toList()) {
-        _dropLink(url);
-      }
-      return _rpc(method, params, timeout: const Duration(seconds: 40));
-    }
-  }
+  // Ein stumm wartender Signer ist von einer verlorenen Anfrage nicht
+  // unterscheidbar. Deshalb nie automatisch neu veröffentlichen: nur das
+  // Antwort-Abo erneuern und dieselbe RPC-ID weiter offen halten.
+  Future<dynamic> _recoverableRpc(String method, List<String> params) =>
+      _rpc(method, params, timeout: signTimeout, recoverSubscription: true);
 
   /// Lebt die Sitzung noch? Wird nach einem Neustart geprüft, damit ein vom
   /// Nutzer im Signer widerrufener Zugang auffällt, bevor die App signiert.
@@ -365,6 +351,7 @@ class Nip46Client {
     String method,
     List<String> params, {
     required Duration timeout,
+    bool recoverSubscription = false,
   }) async {
     if (_closed) {
       throw const Nip46Exception('Die Signer-Sitzung ist geschlossen.');
@@ -375,6 +362,7 @@ class Nip46Client {
     }
     await _ensureConnected();
 
+    final connectionEpoch = _connectionEpoch;
     final id = _randomHex(8);
     final request = _buildFrame(
       remote,
@@ -412,7 +400,25 @@ class Nip46Client {
 
     final limit = debugTimeout ?? timeout;
     try {
-      final response = await completer.future.timeout(limit);
+      dynamic response;
+      try {
+        response = await completer.future.timeout(limit);
+      } on TimeoutException {
+        if (!recoverSubscription || _closed) rethrow;
+        AppLogger.warn('Nip46Transport',
+            '$method: noch keine Antwort; erneuere nur das Antwort-Abo. '
+            'Die ursprüngliche Anfrage bleibt offen, keine zweite Freigabe.');
+        // Eine parallele Anfrage kann die Verbindung schon erneuert haben.
+        // Ihre neue Subscription darf nicht gleich wieder geschlossen werden.
+        if (_connectionEpoch == connectionEpoch) {
+          for (final url in _links.keys.toList()) {
+            _dropLink(url);
+          }
+        }
+        await _ensureConnected();
+        response = await completer.future.timeout(
+            debugTimeout ?? const Duration(seconds: 40));
+      }
       if (method == 'nip44_decrypt' || method == 'nip44_encrypt') {
         AppLogger.info(
           'Nip46Transport',
@@ -421,6 +427,7 @@ class Nip46Client {
       }
       return response;
     } on TimeoutException {
+      final waited = watch.elapsed;
       final published = _publishes[request.eventId];
       AppLogger.warn(
         'Nip46Transport',
@@ -431,17 +438,18 @@ class Nip46Client {
       _pending.remove(id);
       AppLogger.warn(
           'Nip46',
-          '$method: keine Antwort in ${limit.inSeconds}s '
+          '$method: keine Antwort nach ${waited.inMilliseconds} ms '
             '(unlesbar: $_undecryptable, fremder Absender: $_foreignSender)',
       );
       throw Nip46TimeoutException(
         method,
-        limit,
+        waited,
         _undecryptable,
         _foreignSender,
         _waitingForApproval.contains(id),
       );
     } finally {
+      _pending.remove(id);
       _publishes.remove(request.eventId);
       _waitingForApproval.remove(id);
     }
@@ -516,10 +524,13 @@ class Nip46Client {
         await link.close();
         return;
       }
+      _connectionEpoch++;
       _links[url] = link;
       _subs.add(
         link.stream.listen(
-        (data) => _onMessage(url, data),
+        (data) {
+            if (identical(_links[url], link)) _onMessage(url, data);
+          },
         onError: (Object e) => _dropLink(url, expected: link),
         onDone: () => _dropLink(url, expected: link, closeSocket: false),
         cancelOnError: false,

@@ -51,12 +51,14 @@ class BadgeSyncFormat {
     required int index,
     required int total,
     required int generation,
+    bool completeGeneration = false,
   }) {
     return jsonEncode({
       'v': 1,
       'i': index,
       'n': total,
       'gen': generation,
+      if (completeGeneration) 'complete': true,
       'badges': badges.map((b) => b.toJson()).toList(),
     });
   }
@@ -69,6 +71,7 @@ class BadgeSyncFormat {
     int Function(String plaintext) measure, {
     int maxPayloadChars = chunkPayloadChars,
     int generation = 0,
+    bool completeGeneration = false,
   }) {
     if (badges.isEmpty) return const [];
     final sorted = sortBadges(badges);
@@ -83,6 +86,7 @@ class BadgeSyncFormat {
           index: index,
           total: total,
           generation: generation,
+          completeGeneration: completeGeneration,
         ));
 
     for (final badge in sorted) {
@@ -109,9 +113,11 @@ class BadgeSyncFormat {
     int generation,
     int Function(String plaintext) measure, {
     int maxPayloadChars = chunkPayloadChars,
+    bool completeGeneration = false,
   }) {
     final chunks = chunkBadges(badges, measure,
-        maxPayloadChars: maxPayloadChars, generation: generation);
+        maxPayloadChars: maxPayloadChars, generation: generation,
+        completeGeneration: completeGeneration);
     final result = [
       for (var i = 0; i < chunks.length; i++)
         envelopeJson(
@@ -119,6 +125,7 @@ class BadgeSyncFormat {
           index: i,
           total: chunks.length,
           generation: generation,
+          completeGeneration: completeGeneration,
         ),
     ];
     // Mit den endgültigen n/i/gen messen; auch ein einzelnes großes
@@ -168,7 +175,7 @@ class BadgeSyncFormat {
   /// Liest eine Hülle. Wirft [FormatException] bei kaputtem JSON oder
   /// fehlenden Feldern. Die Badges kommen als Liste; einzelne defekte
   /// Einträge fallen weg statt den ganzen Chunk zu verwerfen.
-  static ({int index, int total, int generation, List<MeetupBadge> badges})
+  static ({int index, int total, int generation, bool completeGeneration, List<MeetupBadge> badges})
       parseEnvelope(String plaintext) {
     final map = jsonDecode(plaintext);
     if (map is! Map<String, dynamic>) {
@@ -176,6 +183,9 @@ class BadgeSyncFormat {
     }
     if (map['v'] != 1) {
       throw FormatException('Hülle v${map['v']} wird nicht unterstützt');
+    }
+    if (map.containsKey('complete') && map['complete'] is! bool) {
+      throw const FormatException('Ungültige Vollständigkeitsmarkierung');
     }
     final raw = map['badges'];
     if (raw is! List) {
@@ -195,6 +205,7 @@ class BadgeSyncFormat {
       index: (map['i'] as num?)?.toInt() ?? 0,
       total: (map['n'] as num?)?.toInt() ?? 1,
       generation: (map['gen'] as num?)?.toInt() ?? 0,
+      completeGeneration: map['complete'] == true,
       badges: badges,
     );
   }

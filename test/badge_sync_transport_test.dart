@@ -282,6 +282,7 @@ void main() {
     final envelopes = events.map((e) => BadgeSyncFormat.parseEnvelope(
       BadgeSyncCodec.inflate(base64Decode(Nip44.decrypt(e['content'] as String, Uint8List(32)))))).toList();
     expect(envelopes.map((e) => e.generation).toSet().length, 1);
+    expect(envelopes.every((e) => e.completeGeneration), isTrue);
     expect(envelopes.every((e) => e.total == envelopes.length), isTrue);
     expect(envelopes.expand((e) => e.badges).length, 5);
   });
@@ -439,7 +440,7 @@ void main() {
     );
   });
   test(
-    'fehlende Chunks und gemischte Generationen geben keinen Upload frei',
+    'fehlende Chunks einer markierten Generation geben keinen Upload frei',
     () async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('badge_sync_last_gen', 40);
@@ -464,6 +465,7 @@ void main() {
                   index: parts[0],
                   total: 2,
                   generation: parts[1],
+                  completeGeneration: true,
                 ),
               ),
             );
@@ -474,4 +476,62 @@ void main() {
       }
     },
   );
+  test('Legacy-Teilupdates bleiben trotz gemischter Generationen vollständig lesbar', () async {
+    for (final count in [2, 3]) {
+      final events = [
+        for (var i = 0; i < count; i++) {'content': base64Encode(BadgeSyncCodec.deflate(
+          BadgeSyncFormat.envelopeJson(badges: [badge(i + 1)], index: i,
+            total: i == count - 1 ? count : 2, generation: i == count - 1 ? 42 : 41)))},
+      ];
+      final restored = await BadgeSyncService.decodeRemoteChunks('public', events,
+        decrypt: (_, content) async => content);
+      expect(restored!.map(MeetupBadge.unionKey).toSet(), List.generate(count, (i) => MeetupBadge.unionKey(badge(i + 1))).toSet());
+    }
+  });
+
+  test('Legacy-Update einer neuen Generation bleibt lesbar, echte Lücke sperrt Upload', () async {
+    final events = [
+      for (var i = 0; i < 3; i++) {'content': base64Encode(BadgeSyncCodec.deflate(
+        BadgeSyncFormat.envelopeJson(badges: [badge(i + 1)], index: i, total: 3,
+          generation: i == 2 ? 42 : 41, completeGeneration: i != 2)))},
+    ];
+    expect((await BadgeSyncService.decodeRemoteChunks('public', events,
+      decrypt: (_, content) async => content))!.length, 3);
+    expect(await BadgeSyncService.decodeRemoteChunks('public', [events[0], events[2]],
+      decrypt: (_, content) async => content), isNull);
+  });
+
+  test('vollständige neue Generation ist markiert und passt durch NIP-44', () async {
+    final plains = BadgeSyncFormat.plaintexts([badge(1), badge(2)], 42,
+      (p) => BadgeSyncFormat.payloadCharsForGzip(BadgeSyncCodec.deflate(p).length),
+      maxPayloadChars: BadgeSyncFormat.remoteSignerChunkPayloadChars, completeGeneration: true);
+    final events = [for (final plain in plains) {'content': Nip44.encrypt(base64Encode(BadgeSyncCodec.deflate(plain)), Uint8List(32))}];
+    expect(plains.every((p) => BadgeSyncFormat.parseEnvelope(p).completeGeneration), isTrue);
+    expect(events.every((e) => e['content']!.length <= BadgeSyncFormat.remoteSignerChunkPayloadChars), isTrue);
+    expect((await BadgeSyncService.decodeRemoteChunks('public', events,
+      decrypt: (_, content) async => Nip44.decrypt(content, Uint8List(32))))!.length, 2);
+  });
+
+  test('Legacy-Update in derselben Sekunde verträgt veränderte Chunk-Anzahl', () async {
+    final events = [
+      for (var i = 0; i < 3; i++) {'content': base64Encode(BadgeSyncCodec.deflate(
+        BadgeSyncFormat.envelopeJson(badges: [badge(i + 1)], index: i,
+          total: i == 0 ? 2 : 3, generation: 42, completeGeneration: i == 0)))},
+    ];
+    expect((await BadgeSyncService.decodeRemoteChunks('public', events,
+      decrypt: (_, content) async => content))!.length, 3);
+    expect(await BadgeSyncService.decodeRemoteChunks('public', [events[0], events[2]],
+      decrypt: (_, content) async => content), isNull);
+  });
+
+  test('widersprüchliche markierte Generation bleibt gesperrt', () async {
+    final events = [
+      for (var i = 0; i < 2; i++) {'content': base64Encode(BadgeSyncCodec.deflate(
+        BadgeSyncFormat.envelopeJson(badges: [badge(i + 1)], index: i,
+          total: i + 2, generation: 42, completeGeneration: true)))},
+    ];
+    expect(await BadgeSyncService.decodeRemoteChunks('public', events,
+      decrypt: (_, content) async => content), isNull);
+  });
+
 }
