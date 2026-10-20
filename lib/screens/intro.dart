@@ -89,6 +89,12 @@ class _IntroScreenState extends State<IntroScreen>
         setState(() => _isLoading = false);
         return;
       }
+      // Die Einrichtung springt am Ende selbst zur AppShell und raeumt den
+      // Stapel ab — dieser Bildschirm ist dann schon entfernt. Ein zweites
+      // pushReplacement ersetzte sonst die frische AppShell durch eine
+      // weitere: Zwei HomeScreens zugleich teilen sich die statischen
+      // Tour-Keys ("Multiple widgets used the same GlobalKey").
+      if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
     }
 
     if (!mounted) return;
