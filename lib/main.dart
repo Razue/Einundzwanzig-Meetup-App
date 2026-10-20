@@ -246,14 +246,25 @@ class MyApp extends StatelessWidget {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) {
+            // Handys nutzen die volle Breite. Die feste 420-dp-Spalte liess
+            // auf grossen Handys (Pixel 9 Pro XL: 448 dp) links und rechts
+            // schwarze Raender. Zentriert wird nur noch auf Tablet, Desktop
+            // und Web — dieselbe 600-dp-Grenze der kleinsten Seite, an der
+            // MainActivity das Hochformat freigibt. Die kleinste Seite
+            // aendert sich beim Drehen nicht, und der Baum bleibt in beiden
+            // Faellen gleich, damit der Navigator-Zustand erhalten bleibt.
+            final wide = MediaQuery.sizeOf(context).shortestSide >= 600;
             return GuideOverlay(
               child: Center(
                 child: Container(
-                  constraints: const BoxConstraints(maxWidth: 420),
+                  constraints:
+                      BoxConstraints(maxWidth: wide ? 420 : double.infinity),
                   decoration: BoxDecoration(
-                    border: Border.symmetric(
-                      vertical: BorderSide(color: cBorder, width: 0.5),
-                    ),
+                    border: wide
+                        ? Border.symmetric(
+                            vertical: BorderSide(color: cBorder, width: 0.5),
+                          )
+                        : null,
                   ),
                   child: child,
                 ),
