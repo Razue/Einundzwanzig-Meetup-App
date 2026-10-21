@@ -1198,7 +1198,9 @@ class _IdentitySetupScreenState extends State<IdentitySetupScreen> {
             title: t.idSetupMeetupPick,
             subtitle: _selectedMeetupCities.isEmpty
                 ? t.homeMeetupChooseSub
-                : _selectedMeetupCities.join(', '),
+                // Gespeichert sind Portal-IDs ("60") — fuer die Anzeige
+                // wie auf dem Home-Screen in Ort bzw. Gruppennamen aufloesen.
+                : _selectedMeetupCities.map(MeetupService.labelFor).join(', '),
             primary: true,
             onTap: _openMeetupPicker,
           ),
