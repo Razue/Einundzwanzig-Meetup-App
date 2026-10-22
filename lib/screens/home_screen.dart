@@ -1781,19 +1781,31 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         transform: Matrix4.identity()
           ..setEntry(3, 2, 0.0024)
           ..rotateY(-0.55),
-        child: ShaderMask(
-          // Weiches Auslaufen nach rechts, damit sich das Wappen wie ein
-          // Wasserzeichen in die Kachel einbindet (linke Kante voll sichtbar).
-          shaderCallback: (r) => const LinearGradient(
-            begin: Alignment.centerLeft, end: Alignment.centerRight,
-            colors: [Colors.white, Colors.white70, Colors.white24, Colors.transparent],
-            stops: [0.0, 0.35, 0.7, 1.0],
-          ).createShader(r),
-          blendMode: BlendMode.dstIn,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink()),
+        // Das Wappen bekommt eine eigene QUADRATISCHE Flaeche. Ohne Align
+        // reicht der SizedBox seine feste Groesse (1.12 : 1) bis zum Bild
+        // durch, width/height am Image werden ueberstimmt — BoxFit.cover
+        // schnitt den Ring runder Wappen oben und unten ab.
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: SizedBox.square(
+            dimension: size,
+            child: ShaderMask(
+              // Leichtes Auslaufen nach rechts, damit sich das Wappen in die
+              // Kachel einbindet. Nicht bis ganz transparent — sonst wirkt
+              // der rechte Rand des Wappens abgeschnitten.
+              shaderCallback: (r) => const LinearGradient(
+                begin: Alignment.centerLeft, end: Alignment.centerRight,
+                colors: [Colors.white, Colors.white, Colors.white54],
+                stops: [0.0, 0.5, 1.0],
+              ).createShader(r),
+              blendMode: BlendMode.dstIn,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                // contain: Auch nicht quadratische Logos bleiben ganz.
+                child: Image.network(url, fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink()),
+              ),
+            ),
           ),
         ),
       ),
