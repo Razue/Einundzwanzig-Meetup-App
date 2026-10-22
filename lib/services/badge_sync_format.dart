@@ -59,8 +59,9 @@ class BadgeSyncFormat {
   /// Der Aufrufer liefert sie, weil sie vom Verschlüsseln abhängt.
   static List<List<MeetupBadge>> chunkBadges(
     List<MeetupBadge> badges,
-    int Function(String plaintext) measure,
-  ) {
+    int Function(String plaintext) measure, {
+    int generation = 0,
+  }) {
     if (badges.isEmpty) return const [];
     final sorted = sortBadges(badges);
     final chunks = <List<MeetupBadge>>[];
@@ -73,7 +74,7 @@ class BadgeSyncFormat {
           badges: current,
           index: index,
           total: total,
-          generation: 0,
+          generation: generation,
         ));
 
     for (final badge in sorted) {
@@ -103,7 +104,7 @@ class BadgeSyncFormat {
     int generation,
     int Function(String plaintext) measure,
   ) {
-    final chunks = chunkBadges(badges, measure);
+    final chunks = chunkBadges(badges, measure, generation: generation);
     return [
       for (var i = 0; i < chunks.length; i++)
         envelopeJson(

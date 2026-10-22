@@ -681,8 +681,10 @@ class BadgeSyncService {
       // Der Hash hängt nur am Inhalt, nicht an der Generation. Sonst
       // änderte er sich bei jedem Start und jeder Chunk ginge wieder raus.
       final hash = BadgeSyncFormat.contentHash(plain);
-      newHashes.add(hash);
-      if (i < oldHashes.length && oldHashes[i] == hash) continue;
+      if (i < oldHashes.length && oldHashes[i] == hash) {
+        newHashes.add(hash);
+        continue;
+      }
 
       final sealed = await (encrypt ?? SigningService.nip44Encrypt)(
           me, base64Encode(BadgeSyncCodec.deflate(plain)));
@@ -717,10 +719,15 @@ class BadgeSyncService {
       if (!accepted) {
         AppLogger.warn(_tag, 'Chunk $i auf keinem Relay bestätigt');
         ok = false;
+        // Den fehlgeschlagenen Index erneut versuchen; die übrigen
+        // Hashes behalten dafür ihre Position.
+        newHashes.add('');
+      } else {
+        newHashes.add(hash);
       }
     }
     await prefs.setStringList(_hashesKey, newHashes);
-    await prefs.setInt(_lastGenKey, generation);
+    if (ok) await prefs.setInt(_lastGenKey, generation);
     return ok;
   }
 
