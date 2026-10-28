@@ -1779,19 +1779,31 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
         transform: Matrix4.identity()
           ..setEntry(3, 2, 0.0024)
           ..rotateY(-0.55),
-        child: ShaderMask(
-          // Weiches Auslaufen nach rechts, damit sich das Wappen wie ein
-          // Wasserzeichen in die Kachel einbindet (linke Kante voll sichtbar).
-          shaderCallback: (r) => const LinearGradient(
-            begin: Alignment.centerLeft, end: Alignment.centerRight,
-            colors: [Colors.white, Colors.white70, Colors.white24, Colors.transparent],
-            stops: [0.0, 0.35, 0.7, 1.0],
-          ).createShader(r),
-          blendMode: BlendMode.dstIn,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(url, width: size, height: size, fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const SizedBox.shrink()),
+        // Das Wappen bekommt eine eigene QUADRATISCHE Flaeche. Ohne Align
+        // reicht der SizedBox seine feste Groesse (1.12 : 1) bis zum Bild
+        // durch, width/height am Image werden ueberstimmt — BoxFit.cover
+        // schnitt den Ring runder Wappen oben und unten ab.
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: SizedBox.square(
+            dimension: size,
+            child: ShaderMask(
+              // Leichtes Auslaufen nach rechts, damit sich das Wappen in die
+              // Kachel einbindet. Nicht bis ganz transparent — sonst wirkt
+              // der rechte Rand des Wappens abgeschnitten.
+              shaderCallback: (r) => const LinearGradient(
+                begin: Alignment.centerLeft, end: Alignment.centerRight,
+                colors: [Colors.white, Colors.white, Colors.white54],
+                stops: [0.0, 0.5, 1.0],
+              ).createShader(r),
+              blendMode: BlendMode.dstIn,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                // contain: Auch nicht quadratische Logos bleiben ganz.
+                child: Image.network(url, fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink()),
+              ),
+            ),
           ),
         ),
       ),
@@ -2199,8 +2211,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
             _crestCoverFlow(cityName, meetup, size: 60),
             const SizedBox(width: 14),
-            Expanded(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            // Bei grosser Systemschrift passt die Spalte nicht mehr in die
+            // feste Kartenhoehe — einpassen statt ueberlaufen.
+            Expanded(child: _FitToTile(child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
@@ -2234,7 +2248,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
                       height: 1.05)),
                 const SizedBox(height: 5),
                 _favNextEvent(event),
-              ])),
+              ]))),
           ]),
         ),
         _favActions(card, meetup),
@@ -2423,7 +2437,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
     double valueSize = 24,
     Widget? trailing,
   }) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+    final content = Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
       Row(children: [
         Icon(icon, color: accent, size: 16),
         const SizedBox(width: 6),
@@ -2458,6 +2472,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, W
             style: const TextStyle(color: cTextSecondary, fontSize: 12.5)),
       ],
     ]);
+    return _FitToTile(child: content);
   }
 
   Widget _buildReputationTile() {
@@ -3589,71 +3604,112 @@ class _BtcDashboardTileContentState extends State<_BtcDashboardTileContent> {
             ),
           ),
         ),
-        // Inhalt: links Beschreibung, rechts Blockhöhe
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Links: Titel + Untertitel + Preis
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+        // Inhalt: links Beschreibung, rechts Blockhöhe — vertikal mittig,
+        // im Engpass verkleinert statt uebergelaufen.
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: _FitToTile(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(children: [
-                    SvgPicture.asset('assets/icons/bitcoin.svg', width: 22, height: 22),
-                    const SizedBox(width: 8),
-                    const Text('Bitcoin', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
-                  ]),
-                  const SizedBox(height: 4),
-                  const Text('Netzwerk & Kurs', style: TextStyle(color: cTextSecondary, fontSize: 13)),
-                  // Kurs in der gewählten Währung (Issue #66). Lauscht auf
-                  // die Einstellung, damit ein Wechsel sofort sichtbar ist.
-                  if (d != null)
-                    ValueListenableBuilder<String>(
-                      valueListenable: CurrencyService.current,
-                      builder: (_, cur, _) {
-                        final p = d.priceIn(cur);
-                        if (p <= 0) return const SizedBox.shrink();
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(CurrencyService.formatPrice(p, cur),
-                              style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
-                        );
-                      },
+                  // Links: Titel + Untertitel + Preis
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Bei 200 % auf schmalen Handys reicht die halbe
+                        // Breite nicht fuer Logo und Titel — verkleinern.
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            SvgPicture.asset('assets/icons/bitcoin.svg', width: 22, height: 22),
+                            const SizedBox(width: 8),
+                            const Text('Bitcoin', style: TextStyle(color: cText, fontSize: 16, fontWeight: FontWeight.w700)),
+                          ]),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('Netzwerk & Kurs', style: TextStyle(color: cTextSecondary, fontSize: 13)),
+                        // Kurs in der gewählten Währung (Issue #66). Lauscht auf
+                        // die Einstellung, damit ein Wechsel sofort sichtbar ist.
+                        if (d != null)
+                          ValueListenableBuilder<String>(
+                            valueListenable: CurrencyService.current,
+                            builder: (_, cur, _) {
+                              final p = d.priceIn(cur);
+                              if (p <= 0) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(CurrencyService.formatPrice(p, cur),
+                                    style: const TextStyle(color: cTextSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+                              );
+                            },
+                          ),
+                      ],
                     ),
+                  ),
+                  // Rechts: Blockhöhe
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(children: [
+                        Container(
+                          width: 7, height: 7,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: (d != null && !d.isDead)
+                                ? cGreen.withValues(alpha: 0.7)
+                                : cTextTertiary,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text('BLOCK', style: TextStyle(color: cTextTertiary, fontSize: 10, letterSpacing: 2)),
+                      ]),
+                      const SizedBox(height: 4),
+                      Text(
+                        d != null && d.blockHeight > 0 ? _fmtInt(d.blockHeight) : '––',
+                        style: const TextStyle(color: cOrange, fontSize: 26, fontWeight: FontWeight.w800, height: 1.0)
+                            .copyWith(fontFamily: fontMono),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
-            // Rechts: Blockhöhe
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(children: [
-                  Container(
-                    width: 7, height: 7,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: (d != null && !d.isDead)
-                          ? cGreen.withValues(alpha: 0.7)
-                          : cTextTertiary,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  const Text('BLOCK', style: TextStyle(color: cTextTertiary, fontSize: 10, letterSpacing: 2)),
-                ]),
-                const SizedBox(height: 4),
-                Text(
-                  d != null && d.blockHeight > 0 ? _fmtInt(d.blockHeight) : '––',
-                  style: const TextStyle(color: cOrange, fontSize: 26, fontWeight: FontWeight.w800, height: 1.0)
-                      .copyWith(fontFamily: fontMono),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ],
     );
+  }
+}
+
+/// Passt Kachel-Inhalt in die feste Kachelhoehe ein.
+///
+/// Die Kacheln haben eine feste Hoehe, ihr Inhalt nicht: Ob ein Wert eine
+/// oder zwei Zeilen braucht, haengt von Bildschirmbreite, Kurs und der
+/// Schriftgroesse des Systems ab. Statt die Mindesthoehe der Reihe immer
+/// wieder um ein paar Pixel anzuheben (92 -> 118 -> 120), wird der Inhalt
+/// in voller Breite mit natuerlicher Hoehe gebaut und NUR im Engpass
+/// verkleinert. Passt er, bleibt er unveraendert — auch in seiner Hoehe,
+/// damit die Ausrichtung durch die umgebende Kachel erhalten bleibt.
+class _FitToTile extends StatelessWidget {
+  const _FitToTile({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, c) {
+      if (!c.hasBoundedWidth || !c.hasBoundedHeight) return child;
+      return FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.topLeft,
+        child: SizedBox(width: c.maxWidth, child: child),
+      );
+    });
   }
 }
 

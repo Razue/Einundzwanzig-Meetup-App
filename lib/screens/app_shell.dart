@@ -240,19 +240,25 @@ class _AppShellState extends State<AppShell> {
                       border: const Border(top: BorderSide(color: cBorder, width: 0.5)),
                     ),
                     padding: EdgeInsets.only(bottom: bottomPad),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _navItem(0, Icons.home_rounded, Icons.home_outlined, AppLocalizations.of(context).navHome,
-                            navKey: HomeTour.homeTabKey),
-                        _navItem(1, Icons.style_rounded, Icons.style_outlined, AppLocalizations.of(context).navWalletTab,
-                            navKey: HomeTour.badgeTabKey),
-                        const SizedBox(width: 60),
-                        _navItem(3, Icons.event_rounded, Icons.event_outlined, AppLocalizations.of(context).navEvents,
-                            navKey: HomeTour.eventsTabKey),
-                        _navAction(Icons.near_me_rounded, Icons.near_me_outlined, AppLocalizations.of(context).navNearby, _openNearby,
-                            navKey: HomeTour.nearbyTabKey),
-                      ],
+                    // Die Leiste ist fest 56 hoch, die Beschriftung waechst
+                    // mit der Systemschrift. Wie Flutters NavigationBar bei
+                    // 130 % deckeln — bei 200 % lief sie sonst aus der Leiste.
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.3,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _navItem(0, Icons.home_rounded, Icons.home_outlined, AppLocalizations.of(context).navHome,
+                              navKey: HomeTour.homeTabKey),
+                          _navItem(1, Icons.style_rounded, Icons.style_outlined, AppLocalizations.of(context).navWalletTab,
+                              navKey: HomeTour.badgeTabKey),
+                          const SizedBox(width: 60),
+                          _navItem(3, Icons.event_rounded, Icons.event_outlined, AppLocalizations.of(context).navEvents,
+                              navKey: HomeTour.eventsTabKey),
+                          _navAction(Icons.near_me_rounded, Icons.near_me_outlined, AppLocalizations.of(context).navNearby, _openNearby,
+                              navKey: HomeTour.nearbyTabKey),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -292,7 +298,7 @@ class _AppShellState extends State<AppShell> {
       child: SizedBox(width: 60, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(active ? a : ia, color: active ? cText : cTextTertiary, size: 24),
         const SizedBox(height: 2),
-        Text(l, style: TextStyle(color: active ? cText : cTextTertiary, fontSize: 10, fontWeight: active ? FontWeight.w600 : FontWeight.w400)),
+        _navLabel(l, TextStyle(color: active ? cText : cTextTertiary, fontSize: 10, fontWeight: active ? FontWeight.w600 : FontWeight.w400)),
       ])));
   }
 
@@ -308,9 +314,15 @@ class _AppShellState extends State<AppShell> {
       child: SizedBox(width: 60, child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(ia, color: cTextTertiary, size: 24),
         const SizedBox(height: 2),
-        Text(l, style: const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w400)),
+        _navLabel(l, const TextStyle(color: cTextTertiary, fontSize: 10, fontWeight: FontWeight.w400)),
       ])));
   }
+
+  // Lange Uebersetzungen in 60 dp Breite: verkleinern statt abschneiden.
+  Widget _navLabel(String l, TextStyle style) => FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(l, maxLines: 1, softWrap: false, style: style),
+      );
 }
 
 // ═══════════════════════════════════════════════════════
