@@ -47,13 +47,25 @@ class _MeetupCrestWatermarkState extends State<MeetupCrestWatermark> {
   @override
   void initState() {
     super.initState();
+    if ((widget.imageUrl ?? '').trim().isNotEmpty) return;
+    MeetupCrestLookup.addListener(_onSources);
     _ensureLogos();
+  }
+
+  @override
+  void dispose() {
+    MeetupCrestLookup.removeListener(_onSources);
+    super.dispose();
+  }
+
+  void _onSources() {
+    if (mounted) setState(() {});
   }
 
   /// Wer die App oeffnet und direkt in die Badge-Wallet geht, hat die
   /// Wappen-Listen noch leer. Das Widget holt sie dann selbst nach.
+  /// Die Meetup-Liste meldet sich schon, bevor der Kalender zurueck ist.
   Future<void> _ensureLogos() async {
-    if ((widget.imageUrl ?? '').trim().isNotEmpty) return;
     await MeetupCrestLookup.ensureSources();
     if (mounted) setState(() {});
   }
@@ -146,9 +158,20 @@ class _MeetupCrestFaceState extends State<MeetupCrestFace> {
   void initState() {
     super.initState();
     if ((widget.imageUrl ?? '').trim().isNotEmpty) return;
+    MeetupCrestLookup.addListener(_onSources);
     MeetupCrestLookup.ensureSources().then((_) {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    MeetupCrestLookup.removeListener(_onSources);
+    super.dispose();
+  }
+
+  void _onSources() {
+    if (mounted) setState(() {});
   }
 
   @override

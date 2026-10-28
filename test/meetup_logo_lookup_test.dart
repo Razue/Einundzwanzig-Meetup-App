@@ -7,10 +7,14 @@
 // Teiluebereinstimmung: "Ulm" bekam sonst das Wappen von Neu-Ulm.
 // ============================================
 
+import 'dart:async';
+
 import 'package:einundzwanzig_meetup_app/models/meetup.dart';
 import 'package:einundzwanzig_meetup_app/services/meetup_calendar_service.dart';
 import 'package:einundzwanzig_meetup_app/services/meetup_service.dart';
 import 'package:einundzwanzig_meetup_app/services/meetup_crest_lookup.dart';
+import 'package:einundzwanzig_meetup_app/widgets/meetup_crest_watermark.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Meetup _m(String name, String city, {String country = 'DE', String logo = ''}) =>
@@ -27,6 +31,7 @@ Meetup _m(String name, String city, {String country = 'DE', String logo = ''}) =
 
 void main() {
   setUp(() {
+    MeetupCrestLookup.debugReset();
     MeetupService.cached = const [];
     MeetupCalendarService.portalLogos.clear();
   });
@@ -117,13 +122,35 @@ void main() {
           reason: 'altes Badge ohne Land: erster Treffer');
     });
 
-    test('unbekannt in der Liste: Termin-Registry unter der Stadt, exakt', () {
+    test('unbekannt in der Liste: Termin-Registry nur mit belegtem Land', () {
       MeetupCalendarService.rememberLogo(
           'Einundzwanzig Hildesheim', 'https://x.test/h.jpg');
       expect(MeetupCrestLookup.urlFor('Hildesheim, DE'), '');
 
+      // Blosse Stadt belegt das Land nicht.
       MeetupCalendarService.rememberLogo('Hildesheim', 'https://x.test/h.jpg');
+      expect(MeetupCrestLookup.urlFor('Hildesheim, DE'), '');
+      expect(MeetupCrestLookup.urlFor('Hildesheim'), 'https://x.test/h.jpg',
+          reason: 'altes Badge ohne Land');
+
+      MeetupCalendarService.rememberLogo(
+          'Hildesheim, DE', 'https://x.test/h.jpg');
       expect(MeetupCrestLookup.urlFor('Hildesheim, DE'), 'https://x.test/h.jpg');
+    });
+
+    test('Registry-Rueckfall gibt kein fremdes Land heraus', () {
+      MeetupCalendarService.rememberLogo('Weiden', 'https://x.test/de.png');
+      MeetupCalendarService.rememberLogo(
+          'Weiden, DE', 'https://x.test/de.png');
+      MeetupCalendarService.rememberLogo(
+          'Weiden, AT', 'https://x.test/at.png');
+
+      expect(MeetupCrestLookup.urlFor('Weiden, AT'), 'https://x.test/at.png');
+      expect(MeetupCrestLookup.urlFor('Weiden, DE'), 'https://x.test/de.png');
+
+      MeetupCalendarService.portalLogos.remove('Weiden, AT');
+      expect(MeetupCrestLookup.urlFor('Weiden, AT'), '',
+          reason: 'ohne Laender-Schluessel kein deutsches Wappen');
     });
 
     test('Schreibweise aus dem Slug trifft die Portal-Stadt', () {
@@ -133,5 +160,44 @@ void main() {
 
       expect(MeetupCrestLookup.urlFor('Neu Ulm, DE'), 'https://x.test/n.png');
     });
+
+    test('Zuhörer erfahren von der Liste, bevor der Kalender fertig ist', () async {
+      final listGate = Completer<void>();
+      final calendarGate = Completer<void>();
+      MeetupCrestLookup.debugFetchList = () => listGate.future;
+      MeetupCrestLookup.debugFetchCalendar = () => calendarGate.future;
+      var notices = 0;
+      MeetupCrestLookup.addListener(() => notices++);
+
+      final done = MeetupCrestLookup.ensureSources();
+      listGate.complete();
+      await Future<void>.delayed(Duration.zero);
+      expect(notices, 1, reason: 'Liste ist da, Kalender noch nicht');
+
+      calendarGate.complete();
+      await done;
+      expect(notices, 1);
+    });
+  });
+
+  testWidgets('Wappen aus der Meetup-Liste, auch ohne Termin', (tester) async {
+    MeetupService.cached = [
+      _m('Einundzwanzig OWL', 'Ostwestfalen-Lippe',
+          logo: 'https://x.test/owl.png'),
+    ];
+    MeetupCalendarService.rememberLogo('belegt', 'https://x.test/other.png');
+
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(
+        body: SizedBox(
+          width: 200,
+          height: 140,
+          child: MeetupCrestWatermark(meetupName: 'Ostwestfalen-Lippe, DE'),
+        ),
+      ),
+    ));
+
+    final image = tester.widget<Image>(find.byType(Image));
+    expect((image.image as NetworkImage).url, 'https://x.test/owl.png');
   });
 }

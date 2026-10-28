@@ -124,10 +124,16 @@ class MeetupCalendarService {
         }
         final name = mv('name').trim().isNotEmpty ? mv('name').trim() : 'Meetup';
         final logo = mv('logo');
-        // Name UND Stadt. Das Badge sucht spaeter mit der Stadt, der
-        // Kalender mit dem Gruppennamen.
+        final city = mv('city').trim();
+        final country = mv('country').trim().toUpperCase();
+        // Name, Stadt und "Stadt, LAND". Das Badge mit Land sucht den
+        // dritten Schluessel, der Kalender den Gruppennamen. Die blosse
+        // Stadt bleibt fuer alte Badges ohne Land.
         rememberLogo(name, logo);
-        rememberLogo(mv('city'), logo);
+        rememberLogo(city, logo);
+        if (city.isNotEmpty && country.isNotEmpty) {
+          rememberLogo('$city, $country', logo);
+        }
         final link = (e['link'] ?? '').toString();
         events.add(CalendarEvent(
           title: name,
