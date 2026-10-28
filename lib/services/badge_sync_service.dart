@@ -189,7 +189,11 @@ class BadgeSyncService {
 
   /// Ein Wechsel liegt nur vor, wenn jetzt eine andere Identität lesbar ist.
   /// Ein leerer npub ist ein Lese-Aussetzer, kein vollzogener Wechsel.
+  /// Gab es vorher keine Identität (leeres from, frisches Gerät), kann
+  /// nichts gewechselt haben — dann liegen auch keine alten Nachweise
+  /// vor, die zu räumen wären.
   static bool identitySwitched(String from, String now) {
+    if (from.trim().isEmpty) return false;
     final current = now.trim().toLowerCase();
     if (current.isEmpty) return false;
     return current != from.trim().toLowerCase();

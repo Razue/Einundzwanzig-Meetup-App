@@ -118,6 +118,8 @@ void main() {
     expect((await MeetupBadge.loadBadges()).map((b) => b.id), ['bleibt']);
     expect(BadgeSyncService.identitySwitched(_npubA, ''), isFalse);
     expect(BadgeSyncService.identitySwitched(_npubA, _npubB), isTrue);
+    expect(BadgeSyncService.identitySwitched('', _npubB), isFalse,
+        reason: 'ohne Identität davor gibt es keinen Wechsel');
   });
 
   test('offener Wechsel blockiert ein Einspielen, das nicht ersetzt',
@@ -269,6 +271,26 @@ void main() {
 
     expect(prefs.getBool('humanity_verified'), isTrue);
     expect(prefs.getString('platform_proofs'), '[{"platform":"b"}]');
+  });
+
+  test('frisches Gerät: kein Wechsel, importierte Nachweise bleiben',
+      () async {
+    // Kein Wechsel angefangen, das Gerät hatte vorher keine Identität:
+    // from ist leer. Der Keystore trägt schon den npub aus dem Backup,
+    // die Nachweise aus dem Backup liegen schon in den Prefs.
+    FlutterSecureStorage.setMockInitialValues({'nostr_npub_key': _npubB});
+    await BadgeSyncService.beginRestoreHold(fromNpub: '');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('platform_proofs', '[{"platform":"a"}]');
+    await prefs.setBool('humanity_needs_reverification', true);
+    BadgeSyncService.debugResetProcess();
+
+    await BadgeSyncService.settleRestore();
+
+    expect(prefs.getString('platform_proofs'), '[{"platform":"a"}]');
+    expect(prefs.getBool('humanity_needs_reverification'), isTrue);
+    expect(prefs.getBool('badge_restore_hold'), isNot(true),
+        reason: 'der Riegel ist abgeräumt');
   });
 
   test('neues Einspielen übernimmt erst, was der Keystore schon entschied',
