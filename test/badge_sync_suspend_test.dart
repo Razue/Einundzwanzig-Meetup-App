@@ -307,7 +307,8 @@ void main() {
 
     FlutterSecureStorage.setMockInitialValues({'nostr_npub_key': _npubB});
     await BadgeSyncService.beginRestoreHold(fromNpub: '');
-    await BadgeSyncService.releaseUnownedState();
+    // Der Schlüssel aus dem Backup ist lesbar. Erst dann wird geräumt.
+    await BadgeSyncService.releaseUnownedState(expectNpubs: [_npubB]);
 
     expect(prefs.getBool('humanity_verified'), isFalse);
     expect(prefs.getString('humanity_receipt_id'), isNull);
@@ -332,6 +333,28 @@ void main() {
     expect(prefs.getBool('badge_restore_hold'), isNot(true));
     expect(prefs.getBool('badge_restore_proofs'), isNot(true),
         reason: 'der Vormerk ist mit dem Riegel weg');
+  });
+
+  test('ohne Schlüssel aus dem Backup bleibt der alte Nachweis liegen',
+      () async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('humanity_verified', true);
+    await prefs.setString('humanity_receipt_id', 'alt');
+    await prefs.setString('platform_proofs', '[{"platform":"alt"}]');
+    await prefs.setStringList('badge_sync_chunk_hashes', ['alt']);
+
+    // npub nicht lesbar: Lese-Aussetzer oder Einspielen ohne Schlüssel.
+    await BadgeSyncService.releaseUnownedState(expectNpubs: [_npubB]);
+    // Lesbar, aber eine andere Identität als die aus dem Backup.
+    FlutterSecureStorage.setMockInitialValues({'nostr_npub_key': _npubA});
+    await BadgeSyncService.releaseUnownedState(expectNpubs: [_npubB]);
+    // Backup ohne Identität, obwohl lokal ein npub lesbar ist.
+    await BadgeSyncService.releaseUnownedState();
+
+    expect(prefs.getBool('humanity_verified'), isTrue);
+    expect(prefs.getString('humanity_receipt_id'), 'alt');
+    expect(prefs.getString('platform_proofs'), '[{"platform":"alt"}]');
+    expect(prefs.getStringList('badge_sync_chunk_hashes'), ['alt']);
   });
 
   test('neues Einspielen übernimmt erst, was der Keystore schon entschied',

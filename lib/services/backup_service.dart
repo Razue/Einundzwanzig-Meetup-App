@@ -814,14 +814,6 @@ class BackupService {
           replace: replacing,
         );
         held = true;
-        // Keine lesbare Identität vorher. Nachweise und Chunk-Hashes können
-        // trotzdem liegen (Signer getrennt, kein lokaler Schlüssel). Die
-        // müssen weg sein, bevor Profil und Nachweise aus dem Backup
-        // geschrieben werden. Danach löscht settle den Import nicht noch
-        // einmal.
-        if (decision == RestoreDecision.fresh) {
-          await BadgeSyncService.releaseUnownedState();
-        }
         final additive = decision == RestoreDecision.sameIdentity ||
             decision == RestoreDecision.addToIdentity;
 
@@ -1099,6 +1091,17 @@ class BackupService {
         // stillschweigend uebergangen: Bürgschaften haben in dieser Fassung
         // keine Wirkung mehr, und etwas wiederherzustellen, das nichts tut,
         // waere nur Ballast.
+
+        // Frisch, und der Keystore trägt eine Identität aus dem Backup.
+        // Erst jetzt die liegen gebliebenen Nachweise und Chunk-Hashes
+        // weg: direkt bevor die Nachweise aus dem Backup darüber
+        // geschrieben werden. Kam kein Schlüssel an, oder ist der lesbare
+        // npub nicht der aus dem Backup, bleibt alles.
+        if (decision == RestoreDecision.fresh) {
+          await BadgeSyncService.releaseUnownedState(
+            expectNpubs: backupIdentities(data),
+          );
+        }
 
         // =============================================
         // PLATFORM PROOFS WIEDERHERSTELLEN (MIT VALIDIERUNG)
