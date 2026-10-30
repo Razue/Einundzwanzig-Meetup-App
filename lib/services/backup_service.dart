@@ -814,6 +814,14 @@ class BackupService {
           replace: replacing,
         );
         held = true;
+        // Keine lesbare Identität vorher. Nachweise und Chunk-Hashes können
+        // trotzdem liegen (Signer getrennt, kein lokaler Schlüssel). Die
+        // müssen weg sein, bevor Profil und Nachweise aus dem Backup
+        // geschrieben werden. Danach löscht settle den Import nicht noch
+        // einmal.
+        if (decision == RestoreDecision.fresh) {
+          await BadgeSyncService.releaseUnownedState();
+        }
         final additive = decision == RestoreDecision.sameIdentity ||
             decision == RestoreDecision.addToIdentity;
 

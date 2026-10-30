@@ -189,9 +189,9 @@ class BadgeSyncService {
 
   /// Ein Wechsel liegt nur vor, wenn jetzt eine andere Identität lesbar ist.
   /// Ein leerer npub ist ein Lese-Aussetzer, kein vollzogener Wechsel.
-  /// Gab es vorher keine Identität (leeres from, frisches Gerät), kann
-  /// nichts gewechselt haben — dann liegen auch keine alten Nachweise
-  /// vor, die zu räumen wären.
+  /// Gab es vorher keine Identität (leeres from), kann nichts gewechselt
+  /// haben. Was ohne npub liegen geblieben ist, räumt
+  /// [releaseUnownedState], bevor das Backup geschrieben wird.
   static bool identitySwitched(String from, String now) {
     if (from.trim().isEmpty) return false;
     final current = now.trim().toLowerCase();
@@ -215,6 +215,21 @@ class BadgeSyncService {
   static Future<void> clearRestoreMark() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_clearKey);
+  }
+
+  /// Frisches Einspielen, noch bevor Profil oder Nachweise aus dem Backup
+  /// geschrieben werden.
+  ///
+  /// Eine lesbare Identität gab es vorher nicht. Nachweise und Chunk-Hashes
+  /// können trotzdem liegen: wer den Signer trennt, verliert den npub, nicht
+  /// die Prefs. Blieben sie, hinge der Humanity-Nachweis oder ein
+  /// Plattform-Proof der vorigen Identität an der neuen, und gleiche
+  /// Chunk-Hashes ließen die Veröffentlichung unter dem neuen Pubkey aus.
+  /// [clearIdentityProofs] merkt das Räumen vor, damit settle den Import
+  /// nicht noch einmal löscht.
+  static Future<void> releaseUnownedState() async {
+    await clearIdentityProofs();
+    await forgetLocalState();
   }
 
   /// Räumt einen Riegel ab, auch nach einem Absturz mitten im Wechsel.

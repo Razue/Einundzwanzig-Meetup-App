@@ -293,6 +293,47 @@ void main() {
         reason: 'der Riegel ist abgeräumt');
   });
 
+  test('frisches Einspielen räumt liegen gebliebene Nachweise, der Import bleibt',
+      () async {
+    // Signer getrennt, kein lokaler Schlüssel: der npub ist weg, die
+    // Nachweise und die Chunk-Hashes der vorigen Identität nicht.
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('humanity_verified', true);
+    await prefs.setString('humanity_receipt_id', 'alt');
+    await prefs.setString('platform_proofs', '[{"platform":"alt"}]');
+    await prefs.setStringList('badge_sync_chunk_hashes', ['alt']);
+    await prefs.setInt('badge_sync_last_gen', 9);
+    await prefs.setBool('badge_sync_dirty', true);
+
+    FlutterSecureStorage.setMockInitialValues({'nostr_npub_key': _npubB});
+    await BadgeSyncService.beginRestoreHold(fromNpub: '');
+    await BadgeSyncService.releaseUnownedState();
+
+    expect(prefs.getBool('humanity_verified'), isFalse);
+    expect(prefs.getString('humanity_receipt_id'), isNull);
+    expect(prefs.getString('platform_proofs'), isNull);
+    expect(prefs.getStringList('badge_sync_chunk_hashes'), isNull);
+    expect(prefs.getInt('badge_sync_last_gen'), isNull);
+    expect(prefs.getBool('badge_sync_dirty'), isNot(true));
+
+    // Das Backup schreibt danach seine eigenen Nachweise.
+    await prefs.setString('platform_proofs', '[{"platform":"neu"}]');
+    await prefs.setBool('humanity_needs_reverification', true);
+    await prefs.setString('humanity_receipt_id', 'neu');
+    BadgeSyncService.debugResetProcess();
+
+    await BadgeSyncService.settleRestore();
+
+    expect(prefs.getString('platform_proofs'), '[{"platform":"neu"}]');
+    expect(prefs.getBool('humanity_needs_reverification'), isTrue);
+    expect(prefs.getString('humanity_receipt_id'), 'neu');
+    expect(prefs.getBool('humanity_verified'), isFalse);
+    expect(prefs.getStringList('badge_sync_chunk_hashes'), isNull);
+    expect(prefs.getBool('badge_restore_hold'), isNot(true));
+    expect(prefs.getBool('badge_restore_proofs'), isNot(true),
+        reason: 'der Vormerk ist mit dem Riegel weg');
+  });
+
   test('neues Einspielen übernimmt erst, was der Keystore schon entschied',
       () async {
     FlutterSecureStorage.setMockInitialValues({'nostr_npub_key': _npubB});
