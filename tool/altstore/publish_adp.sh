@@ -181,16 +181,11 @@ else
   ok "Assets liegen unter $RELEASE_BASE/"
 fi
 
-# assetURLs: Dateiname ohne Endung -> URL.
-# AltStore schickt sie als Header alt-asset-<id>. Der Install-Proxy leitet
-# dann auf die flache Release-Datei um, statt variant/ oder delta/ anzuhängen.
-# GitHub Releases liefern die Bytes unkomprimiert. Pages und
-# raw.githubusercontent.com gzippen das Manifest, dadurch passt die Signatur
-# nicht mehr und die Installation schlägt fehl.
-ASSET_URLS="$(printf '%s\n' "$FILES" | while IFS= read -r f; do
-  name="$(basename "$f")"
-  printf '{"key":"%s","url":"%s/%s"}\n' "${name%.*}" "$RELEASE_BASE" "$name"
-done | jq -s 'map({(.key): .url}) | add')"
+# Die Dateien bleiben flach im Release. Die Pages-Action legt sie unter
+# variant/ und delta/ ab, weil das Manifest diese Pfade erwartet.
+# assetURLs nicht setzen: AltStore hängt sie als Header an, und mit Deltas
+# aus mehreren Vorgängerversionen wird der Header zu groß.
+PAGES_ADP="https://razue.github.io/Einundzwanzig-Meetup-App/altstore/adp/${VERSION}-${BUILD}"
 
 # ---------------------------------------------------------------------------
 # 4. source.json aktualisieren
@@ -222,14 +217,13 @@ NEW_SOURCE="$(jq \
   --arg build "$BUILD" \
   --arg date "$TODAY" \
   --arg notes "$NOTES" \
-  --arg dl "$RELEASE_BASE/manifest.json" \
+  --arg dl "$PAGES_ADP/manifest.json" \
   --argjson size "$SIZE" \
   --arg minos "$MIN_OS" \
-  --argjson assets "$ASSET_URLS" \
   --argjson privacy "$PRIVACY" \
   --argjson ents "$ENTITLEMENT_KEYS" '
   ( {version: $version, buildVersion: $build, marketingVersion: ($version + " (" + $build + ")"),
-     date: $date, localizedDescription: $notes, downloadURL: $dl, size: $size, assetURLs: $assets}
+     date: $date, localizedDescription: $notes, downloadURL: $dl, size: $size}
     + (if $minos != "" then {minOSVersion: $minos} else {} end) ) as $entry
   | .apps |= map(
       if .bundleIdentifier == $bundle then
