@@ -1,0 +1,120 @@
+name: Repro ESP-Migration (1.6.8 -> 1.7.3 -> Fix)
+
+# Wegwerf-Workflow, gehört nicht nach main. Stellt am Emulator nach, dass
+# nach dem Update von 1.6.8 auf 1.7.3 der Badge-Schlüssel fehlt, und prüft,
+# ob der Fix-Branch ihn aus dem alten sicheren Speicher zurückholt.
+#
+# Alle drei Stände werden hier gebaut und mit demselben Debug-Schlüssel
+# signiert, damit sie sich wie echte Updates übereinander installieren.
+
+on:
+  push:
+    branches: [ "repro/esp-migration" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UPSTREAM: louisthecat86/Einundzwanzig-Meetup-App
+  FIX_REF: fix/android-esp-key-recovery
+
+jobs:
+  repro:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+    - name: Workflow-Dateien
+      uses: actions/checkout@v4
+      with:
+        path: wf
+
+    - name: Stand 1.6.8
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ env.UPSTREAM }}
+        ref: v1.6.8
+        path: v168
+
+    - name: Stand 1.7.3
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ env.UPSTREAM }}
+        ref: v1.7.3
+        path: v173
+
+    - name: Stand Fix
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ env.FIX_REF }}
+        path: fix
+
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v4
+      with:
+        packages: 'platform-tools'
+
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        cache: true
+
+    - name: Install Android SDK & NDK
+      run: |
+        yes | sdkmanager --licenses > /dev/null
+        sdkmanager "platforms;android-36" "build-tools;35.0.0" "ndk;27.0.12077973"
+
+    # Der Emulator auf dem Runner ist x86_64.
+    - name: Drei APKs bauen
+      run: |
+        mkdir -p apk
+        for stand in v168 v173 fix; do
+          echo "::group::Build $stand"
+          (cd "$stand" && flutter pub get && \
+            flutter build apk --release --target-platform android-x64)
+          cp "$stand/build/app/outputs/flutter-apk/app-release.apk" "apk/$stand.apk"
+          echo "::endgroup::"
+        done
+        ls -la apk
+
+    # Drei Klartext-Badges und eine Wegwerf-Identität in dem Format, das
+    # 1.6.8 beim ersten Start selbst in den sicheren Speicher umzieht.
+    - name: Testdaten erzeugen
+      run: |
+        mkdir -p fix/tool_repro
+        cp wf/.github/repro/gen_fixture.dart fix/tool_repro/
+        (cd fix && dart run tool_repro/gen_fixture.dart "$GITHUB_WORKSPACE/fixture.xml")
+
+    - name: KVM freischalten
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+          | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    # Abbild "default": ohne Google-Dienste und mit adb root.
+    - name: Update-Kette am Emulator
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        target: default
+        arch: x86_64
+        disable-animations: true
+        emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+        script: bash wf/.github/repro/esp_migration.sh apk fixture.xml repro-out
+
+    - name: Protokolle hochladen
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: repro-esp-migration
+        path: repro-out
+        if-no-files-found: warn
