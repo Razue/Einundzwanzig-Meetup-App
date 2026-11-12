@@ -61,10 +61,13 @@ jobs:
       with:
         packages: 'platform-tools'
 
+    # Fest auf die Version, mit der das Release 1.7.3 gebaut wurde. Das
+    # aktuelle stable verlangt Gradle 9.3.1, die Tags stehen auf 8.14.
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
+        flutter-version: '3.47.9'
         cache: true
 
     - name: Install Android SDK & NDK
